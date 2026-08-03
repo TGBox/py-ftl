@@ -7,7 +7,7 @@ import pygame
 pygame.init()
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 550
 screen: pygame.Surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("FTL Prototype - Shop & Upgrades")
+pygame.display.set_caption("FTL Prototype - Erweiterter Kampf")
 clock: pygame.time.Clock = pygame.time.Clock()
 
 # Farben
@@ -26,6 +26,8 @@ COLOR_PROJECTILE = (255, 50, 50)
 COLOR_MAP_NODE = (150, 180, 220)
 COLOR_MAP_LINE = (50, 70, 100)
 COLOR_SHOP_NODE = (220, 180, 60)
+COLOR_HP_GREEN = (50, 220, 100)
+COLOR_HP_RED = (220, 60, 60)
 
 # Zustände
 STATE_MAP = "MAP"
@@ -41,9 +43,7 @@ class Node:
     self.id: int = node_id
     self.x: int = x
     self.y: int = y
-    self.event_type: str = (
-        event_type  # 'COMBAT', 'RESOURCE', 'SHOP', 'EMPTY'
-    )
+    self.event_type: str = event_type
     self.connections: list[Node] = []
     self.visited: bool = False
 
@@ -178,9 +178,17 @@ class Room:
     self.max_power: int = max_power
     self.current_power: int = 0
     self.is_enemy: bool = is_enemy
+    self.health: float = 100.0
+    self.max_health: float = 100.0
+
+  def effective_max_power(self) -> int:
+    return max(0, math.floor(self.max_power * (self.health / self.max_health)))
 
   def add_power(self, reactor: Reactor) -> None:
-    if self.current_power < self.max_power and reactor.available_power > 0:
+    if (
+        self.current_power < self.effective_max_power()
+        and reactor.available_power > 0
+    ):
       self.current_power += 1
       reactor.available_power -= 1
 
@@ -189,23 +197,56 @@ class Room:
       self.current_power -= 1
       reactor.available_power += 1
 
+  def apply_damage(self, amount: float, reactor: Reactor) -> None:
+    self.health = max(0.0, self.health - amount)
+    while self.current_power > self.effective_max_power():
+      self.remove_power(reactor)
+
+  def repair(self, amount: float) -> None:
+    self.health = min(self.max_health, self.health + amount)
+
   def draw(self, surface: pygame.Surface) -> None:
     fill_col = COLOR_ENEMY_ROOM if self.is_enemy else COLOR_ROOM
     border_col = COLOR_ENEMY_BORDER if self.is_enemy else COLOR_BORDER
     pygame.draw.rect(surface, fill_col, self.rect)
     pygame.draw.rect(surface, border_col, self.rect, 2)
+
     font = pygame.font.SysFont(None, 20)
     surface.blit(
         font.render(self.name, True, (220, 220, 220)),
         (self.rect.x + 6, self.rect.y + 6),
     )
+
+    # System-Gesundheitsbalken
+    hp_ratio = self.health / self.max_health
+    hp_color = COLOR_HP_GREEN if hp_ratio > 0.4 else COLOR_HP_RED
+    pygame.draw.rect(
+        surface,
+        (30, 30, 30),
+        (self.rect.x + 6, self.rect.y + 24, self.rect.width - 12, 5),
+    )
+    pygame.draw.rect(
+        surface,
+        hp_color,
+        (
+            self.rect.x + 6,
+            self.rect.y + 24,
+            int((self.rect.width - 12) * hp_ratio),
+            5,
+        ),
+    )
+
     if not self.is_enemy:
+      eff_max = self.effective_max_power()
       for i in range(self.max_power):
-        color = (
-            COLOR_POWER_ACTIVE
-            if i < self.current_power
-            else COLOR_POWER_OFF
-        )
+        if i < eff_max:
+          color = (
+              COLOR_POWER_ACTIVE
+              if i < self.current_power
+              else COLOR_POWER_OFF
+          )
+        else:
+          color = COLOR_HP_RED
         pygame.draw.rect(
             surface,
             color,
@@ -251,12 +292,14 @@ class Projectile:
       self,
       start_pos: tuple[int, int],
       target_pos: tuple[int, int],
+      target_room: Room,
       is_player_shot: bool,
   ) -> None:
     self.x: float = float(start_pos[0])
     self.y: float = float(start_pos[1])
     self.target_x: float = float(target_pos[0])
     self.target_y: float = float(target_pos[1])
+    self.target_room: Room = target_room
     self.is_player_shot: bool = is_player_shot
     self.alive: bool = True
 
@@ -287,7 +330,7 @@ class Crew:
     self.selected: bool = False
     self.target_pos: tuple[int, int] | None = None
 
-  def update(self, dt: float) -> None:
+  def update(self, dt: float, rooms: list[Room]) -> None:
     if self.target_pos:
       tx, ty = self.target_pos
       dx, dy = tx - self.x, ty - self.y
@@ -298,6 +341,13 @@ class Crew:
       else:
         self.x += (dx / dist) * 120.0 * dt
         self.y += (dy / dist) * 120.0 * dt
+    else:
+      # Automatische Reparatur im aktuellen Raum
+      for room in rooms:
+        if room.rect.collidepoint(int(self.x), int(self.y)):
+          if room.health < room.max_health:
+            room.repair(25.0 * dt)
+          break
 
   def draw(self, surface: pygame.Surface) -> None:
     color = COLOR_SELECTED if self.selected else COLOR_CREW
@@ -306,20 +356,20 @@ class Crew:
     )
 
 
-# --- INSTANZEN & STATE ---
+# --- SETUP ---
 star_map = StarMap()
 event_mgr = EventManager()
 
 fuel = 5
 scrap = 20
 player_max_hp = 10
-player_hp = 7  # Angeschlagen starten für Test der Reparatur
+player_hp = 10
 
 reactor = Reactor(total_power=6)
 player_rooms = [
     Room("Schild", (60, 200, 110, 90)),
     Room("Waffen", (180, 200, 110, 90)),
-    Room("Brücke", (300, 200, 90, 90)),
+    Room("Brücke", (300, 200, 90, 90), max_power=2),
 ]
 enemy_rooms = [
     Room("Schild", (550, 200, 110, 90), is_enemy=True),
@@ -331,14 +381,15 @@ player_shield = ShieldSystem()
 enemy_shield = ShieldSystem()
 crew_members = [Crew(340, 245), Crew(115, 245)]
 player_weapon = Weapon(charge_time=3.0)
-enemy_weapon = Weapon(charge_time=5.0)
+enemy_weapon = Weapon(charge_time=4.5)
 
 projectiles: list[Projectile] = []
 enemy_hp = 10
+combat_msg = ""
+combat_msg_timer = 0.0
 paused = False
 running = True
 
-# Buttons für Shop (Rects)
 btn_repair = pygame.Rect(200, 220, 500, 45)
 btn_upgrade_reactor = pygame.Rect(200, 280, 500, 45)
 btn_leave_shop = pygame.Rect(200, 360, 500, 45)
@@ -357,7 +408,6 @@ while running:
     elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
       mx, my = pygame.mouse.get_pos()
 
-      # KARTEN-STEUERUNG
       if current_state == STATE_MAP and star_map.current_node is not None:
         for node in star_map.current_node.connections:
           if math.hypot(mx - node.x, my - node.y) <= 20 and fuel > 0:
@@ -374,31 +424,29 @@ while running:
               current_state = STATE_EVENT
             break
 
-      # EVENT-STEUERUNG
       elif current_state == STATE_EVENT:
         if event_mgr.current_event_type == "COMBAT":
           enemy_hp = 10
+          for er in enemy_rooms:
+            er.health = 100.0
+            er.current_power = 1
           current_state = STATE_COMBAT
         else:
           current_state = STATE_MAP
 
-      # SHOP-STEUERUNG
       elif current_state == STATE_SHOP:
         if btn_repair.collidepoint(mx, my):
           if scrap >= 2 and player_hp < player_max_hp:
             scrap -= 2
             player_hp += 1
-
         elif btn_upgrade_reactor.collidepoint(mx, my):
           if scrap >= 15:
             scrap -= 15
             reactor.total_power += 1
             reactor.available_power += 1
-
         elif btn_leave_shop.collidepoint(mx, my):
           current_state = STATE_MAP
 
-      # KAMPF-STEUERUNG
       elif current_state == STATE_COMBAT:
         if player_weapon.is_ready():
           for e_room in enemy_rooms:
@@ -407,7 +455,8 @@ while running:
               projectiles.append(
                   Projectile(
                       (w_room.rect.centerx, w_room.rect.centery),
-                      (mx, my),
+                      (e_room.rect.centerx, e_room.rect.centery),
+                      target_room=e_room,
                       is_player_shot=True,
                   )
               )
@@ -453,21 +502,30 @@ while running:
 
   # --- LOGIK UPDATES ---
   if not paused and current_state == STATE_COMBAT:
+    combat_msg_timer = max(0.0, combat_msg_timer - dt)
+
     for c in crew_members:
-      c.update(dt)
+      c.update(dt, player_rooms)
 
     player_shield.update(player_rooms[0].current_power)
-    enemy_shield.update(1)
+    enemy_shield.update(enemy_rooms[0].current_power)
 
-    player_weapon.update(dt, player_rooms[1].current_power > 0)
-    enemy_weapon.update(dt, True)
+    # Waffen-Aufladung prüfen (nur aktiv bei funktionierendem Raum)
+    player_weapon.update(
+        dt,
+        player_rooms[1].current_power > 0 and player_rooms[1].health > 20.0,
+    )
+    enemy_weapon.update(
+        dt, enemy_rooms[1].current_power > 0 and enemy_rooms[1].health > 20.0
+    )
 
     if enemy_weapon.is_ready():
-      target = player_rooms[0]
+      target_room = random.choice(player_rooms)
       projectiles.append(
           Projectile(
               (enemy_rooms[1].rect.centerx, enemy_rooms[1].rect.centery),
-              (target.rect.centerx, target.rect.centery),
+              (target_room.rect.centerx, target_room.rect.centery),
+              target_room=target_room,
               is_player_shot=False,
           )
       )
@@ -477,11 +535,24 @@ while running:
       p.update(dt)
       if not p.alive:
         if p.is_player_shot:
-          if not enemy_shield.attempt_block():
+          # Ausweichberechnung Gegner
+          enemy_evade = enemy_rooms[2].current_power * 0.15
+          if random.random() < enemy_evade:
+            combat_msg = "FEIND IST AUSGEWICHEN!"
+            combat_msg_timer = 1.5
+          elif not enemy_shield.attempt_block():
             enemy_hp = max(0, enemy_hp - 1)
+            p.target_room.apply_damage(35.0, reactor)
         else:
-          if not player_shield.attempt_block():
+          # Ausweichberechnung Spieler
+          player_evade = player_rooms[2].current_power * 0.20
+          if random.random() < player_evade:
+            combat_msg = "AUSGEWICHEN!"
+            combat_msg_timer = 1.5
+          elif not player_shield.attempt_block():
             player_hp = max(0, player_hp - 1)
+            p.target_room.apply_damage(35.0, reactor)
+
         projectiles.remove(p)
 
     if enemy_hp <= 0:
@@ -492,7 +563,6 @@ while running:
   screen.fill(COLOR_BG)
   font = pygame.font.SysFont(None, 24)
 
-  # HUD
   screen.blit(
       font.render(
           f"Treibstoff: {fuel}  |  Scrap: {scrap}  |  Hülle:"
@@ -505,23 +575,16 @@ while running:
 
   if current_state == STATE_MAP:
     star_map.draw(screen)
-    screen.blit(
-        font.render(
-            "STERNENKARTE: Gelbe Nodes = Shop | Klicke zum Reisen",
-            True,
-            (200, 200, 200),
-        ),
-        (220, 500),
-    )
 
   elif current_state == STATE_EVENT:
     pygame.draw.rect(screen, (30, 40, 55), (150, 150, 600, 250))
     pygame.draw.rect(screen, COLOR_BORDER, (150, 150, 600, 250), 3)
-
-    event_txt = font.render(
-        event_mgr.current_event_text, True, (240, 240, 240)
+    screen.blit(
+        font.render(
+            event_mgr.current_event_text, True, (240, 240, 240)
+        ),
+        (180, 200),
     )
-    screen.blit(event_txt, (180, 200))
     screen.blit(
         font.render("[ Klick zum Fortfahren ]", True, COLOR_SELECTED), (340, 330)
     )
@@ -530,32 +593,36 @@ while running:
     pygame.draw.rect(screen, (25, 30, 40), (150, 80, 600, 380))
     pygame.draw.rect(screen, COLOR_SHOP_NODE, (150, 80, 600, 380), 3)
 
-    title = font.render("--- HÄNDLER-STATION ---", True, COLOR_SHOP_NODE)
-    screen.blit(title, (340, 110))
+    screen.blit(
+        font.render("--- HÄNDLER-STATION ---", True, COLOR_SHOP_NODE), (340, 110)
+    )
 
-    # Button 1: Reparieren
     pygame.draw.rect(screen, (40, 50, 70), btn_repair)
     pygame.draw.rect(screen, COLOR_BORDER, btn_repair, 2)
-    rep_txt = font.render(
-        f"Hülle reparieren (+1 HP)  -  Kosten: 2 Scrap", True, (220, 220, 220)
+    screen.blit(
+        font.render(
+            "Hülle reparieren (+1 HP) - Kosten: 2 Scrap", True, (220, 220, 220)
+        ),
+        (btn_repair.x + 20, btn_repair.y + 12),
     )
-    screen.blit(rep_txt, (btn_repair.x + 20, btn_repair.y + 12))
 
-    # Button 2: Reaktor
     pygame.draw.rect(screen, (40, 50, 70), btn_upgrade_reactor)
     pygame.draw.rect(screen, COLOR_BORDER, btn_upgrade_reactor, 2)
-    rea_txt = font.render(
-        f"Reaktor aufrüsten (+1 Max Power)  -  Kosten: 15 Scrap",
-        True,
-        (220, 220, 220),
+    screen.blit(
+        font.render(
+            "Reaktor aufrüsten (+1 Power) - Kosten: 15 Scrap",
+            True,
+            (220, 220, 220),
+        ),
+        (btn_upgrade_reactor.x + 20, btn_upgrade_reactor.y + 12),
     )
-    screen.blit(rea_txt, (btn_upgrade_reactor.x + 20, btn_upgrade_reactor.y + 12))
 
-    # Button 3: Verlassen
     pygame.draw.rect(screen, (60, 40, 40), btn_leave_shop)
     pygame.draw.rect(screen, COLOR_ENEMY_BORDER, btn_leave_shop, 2)
-    exit_txt = font.render("Shop verlassen", True, (255, 200, 200))
-    screen.blit(exit_txt, (btn_leave_shop.x + 180, btn_leave_shop.y + 12))
+    screen.blit(
+        font.render("Shop verlassen", True, (255, 200, 200)),
+        (btn_leave_shop.x + 180, btn_leave_shop.y + 12),
+    )
 
   elif current_state == STATE_COMBAT:
     reactor.draw(screen, 30, 45)
@@ -580,6 +647,10 @@ while running:
         font.render(f"Gegner Hülle: {enemy_hp} HP", True, (255, 100, 100)),
         (550, 170),
     )
+
+    if combat_msg_timer > 0.0:
+      msg_txt = font.render(combat_msg, True, COLOR_SELECTED)
+      screen.blit(msg_txt, (SCREEN_WIDTH // 2 - 80, 150))
 
   pygame.display.flip()
 
