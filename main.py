@@ -1,290 +1,22 @@
 from __future__ import annotations
+from classes.ShipModel import *
+import copy
 import math
 import random
 import sys
 import pygame
+
+import classes.Reactor
+import classes.EventManager
+import classes.StarMap
+from settings import *
+from classes.Room import Room
 
 pygame.init()
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 550
 screen: pygame.Surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("FTL Prototype - Erweiterter Kampf")
 clock: pygame.time.Clock = pygame.time.Clock()
-
-# Farben
-COLOR_BG = (15, 18, 24)
-COLOR_ROOM = (40, 50, 70)
-COLOR_ENEMY_ROOM = (70, 40, 50)
-COLOR_BORDER = (100, 140, 180)
-COLOR_ENEMY_BORDER = (180, 100, 100)
-COLOR_CREW = (50, 200, 100)
-COLOR_SELECTED = (255, 200, 0)
-COLOR_POWER_ACTIVE = (0, 220, 120)
-COLOR_POWER_OFF = (60, 70, 80)
-COLOR_REACTOR = (0, 180, 255)
-COLOR_WEAPON_CHARGE = (255, 180, 0)
-COLOR_PROJECTILE = (255, 50, 50)
-COLOR_MAP_NODE = (150, 180, 220)
-COLOR_MAP_LINE = (50, 70, 100)
-COLOR_SHOP_NODE = (220, 180, 60)
-COLOR_HP_GREEN = (50, 220, 100)
-COLOR_HP_RED = (220, 60, 60)
-
-# Zustände
-STATE_MAP = "MAP"
-STATE_EVENT = "EVENT"
-STATE_COMBAT = "COMBAT"
-STATE_SHOP = "SHOP"
-current_state: str = STATE_MAP
-
-
-class Node:
-
-  def __init__(self, node_id: int, x: int, y: int, event_type: str) -> None:
-    self.id: int = node_id
-    self.x: int = x
-    self.y: int = y
-    self.event_type: str = event_type  # 'COMBAT', 'RESOURCE', 'SHOP', 'EMPTY', 'EXIT'
-    self.connections: list[Node] = []
-    self.visited: bool = False
-
-
-class StarMap:
-
-  def __init__(self) -> None:
-    self.nodes: list[Node] = []
-    self.current_node: Node | None = None
-    self.sector: int = 1
-    self.generate_map()
-
-  def generate_map(self) -> None:
-    self.nodes.clear()
-    node_id = 0
-    num_layers = 7  # Größere Karte (7 Ebenen)
-    layer_distance = 110
-    created_layers: list[list[Node]] = []
-
-    # Start-Knoten
-    start_node = Node(node_id, 80, 275, "EMPTY")
-    self.nodes.append(start_node)
-    created_layers.append([start_node])
-    node_id += 1
-
-    # Mittlere Ebenen
-    for l in range(1, num_layers - 1):
-      layer_nodes: list[Node] = []
-      node_count = random.randint(2, 3)
-      x = 80 + l * layer_distance
-      y_positions = (
-          [275]
-          if node_count == 1
-          else (
-              [180, 370] if node_count == 2 else [130, 275, 420]
-          )
-      )
-
-      for y in y_positions:
-        event_type = random.choice(
-            ["COMBAT", "COMBAT", "RESOURCE", "SHOP", "EMPTY"]
-        )
-        node = Node(node_id, x, y, event_type)
-        self.nodes.append(node)
-        layer_nodes.append(node)
-        node_id += 1
-      created_layers.append(layer_nodes)
-
-    # Exit-Knoten (Ziel)
-    exit_node = Node(node_id, 80 + (num_layers - 1) * layer_distance, 275, "EXIT")
-    self.nodes.append(exit_node)
-    created_layers.append([exit_node])
-
-    # Wege zwischen den Ebenen verbinden
-    for i in range(len(created_layers) - 1):
-      for n1 in created_layers[i]:
-        # Verbinde mit mindestens einem Knoten der nächsten Ebene
-        targets = random.sample(
-            created_layers[i + 1],
-            k=min(len(created_layers[i + 1]), random.randint(1, 2)),
-        )
-        for t in targets:
-          if t not in n1.connections:
-            n1.connections.append(t)
-
-    self.current_node = start_node
-    self.current_node.visited = True
-
-  def draw(self, surface: pygame.Surface) -> None:
-    # Linien zeichnen
-    for node in self.nodes:
-      for conn in node.connections:
-        pygame.draw.line(
-            surface, COLOR_MAP_LINE, (node.x, node.y), (conn.x, conn.y), 2
-        )
-
-    # Knoten zeichnen
-    for node in self.nodes:
-      if node == self.current_node:
-        color = COLOR_SELECTED
-      elif node.event_type == "EXIT":
-        color = (255, 100, 255)
-      elif node.event_type == "SHOP" and not node.visited:
-        color = COLOR_SHOP_NODE
-      elif node.visited:
-        color = (100, 255, 100)
-      else:
-        color = COLOR_MAP_NODE
-
-      pygame.draw.circle(surface, color, (node.x, node.y), 14)
-
-      if (
-          self.current_node is not None
-          and node in self.current_node.connections
-      ):
-        pygame.draw.circle(surface, (255, 255, 255), (node.x, node.y), 18, 2)
-
-
-class EventManager:
-
-  def __init__(self) -> None:
-    self.current_event_text: str = ""
-    self.current_event_type: str | None = None
-
-  def trigger_event(self, event_type: str) -> tuple[int, int]:
-    self.current_event_type = event_type
-    if event_type == "RESOURCE":
-      scrap_found = random.randint(10, 25)
-      fuel_found = random.randint(1, 2)
-      self.current_event_text = (
-          f"Wrack untersucht! Fund: {scrap_found} Scrap, {fuel_found}"
-          " Treibstoff."
-      )
-      return scrap_found, fuel_found
-    elif event_type == "COMBAT":
-      self.current_event_text = (
-          "WARNUNG! Ein feindliches Piratenschiff greift an!"
-      )
-      return 0, 0
-    elif event_type == "SHOP":
-      self.current_event_text = (
-          "Willkommen an der Händler-Station! Bereit zum Handeln."
-      )
-      return 0, 0
-    else:
-      self.current_event_text = (
-          "Dieser Sektor ist ruhig. Keine Aktivitäten gemeldet."
-      )
-      return 0, 0
-
-
-class Reactor:
-
-  def __init__(self, total_power: int = 6) -> None:
-    self.total_power: int = total_power
-    self.available_power: int = total_power
-
-  def draw(self, surface: pygame.Surface, x: int, y: int) -> None:
-    font = pygame.font.SysFont(None, 22)
-    surface.blit(
-        font.render(
-            f"Reaktor: {self.available_power}/{self.total_power}",
-            True,
-            (200, 220, 255),
-        ),
-        (x, y),
-    )
-    for i in range(self.total_power):
-      color = COLOR_REACTOR if i < self.available_power else COLOR_POWER_OFF
-      pygame.draw.rect(surface, color, (x + i * 18, y + 25, 14, 25))
-
-
-class Room:
-
-  def __init__(
-      self,
-      name: str,
-      rect: tuple[int, int, int, int],
-      max_power: int = 3,
-      is_enemy: bool = False,
-  ) -> None:
-    self.name: str = name
-    self.rect: pygame.Rect = pygame.Rect(rect)
-    self.max_power: int = max_power
-    self.current_power: int = 0
-    self.is_enemy: bool = is_enemy
-    self.health: float = 100.0
-    self.max_health: float = 100.0
-
-  def effective_max_power(self) -> int:
-    return max(0, math.floor(self.max_power * (self.health / self.max_health)))
-
-  def add_power(self, reactor: Reactor) -> None:
-    if (
-        self.current_power < self.effective_max_power()
-        and reactor.available_power > 0
-    ):
-      self.current_power += 1
-      reactor.available_power -= 1
-
-  def remove_power(self, reactor: Reactor) -> None:
-    if self.current_power > 0:
-      self.current_power -= 1
-      reactor.available_power += 1
-
-  def apply_damage(self, amount: float, reactor: Reactor) -> None:
-    self.health = max(0.0, self.health - amount)
-    while self.current_power > self.effective_max_power():
-      self.remove_power(reactor)
-
-  def repair(self, amount: float) -> None:
-    self.health = min(self.max_health, self.health + amount)
-
-  def draw(self, surface: pygame.Surface) -> None:
-    fill_col = COLOR_ENEMY_ROOM if self.is_enemy else COLOR_ROOM
-    border_col = COLOR_ENEMY_BORDER if self.is_enemy else COLOR_BORDER
-    pygame.draw.rect(surface, fill_col, self.rect)
-    pygame.draw.rect(surface, border_col, self.rect, 2)
-
-    font = pygame.font.SysFont(None, 20)
-    surface.blit(
-        font.render(self.name, True, (220, 220, 220)),
-        (self.rect.x + 6, self.rect.y + 6),
-    )
-
-    # System-Gesundheitsbalken
-    hp_ratio = self.health / self.max_health
-    hp_color = COLOR_HP_GREEN if hp_ratio > 0.4 else COLOR_HP_RED
-    pygame.draw.rect(
-        surface,
-        (30, 30, 30),
-        (self.rect.x + 6, self.rect.y + 24, self.rect.width - 12, 5),
-    )
-    pygame.draw.rect(
-        surface,
-        hp_color,
-        (
-            self.rect.x + 6,
-            self.rect.y + 24,
-            int((self.rect.width - 12) * hp_ratio),
-            5,
-        ),
-    )
-
-    if not self.is_enemy:
-      eff_max = self.effective_max_power()
-      for i in range(self.max_power):
-        if i < eff_max:
-          color = (
-              COLOR_POWER_ACTIVE
-              if i < self.current_power
-              else COLOR_POWER_OFF
-          )
-        else:
-          color = COLOR_HP_RED
-        pygame.draw.rect(
-            surface,
-            color,
-            (self.rect.x + 6 + (i * 14), self.rect.bottom - 20, 10, 12),
-        )
-
 
 class Weapon:
 
@@ -406,15 +138,15 @@ class Crew:
 
 
 # --- SETUP ---
-star_map = StarMap()
-event_mgr = EventManager()
+star_map = classes.StarMap.StarMap()
+event_mgr = classes.EventManager.EventManager()
 
 fuel = 5
 scrap = 20
 player_max_hp = 10
 player_hp = 10
 
-reactor = Reactor(total_power=6)
+reactor = classes.Reactor.Reactor(total_power=6)
 player_rooms = [
     Room("Schild", (60, 200, 110, 90)),
     Room("Waffen", (180, 200, 110, 90)),
@@ -429,7 +161,7 @@ enemy_rooms = [
 player_shield = ShieldSystem()
 enemy_shield = ShieldSystem()
 crew_members = [Crew(340, 245), Crew(115, 245)]
-player_weapon = Weapon(charge_time=3.0)
+player_weapons: list[Weapon] = [Weapon(charge_time=3.0)]
 enemy_weapon = Weapon(charge_time=4.5)
 
 projectiles: list[Projectile] = []
@@ -438,12 +170,22 @@ combat_msg = ""
 combat_msg_timer = 0.0
 paused = False
 running = True
+is_targeting = False
+targeting_start_pos = (0, 0)
 
 # Buttons im Shop
 btn_repair = pygame.Rect(200, 180, 500, 40)
 btn_fuel = pygame.Rect(200, 235, 500, 40)
 btn_upgrade_reactor = pygame.Rect(200, 290, 500, 40)
 btn_leave_shop = pygame.Rect(200, 360, 500, 40)
+btn_buy_crew = pygame.Rect(200, 235, 500, 40)
+btn_buy_weapon = pygame.Rect(200, 290, 500, 40)
+
+# Initialisiere die Waffen als Liste
+player_weapons = [Weapon(charge_time=3.0)] # Passe den Import-Pfad für Weapon an, falls nötig
+
+# Lege den Startgegner fest
+current_enemy = copy.deepcopy(ENEMY_SCOUT)
 
 # --- MAIN LOOP ---
 while running:
@@ -495,6 +237,18 @@ while running:
             reactor.available_power += 1
         elif btn_leave_shop.collidepoint(mx, my):
           current_state = STATE_MAP
+          btn_buy_crew = pygame.Rect(200, 235, 500, 40)
+          btn_buy_weapon = pygame.Rect(200, 290, 500, 40)
+
+        # Im Klick-Event für STATE_SHOP:
+        elif btn_buy_crew.collidepoint(mx, my):
+          if scrap >= 25:
+            scrap -= 25
+            crew_members.append(Crew(280, 245)) # Spawnt neues Mitglied auf der Brücke
+        elif btn_buy_weapon.collidepoint(mx, my):
+          if scrap >= 45:
+            scrap -= 45
+            player_weapons.append(Weapon(charge_time=2.0)) # Zweite, schnellere Waffe
 
       elif current_state == STATE_EVENT:
         if event_mgr.current_event_type == "COMBAT":
@@ -507,20 +261,29 @@ while running:
           current_state = STATE_MAP
 
       elif current_state == STATE_COMBAT:
-        if player_weapon.is_ready():
-          for e_room in enemy_rooms:
+        if is_targeting:
+          # Ziel auswählen und schießen
+          for e_room in current_enemy.rooms:
             if e_room.rect.collidepoint(mx, my):
-              w_room = player_rooms[1]
               projectiles.append(
-                  Projectile(
-                      (w_room.rect.centerx, w_room.rect.centery),
-                      (e_room.rect.centerx, e_room.rect.centery),
-                      target_room=e_room,
-                      is_player_shot=True,
-                  )
+                  Projectile(targeting_start_pos, (mx, my), e_room, True)
               )
-              player_weapon.reset()
+              # Finde die erste bereite Waffe und setze sie nach dem Schuss zurück
+              for w in player_weapons:
+                  if w.is_ready():
+                      w.reset()
+                      break
+              is_targeting = False
               break
+          is_targeting = False # Abbrechen, wenn ins Leere geklickt wird
+        else:
+          # Waffe auswählen, um Zielmodus zu starten
+          w_room = PLAYER_SHIP.rooms[1]
+          if w_room.rect.collidepoint(mx, my):
+            # Prüfen, ob IRGENDEINE Waffe in der Liste bereit ist
+            if any(w.is_ready() for w in player_weapons):
+              is_targeting = True
+              targeting_start_pos = w_room.rect.center
 
         clicked_crew = False
         for c in crew_members:
@@ -533,7 +296,7 @@ while running:
 
         if not clicked_crew:
           has_selected = any(c.selected for c in crew_members)
-          for room in player_rooms:
+          for room in PLAYER_SHIP.rooms:  # <-- Hier anpassen
             if room.rect.collidepoint(mx, my):
               if has_selected:
                 for c in crew_members:
@@ -555,7 +318,7 @@ while running:
           has_selected = True
 
       if not has_selected:
-        for room in player_rooms:
+        for room in PLAYER_SHIP.rooms:  # <-- Hier anpassen
           if room.rect.collidepoint(mx, my):
             room.remove_power(reactor)
 
@@ -570,13 +333,12 @@ while running:
     enemy_shield.update(dt, enemy_rooms[0].current_power)
 
     # Waffen-Aufladung prüfen (nur aktiv bei funktionierendem Raum)
-    player_weapon.update(
-        dt,
-        player_rooms[1].current_power > 0 and player_rooms[1].health > 20.0,
-    )
-    enemy_weapon.update(
-        dt, enemy_rooms[1].current_power > 0 and enemy_rooms[1].health > 20.0
-    )
+    for w in player_weapons:
+      # Nur prüfen, ob Strom vorhanden ist
+      w.update(dt, PLAYER_SHIP.rooms[1].current_power > 0)
+      enemy_weapon.update(
+          dt, enemy_rooms[1].current_power > 0 and enemy_rooms[1].health > 20.0
+      )
 
     if enemy_weapon.is_ready():
       target_room = random.choice(player_rooms)
@@ -685,10 +447,13 @@ while running:
 
   elif current_state == STATE_COMBAT:
     reactor.draw(screen, 30, 45)
-    for r in player_rooms:
+    
+    # NEU: Zeichne das neue Spieler-Schiff und das aktuelle Gegner-Schiff
+    for r in PLAYER_SHIP.rooms:
       r.draw(screen)
-    for r in enemy_rooms:
+    for r in current_enemy.rooms:
       r.draw(screen)
+      
     for c in crew_members:
       c.draw(screen)
     for p in projectiles:
@@ -710,6 +475,12 @@ while running:
     if combat_msg_timer > 0.0:
       msg_txt = font.render(combat_msg, True, COLOR_SELECTED)
       screen.blit(msg_txt, (SCREEN_WIDTH // 2 - 80, 150))
+      
+    # NEU: Ziel-Linie zeichnen, wenn die Waffe bereit ist und gezielt wird
+    if is_targeting:
+      mx, my = pygame.mouse.get_pos()
+      pygame.draw.line(screen, COLOR_PROJECTILE, targeting_start_pos, (mx, my), 2)
+      pygame.draw.circle(screen, COLOR_PROJECTILE, (mx, my), 5, 1)
 
   pygame.display.flip()
 
