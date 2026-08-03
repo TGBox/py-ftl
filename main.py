@@ -43,7 +43,7 @@ class Node:
     self.id: int = node_id
     self.x: int = x
     self.y: int = y
-    self.event_type: str = event_type
+    self.event_type: str = event_type  # 'COMBAT', 'RESOURCE', 'SHOP', 'EMPTY', 'EXIT'
     self.connections: list[Node] = []
     self.visited: bool = False
 
@@ -53,61 +53,93 @@ class StarMap:
   def __init__(self) -> None:
     self.nodes: list[Node] = []
     self.current_node: Node | None = None
+    self.sector: int = 1
     self.generate_map()
 
   def generate_map(self) -> None:
-    layers: list[list[tuple[int, int]]] = [
-        [(100, 275)],
-        [(300, 150), (300, 400)],
-        [(500, 200), (500, 350)],
-        [(750, 275)],
-    ]
+    self.nodes.clear()
     node_id = 0
-
+    num_layers = 7  # Größere Karte (7 Ebenen)
+    layer_distance = 110
     created_layers: list[list[Node]] = []
-    for layer in layers:
+
+    # Start-Knoten
+    start_node = Node(node_id, 80, 275, "EMPTY")
+    self.nodes.append(start_node)
+    created_layers.append([start_node])
+    node_id += 1
+
+    # Mittlere Ebenen
+    for l in range(1, num_layers - 1):
       layer_nodes: list[Node] = []
-      for x, y in layer:
-        event_type = random.choice(['COMBAT', 'RESOURCE', 'SHOP', 'EMPTY'])
+      node_count = random.randint(2, 3)
+      x = 80 + l * layer_distance
+      y_positions = (
+          [275]
+          if node_count == 1
+          else (
+              [180, 370] if node_count == 2 else [130, 275, 420]
+          )
+      )
+
+      for y in y_positions:
+        event_type = random.choice(
+            ["COMBAT", "COMBAT", "RESOURCE", "SHOP", "EMPTY"]
+        )
         node = Node(node_id, x, y, event_type)
         self.nodes.append(node)
         layer_nodes.append(node)
         node_id += 1
       created_layers.append(layer_nodes)
 
+    # Exit-Knoten (Ziel)
+    exit_node = Node(node_id, 80 + (num_layers - 1) * layer_distance, 275, "EXIT")
+    self.nodes.append(exit_node)
+    created_layers.append([exit_node])
+
+    # Wege zwischen den Ebenen verbinden
     for i in range(len(created_layers) - 1):
       for n1 in created_layers[i]:
-        for n2 in created_layers[i + 1]:
-          n1.connections.append(n2)
+        # Verbinde mit mindestens einem Knoten der nächsten Ebene
+        targets = random.sample(
+            created_layers[i + 1],
+            k=min(len(created_layers[i + 1]), random.randint(1, 2)),
+        )
+        for t in targets:
+          if t not in n1.connections:
+            n1.connections.append(t)
 
-    self.current_node = self.nodes[0]
+    self.current_node = start_node
     self.current_node.visited = True
-    self.current_node.event_type = 'EMPTY'
 
   def draw(self, surface: pygame.Surface) -> None:
+    # Linien zeichnen
     for node in self.nodes:
       for conn in node.connections:
         pygame.draw.line(
             surface, COLOR_MAP_LINE, (node.x, node.y), (conn.x, conn.y), 2
         )
 
+    # Knoten zeichnen
     for node in self.nodes:
       if node == self.current_node:
         color = COLOR_SELECTED
-      elif node.event_type == 'SHOP' and not node.visited:
+      elif node.event_type == "EXIT":
+        color = (255, 100, 255)
+      elif node.event_type == "SHOP" and not node.visited:
         color = COLOR_SHOP_NODE
       elif node.visited:
         color = (100, 255, 100)
       else:
         color = COLOR_MAP_NODE
 
-      pygame.draw.circle(surface, color, (node.x, node.y), 16)
+      pygame.draw.circle(surface, color, (node.x, node.y), 14)
 
       if (
           self.current_node is not None
           and node in self.current_node.connections
       ):
-        pygame.draw.circle(surface, (255, 255, 255), (node.x, node.y), 20, 2)
+        pygame.draw.circle(surface, (255, 255, 255), (node.x, node.y), 18, 2)
 
 
 class EventManager:
@@ -273,15 +305,32 @@ class Weapon:
 
 class ShieldSystem:
 
-  def __init__(self) -> None:
+  def __init__(self, recharge_time: float = 4.0) -> None:
+    self.max_layers: int = 0
     self.current_layers: int = 0
+    self.recharge_timer: float = 0.0
+    self.recharge_time: float = recharge_time
 
-  def update(self, powered_layers: int) -> None:
-    self.current_layers = powered_layers
+  def update(self, dt: float, powered_layers: int) -> None:
+    self.max_layers = powered_layers
+
+    # Falls Energie abgezogen wurde, maximale Schilde anpassen
+    if self.current_layers > self.max_layers:
+      self.current_layers = self.max_layers
+
+    # Schild lädt Schritt für Schritt nach Ablauf der Ladezeit auf
+    if self.current_layers < self.max_layers:
+      self.recharge_timer += dt
+      if self.recharge_timer >= self.recharge_time:
+        self.current_layers += 1
+        self.recharge_timer = 0.0
+    else:
+      self.recharge_timer = 0.0
 
   def attempt_block(self) -> bool:
     if self.current_layers > 0:
       self.current_layers -= 1
+      self.recharge_timer = 0.0  # Lade-Timer bei Schildtreffer zurücksetzen
       return True
     return False
 
@@ -390,9 +439,11 @@ combat_msg_timer = 0.0
 paused = False
 running = True
 
-btn_repair = pygame.Rect(200, 220, 500, 45)
-btn_upgrade_reactor = pygame.Rect(200, 280, 500, 45)
-btn_leave_shop = pygame.Rect(200, 360, 500, 45)
+# Buttons im Shop
+btn_repair = pygame.Rect(200, 180, 500, 40)
+btn_fuel = pygame.Rect(200, 235, 500, 40)
+btn_upgrade_reactor = pygame.Rect(200, 290, 500, 40)
+btn_leave_shop = pygame.Rect(200, 360, 500, 40)
 
 # --- MAIN LOOP ---
 while running:
@@ -410,19 +461,40 @@ while running:
 
       if current_state == STATE_MAP and star_map.current_node is not None:
         for node in star_map.current_node.connections:
-          if math.hypot(mx - node.x, my - node.y) <= 20 and fuel > 0:
+          if math.hypot(mx - node.x, my - node.y) <= 18 and fuel > 0:
             fuel -= 1
             star_map.current_node = node
             node.visited = True
-            add_scrap, add_fuel = event_mgr.trigger_event(node.event_type)
-            scrap += add_scrap
-            fuel += add_fuel
 
-            if node.event_type == "SHOP":
+            if node.event_type == "EXIT":
+              star_map.sector += 1
+              scrap += 10  # Sektor-Bonus
+              star_map.generate_map()
+            elif node.event_type == "SHOP":
               current_state = STATE_SHOP
             else:
+              add_scrap, add_fuel = event_mgr.trigger_event(node.event_type)
+              scrap += add_scrap
+              fuel += add_fuel
               current_state = STATE_EVENT
             break
+
+      elif current_state == STATE_SHOP:
+        if btn_repair.collidepoint(mx, my):
+          if scrap >= 2 and player_hp < player_max_hp:
+            scrap -= 2
+            player_hp += 1
+        elif btn_fuel.collidepoint(mx, my):
+          if scrap >= 3:
+            scrap -= 3
+            fuel += 1
+        elif btn_upgrade_reactor.collidepoint(mx, my):
+          if scrap >= 15:
+            scrap -= 15
+            reactor.total_power += 1
+            reactor.available_power += 1
+        elif btn_leave_shop.collidepoint(mx, my):
+          current_state = STATE_MAP
 
       elif current_state == STATE_EVENT:
         if event_mgr.current_event_type == "COMBAT":
@@ -432,19 +504,6 @@ while running:
             er.current_power = 1
           current_state = STATE_COMBAT
         else:
-          current_state = STATE_MAP
-
-      elif current_state == STATE_SHOP:
-        if btn_repair.collidepoint(mx, my):
-          if scrap >= 2 and player_hp < player_max_hp:
-            scrap -= 2
-            player_hp += 1
-        elif btn_upgrade_reactor.collidepoint(mx, my):
-          if scrap >= 15:
-            scrap -= 15
-            reactor.total_power += 1
-            reactor.available_power += 1
-        elif btn_leave_shop.collidepoint(mx, my):
           current_state = STATE_MAP
 
       elif current_state == STATE_COMBAT:
@@ -507,8 +566,8 @@ while running:
     for c in crew_members:
       c.update(dt, player_rooms)
 
-    player_shield.update(player_rooms[0].current_power)
-    enemy_shield.update(enemy_rooms[0].current_power)
+    player_shield.update(dt, player_rooms[0].current_power)
+    enemy_shield.update(dt, enemy_rooms[0].current_power)
 
     # Waffen-Aufladung prüfen (nur aktiv bei funktionierendem Raum)
     player_weapon.update(
