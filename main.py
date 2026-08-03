@@ -1,7 +1,9 @@
+from __future__ import annotations
 import sys
 import math
 import random
 import pygame
+
 
 pygame.init()
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 550
@@ -36,19 +38,19 @@ current_state = STATE_MAP
 # --- STERNENKARTE & EVENTS ---
 class Node:
 
-  def __init__(self, node_id, x, y, event_type):
-    self.id = node_id
-    self.x = x
-    self.y = y
-    self.event_type = event_type  # 'COMBAT', 'RESOURCE', 'EMPTY'
-    self.connections = []
+  def __init__(self, node_id: int, x: int, y: int, event_type: str):
+    self.id: int = node_id
+    self.x: int = x
+    self.y: int = y
+    self.event_type: str = event_type  # 'COMBAT', 'RESOURCE', 'EMPTY'
+    self.connections: list[Node] = []
     self.visited = False
 
 
 class StarMap:
 
   def __init__(self):
-    self.nodes = []
+    self.nodes: list[Node] = []
     self.current_node = None
     self.generate_map()
 
@@ -57,9 +59,9 @@ class StarMap:
     layers = [[(100, 275)], [(300, 150), (300, 400)], [(500, 200), (500, 350)], [(750, 275)]]
     node_id = 0
 
-    created_layers = []
+    created_layers: list[list[Node]] = []
     for layer in layers:
-      layer_nodes = []
+      layer_nodes: list[Node] = []
       for x, y in layer:
         event_type = random.choice(['COMBAT', 'RESOURCE', 'EMPTY'])
         node = Node(node_id, x, y, event_type)
@@ -78,7 +80,7 @@ class StarMap:
     self.current_node.visited = True
     self.current_node.event_type = 'EMPTY'
 
-  def draw(self, surface):
+  def draw(self, surface: pygame.Surface):
     # Linien zeichnen
     for node in self.nodes:
       for conn in node.connections:
@@ -92,6 +94,7 @@ class StarMap:
       pygame.draw.circle(surface, color, (node.x, node.y), 16)
 
       # Markierung erreichbarer Nodes
+      assert self.current_node is not None
       if node in self.current_node.connections:
         pygame.draw.circle(surface, (255, 255, 255), (node.x, node.y), 20, 2)
 
@@ -103,7 +106,7 @@ class EventManager:
     self.current_event_text = ""
     self.current_event_type = None
 
-  def trigger_event(self, event_type):
+  def trigger_event(self, event_type: str):
     self.current_event_type = event_type
     if event_type == "RESOURCE":
       scrap = random.randint(10, 25)
@@ -121,11 +124,11 @@ class EventManager:
 # --- SPIELKLASSEN (aus vorherigen Iterationen) ---
 class Reactor:
 
-  def __init__(self, total_power=6):
+  def __init__(self, total_power: int = 6):
     self.total_power = total_power
     self.available_power = total_power
 
-  def draw(self, surface, x, y):
+  def draw(self, surface: pygame.Surface, x: int, y: int):
     font = pygame.font.SysFont(None, 22)
     surface.blit(
         font.render(f"Reaktor: {self.available_power}/{self.total_power}", True, (200, 220, 255)),
@@ -138,24 +141,24 @@ class Reactor:
 
 class Room:
 
-  def __init__(self, name, rect, max_power=3, is_enemy=False):
+  def __init__(self, name: str, rect: pygame.Rect, max_power: int = 3, is_enemy: bool = False):
     self.name = name
     self.rect = pygame.Rect(rect)
     self.max_power = max_power
     self.current_power = 0
     self.is_enemy = is_enemy
 
-  def add_power(self, reactor):
+  def add_power(self, reactor: Reactor):
     if self.current_power < self.max_power and reactor.available_power > 0:
       self.current_power += 1
       reactor.available_power -= 1
 
-  def remove_power(self, reactor):
+  def remove_power(self, reactor: Reactor):
     if self.current_power > 0:
       self.current_power -= 1
       reactor.available_power += 1
 
-  def draw(self, surface):
+  def draw(self, surface: pygame.Surface):
     fill_col = COLOR_ENEMY_ROOM if self.is_enemy else COLOR_ROOM
     border_col = COLOR_ENEMY_BORDER if self.is_enemy else COLOR_BORDER
     pygame.draw.rect(surface, fill_col, self.rect)
@@ -172,11 +175,11 @@ class Room:
 
 class Weapon:
 
-  def __init__(self, charge_time=3.0):
+  def __init__(self, charge_time: float = 3.0):
     self.charge_time = charge_time
     self.current_charge = 0.0
 
-  def update(self, dt, powered):
+  def update(self, dt: float, powered: bool):
     if powered:
       self.current_charge = min(self.charge_time, self.current_charge + dt)
 
@@ -190,9 +193,9 @@ class Weapon:
 class ShieldSystem:
 
   def __init__(self):
-    self.current_layers = 0
+    self.current_layers: int = 0
 
-  def update(self, powered_layers):
+  def update(self, powered_layers: int):
     self.current_layers = powered_layers
 
   def attempt_block(self):
@@ -204,7 +207,7 @@ class ShieldSystem:
 
 class Projectile:
 
-  def __init__(self, start_pos, target_pos, is_player_shot):
+  def __init__(self, start_pos: tuple[int, int], target_pos: tuple[int, int], is_player_shot: bool):
     self.x, self.y = start_pos
     self.target_x, self.target_y = target_pos
     self.is_player_shot = is_player_shot
@@ -214,25 +217,25 @@ class Projectile:
     self.vx = (dx / dist) * 400.0 if dist != 0 else 0
     self.vy = (dy / dist) * 400.0 if dist != 0 else 0
 
-  def update(self, dt):
+  def update(self, dt: float):
     self.x += self.vx * dt
     self.y += self.vy * dt
     if math.hypot(self.target_x - self.x, self.target_y - self.y) < 10:
       self.alive = False
 
-  def draw(self, surface):
+  def draw(self, surface: pygame.Surface):
     pygame.draw.circle(surface, COLOR_PROJECTILE, (int(self.x), int(self.y)), 5)
 
 
 class Crew:
 
-  def __init__(self, x, y):
+  def __init__(self, x: int, y: int):
     self.x, self.y = x, y
     self.radius = 12
     self.selected = False
-    self.target_pos = None
+    self.target_pos: tuple[int, int] | None = None
 
-  def update(self, dt):
+  def update(self, dt: float):
     if self.target_pos:
       tx, ty = self.target_pos
       dx, dy = tx - self.x, ty - self.y
@@ -244,7 +247,7 @@ class Crew:
         self.x += (dx / dist) * 120.0 * dt
         self.y += (dy / dist) * 120.0 * dt
 
-  def draw(self, surface):
+  def draw(self, surface: pygame.Surface):
     color = COLOR_SELECTED if self.selected else COLOR_CREW
     pygame.draw.circle(surface, color, (int(self.x), int(self.y)), self.radius)
 
@@ -258,14 +261,14 @@ scrap = 10
 
 reactor = Reactor(total_power=6)
 player_rooms = [
-    Room("Schild", (60, 200, 110, 90)),
-    Room("Waffen", (180, 200, 110, 90)),
-    Room("Brücke", (300, 200, 90, 90)),
+    Room("Schild", rect=pygame.Rect(60, 200, 110, 90)),
+    Room("Waffen", rect=pygame.Rect(180, 200, 110, 90)),
+    Room("Brücke", rect=pygame.Rect(300, 200, 90, 90)),
 ]
 enemy_rooms = [
-    Room("Schild", (550, 200, 110, 90), is_enemy=True),
-    Room("Waffen", (670, 200, 110, 90), is_enemy=True),
-    Room("Brücke", (790, 200, 80, 90), is_enemy=True),
+    Room("Schild", rect=pygame.Rect(550, 200, 110, 90), is_enemy=True),
+    Room("Waffen", rect=pygame.Rect(670, 200, 110, 90), is_enemy=True),
+    Room("Brücke", rect=pygame.Rect(790, 200, 80, 90), is_enemy=True),
 ]
 
 player_shield = ShieldSystem()
@@ -274,7 +277,7 @@ crew_members = [Crew(340, 245), Crew(115, 245)]
 player_weapon = Weapon(charge_time=3.0)
 enemy_weapon = Weapon(charge_time=5.0)
 
-projectiles = []
+projectiles: list[Projectile] = []
 player_hp, enemy_hp = 10, 10
 paused = False
 running = True
@@ -295,21 +298,22 @@ while running:
 
       # KARTEN-STEUERUNG
       if current_state == STATE_MAP:
-        for node in star_map.current_node.connections:
-          if math.hypot(mx - node.x, my - node.y) <= 20 and fuel > 0:
-            fuel -= 1
-            star_map.current_node = node
-            node.visited = True
-            add_scrap, add_fuel = event_mgr.trigger_event(node.event_type)
-            scrap += add_scrap
-            fuel += add_fuel
+        if star_map.current_node is not None:
+          for node in star_map.current_node.connections:
+            if math.hypot(mx - node.x, my - node.y) <= 20 and fuel > 0:
+              fuel -= 1
+              star_map.current_node = node
+              node.visited = True
+              add_scrap, add_fuel = event_mgr.trigger_event(node.event_type)
+              scrap += add_scrap
+              fuel += add_fuel
 
-            if node.event_type == "COMBAT":
-              enemy_hp = 10
-              current_state = STATE_EVENT
-            else:
-              current_state = STATE_EVENT
-            break
+              if node.event_type == "COMBAT":
+                enemy_hp = 10
+                current_state = STATE_EVENT
+              else:
+                current_state = STATE_EVENT
+              break
 
       # EVENT-STEUERUNG
       elif current_state == STATE_EVENT:
