@@ -1,3 +1,4 @@
+(A) 2026-08-04 Spiel hängt sich im zweiten Sektor random bei einer Node auf. +Refactoring @code
 (A) 2026-08-04 Schaden an der Hülle wird nach dem Kampf automatisch zurückgesetzt. +Refactoring @code
 (A) 2026-08-04 Es sollte möglich sein (je nach Schiffmodell) mehr Crew und mehr Waffen zu haben, als nur eine extra. +Refactoring @code
 (A) 2026-08-04 Es sollte Dauerkampfmodus geben, bei dem ich eine Checkbox in der GUI anhake und dann feuern die Waffen automatisch auf das aktuelle Ziel sobald sie fertig geladen haben. +Refactoring @code

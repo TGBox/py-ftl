@@ -58,6 +58,11 @@ is_targeting = False
 targeting_weapon_idx = None
 targeting_start_pos = (0, 0)
 
+# NEU: Autofire & Ziel-Zuweisung für automatisches Schießen
+autofire_enabled = False
+btn_autofire = pygame.Rect(730, 310, 140, 30)
+locked_enemy_room = None  # Das aktuell anvisierte Ziel für den Autofire-Modus
+
 # Shop UI Buttons
 btn_repair = pygame.Rect(200, 140, 500, 38)
 btn_fuel = pygame.Rect(200, 185, 500, 38)
@@ -155,43 +160,48 @@ while running:
           current_state = STATE_MAP
 
       elif current_state == STATE_COMBAT:
-        if is_targeting:
-          for e_room in current_enemy.rooms:
-            if e_room.rect.collidepoint(mx, my):
-              if targeting_weapon_idx is not None:
-                w = player_weapons[targeting_weapon_idx]
-                # Munitionsprüfung bei Schussabgabe
-                if w.ammo_cost > 0 and missiles < w.ammo_cost:
-                  combat_msg = "KEINE RAKETEN MEHR!"
-                  combat_msg_timer = 1.5
-                else:
-                  if w.ammo_cost > 0:
-                    missiles -= w.ammo_cost
-                  projectiles.append(
-                      Projectile(
-                          targeting_start_pos,
-                          (mx, my),
-                          e_room,
-                          is_player_shot=True,
-                          w_type=w.w_type,
-                          shield_pierce=w.shield_pierce,
-                          damage=w.damage,
-                      )
+        # Prüfen, ob die Autofire-Checkbox geklickt wurde
+        if btn_autofire.collidepoint(mx, my):
+          autofire_enabled = not autofire_enabled
+        else:
+          if is_targeting:
+            for e_room in current_enemy.rooms:
+              if e_room.rect.collidepoint(mx, my):
+                locked_enemy_room = e_room  # Ziel für Autofire speichern
+                if targeting_weapon_idx is not None:
+                  w = player_weapons[targeting_weapon_idx]
+                  if w.ammo_cost > 0 and missiles < w.ammo_cost:
+                    combat_msg = "KEINE RAKETEN MEHR!"
+                    combat_msg_timer = 1.5
+                  else:
+                    if w.ammo_cost > 0:
+                      missiles -= w.ammo_cost
+                    weapon_room = player_ship.rooms[1]
+                    projectiles.append(
+                        Projectile(
+                            weapon_room.rect.center,
+                            e_room.rect.center,
+                            e_room,
+                            is_player_shot=True,
+                            w_type=w.w_type,
+                            shield_pierce=w.shield_pierce,
+                            damage=w.damage,
+                        )
                   )
                   w.reset()
               is_targeting = False
               break
-          is_targeting = False
-        else:
+            is_targeting = False
+          else:
           # Anklicken der geladenen Waffen im UI
-          weapon_room = player_ship.rooms[1]
-          if weapon_room.rect.collidepoint(mx, my):
-            for idx, w in enumerate(player_weapons):
-              if w.is_ready():
-                is_targeting = True
-                targeting_weapon_idx = idx
-                targeting_start_pos = weapon_room.rect.center
-                break
+            weapon_room = player_ship.rooms[1]
+            if weapon_room.rect.collidepoint(mx, my):
+              for idx, w in enumerate(player_weapons):
+                if w.is_ready():
+                  is_targeting = True
+                  targeting_weapon_idx = idx
+                  targeting_start_pos = weapon_room.rect.center
+                  break
 
         # Crew-Steuerung
         clicked_crew = False
@@ -251,6 +261,30 @@ while running:
     weapon_powered = player_ship.rooms[1].current_power > 0
     for w in player_weapons:
       w.update(dt, weapon_powered)
+      
+    # NEU: Automatisches Schießen (Autofire), wenn aktiv und Ziel gewählt ist
+    if autofire_enabled and locked_enemy_room is not None:
+      weapon_room = player_ship.rooms[1]
+      for w in player_weapons:
+        if w.is_ready():  #[cite: 13]
+          if w.ammo_cost > 0 and missiles < w.ammo_cost:
+            combat_msg = "KEINE RAKETEN MEHR!"
+            combat_msg_timer = 1.5
+          else:
+            if w.ammo_cost > 0:
+              missiles -= w.ammo_cost
+            projectiles.append(
+                Projectile(
+                    weapon_room.rect.center,
+                    locked_enemy_room.rect.center,
+                    locked_enemy_room,
+                    is_player_shot=True,
+                    w_type=w.w_type,
+                    shield_pierce=w.shield_pierce,
+                    damage=w.damage,
+                )
+            )  #[cite: 1, 7]
+            w.reset()  #[cite: 13]
 
     enemy_weapon.update(
         dt,
@@ -328,6 +362,7 @@ while running:
       scrap += 20
       missiles += 2  # Belohnung: Munition droppt beim gegnerischen Schiff
       projectiles.clear()
+      locked_enemy_room = None  # Ziel beim Sieg zurücksetzen
       if star_map.sector == 3 and current_enemy.name == "Flaggschiff":
         current_state = STATE_VICTORY
       else:
@@ -455,6 +490,20 @@ while running:
 
       lbl = font.render(f"{w.name} [{w.w_type}]", True, (200, 220, 255))
       screen.blit(lbl, (bar_x, bar_y - 18))
+
+    # NEU: Zeichnen der Autofire-Checkbox in der GUI
+    pygame.draw.rect(
+        screen, (50, 60, 80), btn_autofire
+    )
+    pygame.draw.rect(
+        screen, COLOR_SELECTED if autofire_enabled else COLOR_BORDER, btn_autofire, 2
+    )  #[cite: 2]
+    autofire_txt = font.render(
+        f"Autofire: {'AN' if autofire_enabled else 'AUS'}",
+        True,
+        (100, 255, 100) if autofire_enabled else (200, 200, 200),
+    )
+    screen.blit(autofire_txt, (btn_autofire.x + 15, btn_autofire.y + 5))
 
     if combat_msg_timer > 0.0:
       msg_txt = font.render(combat_msg, True, COLOR_SELECTED)
