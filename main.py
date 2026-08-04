@@ -31,7 +31,7 @@ STATE_VICTORY = "VICTORY"
 star_map = classes.StarMap.StarMap()  #[cite: 12]
 event_mgr = classes.EventManager.EventManager()  #[cite: 5]
 
-fuel = 5
+fuel = 6
 scrap = 20
 missiles = 6  #[cite: 1]
 
@@ -95,21 +95,37 @@ while running:
       mx, my = pygame.mouse.get_pos()
 
       if current_state == STATE_MAP and star_map.current_node is not None:  #[cite: 1, 12]
-        for node in star_map.current_node.connections:  #[cite: 6, 12]
-          if math.hypot(mx - node.x, my - node.y) <= 18 and fuel > 0:
+        print("STATE:", current_state)
+        print("CURRENT:", star_map.current_node.id)
+
+        for node in star_map.current_node.connections:
+            dist = math.hypot(mx - node.x, my - node.y)
+
+            if dist > 18:
+                continue
+
+            if fuel <= 0:
+                print("NO FUEL")
+                break
+
             fuel -= 1
             star_map.current_node = node
-            node.visited = True  #[cite: 6]
+            node.visited = True
 
             if node.event_type == "EXIT":  #[cite: 6]
               if star_map.sector == 3:  #[cite: 12]
                 current_enemy = copy.deepcopy(ENEMY_BOSS)  #[cite: 1, 11]
                 for r in current_enemy.rooms:
                   r.current_power = 1
+                print(f"{current_state} -> {STATE_COMBAT}")
                 current_state = STATE_COMBAT  #[cite: 1]
               else:
                 star_map.sector += 1  #[cite: 12]
+                print(f"Neuer Sektor {star_map.sector}")
                 star_map.generate_map()  #[cite: 12]
+                print("CURRENT", star_map.current_node.id)
+                for n in star_map.current_node.connections:
+                    print("NEXT", n.id, n.x, n.y)
               scrap += 10
             elif node.event_type == "SHOP":  #[cite: 6]
               current_state = STATE_SHOP  #[cite: 1]
@@ -159,18 +175,23 @@ while running:
                 )
             )  #[cite: 1, 13]
         elif btn_leave_shop.collidepoint(mx, my):
+          print(f"{current_state} -> {STATE_MAP}")
           current_state = STATE_MAP  #[cite: 1]
 
       elif current_state == STATE_EVENT:
+        print("EVENT TYPE:", event_mgr.current_event_type)
         if event_mgr.current_event_type == "COMBAT":  #[cite: 5]
           current_enemy = copy.deepcopy(ENEMY_SCOUT)  #[cite: 1, 11]
           for r in current_enemy.rooms:
             r.current_power = 1
+          print(f"{current_state} -> {STATE_COMBAT}")
           current_state = STATE_COMBAT  #[cite: 1]
         else:
+          print(f"{current_state} -> {STATE_MAP}")
           current_state = STATE_MAP  #[cite: 1]
 
       elif current_state == STATE_COMBAT:
+        event_mgr.current_event_type = None
         if btn_autofire.collidepoint(mx, my):
           autofire_enabled = not autofire_enabled
         else:
@@ -252,6 +273,7 @@ while running:
         star_map.generate_map()  #[cite: 12]
         fuel, scrap, missiles = 5, 20, 6
         weapon_targets.clear()
+        print(f"{current_state} -> {STATE_MAP}")
         current_state = STATE_MAP  #[cite: 1]
 
     elif (
@@ -400,6 +422,7 @@ while running:
       if star_map.sector == 3 and current_enemy.name == "Flaggschiff":  #[cite: 12]
         current_state = STATE_VICTORY  #[cite: 1]
       else:
+        print(f"{current_state} -> {STATE_MAP}")
         current_state = STATE_MAP  #[cite: 1]
 
     if player_ship.hp <= 0:
@@ -423,6 +446,7 @@ while running:
   )
 
   if current_state == STATE_MAP:
+    event_mgr.current_event_type = None
     star_map.draw(screen)  #[cite: 12]
 
   elif current_state == STATE_EVENT:
