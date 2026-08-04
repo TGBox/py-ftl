@@ -10,6 +10,26 @@ class ShipModel:
         self.hp = max_hp
         self.rooms = rooms
         self.is_enemy = is_enemy
+        
+# Beispiel für alternative Schiffsklassen / Layouts
+#CUSTOM_SHIP_LAYOUTS = {
+#    "Kestrel": {
+#        "max_hp": 30,
+#        "rooms_config": [
+#            {"type": "SHIELD", "pos": (180, 200), "size": (50, 50)},
+#            {"type": "WEAPON", "pos": (240, 200), "size": (50, 50)},
+#            {"type": "PILOT", "pos": (120, 200), "size": (50, 50)},
+#        ],
+#    },
+#    "Cruiser": {
+#        "max_hp": 35,
+#        "rooms_config": [
+#            {"type": "SHIELD", "pos": (170, 190), "size": (60, 50)},
+#            {"type": "WEAPON", "pos": (240, 190), "size": (50, 50)},
+#            {"type": "PILOT", "pos": (110, 190), "size": (50, 50)},
+#        ],
+#    },
+#}
 
 PLAYER_SHIP = ShipModel("Kestrel", 15, [
     Room("Schild", (60, 200, 90, 90)),

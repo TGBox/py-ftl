@@ -143,7 +143,9 @@ while running:
         elif btn_buy_crew.collidepoint(mx, my):
           if scrap >= 25:
             scrap -= 25
-            crew_members.append(Crew(300, 245))  #[cite: 4]
+            # Platziere das neue Crew-Mitglied direkt im Zentrum des ersten Schiffraums (z.B. der Piloten-Kabine)
+            spawn_room = player_ship.rooms[0]
+            crew_members.append(Crew(spawn_room.rect.centerx, spawn_room.rect.centery))
         elif btn_buy_weapon.collidepoint(mx, my):
           if scrap >= 45 and len(player_weapons) < 3:
             scrap -= 45
