@@ -4,11 +4,15 @@ import random
 import sys
 import pygame
 
+from classes.Crew import Crew
 import classes.EventManager
+from classes.Projectile import Projectile
 import classes.Reactor
+from classes.ShieldSystem import ShieldSystem
 import classes.StarMap
 from classes.Room import Room
 from classes.ShipModel import ENEMY_BOSS, ENEMY_SCOUT, PLAYER_SHIP
+from classes.Weapon import Weapon
 from settings import *
 
 pygame.init()
@@ -18,121 +22,121 @@ pygame.display.set_caption("FTL Prototype - Erweiterter Kampf")
 clock: pygame.time.Clock = pygame.time.Clock()
 
 
-class Weapon:
-
-  def __init__(self, name: str = "Laser", charge_time: float = 3.0) -> None:
-    self.name: str = name
-    self.charge_time: float = charge_time
-    self.current_charge: float = 0.0
-    self.auto_fire: bool = False
-
-  def update(self, dt: float, powered: bool) -> None:
-    if powered:
-      self.current_charge = min(self.charge_time, self.current_charge + dt)
-
-  def is_ready(self) -> bool:
-    return self.current_charge >= self.charge_time
-
-  def reset(self) -> None:
-    self.current_charge = 0.0
-
-
-class ShieldSystem:
-
-  def __init__(self, recharge_time: float = 4.0) -> None:
-    self.max_layers: int = 0
-    self.current_layers: int = 0
-    self.recharge_timer: float = 0.0
-    self.recharge_time: float = recharge_time
-
-  def update(self, dt: float, powered_layers: int) -> None:
-    self.max_layers = powered_layers
-    if self.current_layers > self.max_layers:
-      self.current_layers = self.max_layers
-
-    if self.current_layers < self.max_layers:
-      self.recharge_timer += dt
-      if self.recharge_timer >= self.recharge_time:
-        self.current_layers += 1
-        self.recharge_timer = 0.0
-    else:
-      self.recharge_timer = 0.0
-
-  def attempt_block(self) -> bool:
-    if self.current_layers > 0:
-      self.current_layers -= 1
-      self.recharge_timer = 0.0
-      return True
-    return False
+#class Weapon:
+#
+#  def __init__(self, name: str = "Laser", charge_time: float = 3.0) -> None:
+#    self.name: str = name
+#    self.charge_time: float = charge_time
+#    self.current_charge: float = 0.0
+#    self.auto_fire: bool = False
+#
+#  def update(self, dt: float, powered: bool) -> None:
+#    if powered:
+#      self.current_charge = min(self.charge_time, self.current_charge + dt)
+#
+#  def is_ready(self) -> bool:
+#    return self.current_charge >= self.charge_time
+#
+#  def reset(self) -> None:
+#    self.current_charge = 0.0
 
 
-class Projectile:
-
-  def __init__(
-      self,
-      start_pos: tuple[int, int],
-      target_pos: tuple[int, int],
-      target_room: Room,
-      is_player_shot: bool,
-  ) -> None:
-    self.x: float = float(start_pos[0])
-    self.y: float = float(start_pos[1])
-    self.target_x: float = float(target_pos[0])
-    self.target_y: float = float(target_pos[1])
-    self.target_room: Room = target_room
-    self.is_player_shot: bool = is_player_shot
-    self.alive: bool = True
-
-    dx = self.target_x - self.x
-    dy = self.target_y - self.y
-    dist = math.hypot(dx, dy)
-    self.vx: float = (dx / dist) * 400.0 if dist != 0 else 0.0
-    self.vy: float = (dy / dist) * 400.0 if dist != 0 else 0.0
-
-  def update(self, dt: float) -> None:
-    self.x += self.vx * dt
-    self.y += self.vy * dt
-    if math.hypot(self.target_x - self.x, self.target_y - self.y) < 10:
-      self.alive = False
-
-  def draw(self, surface: pygame.Surface) -> None:
-    pygame.draw.circle(
-        surface, COLOR_PROJECTILE, (int(self.x), int(self.y)), 5
-    )
+#class ShieldSystem:
+#
+#  def __init__(self, recharge_time: float = 4.0) -> None:
+#    self.max_layers: int = 0
+#    self.current_layers: int = 0
+#    self.recharge_timer: float = 0.0
+#    self.recharge_time: float = recharge_time
+#
+#  def update(self, dt: float, powered_layers: int) -> None:
+#    self.max_layers = powered_layers
+#    if self.current_layers > self.max_layers:
+#      self.current_layers = self.max_layers
+#
+#    if self.current_layers < self.max_layers:
+#      self.recharge_timer += dt
+#      if self.recharge_timer >= self.recharge_time:
+#        self.current_layers += 1
+#        self.recharge_timer = 0.0
+#    else:
+#      self.recharge_timer = 0.0
+#
+#  def attempt_block(self) -> bool:
+#    if self.current_layers > 0:
+#      self.current_layers -= 1
+#      self.recharge_timer = 0.0
+#      return True
+#    return False
 
 
-class Crew:
+#class Projectile:
+#
+#  def __init__(
+#      self,
+#      start_pos: tuple[int, int],
+#      target_pos: tuple[int, int],
+#      target_room: Room,
+#      is_player_shot: bool,
+#  ) -> None:
+#    self.x: float = float(start_pos[0])
+#    self.y: float = float(start_pos[1])
+#    self.target_x: float = float(target_pos[0])
+#    self.target_y: float = float(target_pos[1])
+#    self.target_room: Room = target_room
+#    self.is_player_shot: bool = is_player_shot
+#    self.alive: bool = True
+#
+#    dx = self.target_x - self.x
+#    dy = self.target_y - self.y
+#    dist = math.hypot(dx, dy)
+#    self.vx: float = (dx / dist) * 400.0 if dist != 0 else 0.0
+#    self.vy: float = (dy / dist) * 400.0 if dist != 0 else 0.0
+#
+#  def update(self, dt: float) -> None:
+#    self.x += self.vx * dt
+#    self.y += self.vy * dt
+#    if math.hypot(self.target_x - self.x, self.target_y - self.y) < 10:
+#      self.alive = False
+#
+#  def draw(self, surface: pygame.Surface) -> None:
+#    pygame.draw.circle(
+#        surface, COLOR_PROJECTILE, (int(self.x), int(self.y)), 5
+#    )
 
-  def __init__(self, x: float, y: float) -> None:
-    self.x: float = x
-    self.y: float = y
-    self.radius: int = 12
-    self.selected: bool = False
-    self.target_pos: tuple[int, int] | None = None
 
-  def update(self, dt: float, rooms: list[Room]) -> None:
-    if self.target_pos:
-      tx, ty = self.target_pos
-      dx, dy = tx - self.x, ty - self.y
-      dist = math.hypot(dx, dy)
-      if dist < 120.0 * dt:
-        self.x, self.y = float(tx), float(ty)
-        self.target_pos = None
-      else:
-        self.x += (dx / dist) * 120.0 * dt
-        self.y += (dy / dist) * 120.0 * dt
-    else:
-      for room in rooms:
-        if room.rect.collidepoint(int(self.x), int(self.y)):
-          if room.health < room.max_health:
-            room.repair(25.0 * dt)
-          break
-
-  def draw(self, surface: pygame.Surface) -> None:
-    color = COLOR_SELECTED if self.selected else COLOR_CREW
-    pygame.draw.circle(
-        surface, color, (int(self.x), int(self.y)), self.radius
-    )
+#class Crew:
+#
+#  def __init__(self, x: float, y: float) -> None:
+#    self.x: float = x
+#    self.y: float = y
+#    self.radius: int = 12
+#    self.selected: bool = False
+#    self.target_pos: tuple[int, int] | None = None
+#
+#  def update(self, dt: float, rooms: list[Room]) -> None:
+#    if self.target_pos:
+#      tx, ty = self.target_pos
+#      dx, dy = tx - self.x, ty - self.y
+#      dist = math.hypot(dx, dy)
+#      if dist < 120.0 * dt:
+#        self.x, self.y = float(tx), float(ty)
+#        self.target_pos = None
+#      else:
+#        self.x += (dx / dist) * 120.0 * dt
+#        self.y += (dy / dist) * 120.0 * dt
+#    else:
+#      for room in rooms:
+#        if room.rect.collidepoint(int(self.x), int(self.y)):
+#          if room.health < room.max_health:
+#            room.repair(25.0 * dt)
+#          break
+#
+#  def draw(self, surface: pygame.Surface) -> None:
+#    color = COLOR_SELECTED if self.selected else COLOR_CREW
+#    pygame.draw.circle(
+#        surface, color, (int(self.x), int(self.y)), self.radius
+#    )
 
 
 # --- GAME STATES ERWEITERUNG ---
@@ -147,6 +151,7 @@ fuel = 5
 scrap = 20
 
 reactor = classes.Reactor.Reactor(total_power=6)
+enemy_reactor = classes.Reactor.Reactor(total_power=6) # <-- NEU hinzugefügt
 player_ship = copy.deepcopy(PLAYER_SHIP)
 current_enemy = copy.deepcopy(ENEMY_SCOUT)
 
@@ -358,14 +363,17 @@ while running:
       p.update(dt)
       if not p.alive:
         if p.is_player_shot:
+          # Ausweichberechnung Gegner (abhängig von Brücken-Energie)
           enemy_evade = current_enemy.rooms[2].current_power * 0.15
           if random.random() < enemy_evade:
             combat_msg = "FEIND IST AUSGEWICHEN!"
             combat_msg_timer = 1.5
           elif not enemy_shield.attempt_block():
             current_enemy.hp = max(0, current_enemy.hp - 1)
-            p.target_room.apply_damage(35.0, reactor)
+            # FIX: Gegnerischer Schaden zieht Energie aus dem Feind-Reaktor ab!
+            p.target_room.apply_damage(35.0, enemy_reactor) 
         else:
+          # Ausweichberechnung Spieler (abhängig von Brücken-Energie)
           player_evade = player_ship.rooms[2].current_power * 0.20
           if random.random() < player_evade:
             combat_msg = "AUSGEWICHEN!"
@@ -458,6 +466,9 @@ while running:
       c.draw(screen)
     for p in projectiles:
       p.draw(screen)
+      
+    player_shield.draw_bubble(screen, (220, 245), 170)
+    enemy_shield.draw_bubble(screen, (710, 245), 150)
     
     # --- FIX: Gesundheitsanzeigen wieder einfügen ---
     screen.blit(
@@ -468,13 +479,24 @@ while running:
         ),
         (60, 170),
     )
+    # NEU: Dynamische Ausweichrate anzeigen
+    current_evade = int(player_ship.rooms[2].current_power * 0.20 * 100)
+    screen.blit(
+        font.render(
+            f"Ausweichchance: {current_evade}%",
+            True,
+            (150, 200, 255),
+        ),
+        (60, 185),
+    )
+
     screen.blit(
         font.render(
             f"Gegner Hülle: {current_enemy.hp}/{current_enemy.max_hp} HP",
             True,
             (255, 100, 100),
         ),
-        (550, 170),
+        (550, 160),
     )
 
     # UI Waffenauflade-Status
