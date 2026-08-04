@@ -1,6 +1,7 @@
 import pygame
 
 class ShieldSystem:
+
   def __init__(self, recharge_time: float = 4.0) -> None:
     self.max_layers: int = 0
     self.current_layers: int = 0
@@ -27,9 +28,9 @@ class ShieldSystem:
       return True
     return False
 
-  # NEU: Zeichnet die Schildblasen um das Schiff
-  def draw_bubble(self, surface: pygame.Surface, center: tuple[int, int], base_radius: int) -> None:
+  def draw_bubble(
+      self, surface: pygame.Surface, center: tuple[int, int], base_radius: int
+  ) -> None:
     for i in range(self.current_layers):
-      # Jede weitere Schildschicht wird etwas größer gezeichnet
       radius = base_radius + (i * 12)
       pygame.draw.circle(surface, (80, 150, 255), center, radius, 3)

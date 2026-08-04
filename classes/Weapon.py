@@ -1,10 +1,21 @@
 class Weapon:
 
-  def __init__(self, name: str = "Laser", charge_time: float = 3.0) -> None:
+  def __init__(
+      self,
+      name: str,
+      charge_time: float,
+      w_type: str = "LASER",
+      ammo_cost: int = 0,
+      shield_pierce: int = 0,
+      damage: float = 35.0,
+  ) -> None:
     self.name: str = name
     self.charge_time: float = charge_time
     self.current_charge: float = 0.0
-    self.auto_fire: bool = False
+    self.w_type: str = w_type  # "LASER", "MISSILE", "BEAM"
+    self.ammo_cost: int = ammo_cost
+    self.shield_pierce: int = shield_pierce
+    self.damage: float = damage
 
   def update(self, dt: float, powered: bool) -> None:
     if powered:
