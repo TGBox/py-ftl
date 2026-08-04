@@ -10,7 +10,6 @@ from classes.Projectile import Projectile
 import classes.Reactor
 from classes.ShieldSystem import ShieldSystem
 import classes.StarMap
-from classes.Room import Room
 from classes.ShipModel import ENEMY_BOSS, ENEMY_SCOUT, PLAYER_SHIP
 from classes.Weapon import Weapon
 from settings import *
