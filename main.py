@@ -209,9 +209,13 @@ while running:
             node.visited = True
 
             if node.event_type == "EXIT":
-              star_map.sector += 1
+              if star_map.sector == 3: # Sektor 3 ist der Endboss
+                  current_enemy = copy.deepcopy(ENEMY_BOSS)
+                  current_state = STATE_COMBAT
+              else:
+                  star_map.sector += 1
+                  star_map.generate_map()
               scrap += 10  # Sektor-Bonus
-              star_map.generate_map()
             elif node.event_type == "SHOP":
               current_state = STATE_SHOP
             else:
@@ -239,8 +243,6 @@ while running:
           current_state = STATE_MAP
           btn_buy_crew = pygame.Rect(200, 235, 500, 40)
           btn_buy_weapon = pygame.Rect(200, 290, 500, 40)
-
-        # Im Klick-Event für STATE_SHOP:
         elif btn_buy_crew.collidepoint(mx, my):
           if scrap >= 25:
             scrap -= 25
