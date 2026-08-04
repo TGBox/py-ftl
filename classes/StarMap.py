@@ -16,7 +16,7 @@ class StarMap:
   def generate_map(self) -> None:
     self.nodes.clear()
     node_id = 0
-    num_layers = 7  # Größere Karte (7 Ebenen)
+    num_layers = 7  
     layer_distance = 110
     created_layers: list[list[Node]] = []
 
@@ -32,17 +32,11 @@ class StarMap:
       node_count = random.randint(2, 3)
       x = 80 + l * layer_distance
       y_positions = (
-          [275]
-          if node_count == 1
-          else (
-              [180, 370] if node_count == 2 else [130, 275, 420]
-          )
+          [275] if node_count == 1 else ([180, 370] if node_count == 2 else [130, 275, 420])
       )
 
       for y in y_positions:
-        event_type = random.choice(
-            ["COMBAT", "COMBAT", "RESOURCE", "SHOP", "EMPTY"]
-        )
+        event_type = random.choice(["COMBAT", "COMBAT", "RESOURCE", "SHOP", "EMPTY"])
         node = Node(node_id, x, y, event_type)
         self.nodes.append(node)
         layer_nodes.append(node)
@@ -54,17 +48,22 @@ class StarMap:
     self.nodes.append(exit_node)
     created_layers.append([exit_node])
 
-    # Wege zwischen den Ebenen verbinden
+    # Saubere Verbindung der Ebenen (Garantiert lückenlose Erreichbarkeit)
     for i in range(len(created_layers) - 1):
       for n1 in created_layers[i]:
-        # Verbinde mit mindestens einem Knoten der nächsten Ebene
-        targets = random.sample(
-            created_layers[i + 1],
-            k=min(len(created_layers[i + 1]), random.randint(1, 2)),
-        )
+        # Wähle 1 bis 2 Ziele in der nächsten Ebene
+        next_layer = created_layers[i + 1]
+        targets = random.sample(next_layer, k=min(len(next_layer), random.randint(1, 2)))
         for t in targets:
           if t not in n1.connections:
             n1.connections.append(t)
+            
+    # Absicherung: Falls ein Knoten der Folgeschicht isoliert wurde, erzwinge eine Verbindung zum ersten Knoten der Folgeschicht
+    for i in range(len(created_layers) - 1):
+      for n2 in created_layers[i + 1]:
+        has_incoming = any(n2 in n1.connections for n1 in created_layers[i])
+        if not has_incoming:
+          random.choice(created_layers[i]).connections.append(n2)
 
     self.current_node = start_node
     self.current_node.visited = True
