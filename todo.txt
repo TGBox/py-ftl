@@ -1,3 +1,4 @@
+(A) 2026-08-04 Bug im Hauptspielverlauf. Immer im zweiten Sektor irgendwo hängt das Spiel einfach. Prüfen was daran Schuld ist. +Refactoring @code
 (A) 2026-08-04 Kampfsystem besser implementieren. Gesundheitshandling korrigieren. Aktuell gibt es keine Siegbedingungen für den Kampf. +Refactoring @code
 (A) 2026-08-04 Pause Modus im Kampf.  +Refactoring @code
 (A) 2026-08-04 Aufladestatus der Waffen anzeigen damit man weiss wann man schießen muss.  +Refactoring @code
