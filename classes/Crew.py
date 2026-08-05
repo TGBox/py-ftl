@@ -5,13 +5,24 @@ from classes.Room import Room
 from settings import COLOR_CREW, COLOR_SELECTED
 
 
+import random
+
+SPECIES_NAMES = {
+    "Mensch": ["Vance", "Sarah", "Jackson", "Elena", "Marcus", "David", "Lisa", "Alex"],
+    "Engi": ["Slockat", "Tuco", "Kaz", "01-Beta", "Xix", "N-402", "Kael"],
+    "Mantis": ["Kazaak", "Ruwen", "Skraak", "Zazz", "Kazaakth", "Voraak"],
+}
+
+CREW_TRAITS = ["Sprinter", "Sauerstoff-Sparer", "Feuerwehr", "Kampfveteran"]
+
+
 class Crew:
 
     def __init__(
         self,
         x: float,
         y: float,
-        name: str = "Crew",
+        name: str = "",
         species: str = "Mensch",
         is_enemy: bool = False,
     ) -> None:
@@ -20,12 +31,13 @@ class Crew:
         self.radius: int = 12
         self.selected: bool = False
         self.target_pos: tuple[int, int] | None = None
-        self.name: str = name
         self.species: str = species
+        self.name: str = name if name else random.choice(SPECIES_NAMES.get(species, ["Crew"]))
         self.is_enemy: bool = is_enemy
         self.hp: float = 100.0
         self.max_hp: float = 100.0
         self.current_room: Room | None = None
+        self.trait: str = random.choice(CREW_TRAITS)
 
         # Spezies-Eigenschaften
         if self.species == "Engi":
@@ -35,17 +47,23 @@ class Crew:
         else:  # Mensch / standard
             self.repair_multiplier: float = 1.0
 
+        if self.trait == "Feuerwehr":
+            self.repair_multiplier *= 1.4
+
+        self.move_speed: float = 160.0 if self.trait == "Sprinter" else 120.0
+
     def update(self, dt: float, rooms: list[Room]) -> None:
         if self.target_pos:
             tx, ty = self.target_pos
             dx, dy = tx - self.x, ty - self.y
             dist = math.hypot(dx, dy)
-            if dist < 120.0 * dt:
+            if dist < self.move_speed * dt:
                 self.x, self.y = float(tx), float(ty)
                 self.target_pos = None
             else:
-                self.x += (dx / dist) * 120.0 * dt
-                self.y += (dy / dist) * 120.0 * dt
+                self.x += (dx / dist) * self.move_speed * dt
+                self.y += (dy / dist) * self.move_speed * dt
+
 
         self.current_room = None
         for room in rooms:

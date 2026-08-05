@@ -233,9 +233,16 @@ class CombatManager:
                     for room in intersected_rooms:
                         self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
                         room.apply_damage(projectile.damage, self.data.player.reactor)
+                        for crew in self.data.player.crew:
+                            if crew.current_room == room:
+                                crew.hp = max(0.0, crew.hp - 15.0)
                 else:
                     self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
                     projectile.target_room.apply_damage(projectile.damage, self.data.player.reactor)
+                    for crew in self.data.player.crew:
+                        if crew.current_room == projectile.target_room:
+                            crew.hp = max(0.0, crew.hp - 20.0)
+
 
     def check_end_of_battle(self):
 

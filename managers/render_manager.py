@@ -276,16 +276,20 @@ class RenderManager:
         self.screen.blit(title_txt, (SCREEN_WIDTH // 2 - title_txt.get_width() // 2, 70))
 
         # Schiffswahl Karten
-        self.btn_ship_kestrel = pygame.Rect(100, 160, 210, 160)
-        self.btn_ship_kreuzer = pygame.Rect(345, 160, 210, 160)
-        self.btn_ship_tarnschiff = pygame.Rect(590, 160, 210, 160)
+        self.btn_ship_kestrel = pygame.Rect(50, 150, 150, 200)
+        self.btn_ship_kreuzer = pygame.Rect(215, 150, 150, 200)
+        self.btn_ship_tarnschiff = pygame.Rect(380, 150, 150, 200)
+        self.btn_ship_zoltan = pygame.Rect(545, 150, 150, 200)
+        self.btn_ship_fed = pygame.Rect(710, 150, 150, 200)
 
         selected_name = getattr(self.data.player.ship, "name", "Kestrel")
 
-        for btn, name, hp, weapons, crew in [
-            (self.btn_ship_kestrel, "Kestrel", 15, 3, 4),
-            (self.btn_ship_kreuzer, "Kreuzer", 18, 4, 6),
-            (self.btn_ship_tarnschiff, "Tarnschiff", 12, 3, 3),
+        for btn, name, hp, weapons, crew, rooms_count in [
+            (self.btn_ship_kestrel, "Kestrel", 15, 3, 4, 3),
+            (self.btn_ship_kreuzer, "Kreuzer", 18, 4, 6, 4),
+            (self.btn_ship_tarnschiff, "Tarnschiff", 12, 3, 3, 3),
+            (self.btn_ship_zoltan, "Zoltan-Fregatte", 14, 4, 4, 4),
+            (self.btn_ship_fed, "Federations-Kreuzer", 20, 4, 5, 4),
         ]:
             is_sel = (name == selected_name)
             bg_col = (40, 70, 100) if is_sel else (30, 40, 55)
@@ -294,25 +298,72 @@ class RenderManager:
             pygame.draw.rect(self.screen, bg_col, btn)
             pygame.draw.rect(self.screen, border_col, btn, 3 if is_sel else 2)
 
-            name_txt = self.font.render(name, True, (255, 255, 255) if is_sel else (200, 200, 200))
+            name_txt = self.font.render(name[:11], True, (255, 255, 255) if is_sel else (200, 200, 200))
             hp_txt = self.font.render(f"Hülle: {hp} HP", True, (150, 220, 150))
-            w_txt = self.font.render(f"Max Waffen: {weapons}", True, (220, 220, 150))
-            c_txt = self.font.render(f"Max Crew: {crew}", True, (150, 200, 255))
-            sel_txt = self.font.render("[ AUSGEWÄHLT ]" if is_sel else "[ KLICKEN ]", True, (100, 255, 100) if is_sel else (150, 150, 150))
+            w_txt = self.font.render(f"Waffen: {weapons}", True, (220, 220, 150))
+            c_txt = self.font.render(f"Crew: {crew}", True, (150, 200, 255))
+            sel_txt = self.font.render("[ GEWÄHLT ]" if is_sel else "[ WÄHLEN ]", True, (100, 255, 100) if is_sel else (150, 150, 150))
 
-            self.screen.blit(name_txt, (btn.x + 20, btn.y + 15))
-            self.screen.blit(hp_txt, (btn.x + 20, btn.y + 45))
-            self.screen.blit(w_txt, (btn.x + 20, btn.y + 70))
-            self.screen.blit(c_txt, (btn.x + 20, btn.y + 95))
-            self.screen.blit(sel_txt, (btn.x + 20, btn.y + 125))
+            self.screen.blit(name_txt, (btn.x + 10, btn.y + 10))
+            self.screen.blit(hp_txt, (btn.x + 10, btn.y + 35))
+            self.screen.blit(w_txt, (btn.x + 10, btn.y + 55))
+            self.screen.blit(c_txt, (btn.x + 10, btn.y + 75))
 
-        # Start-Button
-        self.btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 120, 360, 240, 50)
+            # Mini Layout-Vorschau (Raster-Vorschau)
+            for r in range(rooms_count):
+                rx = btn.x + 10 + r * 32
+                ry = btn.y + 105
+                pygame.draw.rect(self.screen, (60, 90, 120), (rx, ry, 28, 28))
+                pygame.draw.rect(self.screen, (200, 220, 255), (rx, ry, 28, 28), 1)
+
+            # Crew Icons Vorschau
+            for c in range(min(crew, 4)):
+                cx = btn.x + 18 + c * 30
+                cy = btn.y + 148
+                pygame.draw.circle(self.screen, (50, 200, 100), (cx, cy), 8)
+
+            self.screen.blit(sel_txt, (btn.x + 10, btn.y + 172))
+
+        # Start-Button & Optionen-Button
+        self.btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 190, 380, 180, 48)
         pygame.draw.rect(self.screen, (50, 120, 70), self.btn_start)
         pygame.draw.rect(self.screen, (100, 255, 100), self.btn_start, 2)
+        self.screen.blit(self.font.render("Reise Starten", True, (255, 255, 255)), (self.btn_start.x + 35, self.btn_start.y + 14))
 
-        btn_txt = self.font.render("Reise Starten", True, (255, 255, 255))
-        self.screen.blit(btn_txt, (self.btn_start.x + 65, self.btn_start.y + 15))
+        self.btn_options = pygame.Rect(SCREEN_WIDTH // 2 + 10, 380, 180, 48)
+        pygame.draw.rect(self.screen, (60, 75, 100), self.btn_options)
+        pygame.draw.rect(self.screen, (120, 160, 220), self.btn_options, 2)
+        self.screen.blit(self.font.render("Optionen", True, (220, 240, 255)), (self.btn_options.x + 50, self.btn_options.y + 14))
+
+        if self.data.current_state == STATE_OPTIONS:
+            self.draw_options_menu()
+
+    def draw_options_menu(self):
+        pygame.draw.rect(self.screen, (25, 35, 50), (200, 100, 500, 360))
+        pygame.draw.rect(self.screen, (100, 200, 255), (200, 100, 500, 360), 3)
+
+        self.screen.blit(
+            self.font.render("--- EINSTELLUNGEN & GRAFIK ---", True, (100, 220, 255)),
+            (320, 130),
+        )
+
+        self.btn_toggle_fullscreen = pygame.Rect(250, 190, 400, 45)
+        pygame.draw.rect(self.screen, (50, 70, 100), self.btn_toggle_fullscreen)
+        pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_toggle_fullscreen, 2)
+        fs_txt = self.font.render("Vollbildmodus Umschalten (Fullscreen)", True, (255, 255, 255))
+        self.screen.blit(fs_txt, (self.btn_toggle_fullscreen.x + 35, self.btn_toggle_fullscreen.y + 12))
+
+        self.btn_res_toggle = pygame.Rect(250, 255, 400, 45)
+        pygame.draw.rect(self.screen, (50, 70, 100), self.btn_res_toggle)
+        pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_res_toggle, 2)
+        res_txt = self.font.render("Fensterauflösung: 900 x 600", True, (220, 240, 255))
+        self.screen.blit(res_txt, (self.btn_res_toggle.x + 75, self.btn_res_toggle.y + 12))
+
+        self.btn_close_options = pygame.Rect(350, 380, 200, 42)
+        pygame.draw.rect(self.screen, (70, 40, 40), self.btn_close_options)
+        pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, self.btn_close_options, 2)
+        self.screen.blit(self.font.render("Zurück zum Menü", True, (255, 200, 200)), (self.btn_close_options.x + 30, self.btn_close_options.y + 10))
+
 
 
     def draw_event(self):

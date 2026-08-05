@@ -27,7 +27,7 @@ class MapManager:
         node.visited = True
 
         if self.data.world.star_map.rebel_fleet_x >= node.x:
-            self.start_normal_combat()
+            self.start_rebel_pursuit_combat()
         else:
             self.handle_node_event(node)
 
@@ -48,20 +48,40 @@ class MapManager:
 
     def handle_exit_node(self):
         sec = self.data.world.star_map.sector
-        if sec == 1:
-            self.start_mini_boss_fight(1)
-        elif sec == 2:
-            self.start_mini_boss_fight(2)
-        elif sec == 3:
+        if sec < 5:
+            self.start_mini_boss_fight(sec)
+        else:
             self.start_boss_fight()
 
+    def start_rebel_pursuit_combat(self):
+        from classes.ShipModel import ENEMY_CRUISER
+        self.data.enemy.ship = copy.deepcopy(ENEMY_CRUISER)
+        self.data.enemy.ship.name = "Rebellen-Verfolger"
+        for room in self.data.enemy.ship.rooms:
+            room.current_power = 1
+        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + 2)
+        self.data.enemy.shield = ShieldSystem()
+        self.data.enemy.weapon = Weapon("Schwerer Abfang-Laser", charge_time=3.2, w_type="HEAVY_LASER", damage=45.0)
+        self.data.combat.msg = "ACHTUNG! REBELLENFLOTTE HAT DICH EINGEHOLT!"
+        self.data.combat.msg_timer = 3.0
+        self.data.current_state = STATE_COMBAT
+
     def start_mini_boss_fight(self, sector: int):
-        from classes.ShipModel import MINI_BOSS_SECTOR_1, MINI_BOSS_SECTOR_2
-        template = MINI_BOSS_SECTOR_1 if sector == 1 else MINI_BOSS_SECTOR_2
+        from classes.ShipModel import MINI_BOSS_SECTOR_1, MINI_BOSS_SECTOR_2, ENEMY_CRUISER
+        template = MINI_BOSS_SECTOR_1 if sector == 1 else (MINI_BOSS_SECTOR_2 if sector == 2 else ENEMY_CRUISER)
         self.data.enemy.ship = copy.deepcopy(template)
+        self.data.enemy.ship.name = f"Sektor-{sector} Mini-Boss"
 
         for room in self.data.enemy.ship.rooms:
             room.current_power = 1
+
+        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + sector)
+        self.data.enemy.shield = ShieldSystem()
+        w_type = "FLAK" if sector % 2 == 1 else "HEAVY_LASER"
+        self.data.enemy.weapon = Weapon(f"Mini-Boss {w_type.capitalize()}", charge_time=max(2.5, 4.0 - sector * 0.3), w_type=w_type, damage=40.0 + sector * 5)
+
+        self.data.current_state = STATE_COMBAT
+
 
         self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + sector)
         self.data.enemy.shield = ShieldSystem()

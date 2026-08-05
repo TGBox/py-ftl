@@ -23,6 +23,7 @@ class Room:
     self.health: float = 100.0
     self.max_health: float = 100.0
     self.oxygen: float = 100.0  # FTL Sauerstoffsystem (0.0 bis 100.0)
+    self.has_breach: bool = False  # Hüllenleck
 
   def effective_max_power(self) -> int:
     return max(0, math.floor(self.max_power * (self.health / self.max_health)))
@@ -42,19 +43,29 @@ class Room:
 
   def apply_damage(self, amount: float, reactor: Reactor) -> None:
     self.health = max(0.0, self.health - amount)
+    # 30% Chance auf Hüllenleck
+    import random
+    if random.random() < 0.35:
+        self.has_breach = True
     while self.current_power > self.effective_max_power():
       self.remove_power(reactor)
 
   def repair(self, amount: float) -> None:
+    if self.has_breach:
+        self.has_breach = False
+        return
     self.health = min(self.max_health, self.health + amount)
 
   def update_oxygen(self, dt: float, connected_rooms: list["Room"] = None) -> None:
     """Updates oxygen levels for FTL oxygen system (SRS Kap. 5.1)."""
-    # Sauerstoffverlust durch Beschädigung
-    if self.health < 40.0:
+    # Sauerstoffverlust durch Hüllenleck oder Beschädigung
+    if self.has_breach:
+      self.oxygen = max(0.0, self.oxygen - 25.0 * dt)
+    elif self.health < 40.0:
       self.oxygen = max(0.0, self.oxygen - 8.0 * dt)
     elif self.current_power > 0 or not self.is_enemy:
       self.oxygen = min(100.0, self.oxygen + 3.0 * dt)
+
 
     # Sauerstoffaustausch mit verbundenen Räumen bei offenen Türen
     if connected_rooms:
@@ -101,9 +112,19 @@ class Room:
     # Sauerstoffanzeige (O2: 100%)
     o2_color = (100, 200, 255) if self.oxygen > 40.0 else (255, 100, 100)
     o2_txt = font.render(f"O2:{int(self.oxygen)}%", True, o2_color)
-    surface.blit(o2_txt, (self.rect.right - 42, self.rect.y + 5))
+    surface.blit(o2_txt, (self.rect.right - 44, self.rect.y + 5))
+
+    # Hüllenleck Icon zeichnen (falls vorhanden)
+    if self.has_breach:
+        cx, cy = self.rect.centerx, self.rect.centery
+        pygame.draw.circle(surface, (15, 15, 15), (cx, cy), 12)
+        pygame.draw.circle(surface, (255, 50, 50), (cx, cy), 13, 2)
+        b_font = pygame.font.SysFont(None, 14, bold=True)
+        lbl = b_font.render("LECK", True, (255, 80, 80))
+        surface.blit(lbl, (cx - lbl.get_width() // 2, cy - lbl.get_height() // 2))
 
     if not self.is_enemy:
+
       eff_max = self.effective_max_power()
       for i in range(self.max_power):
         if i < eff_max:

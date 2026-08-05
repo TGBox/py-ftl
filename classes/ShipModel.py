@@ -41,11 +41,28 @@ STEALTH_SHIP = ShipModel("Tarnschiff", 12, [
     Room("Brücke", (250, 200, 80, 80), max_power=2)
 ], max_weapons=3, max_crew=3)
 
+ZOLTAN_SHIP = ShipModel("Zoltan-Fregatte", 14, [
+    Room("Schild", (50, 190, 85, 85)),
+    Room("Super-Schild", (145, 190, 85, 85)),
+    Room("Waffen", (240, 190, 85, 85)),
+    Room("Brücke", (335, 190, 85, 85), max_power=2)
+], max_weapons=4, max_crew=4)
+
+FEDERATION_SHIP = ShipModel("Federations-Kreuzer", 20, [
+    Room("Artillerie", (50, 190, 85, 85)),
+    Room("Schild", (145, 190, 85, 85)),
+    Room("Waffen", (240, 190, 85, 85)),
+    Room("Brücke", (335, 190, 85, 85), max_power=2)
+], max_weapons=4, max_crew=5)
+
 SHIP_BLUEPRINTS = {
     "Kestrel": PLAYER_SHIP,
     "Kreuzer": CRUISER_SHIP,
     "Tarnschiff": STEALTH_SHIP,
+    "Zoltan-Fregatte": ZOLTAN_SHIP,
+    "Federations-Kreuzer": FEDERATION_SHIP,
 }
+
 
 ENEMY_SCOUT = ShipModel("Scout", 8, [
     Room("Schild", (600, 200, 80, 80), is_enemy=True),

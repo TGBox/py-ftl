@@ -63,10 +63,45 @@ class EventManager:
             ]
             return 0, 0
 
+        elif event_type == "PLASMA_STORM":
+            self.current_event_text = "ACHTUNG! Ein Plasma-Sturm stört die Schiffssysteme! Reaktor-Leistung halbfertig."
+            self.choices = []
+            if has_engi:
+                self.choices.append({
+                    "text": "[Engi-Spezial] Plasma-Energie absorbieren (+30 Scrap)",
+                    "action": "CLAIM_RESOURCES",
+                    "is_blue": True,
+                    "scrap": 30,
+                    "fuel": 1
+                })
+            self.choices.extend([
+                {"text": "1. Nebel durchfliegen (+15 Scrap)", "action": "CLAIM_RESOURCES", "scrap": 15, "fuel": 0},
+                {"text": "2. Umkehren & ausweichen", "action": "CONTINUE"}
+            ])
+            return 15, 0
+
+        elif event_type == "ABANDONED_STATION":
+            self.current_event_text = "Eine verlassene Raumstation treibt im All. Notsignale sind aktiv."
+            self.choices = []
+            if has_engi:
+                self.choices.append({
+                    "text": "[Engi-Spezial] Stationscomputer hacken (+25 Scrap, +2 Raketen)",
+                    "action": "CLAIM_RESOURCES",
+                    "is_blue": True,
+                    "scrap": 25,
+                    "fuel": 2
+                })
+            self.choices.extend([
+                {"text": "1. Station durchsuchen (+20 Scrap)", "action": "CLAIM_RESOURCES", "scrap": 20, "fuel": 1},
+                {"text": "2. Ignorieren & weiterfliegen", "action": "CONTINUE"}
+            ])
+            return 20, 1
+
         else:
             self.current_event_text = "Dieser Sektor ist ruhig. Keine ungewöhnlichen Aktivitäten gemeldet."
             self.choices = [
                 {"text": "1. Weiterfliegen", "action": "CONTINUE"}
             ]
             return 0, 0
+
 

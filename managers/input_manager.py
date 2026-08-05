@@ -78,11 +78,23 @@ class InputManager:
                     return
             return
 
+        if self.data.current_state == STATE_OPTIONS:
+            btn_toggle_fullscreen = pygame.Rect(250, 190, 400, 45)
+            btn_close_options = pygame.Rect(350, 380, 200, 42)
+            if btn_toggle_fullscreen.collidepoint(mx, my):
+                pygame.display.toggle_fullscreen()
+            elif btn_close_options.collidepoint(mx, my):
+                self.data.current_state = STATE_MAIN_MENU
+            return
+
         if self.data.current_state == STATE_MAIN_MENU:
-            btn_kestrel = pygame.Rect(100, 160, 210, 160)
-            btn_kreuzer = pygame.Rect(345, 160, 210, 160)
-            btn_tarnschiff = pygame.Rect(590, 160, 210, 160)
-            btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 120, 360, 240, 50)
+            btn_kestrel = pygame.Rect(50, 150, 150, 200)
+            btn_kreuzer = pygame.Rect(215, 150, 150, 200)
+            btn_tarnschiff = pygame.Rect(380, 150, 150, 200)
+            btn_zoltan = pygame.Rect(545, 150, 150, 200)
+            btn_fed = pygame.Rect(710, 150, 150, 200)
+            btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 190, 380, 180, 48)
+            btn_options = pygame.Rect(SCREEN_WIDTH // 2 + 10, 380, 180, 48)
 
             import copy
             from classes.ShipModel import SHIP_BLUEPRINTS
@@ -93,8 +105,15 @@ class InputManager:
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Kreuzer"])
             elif btn_tarnschiff.collidepoint(mx, my):
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Tarnschiff"])
+            elif btn_zoltan.collidepoint(mx, my):
+                self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Zoltan-Fregatte"])
+            elif btn_fed.collidepoint(mx, my):
+                self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Federations-Kreuzer"])
+            elif btn_options.collidepoint(mx, my):
+                self.data.current_state = STATE_OPTIONS
             elif btn_start.collidepoint(mx, my):
                 self.data.current_state = STATE_MAP
+
 
 
         elif self.data.current_state == STATE_MAP:
