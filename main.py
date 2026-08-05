@@ -17,7 +17,6 @@ from classes.Weapon import Weapon
 from settings import *
 
 pygame.init()
-SCREEN_WIDTH, SCREEN_HEIGHT = 900, 550
 screen: pygame.Surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption(
     "FTL Prototype - Erweiterte Schusslinien & Autofire"
@@ -25,18 +24,16 @@ pygame.display.set_caption(
 clock: pygame.time.Clock = pygame.time.Clock()
 
 # --- SETUP ---
-STATE_GAME_OVER = "GAME_OVER"
-STATE_VICTORY = "VICTORY"
 
 star_map = classes.StarMap.StarMap()  #[cite: 12]
 event_mgr = classes.EventManager.EventManager()  #[cite: 5]
 
-fuel = 6
-scrap = 20
-missiles = 6  #[cite: 1]
+fuel = PLAYER_START_FUEL
+scrap = PLAYER_START_SCRAP
+missiles = PLAYER_START_MISSILES
 
-reactor = classes.Reactor.Reactor(total_power=6)  #[cite: 8]
-enemy_reactor = classes.Reactor.Reactor(total_power=6)  #[cite: 8]
+reactor = classes.Reactor.Reactor(total_power=PLAYER_START_POWER)  #[cite: 8]
+enemy_reactor = classes.Reactor.Reactor(total_power=ENEMY_START_POWER)  #[cite: 8]
 
 player_ship = copy.deepcopy(PLAYER_SHIP)  #[cite: 11]
 current_enemy = copy.deepcopy(ENEMY_SCOUT)  #[cite: 1, 11]
