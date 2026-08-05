@@ -36,8 +36,14 @@ class CombatManager:
         self.check_end_of_battle()
 
     def update_crew(self, dt: float):
+        # Sauerstoff & Erstickungs-Schaden (SRS Kap. 5.1)
+        for room in self.data.player.ship.rooms:
+            room.update_oxygen(dt)
+
         for crew in self.data.player.crew:
             crew.update(dt, self.data.player.ship.rooms)
+            if crew.current_room and crew.current_room.oxygen < 20.0:
+                crew.hp = max(0.0, crew.hp - 8.0 * dt)
 
         # Gegnerische Crew initialisieren & updaten
         if not self.enemy_crew and len(self.data.enemy.ship.rooms) > 0:
@@ -46,6 +52,7 @@ class CombatManager:
 
         for e_crew in self.enemy_crew:
             e_crew.update(dt, self.data.enemy.ship.rooms)
+
 
     def update_shields(self, dt: float):
 
@@ -266,7 +273,8 @@ class CombatManager:
 
     def player_won(self):
 
-        tier = "High" if self.data.enemy.ship.name == "Flaggschiff" else "Medium"
+        is_mini_boss = "Mini-Boss" in self.data.enemy.ship.name
+        tier = "High" if (self.data.enemy.ship.name == "Flaggschiff" or is_mini_boss) else "Medium"
         scrap_reward, missile_reward = self.calculate_stochastic_rewards(tier)
 
         self.data.player.scrap += scrap_reward
@@ -281,8 +289,15 @@ class CombatManager:
             and self.data.enemy.ship.name == "Flaggschiff"
         ):
             self.data.current_state = STATE_VICTORY
+        elif is_mini_boss:
+            self.data.world.star_map.sector += 1
+            self.data.world.star_map.generate_map()
+            self.data.player.scrap += 25
+            self.show_message(f"MINI-BOSS BESIEGT! WEITER ZU SEKTOR {self.data.world.star_map.sector}")
+            self.data.current_state = STATE_MAP
         else:
             self.data.current_state = STATE_MAP
+
 
 
     def player_lost(self):

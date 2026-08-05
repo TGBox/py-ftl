@@ -47,26 +47,35 @@ class MapManager:
                 self.trigger_event(node.event_type)
 
     def handle_exit_node(self):
-
-        if self.data.world.star_map.sector == 3:
-
+        sec = self.data.world.star_map.sector
+        if sec == 1:
+            self.start_mini_boss_fight(1)
+        elif sec == 2:
+            self.start_mini_boss_fight(2)
+        elif sec == 3:
             self.start_boss_fight()
 
-            return
+    def start_mini_boss_fight(self, sector: int):
+        from classes.ShipModel import MINI_BOSS_SECTOR_1, MINI_BOSS_SECTOR_2
+        template = MINI_BOSS_SECTOR_1 if sector == 1 else MINI_BOSS_SECTOR_2
+        self.data.enemy.ship = copy.deepcopy(template)
 
-        self.data.world.star_map.sector += 1
+        for room in self.data.enemy.ship.rooms:
+            room.current_power = 1
 
-        print(f"Neuer Sektor {self.data.world.star_map.sector}")
+        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + sector)
+        self.data.enemy.shield = ShieldSystem()
+        w_type = "FLAK" if sector == 1 else "HEAVY_LASER"
+        self.data.enemy.weapon = Weapon(f"Mini-Boss {w_type.capitalize()}", charge_time=3.5, w_type=w_type, damage=40.0)
 
-        self.data.world.star_map.generate_map()
-
-        self.data.player.scrap += 10
+        self.data.current_state = STATE_COMBAT
 
     def start_boss_fight(self):
 
         self.data.enemy.ship = copy.deepcopy(
             ENEMY_BOSS
         )
+
 
         for room in self.data.enemy.ship.rooms:
             room.current_power = 1

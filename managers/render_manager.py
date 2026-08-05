@@ -11,6 +11,7 @@ class RenderManager:
         self.screen.fill(COLOR_BG)  #[cite: 2]
         self.font = pygame.font.SysFont(None, 24)
         self.btn_autofire = pygame.Rect(730, 310, 140, 30)
+        self.btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
         # Shop UI Buttons
         self.btn_repair = pygame.Rect(200, 140, 500, 38)  #[cite: 1]
         self.btn_fuel = pygame.Rect(200, 185, 500, 38)  #[cite: 1]
@@ -34,6 +35,13 @@ class RenderManager:
               (20, 15),
           )
 
+        # Crew-Menü Button oben rechts
+        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
+            pygame.draw.rect(self.screen, (50, 70, 95), self.btn_crew_toggle)
+            pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_crew_toggle, 2)
+            lbl = self.font.render("Crew-Menü", True, (220, 240, 255))
+            self.screen.blit(lbl, (self.btn_crew_toggle.x + 18, self.btn_crew_toggle.y + 6))
+
         if self.data.current_state == STATE_MAIN_MENU:
             self.draw_main_menu()
 
@@ -54,6 +62,55 @@ class RenderManager:
 
         elif self.data.current_state == STATE_VICTORY:
             self.draw_victory()
+
+        if getattr(self.data.player, "show_crew_menu", False):
+            self.draw_crew_menu()
+
+    def draw_crew_menu(self):
+        pygame.draw.rect(self.screen, (25, 35, 50), (140, 60, 620, 460))
+        pygame.draw.rect(self.screen, (100, 200, 255), (140, 60, 620, 460), 3)
+
+        self.screen.blit(
+            self.font.render("--- CREW-MANAGEMENT & SPEZIES-INFOS ---", True, (100, 220, 255)),
+            (290, 80),
+        )
+
+        for idx, crew in enumerate(self.data.player.crew):
+            card_y = 130 + idx * 75
+            card_rect = pygame.Rect(170, card_y, 560, 65)
+            pygame.draw.rect(self.screen, (40, 55, 75), card_rect)
+            pygame.draw.rect(self.screen, (80, 100, 130), card_rect, 2)
+
+            name_lbl = self.font.render(f"{crew.name} ({crew.species})", True, (255, 255, 255))
+            hp_lbl = self.font.render(f"HP: {int(crew.hp)}/{int(crew.max_hp)}", True, (100, 255, 100))
+
+            if crew.species == "Engi":
+                perk_str = "Perk: +100% Reparieren, -50% Kampfschaden"
+                badge_col = (255, 180, 50)
+            elif crew.species == "Mantis":
+                perk_str = "Perk: +50% Kampfschaden, -40% Reparieren"
+                badge_col = (80, 240, 80)
+            else:
+                perk_str = "Perk: Ausgewogene Standardwerte (+0%)"
+                badge_col = (100, 180, 255)
+
+            perk_lbl = self.font.render(perk_str, True, badge_col)
+
+            # Umbenennen Button
+            rename_btn = pygame.Rect(580, card_y + 15, 130, 35)
+            pygame.draw.rect(self.screen, (60, 80, 110), rename_btn)
+            pygame.draw.rect(self.screen, COLOR_BORDER, rename_btn, 1)
+            self.screen.blit(self.font.render("Umbenennen", True, (220, 240, 255)), (rename_btn.x + 12, rename_btn.y + 8))
+
+            self.screen.blit(name_lbl, (190, card_y + 10))
+            self.screen.blit(hp_lbl, (360, card_y + 10))
+            self.screen.blit(perk_lbl, (190, card_y + 35))
+
+        close_btn = pygame.Rect(370, 465, 160, 38)
+        pygame.draw.rect(self.screen, (70, 40, 40), close_btn)
+        pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, close_btn, 2)
+        self.screen.blit(self.font.render("Schließen", True, (255, 200, 200)), (close_btn.x + 40, close_btn.y + 10))
+
             
     def draw_combat(self):
 

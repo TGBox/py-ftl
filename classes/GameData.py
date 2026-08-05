@@ -28,6 +28,9 @@ class PlayerData:
         self.scrap: int = PLAYER_START_SCRAP
         self.fuel: int = PLAYER_START_FUEL
         self.missiles: int = PLAYER_START_MISSILES
+        self.show_crew_menu: bool = False
+        self.renaming_crew_idx: Optional[int] = None
+
 
 
 class EnemyData:

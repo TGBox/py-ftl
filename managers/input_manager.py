@@ -56,6 +56,28 @@ class InputManager:
 
         mx, my = pygame.mouse.get_pos()
 
+        # Crew-Menü Toggle & Interaction
+        btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
+        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY) and btn_crew_toggle.collidepoint(mx, my):
+            self.data.player.show_crew_menu = not getattr(self.data.player, "show_crew_menu", False)
+            return
+
+        if getattr(self.data.player, "show_crew_menu", False):
+            close_btn = pygame.Rect(370, 465, 160, 38)
+            if close_btn.collidepoint(mx, my):
+                self.data.player.show_crew_menu = False
+                return
+
+            for idx, crew in enumerate(self.data.player.crew):
+                card_y = 130 + idx * 75
+                rename_btn = pygame.Rect(580, card_y + 15, 130, 35)
+                if rename_btn.collidepoint(mx, my):
+                    names = ["Commander", "Pilot", "Techniker", "Kämpfer", "Spezialist"]
+                    import random
+                    crew.name = random.choice(names) + f" {idx+1}"
+                    return
+            return
+
         if self.data.current_state == STATE_MAIN_MENU:
             btn_kestrel = pygame.Rect(100, 160, 210, 160)
             btn_kreuzer = pygame.Rect(345, 160, 210, 160)
@@ -89,6 +111,8 @@ class InputManager:
 
         elif self.data.current_state in (STATE_GAME_OVER, STATE_VICTORY):
             self.restart_game()
+            self.data.current_state = STATE_MAIN_MENU
+
 
     def handle_right_click(self, event: pygame.event.Event):
         if self.data.current_state != STATE_COMBAT:
@@ -130,7 +154,7 @@ class InputManager:
             return
 
         for idx, choice in enumerate(choices):
-            btn_rect = pygame.Rect(180, 260 + idx * 50, 540, 36)
+            btn_rect = pygame.Rect(180, 240 + idx * 48, 540, 38)
             if btn_rect.collidepoint(mx, my):
                 action = choice.get("action", "")
                 self.map_manager.handle_choice(action, choice)
@@ -139,6 +163,7 @@ class InputManager:
         if len(choices) == 1:
             action = choices[0].get("action", "")
             self.map_manager.handle_choice(action, choices[0])
+
 
 
     def handle_combat_click(self, event: pygame.event.Event):

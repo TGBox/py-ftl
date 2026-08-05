@@ -32,7 +32,7 @@ class Projectile:
     dx = self.target_x - self.x
     dy = self.target_y - self.y
     dist = math.hypot(dx, dy)
-    speed = 600.0 if w_type == "BEAM" else 400.0
+    speed = 600.0 if w_type in ("BEAM", "BIO_BEAM") else (550.0 if w_type == "FLAK" else 400.0)
     self.vx: float = (dx / dist) * speed if dist != 0 else 0.0
     self.vy: float = (dy / dist) * speed if dist != 0 else 0.0
 
@@ -55,6 +55,17 @@ class Projectile:
       pygame.draw.rect(
           surface, (255, 140, 0), (int(self.x) - 4, int(self.y) - 4, 8, 8)
       )
+    elif self.w_type == "FLAK":
+      pygame.draw.circle(surface, (255, 180, 50), (int(self.x) - 3, int(self.y) - 3), 4)
+      pygame.draw.circle(surface, (255, 220, 100), (int(self.x) + 3, int(self.y) + 3), 4)
+    elif self.w_type == "ION":
+      pygame.draw.circle(surface, (50, 220, 255), (int(self.x), int(self.y)), 7)
+      pygame.draw.circle(surface, (255, 255, 255), (int(self.x), int(self.y)), 4)
+    elif self.w_type == "BIO_BEAM":
+      pygame.draw.line(surface, (50, 255, 100), (int(self.x), int(self.y)), (int(self.target_x), int(self.target_y)), 3)
+      pygame.draw.circle(surface, (50, 255, 100), (int(self.x), int(self.y)), 7)
+    elif self.w_type == "HEAVY_LASER":
+      pygame.draw.circle(surface, (255, 50, 50), (int(self.x), int(self.y)), 8)
     elif self.w_type == "BEAM":
       pygame.draw.line(
           surface, (255, 255, 100), (int(self.x), int(self.y)), (int(self.target_x), int(self.target_y)), 3
@@ -65,4 +76,5 @@ class Projectile:
     else:  # LASER
       pygame.draw.circle(
           surface, COLOR_PROJECTILE, (int(self.x), int(self.y)), 5
-      )
+      )
+
