@@ -108,8 +108,10 @@ class Crew:
         badge_lbl = badge_font.render(badge_char, True, (0, 0, 0) if self.selected else (255, 255, 255))
         surface.blit(badge_lbl, (int(self.x) - badge_lbl.get_width() // 2, int(self.y) - badge_lbl.get_height() // 2))
 
-        # Name zeichnen
-        font = pygame.font.SysFont(None, 14)
-        lbl = font.render(self.name, True, (220, 220, 220))
+        # Name & Trait-Badge zeichnen
+        font = pygame.font.SysFont(None, 13)
+        trait_str = f" [{self.trait[:4]}]" if hasattr(self, "trait") and self.trait else ""
+        lbl = font.render(f"{self.name}{trait_str}", True, (220, 240, 255))
         surface.blit(lbl, (int(self.x) - lbl.get_width() // 2, int(self.y) + self.radius + 2))
+
 

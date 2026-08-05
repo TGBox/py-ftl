@@ -42,7 +42,7 @@ class RenderManager:
             lbl = self.font.render("Crew-Menü", True, (220, 240, 255))
             self.screen.blit(lbl, (self.btn_crew_toggle.x + 18, self.btn_crew_toggle.y + 6))
 
-        if self.data.current_state == STATE_MAIN_MENU:
+        if self.data.current_state in (STATE_MAIN_MENU, STATE_OPTIONS):
             self.draw_main_menu()
 
         elif self.data.current_state == STATE_MAP:
@@ -63,6 +63,7 @@ class RenderManager:
         elif self.data.current_state == STATE_VICTORY:
             self.draw_victory()
 
+
         if getattr(self.data.player, "show_crew_menu", False):
             self.draw_crew_menu()
 
@@ -81,35 +82,47 @@ class RenderManager:
             pygame.draw.rect(self.screen, (40, 55, 75), card_rect)
             pygame.draw.rect(self.screen, (80, 100, 130), card_rect, 2)
 
-            name_lbl = self.font.render(f"{crew.name} ({crew.species})", True, (255, 255, 255))
             hp_lbl = self.font.render(f"HP: {int(crew.hp)}/{int(crew.max_hp)}", True, (100, 255, 100))
 
+            if self.data.player.active_rename_idx == idx:
+                input_rect = pygame.Rect(190, card_y + 8, 160, 24)
+                pygame.draw.rect(self.screen, (20, 30, 45), input_rect)
+                pygame.draw.rect(self.screen, (100, 220, 255), input_rect, 2)
+                cur_text = self.data.player.rename_buffer + "|"
+                self.screen.blit(self.font.render(cur_text, True, (255, 255, 100)), (input_rect.x + 5, input_rect.y + 3))
+                self.screen.blit(self.font.render("[ Enter = Bestätigen ]", True, (150, 220, 150)), (360, card_y + 10))
+            else:
+                name_lbl = self.font.render(f"{crew.name} ({crew.species})", True, (255, 255, 255))
+                self.screen.blit(name_lbl, (190, card_y + 10))
+                self.screen.blit(hp_lbl, (360, card_y + 10))
+
             if crew.species == "Engi":
-                perk_str = "Perk: +100% Reparieren, -50% Kampfschaden"
+                perk_str = f"Perk [{crew.trait}]: +100% Reparieren, -50% Kampf"
                 badge_col = (255, 180, 50)
             elif crew.species == "Mantis":
-                perk_str = "Perk: +50% Kampfschaden, -40% Reparieren"
+                perk_str = f"Perk [{crew.trait}]: +50% Kampf, -40% Reparieren"
                 badge_col = (80, 240, 80)
             else:
-                perk_str = "Perk: Ausgewogene Standardwerte (+0%)"
+                perk_str = f"Perk [{crew.trait}]: Ausgewogene Standardwerte"
                 badge_col = (100, 180, 255)
 
             perk_lbl = self.font.render(perk_str, True, badge_col)
 
             # Umbenennen Button
             rename_btn = pygame.Rect(580, card_y + 15, 130, 35)
-            pygame.draw.rect(self.screen, (60, 80, 110), rename_btn)
+            btn_col = (100, 140, 60) if self.data.player.active_rename_idx == idx else (60, 80, 110)
+            pygame.draw.rect(self.screen, btn_col, rename_btn)
             pygame.draw.rect(self.screen, COLOR_BORDER, rename_btn, 1)
-            self.screen.blit(self.font.render("Umbenennen", True, (220, 240, 255)), (rename_btn.x + 12, rename_btn.y + 8))
+            btn_txt = "Tippen..." if self.data.player.active_rename_idx == idx else "Umbenennen"
+            self.screen.blit(self.font.render(btn_txt, True, (220, 240, 255)), (rename_btn.x + 12, rename_btn.y + 8))
 
-            self.screen.blit(name_lbl, (190, card_y + 10))
-            self.screen.blit(hp_lbl, (360, card_y + 10))
             self.screen.blit(perk_lbl, (190, card_y + 35))
 
         close_btn = pygame.Rect(370, 465, 160, 38)
         pygame.draw.rect(self.screen, (70, 40, 40), close_btn)
         pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, close_btn, 2)
         self.screen.blit(self.font.render("Schließen", True, (255, 200, 200)), (close_btn.x + 40, close_btn.y + 10))
+
 
             
     def draw_combat(self):
@@ -339,30 +352,52 @@ class RenderManager:
             self.draw_options_menu()
 
     def draw_options_menu(self):
-        pygame.draw.rect(self.screen, (25, 35, 50), (200, 100, 500, 360))
-        pygame.draw.rect(self.screen, (100, 200, 255), (200, 100, 500, 360), 3)
+        pygame.draw.rect(self.screen, (20, 28, 42), (180, 70, 540, 440))
+        pygame.draw.rect(self.screen, (100, 200, 255), (180, 70, 540, 440), 3)
 
         self.screen.blit(
-            self.font.render("--- EINSTELLUNGEN & GRAFIK ---", True, (100, 220, 255)),
-            (320, 130),
+            self.font.render("--- OPTIONEN & EINSTELLUNGEN ---", True, (100, 220, 255)),
+            (290, 95),
         )
 
-        self.btn_toggle_fullscreen = pygame.Rect(250, 190, 400, 45)
-        pygame.draw.rect(self.screen, (50, 70, 100), self.btn_toggle_fullscreen)
+        # 1. Vollbild
+        self.btn_toggle_fullscreen = pygame.Rect(220, 140, 460, 44)
+        pygame.draw.rect(self.screen, (40, 60, 90), self.btn_toggle_fullscreen)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_toggle_fullscreen, 2)
-        fs_txt = self.font.render("Vollbildmodus Umschalten (Fullscreen)", True, (255, 255, 255))
-        self.screen.blit(fs_txt, (self.btn_toggle_fullscreen.x + 35, self.btn_toggle_fullscreen.y + 12))
+        fs_txt = self.font.render("Vollbildmodus: Umschalten (Fullscreen / Fenster)", True, (255, 255, 255))
+        self.screen.blit(fs_txt, (self.btn_toggle_fullscreen.x + 25, self.btn_toggle_fullscreen.y + 12))
 
-        self.btn_res_toggle = pygame.Rect(250, 255, 400, 45)
-        pygame.draw.rect(self.screen, (50, 70, 100), self.btn_res_toggle)
+        # 2. Fensterauflösung
+        self.btn_res_toggle = pygame.Rect(220, 195, 460, 44)
+        pygame.draw.rect(self.screen, (40, 60, 90), self.btn_res_toggle)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_res_toggle, 2)
-        res_txt = self.font.render("Fensterauflösung: 900 x 600", True, (220, 240, 255))
-        self.screen.blit(res_txt, (self.btn_res_toggle.x + 75, self.btn_res_toggle.y + 12))
+        res_txt = self.font.render("Fensterauflösung: 900 x 600 (Standard)", True, (220, 240, 255))
+        self.screen.blit(res_txt, (self.btn_res_toggle.x + 65, self.btn_res_toggle.y + 12))
 
-        self.btn_close_options = pygame.Rect(350, 380, 200, 42)
+        # 3. Audio & Soundeffekte
+        self.btn_audio_toggle = pygame.Rect(220, 250, 460, 44)
+        pygame.draw.rect(self.screen, (40, 60, 90), self.btn_audio_toggle)
+        pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_audio_toggle, 2)
+        audio_txt = self.font.render("Audio & Soundeffekte: AN (32 Mixer-Kanäle)", True, (150, 240, 150))
+        self.screen.blit(audio_txt, (self.btn_audio_toggle.x + 45, self.btn_audio_toggle.y + 12))
+
+        # 4. Automatisches Speichern
+        self.btn_autosave_toggle = pygame.Rect(220, 305, 460, 44)
+        pygame.draw.rect(self.screen, (40, 60, 90), self.btn_autosave_toggle)
+        pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_autosave_toggle, 2)
+        save_txt = self.font.render("Verschlüsselter Spielstand: Aktiviert (AES-256)", True, (200, 220, 255))
+        self.screen.blit(save_txt, (self.btn_autosave_toggle.x + 30, self.btn_autosave_toggle.y + 12))
+
+        # Steuerungshinweis
+        ctrl_font = pygame.font.SysFont(None, 18)
+        self.screen.blit(ctrl_font.render("Steuerung: S = Speichern | L = Laden | Pausieren = Leertaste", True, (160, 180, 210)), (230, 365))
+
+        # 5. Zurück Button
+        self.btn_close_options = pygame.Rect(350, 440, 200, 45)
         pygame.draw.rect(self.screen, (70, 40, 40), self.btn_close_options)
         pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, self.btn_close_options, 2)
-        self.screen.blit(self.font.render("Zurück zum Menü", True, (255, 200, 200)), (self.btn_close_options.x + 30, self.btn_close_options.y + 10))
+        self.screen.blit(self.font.render("Zurück zum Menü", True, (255, 200, 200)), (self.btn_close_options.x + 30, self.btn_close_options.y + 12))
+
 
 
 

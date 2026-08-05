@@ -42,6 +42,21 @@ class InputManager:
                     self.handle_right_click(event)
 
     def handle_keydown(self, event: pygame.event.Event):
+        if self.data.player.active_rename_idx is not None:
+            if event.key == pygame.K_RETURN:
+                idx = self.data.player.active_rename_idx
+                if 0 <= idx < len(self.data.player.crew):
+                    new_name = self.data.player.rename_buffer.strip()
+                    if new_name:
+                        self.data.player.crew[idx].name = new_name
+                self.data.player.active_rename_idx = None
+                self.data.player.rename_buffer = ""
+            elif event.key == pygame.K_BACKSPACE:
+                self.data.player.rename_buffer = self.data.player.rename_buffer[:-1]
+            elif event.unicode and len(self.data.player.rename_buffer) < 16:
+                self.data.player.rename_buffer += event.unicode
+            return
+
         if event.key == pygame.K_SPACE:
             self.data.paused = not self.data.paused
         elif event.key == pygame.K_s:
@@ -50,7 +65,6 @@ class InputManager:
         elif event.key == pygame.K_l:
             from managers.save_manager import SaveManager
             SaveManager.load_game(self.data)
-
 
     def handle_left_click(self, event: pygame.event.Event):
 
@@ -66,21 +80,21 @@ class InputManager:
             close_btn = pygame.Rect(370, 465, 160, 38)
             if close_btn.collidepoint(mx, my):
                 self.data.player.show_crew_menu = False
+                self.data.player.active_rename_idx = None
                 return
 
             for idx, crew in enumerate(self.data.player.crew):
                 card_y = 130 + idx * 75
                 rename_btn = pygame.Rect(580, card_y + 15, 130, 35)
                 if rename_btn.collidepoint(mx, my):
-                    names = ["Commander", "Pilot", "Techniker", "Kämpfer", "Spezialist"]
-                    import random
-                    crew.name = random.choice(names) + f" {idx+1}"
+                    self.data.player.active_rename_idx = idx
+                    self.data.player.rename_buffer = crew.name
                     return
             return
 
         if self.data.current_state == STATE_OPTIONS:
-            btn_toggle_fullscreen = pygame.Rect(250, 190, 400, 45)
-            btn_close_options = pygame.Rect(350, 380, 200, 42)
+            btn_toggle_fullscreen = pygame.Rect(220, 140, 460, 44)
+            btn_close_options = pygame.Rect(350, 440, 200, 45)
             if btn_toggle_fullscreen.collidepoint(mx, my):
                 pygame.display.toggle_fullscreen()
             elif btn_close_options.collidepoint(mx, my):
@@ -99,20 +113,23 @@ class InputManager:
             import copy
             from classes.ShipModel import SHIP_BLUEPRINTS
 
-            if btn_kestrel.collidepoint(mx, my):
+            unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
+
+            if btn_kestrel.collidepoint(mx, my) and "Kestrel" in unlocked:
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Kestrel"])
-            elif btn_kreuzer.collidepoint(mx, my):
+            elif btn_kreuzer.collidepoint(mx, my) and "Kreuzer" in unlocked:
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Kreuzer"])
-            elif btn_tarnschiff.collidepoint(mx, my):
+            elif btn_tarnschiff.collidepoint(mx, my) and "Tarnschiff" in unlocked:
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Tarnschiff"])
-            elif btn_zoltan.collidepoint(mx, my):
+            elif btn_zoltan.collidepoint(mx, my) and "Zoltan-Fregatte" in unlocked:
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Zoltan-Fregatte"])
-            elif btn_fed.collidepoint(mx, my):
+            elif btn_fed.collidepoint(mx, my) and "Federations-Kreuzer" in unlocked:
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Federations-Kreuzer"])
             elif btn_options.collidepoint(mx, my):
                 self.data.current_state = STATE_OPTIONS
             elif btn_start.collidepoint(mx, my):
                 self.data.current_state = STATE_MAP
+
 
 
 
