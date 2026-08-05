@@ -13,6 +13,7 @@ class MapManager:
 
     def __init__(self, data: GameData):
         self.data = data
+        self.sound = None  # Set by Game after construction
 
     def travel_to_node(self, node: Node):
 
@@ -27,8 +28,10 @@ class MapManager:
         node.visited = True
 
         if self.data.world.star_map.rebel_fleet_x >= node.x:
+            if self.sound: self.sound.play("alarm")
             self.start_rebel_pursuit_combat()
         else:
+            if self.sound: self.sound.play("jump")
             self.handle_node_event(node)
 
         return True

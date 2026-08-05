@@ -13,6 +13,7 @@ class CombatManager:
         self.data = data
         self.state_manager = state_manager
         self.enemy_crew: list[Crew] = []
+        self.sound = None  # Set by Game after construction
 
     def update(self, dt: float):
         """Wird einmal pro Frame aufgerufen."""
@@ -124,6 +125,13 @@ class CombatManager:
                 )
             )
 
+            # Sound: weapon fire
+            if self.sound:
+                sfx = {"LASER": "laser_fire", "MISSILE": "missile_fire",
+                       "BEAM": "beam_fire", "FLAK": "flak_fire",
+                       "HEAVY_LASER": "laser_fire"}.get(weapon.w_type, "laser_fire")
+                self.sound.play(sfx)
+
             weapon.reset()
 
     def update_enemy_weapon(self, dt: float):
@@ -187,11 +195,15 @@ class CombatManager:
                     hit_successful = True
                 else:
                     self.data.enemy.shield.attempt_block()
+                    if self.sound: self.sound.play("shield_hit")
             else:
                 if not self.data.enemy.shield.attempt_block():
                     hit_successful = True
+                else:
+                    if self.sound: self.sound.play("shield_hit")
 
             if hit_successful:
+                if self.sound: self.sound.play("hull_hit")
                 if projectile.w_type == "BEAM":
                     # Beam schneidet mehrere Räume per Liniensegment-Schnittpunkt (SRS 6.2)
                     intersected_rooms = projectile.get_intersected_rooms(self.data.enemy.ship.rooms)
@@ -223,11 +235,15 @@ class CombatManager:
                     hit_successful = True
                 else:
                     self.data.player.shield.attempt_block()
+                    if self.sound: self.sound.play("shield_hit")
             else:
                 if not self.data.player.shield.attempt_block():
                     hit_successful = True
+                else:
+                    if self.sound: self.sound.play("shield_hit")
 
             if hit_successful:
+                if self.sound: self.sound.play("hull_hit")
                 if projectile.w_type == "BEAM":
                     intersected_rooms = projectile.get_intersected_rooms(self.data.player.ship.rooms)
                     for room in intersected_rooms:
@@ -247,13 +263,12 @@ class CombatManager:
     def check_end_of_battle(self):
 
         if self.data.enemy.ship.hp <= 0:
-
+            if self.sound: self.sound.play("explosion")
             self.player_won()
-
             return
 
         if self.data.player.ship.hp <= 0:
-
+            if self.sound: self.sound.play("game_over")
             self.player_lost()
 
     def calculate_stochastic_rewards(self, reward_tier: str = "Medium") -> tuple[int, int]:

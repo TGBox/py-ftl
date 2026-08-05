@@ -22,6 +22,8 @@ class InputManager:
         self.shop_manager = shop_manager
         self.map_manager = map_manager
         self.weapon_manager = weapon_manager or WeaponManager(data)
+        self.sound = None   # Set by Game after construction
+        self.game = None    # Set by Game after construction
 
     def update(self):
 
@@ -68,7 +70,12 @@ class InputManager:
 
     def handle_left_click(self, event: pygame.event.Event):
 
-        mx, my = pygame.mouse.get_pos()
+        raw_mx, raw_my = pygame.mouse.get_pos()
+        # Convert to logical 900x600 coordinates if Game reference exists
+        if self.game and hasattr(self.game, "screen_to_logical"):
+            mx, my = self.game.screen_to_logical(raw_mx, raw_my)
+        else:
+            mx, my = raw_mx, raw_my
 
         # Crew-Menü Toggle & Interaction
         btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
@@ -94,10 +101,26 @@ class InputManager:
 
         if self.data.current_state == STATE_OPTIONS:
             btn_toggle_fullscreen = pygame.Rect(220, 140, 460, 44)
+            btn_res_toggle = pygame.Rect(220, 195, 460, 44)
+            btn_audio_toggle = pygame.Rect(220, 250, 460, 44)
             btn_close_options = pygame.Rect(350, 440, 200, 45)
             if btn_toggle_fullscreen.collidepoint(mx, my):
-                pygame.display.toggle_fullscreen()
+                if self.game:
+                    self.game.toggle_fullscreen()
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_res_toggle.collidepoint(mx, my):
+                if self.game:
+                    self.game.cycle_resolution()
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_audio_toggle.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.toggle()
+                    self.sound.play("click")
             elif btn_close_options.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.play("click")
                 self.data.current_state = STATE_MAIN_MENU
             return
 
@@ -117,18 +140,25 @@ class InputManager:
 
             if btn_kestrel.collidepoint(mx, my) and "Kestrel" in unlocked:
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Kestrel"])
+                if self.sound: self.sound.play("click")
             elif btn_kreuzer.collidepoint(mx, my) and "Kreuzer" in unlocked:
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Kreuzer"])
+                if self.sound: self.sound.play("click")
             elif btn_tarnschiff.collidepoint(mx, my) and "Tarnschiff" in unlocked:
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Tarnschiff"])
+                if self.sound: self.sound.play("click")
             elif btn_zoltan.collidepoint(mx, my) and "Zoltan-Fregatte" in unlocked:
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Zoltan-Fregatte"])
+                if self.sound: self.sound.play("click")
             elif btn_fed.collidepoint(mx, my) and "Federations-Kreuzer" in unlocked:
                 self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Federations-Kreuzer"])
+                if self.sound: self.sound.play("click")
             elif btn_options.collidepoint(mx, my):
                 self.data.current_state = STATE_OPTIONS
+                if self.sound: self.sound.play("click")
             elif btn_start.collidepoint(mx, my):
                 self.data.current_state = STATE_MAP
+                if self.sound: self.sound.play("jump")
 
 
 

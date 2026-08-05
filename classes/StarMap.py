@@ -16,7 +16,7 @@ class StarMap:
     self.generate_map()
 
   def advance_fleet(self) -> None:
-    self.rebel_fleet_x += 95.0
+    self.rebel_fleet_x += REBEL_FLEET_SPEED
 
   def generate_map(self) -> None:
     self.nodes.clear()

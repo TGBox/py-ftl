@@ -360,28 +360,42 @@ class RenderManager:
             (290, 95),
         )
 
+        # Read dynamic state from game reference
+        game_ref = getattr(self, "game", None)
+        is_fs = getattr(game_ref, "is_fullscreen", False) if game_ref else False
+        res_idx = getattr(game_ref, "resolution_idx", 0) if game_ref else 0
+        from settings import RESOLUTIONS
+        cur_res = RESOLUTIONS[res_idx] if res_idx < len(RESOLUTIONS) else (900, 600)
+        sound_ref = getattr(game_ref, "sound", None) if game_ref else None
+        audio_on = sound_ref.enabled if sound_ref else True
+
         # 1. Vollbild
         self.btn_toggle_fullscreen = pygame.Rect(220, 140, 460, 44)
-        pygame.draw.rect(self.screen, (40, 60, 90), self.btn_toggle_fullscreen)
+        fs_col = (60, 100, 60) if is_fs else (40, 60, 90)
+        pygame.draw.rect(self.screen, fs_col, self.btn_toggle_fullscreen)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_toggle_fullscreen, 2)
-        fs_txt = self.font.render("Vollbildmodus: Umschalten (Fullscreen / Fenster)", True, (255, 255, 255))
-        self.screen.blit(fs_txt, (self.btn_toggle_fullscreen.x + 25, self.btn_toggle_fullscreen.y + 12))
+        fs_label = "Vollbild: AN" if is_fs else "Vollbild: AUS (Fenster)"
+        fs_txt = self.font.render(fs_label, True, (100, 255, 100) if is_fs else (255, 255, 255))
+        self.screen.blit(fs_txt, (self.btn_toggle_fullscreen.x + 130, self.btn_toggle_fullscreen.y + 12))
 
         # 2. Fensterauflösung
         self.btn_res_toggle = pygame.Rect(220, 195, 460, 44)
         pygame.draw.rect(self.screen, (40, 60, 90), self.btn_res_toggle)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_res_toggle, 2)
-        res_txt = self.font.render("Fensterauflösung: 900 x 600 (Standard)", True, (220, 240, 255))
-        self.screen.blit(res_txt, (self.btn_res_toggle.x + 65, self.btn_res_toggle.y + 12))
+        res_txt = self.font.render(f"Auflösung: {cur_res[0]} x {cur_res[1]} (Klick = Wechseln)", True, (220, 240, 255))
+        self.screen.blit(res_txt, (self.btn_res_toggle.x + 55, self.btn_res_toggle.y + 12))
 
         # 3. Audio & Soundeffekte
         self.btn_audio_toggle = pygame.Rect(220, 250, 460, 44)
-        pygame.draw.rect(self.screen, (40, 60, 90), self.btn_audio_toggle)
+        aud_col = (40, 80, 40) if audio_on else (80, 40, 40)
+        pygame.draw.rect(self.screen, aud_col, self.btn_audio_toggle)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_audio_toggle, 2)
-        audio_txt = self.font.render("Audio & Soundeffekte: AN (32 Mixer-Kanäle)", True, (150, 240, 150))
-        self.screen.blit(audio_txt, (self.btn_audio_toggle.x + 45, self.btn_audio_toggle.y + 12))
+        aud_label = "Audio & SFX: AN" if audio_on else "Audio & SFX: AUS (Stumm)"
+        aud_color = (150, 240, 150) if audio_on else (255, 120, 120)
+        audio_txt = self.font.render(aud_label, True, aud_color)
+        self.screen.blit(audio_txt, (self.btn_audio_toggle.x + 130, self.btn_audio_toggle.y + 12))
 
-        # 4. Automatisches Speichern
+        # 4. Verschlüsselter Spielstand
         self.btn_autosave_toggle = pygame.Rect(220, 305, 460, 44)
         pygame.draw.rect(self.screen, (40, 60, 90), self.btn_autosave_toggle)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_autosave_toggle, 2)
