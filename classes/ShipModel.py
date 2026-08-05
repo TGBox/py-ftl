@@ -4,38 +4,48 @@ from classes.Room import Room
 
 
 class ShipModel:
-    def __init__(self, name: str, max_hp: int, rooms: list[Room], is_enemy: bool = False):
+    def __init__(
+        self,
+        name: str,
+        max_hp: int,
+        rooms: list[Room],
+        is_enemy: bool = False,
+        max_weapons: int = 3,
+        max_crew: int = 4,
+    ):
         self.name = name
         self.max_hp = max_hp
         self.hp = max_hp
         self.rooms = rooms
         self.is_enemy = is_enemy
-        
-# Beispiel für alternative Schiffsklassen / Layouts
-#CUSTOM_SHIP_LAYOUTS = {
-#    "Kestrel": {
-#        "max_hp": 30,
-#        "rooms_config": [
-#            {"type": "SHIELD", "pos": (180, 200), "size": (50, 50)},
-#            {"type": "WEAPON", "pos": (240, 200), "size": (50, 50)},
-#            {"type": "PILOT", "pos": (120, 200), "size": (50, 50)},
-#        ],
-#    },
-#    "Cruiser": {
-#        "max_hp": 35,
-#        "rooms_config": [
-#            {"type": "SHIELD", "pos": (170, 190), "size": (60, 50)},
-#            {"type": "WEAPON", "pos": (240, 190), "size": (50, 50)},
-#            {"type": "PILOT", "pos": (110, 190), "size": (50, 50)},
-#        ],
-#    },
-#}
+        self.max_weapons = max_weapons
+        self.max_crew = max_crew
+
 
 PLAYER_SHIP = ShipModel("Kestrel", 15, [
     Room("Schild", (60, 200, 90, 90)),
     Room("Waffen", (160, 200, 90, 90)),
     Room("Brücke", (260, 200, 90, 90), max_power=2)
-])
+], max_weapons=3, max_crew=4)
+
+CRUISER_SHIP = ShipModel("Kreuzer", 18, [
+    Room("Schild", (50, 190, 85, 85)),
+    Room("Waffen", (145, 190, 85, 85)),
+    Room("Maschinen", (240, 190, 85, 85)),
+    Room("Brücke", (335, 190, 85, 85), max_power=2)
+], max_weapons=4, max_crew=6)
+
+STEALTH_SHIP = ShipModel("Tarnschiff", 12, [
+    Room("Tarnung", (70, 200, 80, 80)),
+    Room("Waffen", (160, 200, 80, 80)),
+    Room("Brücke", (250, 200, 80, 80), max_power=2)
+], max_weapons=3, max_crew=3)
+
+SHIP_BLUEPRINTS = {
+    "Kestrel": PLAYER_SHIP,
+    "Kreuzer": CRUISER_SHIP,
+    "Tarnschiff": STEALTH_SHIP,
+}
 
 ENEMY_SCOUT = ShipModel("Scout", 8, [
     Room("Schild", (600, 200, 80, 80), is_enemy=True),

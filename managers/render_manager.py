@@ -227,18 +227,27 @@ class RenderManager:
         self.screen.blit(btn_txt, (self.btn_start.x + 25, self.btn_start.y + 15))
 
     def draw_event(self):
-        pygame.draw.rect(self.screen, (30, 40, 55), (150, 150, 600, 250))
-        pygame.draw.rect(self.screen, COLOR_BORDER, (150, 150, 600, 250), 3)
+        pygame.draw.rect(self.screen, (30, 40, 55), (150, 130, 600, 300))
+        pygame.draw.rect(self.screen, COLOR_BORDER, (150, 130, 600, 300), 3)
         self.screen.blit(
             self.font.render(self.data.world.event_manager.current_event_text, True, (240, 240, 240)),
-            (180, 200),
+            (180, 170),
         )
-        self.screen.blit(
-            self.font.render(
-                "[ Klick zum Fortfahren ]", True, COLOR_SELECTED
-            ),
-            (340, 330),
-        )
+
+        choices = self.data.world.event_manager.choices
+        if not choices:
+            self.screen.blit(
+                self.font.render("[ Klick zum Fortfahren ]", True, COLOR_SELECTED),
+                (340, 370),
+            )
+        else:
+            for idx, choice in enumerate(choices):
+                btn = pygame.Rect(180, 260 + idx * 50, 540, 36)
+                pygame.draw.rect(self.screen, (50, 65, 90), btn)
+                pygame.draw.rect(self.screen, COLOR_BORDER, btn, 2)
+                lbl = self.font.render(choice["text"], True, (220, 240, 255))
+                self.screen.blit(lbl, (btn.x + 15, btn.y + 8))
+
 
     def draw_game_over(self):
         self.screen.blit(

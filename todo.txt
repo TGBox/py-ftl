@@ -1,25 +1,26 @@
-(A) 2026-08-04 Spiel hängt sich im zweiten oder dritten Sektor random bei einer Node auf. +Refactoring @code
-(A) 2026-08-04 Schaden an der Hülle wird nach dem Kampf automatisch zurückgesetzt. +Refactoring @code
-(A) 2026-08-04 Es sollte möglich sein (je nach Schiffmodell) mehr Crew und mehr Waffen zu haben, als nur eine extra. +Refactoring @code
-(A) 2026-08-04 Es sollte Dauerkampfmodus geben, bei dem ich eine Checkbox in der GUI anhake und dann feuern die Waffen automatisch auf das aktuelle Ziel sobald sie fertig geladen haben. +Refactoring @code
-(A) 2026-08-04 Die Schusspfade sollen wie in FTL nach dem ziehen sichtbar sein. Alle Waffen sollten distinktive Zielstriche haben. Schaden sollte je nach Waffentyp über die ganze Linie hinweg angewendet werden, oder beim ersten getroffenen Raum. +Refactoring @code
-(A) 2026-08-04 Aktuell haben alle Schiffe (auch das des Spielers) immer das gleiche Layout. Ändern. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Spiel hängt sich im zweiten oder dritten Sektor random bei einer Node auf. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Schaden an der Hülle wird nach dem Kampf automatisch zurückgesetzt. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Es sollte möglich sein (je nach Schiffmodell) mehr Crew und mehr Waffen zu haben, als nur eine extra. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Es sollte Dauerkampfmodus geben, bei dem ich eine Checkbox in der GUI anhake und dann feuern die Waffen automatisch auf das aktuelle Ziel sobald sie fertig geladen haben. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Die Schusspfade sollen wie in FTL nach dem ziehen sichtbar sein. Alle Waffen sollten distinktive Zielstriche haben. Schaden sollte je nach Waffentyp über die ganze Linie hinweg angewendet werden, oder beim ersten getroffenen Raum. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Aktuell haben alle Schiffe (auch das des Spielers) immer das gleiche Layout. Ändern. +Refactoring @code
 (A) 2026-08-04 Es sollte (in eingeschränktem Maße) möglich sein, das Layout seines eigenen Schifftypens zu ändern. +Refactoring @code
-(A) 2026-08-04 Auf der Karte platzierte Schusslinien sollten individuell rückgängig gemacht werden können. und auch individuell ausgewählt werden können um sie abzufeuern. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Auf der Karte platzierte Schusslinien sollten individuell rückgängig gemacht werden können. und auch individuell ausgewählt werden können um sie abzufeuern. +Refactoring @code
 (A) 2026-08-04 Es sollte manche Stationen geben bei denen man seine Crew trainieren kann, um deren individuelle Werte zu verbessern. +Refactoring @code
-(A) 2026-08-04 Crew Mitglieder sollten eigene Namen, Gesundheitsanzeigen, Fähigkeiten und Boni/Handicaps haben. +Refactoring @code
-(A) 2026-08-04 Kampfsystem besser implementieren. Gesundheitshandling korrigieren. Aktuell gibt es keine Siegbedingungen für den Kampf. +Refactoring @code
-(A) 2026-08-04 Pause Modus im Kampf.  +Refactoring @code
-(A) 2026-08-04 Aufladestatus der Waffen anzeigen damit man weiss wann man schießen muss.  +Refactoring @code
-(A) 2026-08-04 Automatisches Schießen implementieren. +Refactoring @code
-(A) 2026-08-04 Verschiedene Waffentypen und Munition hinzufügen. Neben Laserwaffen auch noch Raketen (die Munition/Raketen verbrauchen) und Strahlenwaffen (die Schilde durchdringen). +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Crew Mitglieder sollten eigene Namen, Gesundheitsanzeigen, Fähigkeiten und Boni/Handicaps haben. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Kampfsystem besser implementieren. Gesundheitshandling korrigieren. Aktuell gibt es keine Siegbedingungen für den Kampf. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Pause Modus im Kampf.  +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Aufladestatus der Waffen anzeigen damit man weiss wann man schießen muss.  +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Automatisches Schießen implementieren. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Verschiedene Waffentypen und Munition hinzufügen. Neben Laserwaffen auch noch Raketen (die Munition/Raketen verbrauchen) und Strahlenwaffen (die Schilde durchdringen). +Refactoring @code
 (A) 2026-08-04 Waffentypen sollen auch noch Untertypen haben. Zum Beispiel soll es Laser geben, die besonders effektiv biologisches Material verbrennen lassen können. +Refactoring @code
-(A) 2026-08-04 Ausweichen und Schiffsstatistiken. Der Zustand vom Antrieb (Brücke/Maschinenraum) sollte direkt mit dem prozentualen Ausweichwert des Schiffes im Kampf zusammenhängen. +Refactoring @code
-(A) 2026-08-04 Es soll vordefinierte Schiffpläne geben für Schiffe die man freispielen/während des Spiels kaufen kann. +Refactoring @code
-(A) 2026-08-04 Gegner KI und Taktik. Gegner brauchen simple KI, die die Waffen abwechselnd feuert und die Crewmitglieder zur Reparatur in die einzelnen Räume schickt. +Refactoring @code
-(A) 2026-08-04 Sprung- und Sensorenkarte ausbauen. Sprungstoff Begrenzungen einabuen, feindliche Flottenbewegungen (die den Spieler von hinten jagen) und verschiedene Sektorentypen (z.B. Nebel, Zivil, Rebellen, etc.) hinzufügen. +Refactoring @code
-(A) 2026-08-04 Events und Text-Begegnungen. Ein Eventsystem erstellen mit verschiedenen Entscheidungsbuttons, bei denen Zufallsereignisse (Schiffersatzteile finden, Piraten-Überfall, Händler, etc.) ausgelöst werden. +Refactoring @code
-(A) 2026-08-04 Sieg und Niederlagen Bedingungen einbauen. Einen Bildschirm für den Tod der Crew, die Zerstörung des Schiffes und den finalen Sieg nach dem Besiegen des Bosses einfügen. +Refactoring @code
-(A) 2026-08-04 Energielevel der Räume und Raum-Integrität verknüpfen. Räume sollen durch Treffer automatisch Energie verlieren oder deaktiviert werden, bis sie wieder repariert sind.  +Refactoring @code
-(A) 2026-08-04 Crew Management und Rollen. Crew System so erweitern, dass es verschiedene Arten von Leuten gibt, die eigene Boni in verschiedenen Räumen geben.  +Refactoring @code
-(A) 2026-08-04 Crew System so erweitern dass es generell unterschiedliche Lebewesen gibt, die man als Crew haben kann und die ihre eigenen Perks und Debuffs haben.  +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Ausweichen und Schiffsstatistiken. Der Zustand vom Antrieb (Brücke/Maschinenraum) sollte direkt mit dem prozentualen Ausweichwert des Schiffes im Kampf zusammenhängen. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Es soll vordefinierte Schiffpläne geben für Schiffe die man freispielen/während des Spiels kaufen kann. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Gegner KI und Taktik. Gegner brauchen simple KI, die die Waffen abwechselnd feuert und die Crewmitglieder zur Reparatur in die einzelnen Räume schickt. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Sprung- und Sensorenkarte ausbauen. Sprungstoff Begrenzungen einabuen, feindliche Flottenbewegungen (die den Spieler von hinten jagen) und verschiedene Sektorentypen (z.B. Nebel, Zivil, Rebellen, etc.) hinzufügen. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Events und Text-Begegnungen. Ein Eventsystem erstellen mit verschiedenen Entscheidungsbuttons, bei denen Zufallsereignisse (Schiffersatzteile finden, Piraten-Überfall, Händler, etc.) ausgelöst werden. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Sieg und Niederlagen Bedingungen einbauen. Einen Bildschirm für den Tod der Crew, die Zerstörung des Schiffes und den finalen Sieg nach dem Besiegen des Bosses einfügen. +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Energielevel der Räume und Raum-Integrität verknüpfen. Räume sollen durch Treffer automatisch Energie verlieren oder deaktiviert werden, bis sie wieder repariert sind.  +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Crew Management und Rollen. Crew System so erweitern, dass es verschiedene Arten von Leuten gibt, die eigene Boni in verschiedenen Räumen geben.  +Refactoring @code
+x 2026-08-05 (A) 2026-08-04 Crew System so erweitern dass es generell unterschiedliche Lebewesen gibt, die man als Crew haben kann und die ihre eigenen Perks und Debuffs haben.  +Refactoring @code
+

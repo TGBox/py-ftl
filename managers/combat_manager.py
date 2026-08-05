@@ -1,5 +1,6 @@
 import random
 
+from classes.Crew import Crew
 from classes.GameData import GameData
 from classes.Projectile import Projectile
 from managers.state_manager import StateManager
@@ -11,6 +12,7 @@ class CombatManager:
     def __init__(self, data: GameData, state_manager: StateManager):
         self.data = data
         self.state_manager = state_manager
+        self.enemy_crew: list[Crew] = []
 
     def update(self, dt: float):
         """Wird einmal pro Frame aufgerufen."""
@@ -37,6 +39,14 @@ class CombatManager:
         for crew in self.data.player.crew:
             crew.update(dt, self.data.player.ship.rooms)
 
+        # Gegnerische Crew initialisieren & updaten
+        if not self.enemy_crew and len(self.data.enemy.ship.rooms) > 0:
+            for r in self.data.enemy.ship.rooms:
+                self.enemy_crew.append(Crew(r.rect.centerx, r.rect.centery, name="Pirate", is_enemy=True))
+
+        for e_crew in self.enemy_crew:
+            e_crew.update(dt, self.data.enemy.ship.rooms)
+
     def update_shields(self, dt: float):
 
         self.data.player.shield.update(
@@ -55,8 +65,14 @@ class CombatManager:
             self.data.player.ship.rooms[1].current_power > 0
         )
 
+        # Waffen-Bemannungsbonus (falls Crew in Waffenraum steht)
+        weapon_manned = any(
+            c.current_room == self.data.player.ship.rooms[1] for c in self.data.player.crew
+        )
+        charge_mult = 1.25 if weapon_manned else 1.0
+
         for weapon in self.data.player.weapons:
-            weapon.update(dt, weapon_powered)
+            weapon.update(dt * charge_mult, weapon_powered)
 
         if self.data.combat.autofire_enabled:
             self.fire_autofire_weapons()
@@ -170,7 +186,12 @@ class CombatManager:
                 projectile.target_room.apply_damage(projectile.damage, self.data.enemy.reactor)
 
     def handle_enemy_hit(self, projectile: Projectile):
-        player_evade = self.data.player.ship.rooms[2].current_power * 0.20
+        pilot_manned = any(
+            c.current_room == self.data.player.ship.rooms[2] for c in self.data.player.crew
+        )
+        base_evade = self.data.player.ship.rooms[2].current_power * 0.20
+        player_evade = base_evade + (0.10 if pilot_manned else 0.0)
+
         if random.random() < player_evade:
             self.show_message("AUSGEWICHEN!")
         else:
@@ -206,6 +227,7 @@ class CombatManager:
 
         self.data.player.scrap += 20
         self.data.player.missiles += 2
+        self.enemy_crew.clear()
 
         self.data.player.projectiles.clear()
         self.data.combat.weapon_targets.clear()
@@ -222,6 +244,7 @@ class CombatManager:
 
         self.data.player.projectiles.clear()
         self.data.combat.weapon_targets.clear()
+        self.enemy_crew.clear()
 
         self.data.current_state = STATE_GAME_OVER
 
@@ -229,4 +252,5 @@ class CombatManager:
 
         self.data.combat.msg = text
         self.data.combat.msg_timer = 1.5
+
 

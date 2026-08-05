@@ -102,7 +102,23 @@ class InputManager:
         self.shop_manager.handle_click(mx, my)
 
     def handle_event_click(self):
-        self.map_manager.continue_event()
+        mx, my = pygame.mouse.get_pos()
+        choices = self.data.world.event_manager.choices
+        if not choices:
+            self.map_manager.continue_event()
+            return
+
+        for idx, choice in enumerate(choices):
+            btn_rect = pygame.Rect(180, 260 + idx * 50, 540, 36)
+            if btn_rect.collidepoint(mx, my):
+                action = choice.get("action", "")
+                self.map_manager.handle_choice(action, choice)
+                return
+
+        if len(choices) == 1:
+            action = choices[0].get("action", "")
+            self.map_manager.handle_choice(action, choices[0])
+
 
     def handle_combat_click(self, event: pygame.event.Event):
         mx, my = pygame.mouse.get_pos()

@@ -17,15 +17,19 @@ class MapManager:
     def travel_to_node(self, node: Node):
 
         if self.data.player.fuel <= 0:
-            print("NO FUEL")
+            self.trigger_event("DISTRESS")
             return False
 
         self.data.player.fuel -= 1
+        self.data.world.star_map.advance_fleet()
 
         self.data.world.star_map.current_node = node
         node.visited = True
 
-        self.handle_node_event(node)
+        if self.data.world.star_map.rebel_fleet_x >= node.x:
+            self.start_normal_combat()
+        else:
+            self.handle_node_event(node)
 
         return True
 
@@ -79,14 +83,33 @@ class MapManager:
 
     def trigger_event(self, event_type: str):
 
-        scrap, fuel = self.data.world.event_manager.trigger_event(
-            event_type
-        )
-
-        self.data.player.scrap += scrap
-        self.data.player.fuel += fuel
-
+        self.data.world.event_manager.trigger_event(event_type)
         self.data.current_state = STATE_EVENT
+
+    def handle_choice(self, action: str, choice_data: dict):
+        if action == "BUY_FUEL":
+            if self.data.player.scrap >= 10:
+                self.data.player.scrap -= 10
+                self.data.player.fuel += 2
+            self.data.current_state = STATE_MAP
+
+        elif action == "SCAVENGE_FUEL":
+            self.data.player.fuel += 1
+            self.data.current_state = STATE_MAP
+
+        elif action == "CLAIM_RESOURCES":
+            self.data.player.scrap += choice_data.get("scrap", 0)
+            self.data.player.fuel += choice_data.get("fuel", 0)
+            self.data.current_state = STATE_MAP
+
+        elif action == "START_COMBAT":
+            self.start_normal_combat()
+
+        elif action == "ENTER_SHOP":
+            self.enter_shop()
+
+        else:
+            self.data.current_state = STATE_MAP
 
     def continue_event(self):
 
