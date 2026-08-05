@@ -103,20 +103,30 @@ class MapManager:
         self.data.current_state = STATE_COMBAT
         
     def restart_game(self):
-
+        from classes.Crew import Crew
+        from classes.Reactor import Reactor
+        from classes.ShieldSystem import ShieldSystem
         from classes.ShipModel import PLAYER_SHIP
+        from classes.Weapon import Weapon
 
-        self.data.player_ship = copy.deepcopy(
-            PLAYER_SHIP
-        )
+        self.data.player_ship = copy.deepcopy(PLAYER_SHIP)
+        self.data.player_reactor = Reactor(total_power=PLAYER_START_POWER)
+        self.data.player_shield = ShieldSystem()
+        self.data.player_crew = [Crew(340, 245), Crew(115, 245)]
+        self.data.player_weapons = [
+            Weapon("Standard Laser", charge_time=3.0, w_type="LASER"),
+            Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1),
+        ]
+        self.data.player_projectiles.clear()
+        self.data.player_fuel = PLAYER_START_FUEL
+        self.data.player_scrap = PLAYER_START_SCRAP
+        self.data.player_missiles = PLAYER_START_MISSILES
+        self.data.player_weapon_targets.clear()
+        self.data.is_player_targeting = False
+        self.data.player_targeting_weapon_idx = None
+        self.data.paused = False
 
         self.data.star_map.sector = 1
         self.data.star_map.generate_map()
-
-        self.data.player_fuel = 5
-        self.data.player_scrap = 20
-        self.data.player_missiles = 6
-
-        self.data.player_weapon_targets.clear()
 
         self.data.current_state = STATE_MAP
