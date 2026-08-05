@@ -55,7 +55,7 @@ class RenderManager:
         self.draw_messages()
         
     def draw_map(self):
-        pass        
+        self.data.star_map.draw(self.screen)       
     def draw_shop(self):
         pygame.draw.rect(self.screen, (25, 30, 40), (150, 70, 600, 430))
         pygame.draw.rect(
