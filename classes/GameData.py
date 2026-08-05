@@ -19,7 +19,7 @@ class PlayerData:
         self.ship: ShipModel = copy.deepcopy(PLAYER_SHIP)
         self.reactor: Reactor = Reactor(total_power=PLAYER_START_POWER)
         self.shield: ShieldSystem = ShieldSystem()
-        self.crew: list[Crew] = [Crew(340, 245), Crew(115, 245)]
+        self.crew: list[Crew] = [Crew(340, 245, name="Alpha", species="Mensch"), Crew(115, 245, name="Beta", species="Engi")]
         self.weapons: list[Weapon] = [
             Weapon("Standard Laser", charge_time=3.0, w_type="LASER"),
             Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1),
@@ -63,7 +63,7 @@ class GameData:
     def __init__(self) -> None:
         self.running: bool = True
         self.paused: bool = False
-        self.current_state: str = STATE_MAP
+        self.current_state: str = STATE_MAIN_MENU
 
         self.player: PlayerData = PlayerData()
         self.enemy: EnemyData = EnemyData()

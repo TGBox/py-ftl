@@ -165,7 +165,10 @@ class CombatManager:
             self.data.player.projectiles.remove(projectile)
 
     def handle_player_hit(self, projectile: Projectile):
-        enemy_evade = self.data.enemy.ship.rooms[2].current_power * 0.15
+        # SRS 6.2 Evasion Berechnung
+        base_engine = self.data.enemy.ship.rooms[2].current_power * 0.10 if len(self.data.enemy.ship.rooms) > 2 else 0.10
+        enemy_evade = base_engine
+
         if random.random() < enemy_evade:
             self.show_message("FEIND IST AUSGEWICHEN!")
         else:
@@ -182,15 +185,25 @@ class CombatManager:
                     hit_successful = True
 
             if hit_successful:
-                self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
-                projectile.target_room.apply_damage(projectile.damage, self.data.enemy.reactor)
+                if projectile.w_type == "BEAM":
+                    # Beam schneidet mehrere Räume per Liniensegment-Schnittpunkt (SRS 6.2)
+                    intersected_rooms = projectile.get_intersected_rooms(self.data.enemy.ship.rooms)
+                    for room in intersected_rooms:
+                        self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
+                        room.apply_damage(projectile.damage, self.data.enemy.reactor)
+                else:
+                    self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
+                    projectile.target_room.apply_damage(projectile.damage, self.data.enemy.reactor)
 
     def handle_enemy_hit(self, projectile: Projectile):
-        pilot_manned = any(
-            c.current_room == self.data.player.ship.rooms[2] for c in self.data.player.crew
-        )
-        base_evade = self.data.player.ship.rooms[2].current_power * 0.20
-        player_evade = base_evade + (0.10 if pilot_manned else 0.0)
+        # SRS 6.2 Evasion Formel: E = (E_Base_Engine + C_Engine_Bonus + C_Pilot_Bonus) * A_Multiplier + S_Cloak
+        e_base_engine = self.data.player.ship.rooms[2].current_power * 0.10 if len(self.data.player.ship.rooms) > 2 else 0.10
+        c_pilot_bonus = 0.10 if any(c.current_room == self.data.player.ship.rooms[2] for c in self.data.player.crew) else 0.0
+        c_engine_bonus = 0.05 if any(c.current_room == self.data.player.ship.rooms[0] for c in self.data.player.crew) else 0.0
+        a_multiplier = 1.0 if c_pilot_bonus > 0 else 0.0
+        s_cloak = 0.0
+
+        player_evade = (e_base_engine + c_engine_bonus + c_pilot_bonus) * (a_multiplier if c_pilot_bonus > 0 else 1.0) + s_cloak
 
         if random.random() < player_evade:
             self.show_message("AUSGEWICHEN!")
@@ -208,8 +221,14 @@ class CombatManager:
                     hit_successful = True
 
             if hit_successful:
-                self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
-                projectile.target_room.apply_damage(projectile.damage, self.data.player.reactor)
+                if projectile.w_type == "BEAM":
+                    intersected_rooms = projectile.get_intersected_rooms(self.data.player.ship.rooms)
+                    for room in intersected_rooms:
+                        self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
+                        room.apply_damage(projectile.damage, self.data.player.reactor)
+                else:
+                    self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
+                    projectile.target_room.apply_damage(projectile.damage, self.data.player.reactor)
 
     def check_end_of_battle(self):
 
@@ -223,10 +242,35 @@ class CombatManager:
 
             self.player_lost()
 
+    def calculate_stochastic_rewards(self, reward_tier: str = "Medium") -> tuple[int, int]:
+        """SRS 6.3 Stochastische Belohnungsberechnung: Scrap = floor(B_Sector * V_Tier)."""
+        sector = self.data.world.star_map.sector
+        b_sector = 15 + sector * 10
+        if reward_tier == "Low":
+            v_tier = random.uniform(0.5, 0.7)
+        elif reward_tier == "High":
+            v_tier = random.uniform(1.3, 1.55)
+        else:  # Medium
+            v_tier = random.uniform(0.8, 1.3)
+
+        scrap = int(b_sector * v_tier)
+        missiles = random.randint(1, 3)
+
+        # 3% bis 6% Chance auf Bonus-Drop (SRS Kap. 6.3)
+        drop_chance = 0.06 if reward_tier == "High" else 0.03
+        if random.random() < drop_chance:
+            self.data.player.missiles += 2
+            self.show_message("BONUS-BEUTE GEFUNDEN! (+2 Raketen)")
+
+        return scrap, missiles
+
     def player_won(self):
 
-        self.data.player.scrap += 20
-        self.data.player.missiles += 2
+        tier = "High" if self.data.enemy.ship.name == "Flaggschiff" else "Medium"
+        scrap_reward, missile_reward = self.calculate_stochastic_rewards(tier)
+
+        self.data.player.scrap += scrap_reward
+        self.data.player.missiles += missile_reward
         self.enemy_crew.clear()
 
         self.data.player.projectiles.clear()
@@ -239,6 +283,7 @@ class CombatManager:
             self.data.current_state = STATE_VICTORY
         else:
             self.data.current_state = STATE_MAP
+
 
     def player_lost(self):
 

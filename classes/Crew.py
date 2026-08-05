@@ -84,7 +84,14 @@ class Crew:
             pygame.draw.rect(surface, (40, 40, 40), (bar_x, bar_y, bar_w, bar_h))
             pygame.draw.rect(surface, (50, 220, 100), (bar_x, bar_y, int(bar_w * hp_ratio), bar_h))
 
+        # Spezies-Badge Buchstabe im Kreis
+        badge_font = pygame.font.SysFont(None, 14, bold=True)
+        badge_char = "P" if self.is_enemy else (self.species[0] if self.species else "C")
+        badge_lbl = badge_font.render(badge_char, True, (0, 0, 0) if self.selected else (255, 255, 255))
+        surface.blit(badge_lbl, (int(self.x) - badge_lbl.get_width() // 2, int(self.y) - badge_lbl.get_height() // 2))
+
         # Name zeichnen
         font = pygame.font.SysFont(None, 14)
         lbl = font.render(self.name, True, (220, 220, 220))
-        surface.blit(lbl, (int(self.x) - lbl.get_width() // 2, int(self.y) + self.radius + 2))
+        surface.blit(lbl, (int(self.x) - lbl.get_width() // 2, int(self.y) + self.radius + 2))
+

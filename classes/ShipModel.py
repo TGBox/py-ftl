@@ -53,6 +53,24 @@ ENEMY_SCOUT = ShipModel("Scout", 8, [
     Room("Brücke", (780, 200, 80, 80), is_enemy=True)
 ], is_enemy=True)
 
+ENEMY_FIGHTER = ShipModel("Rebellen Jäger", 12, [
+    Room("Schild", (580, 190, 85, 85), is_enemy=True),
+    Room("Waffen", (675, 190, 85, 85), is_enemy=True),
+    Room("Antrieb", (770, 190, 85, 85), is_enemy=True)
+], is_enemy=True)
+
+ENEMY_BOMBER = ShipModel("Kaper-Bomber", 14, [
+    Room("Schild", (570, 180, 90, 90), is_enemy=True),
+    Room("Raketen", (670, 180, 90, 90), is_enemy=True),
+    Room("Brücke", (770, 180, 90, 90), is_enemy=True)
+], is_enemy=True)
+
+ENEMY_CRUISER = ShipModel("Schwerer Kreuzer", 18, [
+    Room("Schild", (550, 160, 95, 95), is_enemy=True),
+    Room("Waffen", (655, 160, 95, 95), is_enemy=True),
+    Room("Maschinen", (760, 160, 95, 95), is_enemy=True)
+], is_enemy=True)
+
 ENEMY_BOSS = ShipModel("Flaggschiff", 25, [
     Room("Schild", (550, 150, 100, 100), is_enemy=True),
     Room("Laser", (670, 100, 80, 80), is_enemy=True),
@@ -60,5 +78,4 @@ ENEMY_BOSS = ShipModel("Flaggschiff", 25, [
     Room("Brücke", (770, 150, 100, 100), is_enemy=True)
 ], is_enemy=True)
 
-# Standardgegner für den Start festlegen
-current_enemy: ShipModel = copy.deepcopy(ENEMY_SCOUT)
+ENEMY_TEMPLATES = [ENEMY_SCOUT, ENEMY_FIGHTER, ENEMY_BOMBER, ENEMY_CRUISER]

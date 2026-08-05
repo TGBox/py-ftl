@@ -80,41 +80,79 @@ class ShopManager:
         self.data.player.reactor.available_power += 1
 
     def buy_crew(self):
-
-        if self.data.player.scrap < 25:
+        import random
+        max_c = getattr(self.data.player.ship, "max_crew", 4)
+        if self.data.player.scrap < 25 or len(self.data.player.crew) >= max_c:
             return
 
         self.data.player.scrap -= 25
-
         spawn_room = self.data.player.ship.rooms[0]
+        species = random.choice(["Mensch", "Engi", "Mantis"])
+        c_num = len(self.data.player.crew) + 1
 
         self.data.player.crew.append(
             Crew(
                 spawn_room.rect.centerx,
                 spawn_room.rect.centery,
+                name=f"Crew {c_num}",
+                species=species,
             )
         )
+
 
     def buy_weapon(self):
+        import random
+        from classes.Weapon import Weapon
 
-        if self.data.player.scrap < 45:
+        cost = 40
+        if self.data.player.scrap < cost:
+            self.data.combat.msg = "NICHT GENUG SCRAP!"
+            self.data.combat.msg_timer = 1.5
             return
 
-        if len(self.data.player.weapons) >= 3:
-            return
+        weapon_pool = [
+            {"name": "Schwerer Laser", "charge_time": 3.5, "w_type": "LASER", "shield_pierce": 0, "damage": 45.0, "ammo_cost": 0},
+            {"name": "Artemis Rakete", "charge_time": 4.0, "w_type": "MISSILE", "shield_pierce": 1, "damage": 40.0, "ammo_cost": 1},
+            {"name": "Pike Strahl", "charge_time": 5.0, "w_type": "BEAM", "shield_pierce": 1, "damage": 30.0, "ammo_cost": 0},
+        ]
+        chosen = random.choice(weapon_pool)
+        max_slots = getattr(self.data.player.ship, "max_weapons", 3)
 
-        self.data.player.scrap -= 45
-
-        self.data.player.weapons.append(
-            Weapon(
-                "Pike Strahl",
-                charge_time=5.0,
-                w_type="BEAM",
-                shield_pierce=1,
-                damage=25.0,
+        # Freier Slot vorhanden
+        if len(self.data.player.weapons) < max_slots:
+            self.data.player.scrap -= cost
+            self.data.player.weapons.append(
+                Weapon(
+                    chosen["name"],
+                    charge_time=chosen["charge_time"],
+                    w_type=chosen["w_type"],
+                    shield_pierce=chosen["shield_pierce"],
+                    damage=chosen["damage"],
+                    ammo_cost=chosen["ammo_cost"],
+                )
             )
-        )
+            self.data.combat.msg = f"Gekauft: {chosen['name']}!"
+            self.data.combat.msg_timer = 2.0
+            return
+
+        # Keine freien Slots -> WAFFEN-FUSION!
+        matching_weapon = None
+        for w in self.data.player.weapons:
+            if w.w_type == chosen["w_type"]:
+                matching_weapon = w
+                break
+
+        if matching_weapon:
+            self.data.player.scrap -= cost
+            matching_weapon.damage = round(matching_weapon.damage * 1.4, 1)
+            matching_weapon.charge_time = max(1.5, round(matching_weapon.charge_time * 0.8, 1))
+            matching_weapon.name = f"{matching_weapon.w_type.capitalize()} MK II"
+            self.data.combat.msg = f"WAFFEN-FUSION! {matching_weapon.name} (+40% Schaden, -20% Ladezeit)"
+            self.data.combat.msg_timer = 3.0
+        else:
+            self.data.combat.msg = "KEIN SLOT FREI (Kein gleicher Waffentyp zur Fusion)!"
+            self.data.combat.msg_timer = 2.0
 
     def leave_shop(self):
 
-        self.data.current_state = STATE_MAP
+        self.data.current_state = STATE_MAP

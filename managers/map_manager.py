@@ -83,8 +83,9 @@ class MapManager:
 
     def trigger_event(self, event_type: str):
 
-        self.data.world.event_manager.trigger_event(event_type)
+        self.data.world.event_manager.trigger_event(event_type, self.data.player.crew)
         self.data.current_state = STATE_EVENT
+
 
     def handle_choice(self, action: str, choice_data: dict):
         if action == "BUY_FUEL":
@@ -122,19 +123,31 @@ class MapManager:
             self.data.current_state = STATE_MAP
 
     def start_normal_combat(self):
+        import random
+        from classes.ShipModel import ENEMY_SCOUT, ENEMY_FIGHTER, ENEMY_BOMBER, ENEMY_CRUISER
 
-        self.data.enemy.ship = copy.deepcopy(
-            ENEMY_SCOUT
-        )
+        sector = self.data.world.star_map.sector
+        if sector == 1:
+            template = random.choice([ENEMY_SCOUT, ENEMY_FIGHTER])
+        elif sector == 2:
+            template = random.choice([ENEMY_FIGHTER, ENEMY_BOMBER])
+        else:
+            template = random.choice([ENEMY_BOMBER, ENEMY_CRUISER])
+
+        self.data.enemy.ship = copy.deepcopy(template)
 
         for room in self.data.enemy.ship.rooms:
             room.current_power = 1
 
-        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER)
+        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + sector - 1)
         self.data.enemy.shield = ShieldSystem()
-        self.data.enemy.weapon = Weapon("Laser", charge_time=4.5, w_type="LASER")
+
+        w_type = random.choice(["LASER", "MISSILE", "BEAM"])
+        w_name = "Feind " + w_type.capitalize()
+        self.data.enemy.weapon = Weapon(w_name, charge_time=max(2.5, 4.5 - sector * 0.4), w_type=w_type)
 
         self.data.current_state = STATE_COMBAT
+
 
     def restart_game(self):
         from classes.Crew import Crew

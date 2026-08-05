@@ -8,16 +8,24 @@ class EventManager:
         self.current_event_type: str | None = None
         self.choices: list[dict] = []
 
-    def trigger_event(self, event_type: str) -> tuple[int, int]:
+    def trigger_event(self, event_type: str, player_crew: list = None) -> tuple[int, int]:
         self.current_event_type = event_type
         self.choices.clear()
+        has_engi = any(getattr(c, "species", "") == "Engi" for c in (player_crew or []))
 
         if event_type == "DISTRESS":
             self.current_event_text = "KEIN TREIBSTOFF MEHR! Die Notfall-Bake sendet ein Signal..."
-            self.choices = [
+            self.choices = []
+            if has_engi:
+                self.choices.append({
+                    "text": "[Engi-Spezial] Notfall-Reaktor modifizieren (+2 Treibstoff)",
+                    "action": "SCAVENGE_FUEL",
+                    "is_blue": True
+                })
+            self.choices.extend([
                 {"text": "1. Händler rufen (-10 Scrap für 2 Treibstoff)", "action": "BUY_FUEL"},
                 {"text": "2. Wrack scavengen (+1 Treibstoff)", "action": "SCAVENGE_FUEL"},
-            ]
+            ])
             return 0, 0
 
         elif event_type == "RESOURCE":
@@ -26,9 +34,18 @@ class EventManager:
             self.current_event_text = (
                 f"Ein verlassenes Schiffswrack entdeckt! Fund: {scrap_found} Scrap, {fuel_found} Treibstoff."
             )
-            self.choices = [
+            self.choices = []
+            if has_engi:
+                self.choices.append({
+                    "text": "[Engi-Spezial] Bauteile optimal verwerten (+35 Scrap, +3 Fuel)",
+                    "action": "CLAIM_RESOURCES",
+                    "is_blue": True,
+                    "scrap": 35,
+                    "fuel": 3
+                })
+            self.choices.append(
                 {"text": "1. Beute einsammeln & weiterreisen", "action": "CLAIM_RESOURCES", "scrap": scrap_found, "fuel": fuel_found}
-            ]
+            )
             return scrap_found, fuel_found
 
         elif event_type == "COMBAT":
@@ -51,4 +68,5 @@ class EventManager:
             self.choices = [
                 {"text": "1. Weiterfliegen", "action": "CONTINUE"}
             ]
-            return 0, 0
+            return 0, 0
+

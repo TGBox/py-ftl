@@ -87,7 +87,7 @@ class RenderManager:
             (self.btn_missiles, "Raketen kaufen (+3 Raketen) - 6 Scrap"),
             (self.btn_upgrade_reactor, "Reaktor aufrüsten (+1 Power) - 15 Scrap"),
             (self.btn_buy_crew, "Crew-Mitglied anheuern - 25 Scrap"),
-            (self.btn_buy_weapon, "Strahlenwaffe (Pike) kaufen - 45 Scrap"),
+            (self.btn_buy_weapon, "Zufallswaffe kaufen & fusionieren - 40 Scrap"),
         ]:
             pygame.draw.rect(self.screen, (40, 50, 70), btn)
             pygame.draw.rect(self.screen, COLOR_BORDER, btn, 2)  #[cite: 2]
@@ -214,17 +214,49 @@ class RenderManager:
             
     def draw_main_menu(self):
         # Titel
-        title_font = pygame.font.SysFont(None, 72)
-        title_txt = title_font.render("FTL KLON", True, (255, 255, 255))
-        self.screen.blit(title_txt, (SCREEN_WIDTH // 2 - title_txt.get_width() // 2, 200))
+        title_font = pygame.font.SysFont(None, 64)
+        title_txt = title_font.render("FTL KLON - RAUMSCHIFF WÄHLEN", True, (255, 255, 255))
+        self.screen.blit(title_txt, (SCREEN_WIDTH // 2 - title_txt.get_width() // 2, 70))
 
-        # Start-Button (als Instanzvariable speichern, damit der Input-Manager ihn nutzen kann)
-        self.btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 100, 350, 200, 50)
-        pygame.draw.rect(self.screen, (50, 60, 80), self.btn_start)
-        pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_start, 2)
-        
-        btn_txt = self.font.render("Neues Spiel starten", True, (200, 255, 200))
-        self.screen.blit(btn_txt, (self.btn_start.x + 25, self.btn_start.y + 15))
+        # Schiffswahl Karten
+        self.btn_ship_kestrel = pygame.Rect(100, 160, 210, 160)
+        self.btn_ship_kreuzer = pygame.Rect(345, 160, 210, 160)
+        self.btn_ship_tarnschiff = pygame.Rect(590, 160, 210, 160)
+
+        selected_name = getattr(self.data.player.ship, "name", "Kestrel")
+
+        for btn, name, hp, weapons, crew in [
+            (self.btn_ship_kestrel, "Kestrel", 15, 3, 4),
+            (self.btn_ship_kreuzer, "Kreuzer", 18, 4, 6),
+            (self.btn_ship_tarnschiff, "Tarnschiff", 12, 3, 3),
+        ]:
+            is_sel = (name == selected_name)
+            bg_col = (40, 70, 100) if is_sel else (30, 40, 55)
+            border_col = (100, 220, 255) if is_sel else (80, 90, 110)
+
+            pygame.draw.rect(self.screen, bg_col, btn)
+            pygame.draw.rect(self.screen, border_col, btn, 3 if is_sel else 2)
+
+            name_txt = self.font.render(name, True, (255, 255, 255) if is_sel else (200, 200, 200))
+            hp_txt = self.font.render(f"Hülle: {hp} HP", True, (150, 220, 150))
+            w_txt = self.font.render(f"Max Waffen: {weapons}", True, (220, 220, 150))
+            c_txt = self.font.render(f"Max Crew: {crew}", True, (150, 200, 255))
+            sel_txt = self.font.render("[ AUSGEWÄHLT ]" if is_sel else "[ KLICKEN ]", True, (100, 255, 100) if is_sel else (150, 150, 150))
+
+            self.screen.blit(name_txt, (btn.x + 20, btn.y + 15))
+            self.screen.blit(hp_txt, (btn.x + 20, btn.y + 45))
+            self.screen.blit(w_txt, (btn.x + 20, btn.y + 70))
+            self.screen.blit(c_txt, (btn.x + 20, btn.y + 95))
+            self.screen.blit(sel_txt, (btn.x + 20, btn.y + 125))
+
+        # Start-Button
+        self.btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 120, 360, 240, 50)
+        pygame.draw.rect(self.screen, (50, 120, 70), self.btn_start)
+        pygame.draw.rect(self.screen, (100, 255, 100), self.btn_start, 2)
+
+        btn_txt = self.font.render("Reise Starten", True, (255, 255, 255))
+        self.screen.blit(btn_txt, (self.btn_start.x + 65, self.btn_start.y + 15))
+
 
     def draw_event(self):
         pygame.draw.rect(self.screen, (30, 40, 55), (150, 130, 600, 300))
@@ -242,11 +274,17 @@ class RenderManager:
             )
         else:
             for idx, choice in enumerate(choices):
-                btn = pygame.Rect(180, 260 + idx * 50, 540, 36)
-                pygame.draw.rect(self.screen, (50, 65, 90), btn)
-                pygame.draw.rect(self.screen, COLOR_BORDER, btn, 2)
-                lbl = self.font.render(choice["text"], True, (220, 240, 255))
-                self.screen.blit(lbl, (btn.x + 15, btn.y + 8))
+                btn = pygame.Rect(180, 240 + idx * 48, 540, 38)
+                is_blue = choice.get("is_blue", False)
+                bg_color = (30, 90, 190) if is_blue else (50, 65, 90)
+                border_color = (100, 200, 255) if is_blue else COLOR_BORDER
+                text_color = (180, 240, 255) if is_blue else (220, 240, 255)
+
+                pygame.draw.rect(self.screen, bg_color, btn)
+                pygame.draw.rect(self.screen, border_color, btn, 2)
+                lbl = self.font.render(choice["text"], True, text_color)
+                self.screen.blit(lbl, (btn.x + 15, btn.y + 10))
+
 
 
     def draw_game_over(self):

@@ -42,16 +42,27 @@ class Projectile:
     if math.hypot(self.target_x - self.x, self.target_y - self.y) < 10:
       self.alive = False
 
+  def get_intersected_rooms(self, rooms: list[Room]) -> list[Room]:
+    """Prüft per Liniensegment-Schnittpunkt, welche Räume vom Beam gekreuzt werden (SRS Kap. 6.2)."""
+    intersected = []
+    for room in rooms:
+        if room.rect.clipline((self.x, self.y), (self.target_x, self.target_y)):
+            intersected.append(room)
+    return intersected if intersected else [self.target_room]
+
   def draw(self, surface: pygame.Surface) -> None:
     if self.w_type == "MISSILE":
       pygame.draw.rect(
           surface, (255, 140, 0), (int(self.x) - 4, int(self.y) - 4, 8, 8)
       )
     elif self.w_type == "BEAM":
+      pygame.draw.line(
+          surface, (255, 255, 100), (int(self.x), int(self.y)), (int(self.target_x), int(self.target_y)), 3
+      )
       pygame.draw.circle(
           surface, (255, 255, 100), (int(self.x), int(self.y)), 7
       )
     else:  # LASER
       pygame.draw.circle(
           surface, COLOR_PROJECTILE, (int(self.x), int(self.y)), 5
-      )
+      )

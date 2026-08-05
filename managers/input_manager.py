@@ -44,15 +44,36 @@ class InputManager:
     def handle_keydown(self, event: pygame.event.Event):
         if event.key == pygame.K_SPACE:
             self.data.paused = not self.data.paused
+        elif event.key == pygame.K_s:
+            from managers.save_manager import SaveManager
+            SaveManager.save_game(self.data)
+        elif event.key == pygame.K_l:
+            from managers.save_manager import SaveManager
+            SaveManager.load_game(self.data)
+
 
     def handle_left_click(self, event: pygame.event.Event):
 
         mx, my = pygame.mouse.get_pos()
 
         if self.data.current_state == STATE_MAIN_MENU:
-            btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 100, 350, 200, 50)
-            if btn_start.collidepoint(mx, my):
-                self.restart_game()
+            btn_kestrel = pygame.Rect(100, 160, 210, 160)
+            btn_kreuzer = pygame.Rect(345, 160, 210, 160)
+            btn_tarnschiff = pygame.Rect(590, 160, 210, 160)
+            btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 120, 360, 240, 50)
+
+            import copy
+            from classes.ShipModel import SHIP_BLUEPRINTS
+
+            if btn_kestrel.collidepoint(mx, my):
+                self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Kestrel"])
+            elif btn_kreuzer.collidepoint(mx, my):
+                self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Kreuzer"])
+            elif btn_tarnschiff.collidepoint(mx, my):
+                self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Tarnschiff"])
+            elif btn_start.collidepoint(mx, my):
+                self.data.current_state = STATE_MAP
+
 
         elif self.data.current_state == STATE_MAP:
             self.handle_map_click(mx, my)

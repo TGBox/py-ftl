@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import pygame
 
@@ -15,8 +16,16 @@ from settings import *
 class Game:
     def __init__(self) -> None:
         pygame.init()
+        # Event Queue Überlauf-Schutz (SRS Kap. 4)
+        pygame.event.set_blocked(pygame.MOUSEMOTION)
+
+        # Audio-Engine Konfiguration (SRS Kap. 9)
+        if pygame.mixer.get_init():
+            pygame.mixer.set_num_channels(32)
+            pygame.mixer.set_reserved(4)
+
         self.screen: pygame.Surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("FTL Prototype - Erweiterte Schusslinien & Autofire")
+        pygame.display.set_caption("FTL Clone - Pygame-CE Engine")
         self.clock: pygame.time.Clock = pygame.time.Clock()
 
         self.data = GameData()
@@ -30,7 +39,7 @@ class Game:
         self.combat_manager = CombatManager(self.data, self.state_manager)
         self.render_manager = RenderManager(self.screen, self.data)
 
-    def run(self) -> None:
+    async def run(self) -> None:
         while self.data.running:
             dt = self.clock.tick(60) / 1000.0
 
@@ -38,6 +47,8 @@ class Game:
             self.combat_manager.update(dt)
             self.render_manager.draw()
             pygame.display.flip()
+
+            await asyncio.sleep(0)
 
         pygame.quit()
         sys.exit()
