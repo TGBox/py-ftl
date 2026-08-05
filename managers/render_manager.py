@@ -25,9 +25,9 @@ class RenderManager:
 
         self.screen.blit(
               self.font.render(
-                  f"Treibstoff: {self.data.player_fuel}  |  Raketen: {self.data.player_missiles}  |  Scrap: {self.data.player_scrap}  |"
-                  f"  Hülle: {self.data.player_ship.hp}/{self.data.player_ship.max_hp}  |  Sektor:"
-                  f" {self.data.star_map.sector}",  #[cite: 12]
+                  f"Treibstoff: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  Scrap: {self.data.player.scrap}  |"
+                  f"  Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp}  |  Sektor:"
+                  f" {self.data.world.star_map.sector}",  #[cite: 12]
                   True,
                   (255, 255, 255),
               ),
@@ -68,7 +68,7 @@ class RenderManager:
         self.draw_messages()
         
     def draw_map(self):
-        self.data.star_map.draw(self.screen)       
+        self.data.world.star_map.draw(self.screen)       
     def draw_shop(self):
         pygame.draw.rect(self.screen, (25, 30, 40), (150, 70, 600, 430))
         pygame.draw.rect(
@@ -105,28 +105,28 @@ class RenderManager:
         )       
     def draw_rooms(self):
         # 1. Reaktor zeichnen
-        self.data.player_reactor.draw(self.screen, 30, 45)
+        self.data.player.reactor.draw(self.screen, 30, 45)
 
         # 2. Räume zeichnen
-        for r in self.data.player_ship.rooms:
+        for r in self.data.player.ship.rooms:
             r.draw(self.screen)
-        for r in self.data.current_enemy_ship.rooms:
+        for r in self.data.enemy.ship.rooms:
             r.draw(self.screen)
             
         # 3. Crew zeichnen
-        for c in self.data.player_crew:
+        for c in self.data.player.crew:
             c.draw(self.screen)
             
         # 4. Schiffs-Hülle & Ausweichchance (UI)
         self.screen.blit(
             self.font.render(
-                f"Spieler Hülle: {self.data.player_ship.hp}/{self.data.player_ship.max_hp} HP",
+                f"Spieler Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp} HP",
                 True,
                 (100, 255, 100),
             ),
             (60, 155),
         )
-        current_evade = int(self.data.player_ship.rooms[2].current_power * 0.20 * 100)
+        current_evade = int(self.data.player.ship.rooms[2].current_power * 0.20 * 100)
         self.screen.blit(
             self.font.render(
                 f"Ausweichchance: {current_evade}%", True, (150, 200, 255)
@@ -135,7 +135,7 @@ class RenderManager:
         )
         self.screen.blit(
             self.font.render(
-                f"Gegner Hülle: {self.data.current_enemy_ship.hp}/{self.data.current_enemy_ship.max_hp} HP",
+                f"Gegner Hülle: {self.data.enemy.ship.hp}/{self.data.enemy.ship.max_hp} HP",
                 True,
                 (255, 100, 100),
             ),
@@ -144,25 +144,25 @@ class RenderManager:
 
     def draw_shields(self):
         # Schilde zeichnen (mit den festen Koordinaten aus deinem alten Code)
-        self.data.player_shield.draw_bubble(self.screen, (220, 245), 170)
-        self.data.enemy_shield.draw_bubble(self.screen, (710, 245), 150)
+        self.data.player.shield.draw_bubble(self.screen, (220, 245), 170)
+        self.data.enemy.shield.draw_bubble(self.screen, (710, 245), 150)
 
     def draw_projectiles(self):
-        for p in self.data.player_projectiles:
+        for p in self.data.player.projectiles:
             p.draw(self.screen)
 
     def draw_weapons(self):
         # 1. Dauerhafte Schusslinien (Weapon Targets)
-        for idx, (_, start_p, end_p) in self.data.player_weapon_targets.items():
+        for idx, (_, start_p, end_p) in self.data.combat.weapon_targets.items():
             color_line = (255, 100, 100) if idx == 1 else (100, 200, 255)
             pygame.draw.line(self.screen, color_line, start_p, end_p, 2)
             pygame.draw.circle(self.screen, color_line, end_p, 6, 2)
 
         # 2. Zielen-Linie (beim aktiven Zielen mit Maus)
-        if self.data.is_player_targeting:
+        if self.data.combat.is_targeting:
             mx, my = pygame.mouse.get_pos()
             pygame.draw.line(
-                self.screen, COLOR_PROJECTILE, self.data.player_targeting_start_pos, (mx, my), 2
+                self.screen, COLOR_PROJECTILE, self.data.combat.start_pos, (mx, my), 2
             )
             pygame.draw.circle(self.screen, COLOR_PROJECTILE, (mx, my), 5, 1)
 
@@ -171,7 +171,7 @@ class RenderManager:
         self.screen.blit(
             self.font.render("Waffensysteme:", True, (200, 200, 200)), (30, weapon_ui_y)
         )
-        for i, w in enumerate(self.data.player_weapons):
+        for i, w in enumerate(self.data.player.weapons):
             bar_x, bar_y = 30 + i * 115, weapon_ui_y + 25
             charge_ratio = w.current_charge / w.charge_time
             pygame.draw.rect(self.screen, (40, 40, 40), (bar_x, bar_y, 105, 15))
@@ -184,26 +184,26 @@ class RenderManager:
             pygame.draw.rect(self.screen, COLOR_BORDER, (bar_x, bar_y, 105, 15), 1)
 
             # Zeige an, ob die Waffe ein Ziel hat
-            target_indicator = " [Z]" if i in self.data.player_weapon_targets else ""
+            target_indicator = " [Z]" if i in self.data.combat.weapon_targets else ""
             lbl = self.font.render(f"{w.name}{target_indicator}", True, (200, 220, 255))
             self.screen.blit(lbl, (bar_x, bar_y - 18))
 
         # 4. Autofire Button (wird vom Manager gezeichnet, Logik in InputManager)
         pygame.draw.rect(self.screen, (50, 60, 80), self.btn_autofire)
         pygame.draw.rect(
-            self.screen, COLOR_SELECTED if self.data.player_autofire_enabled else COLOR_BORDER, self.btn_autofire, 2
+            self.screen, COLOR_SELECTED if self.data.combat.autofire_enabled else COLOR_BORDER, self.btn_autofire, 2
         )
         autofire_txt = self.font.render(
-            f"Autofire: {'AN' if self.data.player_autofire_enabled else 'AUS'}",
+            f"Autofire: {'AN' if self.data.combat.autofire_enabled else 'AUS'}",
             True,
-            (100, 255, 100) if self.data.player_autofire_enabled else (200, 200, 200),
+            (100, 255, 100) if self.data.combat.autofire_enabled else (200, 200, 200),
         )
         self.screen.blit(autofire_txt, (self.btn_autofire.x + 15, self.btn_autofire.y + 5))
 
     def draw_messages(self):
         # Temporäre Kampfnachrichten
-        if self.data.combat_msg_timer > 0.0:
-            msg_txt = self.font.render(self.data.combat_msg, True, COLOR_SELECTED)
+        if self.data.combat.msg_timer > 0.0:
+            msg_txt = self.font.render(self.data.combat.msg, True, COLOR_SELECTED)
             self.screen.blit(msg_txt, (SCREEN_WIDTH // 2 - 80, 140))
             
         # Pause Text (falls du pause in GameData gespeichert hast)
@@ -230,7 +230,7 @@ class RenderManager:
         pygame.draw.rect(self.screen, (30, 40, 55), (150, 150, 600, 250))
         pygame.draw.rect(self.screen, COLOR_BORDER, (150, 150, 600, 250), 3)
         self.screen.blit(
-            self.font.render(self.data.event_manager.current_event_text, True, (240, 240, 240)),
+            self.font.render(self.data.world.event_manager.current_event_text, True, (240, 240, 240)),
             (180, 200),
         )
         self.screen.blit(
@@ -258,4 +258,4 @@ class RenderManager:
                 (100, 255, 100),
             ),
             (200, 250),
-        )
+        )

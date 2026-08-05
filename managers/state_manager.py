@@ -129,7 +129,7 @@ class StateManager:
         """
         Initialisierung des Shops.
         """
-        self.data.event_manager.current_event_type = None
+        self.data.world.event_manager.current_event_type = None
 
     def enter_event_state(self):
         """
@@ -141,23 +141,23 @@ class StateManager:
         """
         Initialisierung eines Kampfes.
         """
-        self.data.combat_msg = ""
-        self.data.combat_msg_timer = 0.0
+        self.data.combat.msg = ""
+        self.data.combat.msg_timer = 0.0
         self.data.paused = False
 
     def enter_game_over_state(self):
         """
         Spiel verloren.
         """
-        self.data.player_projectiles.clear()
-        self.data.player_weapon_targets.clear()
+        self.data.player.projectiles.clear()
+        self.data.combat.weapon_targets.clear()
 
     def enter_victory_state(self):
         """
         Spiel gewonnen.
         """
-        self.data.player_projectiles.clear()
-        self.data.player_weapon_targets.clear()
+        self.data.player.projectiles.clear()
+        self.data.combat.weapon_targets.clear()
 
     # --------------------------------------------------
     # Leave-Methoden
@@ -179,6 +179,6 @@ class StateManager:
 
     def show_message(self, text: str):
 
-        self.data.combat_msg = text
+        self.data.combat.msg = text
 
-        self.data.combat_msg_timer = 1.5
+        self.data.combat.msg_timer = 1.5

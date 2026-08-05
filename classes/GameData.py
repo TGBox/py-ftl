@@ -1,55 +1,71 @@
 import copy
-from typing import Literal, Optional, Tuple
+from typing import Optional, Tuple
 
-from classes.EventManager import EventManager
-from classes.StarMap import StarMap
 from classes.Crew import Crew
-from classes.Reactor import Reactor
+from classes.EventManager import EventManager
 from classes.Projectile import Projectile
+from classes.Reactor import Reactor
 from classes.Room import Room
 from classes.ShieldSystem import ShieldSystem
 from classes.ShipModel import ENEMY_SCOUT, PLAYER_SHIP, ShipModel
+from classes.StarMap import StarMap
 from classes.Weapon import Weapon
 from settings import *
 
 
-class GameData:
-    
+class PlayerData:
+
     def __init__(self) -> None:
-        self.current_state = STATE_MAP  # <-- Hier ändern!
-        self.player_targeting_weapon_idx: Optional[int] = None
-        self.player_targeting_start_pos: Tuple[int, int] = (0, 0)
-        # Player.
-        self.player_ship: ShipModel = copy.deepcopy(PLAYER_SHIP)
-        self.player_reactor: Reactor = Reactor(total_power=PLAYER_START_POWER)
-        self.player_shield: ShieldSystem = ShieldSystem()
-        self.player_projectiles: list[Projectile] = []
-        self.player_crew: list[Crew] = [Crew(340, 245), Crew(115, 245)]
-        self.player_weapons: list[Weapon] = [
-            Weapon("Standard Laser", charge_time=3.0, w_type="LASER"),  #[cite: 13]
-            Weapon(
-                "Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1
-            ),  #[cite: 1, 13]
+        self.ship: ShipModel = copy.deepcopy(PLAYER_SHIP)
+        self.reactor: Reactor = Reactor(total_power=PLAYER_START_POWER)
+        self.shield: ShieldSystem = ShieldSystem()
+        self.crew: list[Crew] = [Crew(340, 245), Crew(115, 245)]
+        self.weapons: list[Weapon] = [
+            Weapon("Standard Laser", charge_time=3.0, w_type="LASER"),
+            Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1),
         ]
-        self.player_scrap: int = PLAYER_START_SCRAP
-        self.player_fuel: int = PLAYER_START_FUEL
-        self.player_missiles: int = PLAYER_START_MISSILES
-        self.player_weapon_targets: dict[int, tuple[Room, tuple[Literal[0], Literal[0]] | tuple[int, int], tuple[int, int]]] = {}  # weapon_idx: (target_room, start_pos, end_pos)
-        self.is_player_targeting = False
-        self.player_targeting_weapon_idx = None
-        self.player_targeting_start_pos = (0, 0)
-        self.player_autofire_enabled = False
-        
-        # Enemy.
-        self.current_enemy_ship: ShipModel = copy.deepcopy(ENEMY_SCOUT)
-        self.enemy_reactor: Reactor = Reactor(total_power=ENEMY_START_POWER)
-        self.enemy_shield: ShieldSystem = ShieldSystem()
-        self.enemy_weapon: Weapon = Weapon("Laser", charge_time=4.5, w_type="LASER")
-        
-        # Game.
-        self.combat_msg = ""
-        self.combat_msg_timer = 0.0
-        self.paused = False
-        self.running = True
+        self.projectiles: list[Projectile] = []
+        self.scrap: int = PLAYER_START_SCRAP
+        self.fuel: int = PLAYER_START_FUEL
+        self.missiles: int = PLAYER_START_MISSILES
+
+
+class EnemyData:
+
+    def __init__(self) -> None:
+        self.ship: ShipModel = copy.deepcopy(ENEMY_SCOUT)
+        self.reactor: Reactor = Reactor(total_power=ENEMY_START_POWER)
+        self.shield: ShieldSystem = ShieldSystem()
+        self.weapon: Weapon = Weapon("Laser", charge_time=4.5, w_type="LASER")
+
+
+class CombatData:
+
+    def __init__(self) -> None:
+        self.autofire_enabled: bool = False
+        self.is_targeting: bool = False
+        self.target_weapon_idx: Optional[int] = None
+        self.start_pos: Tuple[int, int] = (0, 0)
+        self.weapon_targets: dict[int, tuple[Room, tuple[int, int], tuple[int, int]]] = {}
+        self.msg: str = ""
+        self.msg_timer: float = 0.0
+
+
+class WorldData:
+
+    def __init__(self) -> None:
         self.star_map: StarMap = StarMap()
-        self.event_manager: EventManager = EventManager()
+        self.event_manager: EventManager = EventManager()
+
+
+class GameData:
+
+    def __init__(self) -> None:
+        self.running: bool = True
+        self.paused: bool = False
+        self.current_state: str = STATE_MAP
+
+        self.player: PlayerData = PlayerData()
+        self.enemy: EnemyData = EnemyData()
+        self.combat: CombatData = CombatData()
+        self.world: WorldData = WorldData()

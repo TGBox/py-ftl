@@ -1,8 +1,8 @@
 import pygame
 
-from classes.Room import Room
 from classes.GameData import GameData
 from classes.Projectile import Projectile
+from classes.Room import Room
 
 
 class WeaponManager:
@@ -17,13 +17,13 @@ class WeaponManager:
     def update(self, dt: float):
 
         weapon_powered = (
-            self.data.player_ship.rooms[1].current_power > 0
+            self.data.player.ship.rooms[1].current_power > 0
         )
 
-        for weapon in self.data.player_weapons:
+        for weapon in self.data.player.weapons:
             weapon.update(dt, weapon_powered)
 
-        if self.data.player_autofire_enabled:
+        if self.data.combat.autofire_enabled:
             self.handle_autofire()
 
     # --------------------------------------------------
@@ -32,9 +32,9 @@ class WeaponManager:
 
     def select_weapon(self, mx: float, my: float):
 
-        weapon_room = self.data.player_ship.rooms[1]
+        weapon_room = self.data.player.ship.rooms[1]
 
-        for idx, weapon in enumerate(self.data.player_weapons):
+        for idx, weapon in enumerate(self.data.player.weapons):
 
             bar_x = 30 + idx * 115
 
@@ -53,9 +53,9 @@ class WeaponManager:
                 if not weapon.is_ready():
                     return False
 
-                self.data.is_player_targeting = True
-                self.data.player_targeting_weapon_idx = idx
-                self.data.player_targeting_start_pos = (
+                self.data.combat.is_targeting = True
+                self.data.combat.target_weapon_idx = idx
+                self.data.combat.start_pos = (
                     weapon_room.rect.center
                 )
 
@@ -69,20 +69,20 @@ class WeaponManager:
 
     def assign_target(self, room: Room, mouse_pos: tuple[float, float]):
 
-        idx = self.data.player_targeting_weapon_idx
+        idx = self.data.combat.target_weapon_idx
 
         if idx is None:
             return False
 
-        weapon = self.data.player_weapons[idx]
+        weapon = self.data.player.weapons[idx]
 
-        self.data.player_weapon_targets[idx] = (
+        self.data.combat.weapon_targets[idx] = (
             room,
-            self.data.player_targeting_start_pos,
+            self.data.combat.start_pos,
             (int(mouse_pos[0]), int(mouse_pos[1])),
         )
 
-        self.data.is_player_targeting = False
+        self.data.combat.is_targeting = False
 
         if weapon.is_ready():
             self.fire_weapon(
@@ -104,11 +104,11 @@ class WeaponManager:
         end_pos: tuple[float, float],
     ):
 
-        weapon = self.data.player_weapons[weapon_index]
+        weapon = self.data.player.weapons[weapon_index]
 
         if (
             weapon.ammo_cost > 0
-            and self.data.player_missiles < weapon.ammo_cost
+            and self.data.player.missiles < weapon.ammo_cost
         ):
 
             self.show_message(
@@ -118,13 +118,13 @@ class WeaponManager:
             return False
 
         if weapon.ammo_cost > 0:
-            self.data.player_missiles -= weapon.ammo_cost
+            self.data.player.missiles -= weapon.ammo_cost
 
-        self.data.player_projectiles.append(
+        self.data.player.projectiles.append(
 
             Projectile(
 
-                self.data.player_targeting_start_pos,
+                self.data.combat.start_pos,
 
                 end_pos,
 
@@ -150,33 +150,33 @@ class WeaponManager:
 
     def handle_autofire(self):
 
-        weapon_room = self.data.player_ship.rooms[1]
+        weapon_room = self.data.player.ship.rooms[1]
 
         for idx, weapon in enumerate(
-            self.data.player_weapons
+            self.data.player.weapons
         ):
 
             if not weapon.is_ready():
                 continue
 
-            if idx not in self.data.player_weapon_targets:
+            if idx not in self.data.combat.weapon_targets:
                 continue
 
             (
                 target_room,
                 _,
                 end_pos,
-            ) = self.data.player_weapon_targets[idx]
+            ) = self.data.combat.weapon_targets[idx]
 
             if (
                 target_room
-                not in self.data.current_enemy_ship.rooms
+                not in self.data.enemy.ship.rooms
             ):
                 continue
 
             if (
                 weapon.ammo_cost > 0
-                and self.data.player_missiles
+                and self.data.player.missiles
                 < weapon.ammo_cost
             ):
 
@@ -187,11 +187,11 @@ class WeaponManager:
                 continue
 
             if weapon.ammo_cost > 0:
-                self.data.player_missiles -= (
+                self.data.player.missiles -= (
                     weapon.ammo_cost
                 )
 
-            self.data.player_projectiles.append(
+            self.data.player.projectiles.append(
 
                 Projectile(
 
@@ -220,11 +220,11 @@ class WeaponManager:
     def remove_target(self, mx: float, my: float):
 
         for idx in list(
-            self.data.player_weapon_targets.keys()
+            self.data.combat.weapon_targets.keys()
         ):
 
             _, _, end_pos = (
-                self.data.player_weapon_targets[idx]
+                self.data.combat.weapon_targets[idx]
             )
 
             if (
@@ -232,7 +232,7 @@ class WeaponManager:
                 + (my - end_pos[1]) ** 2
             ) <= 30 ** 2:
 
-                del self.data.player_weapon_targets[idx]
+                del self.data.combat.weapon_targets[idx]
 
                 return True
 
@@ -244,8 +244,8 @@ class WeaponManager:
 
     def toggle_autofire(self):
 
-        self.data.player_autofire_enabled = (
-            not self.data.player_autofire_enabled
+        self.data.combat.autofire_enabled = (
+            not self.data.combat.autofire_enabled
         )
 
     # --------------------------------------------------
@@ -254,11 +254,11 @@ class WeaponManager:
 
     def clear_targets(self):
 
-        self.data.player_weapon_targets.clear()
+        self.data.combat.weapon_targets.clear()
 
-        self.data.is_player_targeting = False
+        self.data.combat.is_targeting = False
 
-        self.data.player_targeting_weapon_idx = None
+        self.data.combat.target_weapon_idx = None
 
     # --------------------------------------------------
     # HILFSMETHODEN
@@ -266,6 +266,6 @@ class WeaponManager:
 
     def show_message(self, text: str):
 
-        self.data.combat_msg = text
+        self.data.combat.msg = text
 
-        self.data.combat_msg_timer = 1.5
+        self.data.combat.msg_timer = 1.5

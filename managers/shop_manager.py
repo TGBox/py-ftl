@@ -41,71 +41,71 @@ class ShopManager:
 
         elif self.btn_leave_shop.collidepoint(mx, my):
             self.leave_shop()
-            
+
     def buy_repair(self):
 
-        if self.data.player_scrap < 2:
+        if self.data.player.scrap < 2:
             return
 
-        if self.data.player_ship.hp >= self.data.player_ship.max_hp:
+        if self.data.player.ship.hp >= self.data.player.ship.max_hp:
             return
 
-        self.data.player_scrap -= 2
-        self.data.player_ship.hp += 1
-        
+        self.data.player.scrap -= 2
+        self.data.player.ship.hp += 1
+
     def buy_fuel(self):
 
-        if self.data.player_scrap < 3:
+        if self.data.player.scrap < 3:
             return
 
-        self.data.player_scrap -= 3
-        self.data.player_fuel += 1
-        
+        self.data.player.scrap -= 3
+        self.data.player.fuel += 1
+
     def buy_missiles(self):
 
-        if self.data.player_scrap < 6:
+        if self.data.player.scrap < 6:
             return
 
-        self.data.player_scrap -= 6
-        self.data.player_missiles += 3
-        
+        self.data.player.scrap -= 6
+        self.data.player.missiles += 3
+
     def upgrade_reactor(self):
 
-        if self.data.player_scrap < 15:
+        if self.data.player.scrap < 15:
             return
 
-        self.data.player_scrap -= 15
+        self.data.player.scrap -= 15
 
-        self.data.player_reactor.total_power += 1
-        self.data.player_reactor.available_power += 1
-        
+        self.data.player.reactor.total_power += 1
+        self.data.player.reactor.available_power += 1
+
     def buy_crew(self):
 
-        if self.data.player_scrap < 25:
+        if self.data.player.scrap < 25:
             return
 
-        self.data.player_scrap -= 25
+        self.data.player.scrap -= 25
 
-        spawn_room = self.data.player_ship.rooms[0]
+        spawn_room = self.data.player.ship.rooms[0]
 
-        self.data.player_crew.append(
+        self.data.player.crew.append(
             Crew(
                 spawn_room.rect.centerx,
                 spawn_room.rect.centery,
             )
         )
-        
+
     def buy_weapon(self):
 
-        if self.data.player_scrap < 45:
+        if self.data.player.scrap < 45:
             return
 
-        if len(self.data.player_weapons) >= 3:
+        if len(self.data.player.weapons) >= 3:
             return
 
-        self.data.player_scrap -= 45
+        self.data.player.scrap -= 45
 
-        self.data.player_weapons.append(
+        self.data.player.weapons.append(
             Weapon(
                 "Pike Strahl",
                 charge_time=5.0,
@@ -114,7 +114,7 @@ class ShopManager:
                 damage=25.0,
             )
         )
-        
+
     def leave_shop(self):
 
-        self.data.current_state = STATE_MAP
+        self.data.current_state = STATE_MAP

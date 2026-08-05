@@ -81,7 +81,7 @@ class InputManager:
 
     def handle_map_click(self, mx: float, my: float):
 
-        current_node = self.data.star_map.current_node
+        current_node = self.data.world.star_map.current_node
 
         if current_node is None:
             return
@@ -106,33 +106,33 @@ class InputManager:
 
     def handle_combat_click(self, event: pygame.event.Event):
         mx, my = pygame.mouse.get_pos()
-        self.data.event_manager.current_event_type = None
+        self.data.world.event_manager.current_event_type = None
 
         btn_autofire = pygame.Rect(730, 310, 140, 30)
         if btn_autofire.collidepoint(mx, my):
-            self.data.player_autofire_enabled = not self.data.player_autofire_enabled
+            self.data.combat.autofire_enabled = not self.data.combat.autofire_enabled
             return
 
-        if self.data.is_player_targeting:
-            for e_room in self.data.current_enemy_ship.rooms:
+        if self.data.combat.is_targeting:
+            for e_room in self.data.enemy.ship.rooms:
                 if e_room.rect.collidepoint(mx, my):
-                    idx = self.data.player_targeting_weapon_idx
-                    if idx is not None and idx < len(self.data.player_weapons):
-                        w = self.data.player_weapons[idx]
-                        self.data.player_weapon_targets[idx] = (
+                    idx = self.data.combat.target_weapon_idx
+                    if idx is not None and idx < len(self.data.player.weapons):
+                        w = self.data.player.weapons[idx]
+                        self.data.combat.weapon_targets[idx] = (
                             e_room,
-                            self.data.player_targeting_start_pos,
+                            self.data.combat.start_pos,
                             (mx, my),
                         )
                         if w.is_ready():
-                            if w.ammo_cost > 0 and self.data.player_missiles < w.ammo_cost:
+                            if w.ammo_cost > 0 and self.data.player.missiles < w.ammo_cost:
                                 self.show_message("KEINE RAKETEN MEHR!")
                             else:
                                 if w.ammo_cost > 0:
-                                    self.data.player_missiles -= w.ammo_cost
-                                self.data.player_projectiles.append(
+                                    self.data.player.missiles -= w.ammo_cost
+                                self.data.player.projectiles.append(
                                     Projectile(
-                                        self.data.player_targeting_start_pos,
+                                        self.data.combat.start_pos,
                                         (mx, my),
                                         e_room,
                                         is_player_shot=True,
@@ -143,68 +143,68 @@ class InputManager:
                                 )
                                 w.reset()
                     break
-            self.data.is_player_targeting = False
+            self.data.combat.is_targeting = False
             return
 
-        weapon_room = self.data.player_ship.rooms[1]
+        weapon_room = self.data.player.ship.rooms[1]
         clicked_weapon_idx = None
-        for idx, w in enumerate(self.data.player_weapons):
+        for idx, w in enumerate(self.data.player.weapons):
             bar_x = 30 + idx * 115
             bar_rect = pygame.Rect(bar_x, 335, 105, 15)
             if bar_rect.collidepoint(mx, my) or weapon_room.rect.collidepoint(mx, my):
                 clicked_weapon_idx = idx
                 break
 
-        if clicked_weapon_idx is not None and self.data.player_weapons[clicked_weapon_idx].is_ready():
-            self.data.is_player_targeting = True
-            self.data.player_targeting_weapon_idx = clicked_weapon_idx
-            self.data.player_targeting_start_pos = weapon_room.rect.center
+        if clicked_weapon_idx is not None and self.data.player.weapons[clicked_weapon_idx].is_ready():
+            self.data.combat.is_targeting = True
+            self.data.combat.target_weapon_idx = clicked_weapon_idx
+            self.data.combat.start_pos = weapon_room.rect.center
             return
 
         clicked_crew = False
-        for c in self.data.player_crew:
+        for c in self.data.player.crew:
             if math.hypot(mx - c.x, my - c.y) <= c.radius:
-                for other_c in self.data.player_crew:
+                for other_c in self.data.player.crew:
                     other_c.selected = False
                 c.selected = True
                 clicked_crew = True
                 break
 
         if not clicked_crew:
-            has_selected = any(c.selected for c in self.data.player_crew)
-            for room in self.data.player_ship.rooms:
+            has_selected = any(c.selected for c in self.data.player.crew)
+            for room in self.data.player.ship.rooms:
                 if room.rect.collidepoint(mx, my):
                     if has_selected:
-                        for c in self.data.player_crew:
+                        for c in self.data.player.crew:
                             if c.selected:
                                 c.target_pos = (int(mx), int(my))
                     else:
-                        room.add_power(self.data.player_reactor)
+                        room.add_power(self.data.player.reactor)
                     break
 
     def restart_game(self):
         self.map_manager.restart_game()
 
     def remove_weapon_target(self, mx: float, my: float) -> bool:
-        for idx in list(self.data.player_weapon_targets.keys()):
-            _, _, end_p = self.data.player_weapon_targets[idx]
+        for idx in list(self.data.combat.weapon_targets.keys()):
+            _, _, end_p = self.data.combat.weapon_targets[idx]
             if math.hypot(mx - end_p[0], my - end_p[1]) <= 30:
-                del self.data.player_weapon_targets[idx]
+                del self.data.combat.weapon_targets[idx]
                 return True
         return False
 
     def deselect_crew(self, event: pygame.event.Event) -> bool:
         has_selected = False
-        for c in self.data.player_crew:
+        for c in self.data.player.crew:
             if c.selected:
                 c.selected = False
                 has_selected = True
         return has_selected
 
     def remove_room_power(self, mx: float, my: float):
-        for room in self.data.player_ship.rooms:
+        for room in self.data.player.ship.rooms:
             if room.rect.collidepoint(mx, my):
-                room.remove_power(self.data.player_reactor)
+                room.remove_power(self.data.player.reactor)
                 break
 
     # --------------------------------------------------
@@ -212,5 +212,6 @@ class InputManager:
     # --------------------------------------------------
 
     def show_message(self, text: str):
-        self.data.combat_msg = text
-        self.data.combat_msg_timer = 1.5
+        self.data.combat.msg = text
+        self.data.combat.msg_timer = 1.5
+
