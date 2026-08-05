@@ -1,0 +1,271 @@
+Jetzt kommt der wichtigste Schritt der ganzen Architektur.
+
+Die `GameData`-Klasse sollte **keine Logik** enthalten. Sie ist ausschließlich der gemeinsame Speicher für den Zustand des Spiels. Alle Manager lesen und schreiben auf diese Daten.
+
+Ich würde sie ungefähr so strukturieren.
+
+```python
+from dataclasses import dataclass, field
+
+
+@dataclass
+class GameData:
+
+    # -------------------------------------------------
+    # Spielzustand
+    # -------------------------------------------------
+
+    running: bool = True
+    paused: bool = False
+    current_state: int = 0
+
+    # -------------------------------------------------
+    # Spieler
+    # -------------------------------------------------
+
+    player_ship = None
+    player_crew: list = field(default_factory=list)
+
+    player_reactor = None
+    player_shield = None
+
+    player_weapons: list = field(default_factory=list)
+    player_projectiles: list = field(default_factory=list)
+
+    # -------------------------------------------------
+    # Gegner
+    # -------------------------------------------------
+
+    current_enemy_ship = None
+
+    enemy_weapon = None
+    enemy_shield = None
+
+    # -------------------------------------------------
+    # Ressourcen
+    # -------------------------------------------------
+
+    player_scrap: int = 20
+    player_fuel: int = 5
+    player_missiles: int = 8
+
+    # -------------------------------------------------
+    # Waffen
+    # -------------------------------------------------
+
+    player_autofire_enabled: bool = False
+
+    is_player_targeting: bool = False
+
+    player_targeting_weapon_idx = None
+
+    player_targeting_start_pos = None
+
+    player_weapon_targets: dict = field(default_factory=dict)
+
+    # -------------------------------------------------
+    # Combat UI
+    # -------------------------------------------------
+
+    combat_msg: str = ""
+    combat_msg_timer: float = 0.0
+
+    # -------------------------------------------------
+    # Welt
+    # -------------------------------------------------
+
+    star_map = None
+    event_manager = None
+
+    # -------------------------------------------------
+    # Sonstiges
+    # -------------------------------------------------
+
+    selected_crew = None
+```
+
+---
+
+## Noch besser
+
+Ich würde sie inzwischen sogar **weiter aufteilen**.
+
+Anstatt 40-50 Attribute direkt in `GameData` zu speichern, würde ich kleine Datencontainer verwenden.
+
+Beispielsweise:
+
+```python
+class PlayerData:
+
+    def __init__(self):
+
+        self.ship = None
+        self.crew = []
+
+        self.reactor = None
+        self.shield = None
+
+        self.weapons = []
+
+        self.projectiles = []
+
+        self.scrap = 20
+        self.fuel = 5
+        self.missiles = 8
+```
+
+Dann
+
+```python
+class EnemyData:
+
+    def __init__(self):
+
+        self.ship = None
+
+        self.weapon = None
+
+        self.shield = None
+```
+
+Dann
+
+```python
+class CombatData:
+
+    def __init__(self):
+
+        self.autofire = False
+
+        self.is_targeting = False
+
+        self.target_weapon = None
+
+        self.start_pos = None
+
+        self.weapon_targets = {}
+
+        self.message = ""
+
+        self.message_timer = 0
+```
+
+Dann
+
+```python
+class WorldData:
+
+    def __init__(self):
+
+        self.star_map = None
+
+        self.event_manager = None
+
+        self.current_sector = 1
+```
+
+---
+
+## Dann wird GameData extrem klein
+
+```python
+class GameData:
+
+    def __init__(self):
+
+        self.running = True
+        self.paused = False
+
+        self.current_state = STATE_MAP
+
+        self.player = PlayerData()
+
+        self.enemy = EnemyData()
+
+        self.combat = CombatData()
+
+        self.world = WorldData()
+```
+
+Und dein Code liest sich plötzlich deutlich schöner.
+
+Statt
+
+```python
+self.data.player_scrap
+```
+
+schreibst du
+
+```python
+self.data.player.scrap
+```
+
+Statt
+
+```python
+self.data.player_weapons
+```
+
+```python
+self.data.player.weapons
+```
+
+Statt
+
+```python
+self.data.player_weapon_targets
+```
+
+```python
+self.data.combat.weapon_targets
+```
+
+Statt
+
+```python
+self.data.current_enemy_ship
+```
+
+```python
+self.data.enemy.ship
+```
+
+Statt
+
+```python
+self.data.enemy_weapon
+```
+
+```python
+self.data.enemy.weapon
+```
+
+---
+
+## Das würde ich für dein Projekt tatsächlich empfehlen
+
+Nach allem, was ich bisher von deinem Code gesehen habe (über 1.000 Zeilen `main.py` und inzwischen sechs Manager), würde ich **nicht** bei einer einzigen großen `GameData`-Klasse bleiben.
+
+Ich würde die Architektur wie folgt aufbauen:
+
+```
+Game
+│
+├── GameData
+│   ├── PlayerData
+│   ├── EnemyData
+│   ├── CombatData
+│   ├── WorldData
+│   └── UIData
+│
+├── InputManager
+├── CombatManager
+├── WeaponManager
+├── ShopManager
+├── MapManager
+├── StateManager
+└── RenderManager
+```
+
+Das ist eine Architektur, die auch bei größeren Pygame-Projekten üblich ist. Sie verhindert, dass `GameData` zu einer unübersichtlichen Sammlung von 70–100 Attributen anwächst, und macht den Code langfristig wesentlich wartbarer. Besonders wenn du später weitere Spielmechaniken wie Drohnen, Augments, mehrere Schiffstypen oder Savegames hinzufügst, zahlt sich diese Struktur aus.
