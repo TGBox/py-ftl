@@ -25,15 +25,35 @@ STATE_COMBAT = "COMBAT"
 STATE_SHOP = "SHOP"
 STATE_GAME_OVER = "GAME_OVER"
 STATE_VICTORY = "VICTORY"
+STATE_MAIN_MENU = "MAIN_MENU"
+STATE_OPTIONS = "OPTIONS"
 current_state: str = STATE_MAP
+
+# Logische Spielauflösung (intern immer 900x600 gerendert, dann skaliert).
+LOGICAL_WIDTH = 900
+LOGICAL_HEIGHT = 600
+
+# Verfügbare Fensterauflösungen (inkl. Ultrawide)
+RESOLUTIONS = [
+    (900, 600),
+    (1280, 720),
+    (1600, 900),
+    (1920, 1080),
+    (2560, 1080),   # Ultrawide 21:9
+    (3440, 1440),   # Ultrawide 21:9 QHD
+    (3840, 2160),   # 4K
+]
 
 # Generelle Größen.
 SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 600
+
+# Rebellenflotte - Geschwindigkeit pro Sprung
+REBEL_FLEET_SPEED = 55.0
 
 # Startkonfiguration.
 PLAYER_START_FUEL = 6
 PLAYER_START_SCRAP = 20
 PLAYER_START_MISSILES = 6
 PLAYER_START_POWER = 6
-ENEMY_START_POWER = 6
+ENEMY_START_POWER = 6

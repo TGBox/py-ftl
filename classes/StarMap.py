@@ -11,10 +11,17 @@ class StarMap:
     self.nodes: list[Node] = []
     self.current_node: Node | None = None
     self.sector: int = 1
+    self.rebel_fleet_x: float = 30.0
+    self.sector_type: str = "Zivil"
     self.generate_map()
+
+  def advance_fleet(self) -> None:
+    self.rebel_fleet_x += REBEL_FLEET_SPEED
 
   def generate_map(self) -> None:
     self.nodes.clear()
+    self.rebel_fleet_x = 30.0
+    self.sector_type = random.choice(["Zivil", "Rebellen", "Nebel"])
     node_id = 0
     num_layers = 7  
     layer_distance = 110
@@ -48,25 +55,29 @@ class StarMap:
     self.nodes.append(exit_node)
     created_layers.append([exit_node])
 
-    # Saubere Verbindung der Ebenen (Garantiert lückenlose Erreichbarkeit)
+    # Saubere Verbindung der Ebenen (Garantiert lückenlose Erreichbarkeit vor und zurück)
     for i in range(len(created_layers) - 1):
       for n1 in created_layers[i]:
-        # Wähle 1 bis 2 Ziele in der nächsten Ebene
         next_layer = created_layers[i + 1]
         targets = random.sample(next_layer, k=min(len(next_layer), random.randint(1, 2)))
         for t in targets:
           if t not in n1.connections:
             n1.connections.append(t)
-            
-    # Absicherung: Falls ein Knoten der Folgeschicht isoliert wurde, erzwinge eine Verbindung zum ersten Knoten der Folgeschicht
+          if n1 not in t.connections:
+            t.connections.append(n1)
+
+    # Absicherung: Falls ein Knoten der Folgeschicht isoliert wurde
     for i in range(len(created_layers) - 1):
       for n2 in created_layers[i + 1]:
         has_incoming = any(n2 in n1.connections for n1 in created_layers[i])
         if not has_incoming:
-          random.choice(created_layers[i]).connections.append(n2)
+          src = random.choice(created_layers[i])
+          src.connections.append(n2)
+          n2.connections.append(src)
 
     self.current_node = start_node
     self.current_node.visited = True
+
 
   def draw(self, surface: pygame.Surface) -> None:
     # Linien zeichnen
@@ -75,6 +86,14 @@ class StarMap:
         pygame.draw.line(
             surface, COLOR_MAP_LINE, (node.x, node.y), (conn.x, conn.y), 2
         )
+
+    # Rebellenflotte Linie zeichnen
+    fleet_x = int(self.rebel_fleet_x)
+    if fleet_x > 0:
+      pygame.draw.line(surface, (220, 50, 50), (fleet_x, 60), (fleet_x, 520), 3)
+      font = pygame.font.SysFont(None, 18)
+      lbl = font.render("REBELLENFLOTTE", True, (255, 80, 80))
+      surface.blit(lbl, (fleet_x + 5, 70))
 
     # Knoten zeichnen
     for node in self.nodes:
@@ -95,4 +114,4 @@ class StarMap:
           self.current_node is not None
           and node in self.current_node.connections
       ):
-        pygame.draw.circle(surface, (255, 255, 255), (node.x, node.y), 18, 2)
+        pygame.draw.circle(surface, (255, 255, 255), (node.x, node.y), 18, 2)

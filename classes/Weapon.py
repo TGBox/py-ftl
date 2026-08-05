@@ -16,6 +16,16 @@ class Weapon:
     self.ammo_cost: int = ammo_cost
     self.shield_pierce: int = shield_pierce
     self.damage: float = damage
+    self.level: int = 1  # Upgradestufe (1 bis 3)
+
+  def upgrade(self) -> bool:
+    if self.level < 3:
+      self.level += 1
+      self.damage = round(self.damage * 1.25, 1)
+      self.charge_time = max(1.5, round(self.charge_time * 0.85, 1))
+      self.name = f"{self.name.split(' (L')[0]} (Lvl {self.level})"
+      return True
+    return False
 
   def update(self, dt: float, powered: bool) -> None:
     if powered:
@@ -25,4 +35,4 @@ class Weapon:
     return self.current_charge >= self.charge_time
 
   def reset(self) -> None:
-    self.current_charge = 0.0
+    self.current_charge = 0.0
