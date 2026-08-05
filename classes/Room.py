@@ -81,6 +81,11 @@ class Room:
     if self.oxygen < 30.0:
       fill_col = (40, 20, 35) if self.is_enemy else (20, 35, 55)
 
+    # Medbay spezielles Styling
+    if self.name == "Medbay":
+        border_col = (80, 220, 120) if self.current_power > 0 else (60, 100, 70)
+        fill_col = (20, 45, 30) if self.current_power > 0 else (15, 25, 20)
+
     pygame.draw.rect(surface, fill_col, self.rect)
     pygame.draw.rect(surface, border_col, self.rect, 2)
 
@@ -89,6 +94,12 @@ class Room:
         font.render(self.name, True, (220, 220, 220)),
         (self.rect.x + 6, self.rect.y + 5),
     )
+
+    if self.name == "Medbay" and self.current_power > 0:
+        med_font = pygame.font.SysFont(None, 14, bold=True)
+        heal_lbl = med_font.render("+HEILEN", True, (100, 255, 100))
+        surface.blit(heal_lbl, (self.rect.x + 6, self.rect.y + 28))
+
 
     # System-Gesundheitsbalken
     hp_ratio = self.health / self.max_health

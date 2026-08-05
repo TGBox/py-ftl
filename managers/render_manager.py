@@ -221,6 +221,13 @@ class RenderManager:
         for p in self.data.player.projectiles:
             p.draw(self.screen)
 
+    def _logical_mouse_pos(self) -> tuple[int, int]:
+        raw_mx, raw_my = pygame.mouse.get_pos()
+        game_ref = getattr(self, "game", None)
+        if game_ref and hasattr(game_ref, "screen_to_logical"):
+            return game_ref.screen_to_logical(raw_mx, raw_my)
+        return raw_mx, raw_my
+
     def draw_weapons(self):
         # 1. Dauerhafte Schusslinien (Weapon Targets)
         for idx, (_, start_p, end_p) in self.data.combat.weapon_targets.items():
@@ -230,11 +237,12 @@ class RenderManager:
 
         # 2. Zielen-Linie (beim aktiven Zielen mit Maus)
         if self.data.combat.is_targeting:
-            mx, my = pygame.mouse.get_pos()
+            mx, my = self._logical_mouse_pos()
             pygame.draw.line(
                 self.screen, COLOR_PROJECTILE, self.data.combat.start_pos, (mx, my), 2
             )
             pygame.draw.circle(self.screen, COLOR_PROJECTILE, (mx, my), 5, 1)
+
 
         # 3. Waffen-UI-Bars
         weapon_ui_y = 310

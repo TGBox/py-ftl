@@ -41,18 +41,39 @@ class CombatManager:
         for room in self.data.player.ship.rooms:
             room.update_oxygen(dt)
 
+        dead_crew: list = []
         for crew in self.data.player.crew:
             crew.update(dt, self.data.player.ship.rooms)
+            # Erstickungsschaden
             if crew.current_room and crew.current_room.oxygen < 20.0:
-                crew.hp = max(0.0, crew.hp - 8.0 * dt)
+                asphyx_mod = 0.5 if getattr(crew, "trait", "") == "Sauerstoff-Sparer" else 1.0
+                crew.hp = max(0.0, crew.hp - 8.0 * asphyx_mod * dt)
+            # Medbay-Heilung: Crew in Medbay-Raum wird geheilt wenn Raum Strom hat
+            if crew.current_room and crew.current_room.name == "Medbay" and crew.current_room.current_power > 0:
+                heal_rate = 15.0 * crew.current_room.current_power
+                crew.hp = min(crew.max_hp, crew.hp + heal_rate * dt)
+            # Tod prüfen
+            if crew.hp <= 0.0:
+                dead_crew.append(crew)
+
+        for dead in dead_crew:
+            self.data.player.crew.remove(dead)
+            if self.sound:
+                self.sound.play("crew_death")
+            self.show_message(f"CREW-MITGLIED {dead.name.upper()} GEFALLEN!")
 
         # Gegnerische Crew initialisieren & updaten
         if not self.enemy_crew and len(self.data.enemy.ship.rooms) > 0:
             for r in self.data.enemy.ship.rooms:
                 self.enemy_crew.append(Crew(r.rect.centerx, r.rect.centery, name="Pirate", is_enemy=True))
 
+        dead_enemy: list = []
         for e_crew in self.enemy_crew:
             e_crew.update(dt, self.data.enemy.ship.rooms)
+            if e_crew.hp <= 0.0:
+                dead_enemy.append(e_crew)
+        for dead in dead_enemy:
+            self.enemy_crew.remove(dead)
 
 
     def update_shields(self, dt: float):

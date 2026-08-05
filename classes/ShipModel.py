@@ -25,34 +25,39 @@ class ShipModel:
 PLAYER_SHIP = ShipModel("Kestrel", 15, [
     Room("Schild", (60, 200, 90, 90)),
     Room("Waffen", (160, 200, 90, 90)),
-    Room("Brücke", (260, 200, 90, 90), max_power=2)
+    Room("Brücke", (260, 200, 90, 90), max_power=2),
+    Room("Medbay", (160, 100, 90, 90), max_power=2),
 ], max_weapons=3, max_crew=4)
 
 CRUISER_SHIP = ShipModel("Kreuzer", 18, [
     Room("Schild", (50, 190, 85, 85)),
     Room("Waffen", (145, 190, 85, 85)),
     Room("Maschinen", (240, 190, 85, 85)),
-    Room("Brücke", (335, 190, 85, 85), max_power=2)
+    Room("Brücke", (335, 190, 85, 85), max_power=2),
+    Room("Medbay", (145, 95, 85, 85), max_power=2),
 ], max_weapons=4, max_crew=6)
 
 STEALTH_SHIP = ShipModel("Tarnschiff", 12, [
     Room("Tarnung", (70, 200, 80, 80)),
     Room("Waffen", (160, 200, 80, 80)),
-    Room("Brücke", (250, 200, 80, 80), max_power=2)
+    Room("Brücke", (250, 200, 80, 80), max_power=2),
+    Room("Medbay", (160, 110, 80, 80), max_power=1),
 ], max_weapons=3, max_crew=3)
 
 ZOLTAN_SHIP = ShipModel("Zoltan-Fregatte", 14, [
     Room("Schild", (50, 190, 85, 85)),
     Room("Super-Schild", (145, 190, 85, 85)),
     Room("Waffen", (240, 190, 85, 85)),
-    Room("Brücke", (335, 190, 85, 85), max_power=2)
+    Room("Brücke", (335, 190, 85, 85), max_power=2),
+    Room("Medbay", (240, 95, 85, 85), max_power=2),
 ], max_weapons=4, max_crew=4)
 
 FEDERATION_SHIP = ShipModel("Federations-Kreuzer", 20, [
     Room("Artillerie", (50, 190, 85, 85)),
     Room("Schild", (145, 190, 85, 85)),
     Room("Waffen", (240, 190, 85, 85)),
-    Room("Brücke", (335, 190, 85, 85), max_power=2)
+    Room("Brücke", (335, 190, 85, 85), max_power=2),
+    Room("Medbay", (50, 95, 85, 85), max_power=3),
 ], max_weapons=4, max_crew=5)
 
 SHIP_BLUEPRINTS = {

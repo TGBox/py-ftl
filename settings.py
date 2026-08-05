@@ -33,12 +33,15 @@ current_state: str = STATE_MAP
 LOGICAL_WIDTH = 900
 LOGICAL_HEIGHT = 600
 
-# Verfügbare Fensterauflösungen
+# Verfügbare Fensterauflösungen (inkl. Ultrawide)
 RESOLUTIONS = [
     (900, 600),
     (1280, 720),
     (1600, 900),
     (1920, 1080),
+    (2560, 1080),   # Ultrawide 21:9
+    (3440, 1440),   # Ultrawide 21:9 QHD
+    (3840, 2160),   # 4K
 ]
 
 # Generelle Größen.

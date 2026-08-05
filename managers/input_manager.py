@@ -25,6 +25,13 @@ class InputManager:
         self.sound = None   # Set by Game after construction
         self.game = None    # Set by Game after construction
 
+    def _logical_mouse_pos(self) -> tuple[int, int]:
+        """Convert raw screen mouse position to logical 900x600 coordinates."""
+        raw_mx, raw_my = pygame.mouse.get_pos()
+        if self.game and hasattr(self.game, "screen_to_logical"):
+            return self.game.screen_to_logical(raw_mx, raw_my)
+        return raw_mx, raw_my
+
     def update(self):
 
         for event in pygame.event.get():
@@ -70,12 +77,7 @@ class InputManager:
 
     def handle_left_click(self, event: pygame.event.Event):
 
-        raw_mx, raw_my = pygame.mouse.get_pos()
-        # Convert to logical 900x600 coordinates if Game reference exists
-        if self.game and hasattr(self.game, "screen_to_logical"):
-            mx, my = self.game.screen_to_logical(raw_mx, raw_my)
-        else:
-            mx, my = raw_mx, raw_my
+        mx, my = self._logical_mouse_pos()
 
         # Crew-Menü Toggle & Interaction
         btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
@@ -183,7 +185,7 @@ class InputManager:
     def handle_right_click(self, event: pygame.event.Event):
         if self.data.current_state != STATE_COMBAT:
             return
-        mx, my = pygame.mouse.get_pos()
+        mx, my = self._logical_mouse_pos()
         if self.remove_weapon_target(mx, my):
             return
         if self.deselect_crew(event):
@@ -209,11 +211,11 @@ class InputManager:
                 break
 
     def handle_shop_click(self, event: pygame.event.Event):
-        mx, my = pygame.mouse.get_pos()
+        mx, my = self._logical_mouse_pos()
         self.shop_manager.handle_click(mx, my)
 
     def handle_event_click(self):
-        mx, my = pygame.mouse.get_pos()
+        mx, my = self._logical_mouse_pos()
         choices = self.data.world.event_manager.choices
         if not choices:
             self.map_manager.continue_event()
@@ -233,7 +235,7 @@ class InputManager:
 
 
     def handle_combat_click(self, event: pygame.event.Event):
-        mx, my = pygame.mouse.get_pos()
+        mx, my = self._logical_mouse_pos()
         self.data.world.event_manager.current_event_type = None
 
         btn_autofire = pygame.Rect(730, 310, 140, 30)
