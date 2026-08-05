@@ -1,5 +1,7 @@
+from classes.GameData import GameData
 from classes.Projectile import Projectile
 
+from managers.state_manager import StateManager
 from settings import *
 
 
@@ -136,10 +138,11 @@ from settings import *
 
 class CombatManager:
 
-    def __init__(self, data):
+    def __init__(self, data: GameData, state_manager: StateManager):
         self.data = data
+        self.state_manager = state_manager
 
-    def update(self, dt):
+    def update(self, dt: float):
         """Wird einmal pro Frame aufgerufen."""
 
         if self.data.paused:
@@ -160,11 +163,11 @@ class CombatManager:
         self.update_projectiles(dt)
         self.check_end_of_battle()
         
-    def update_crew(self, dt):
+    def update_crew(self, dt: float):
         for crew in self.data.player_crew:
             crew.update(dt, self.data.player_ship.rooms)
 
-    def update_shields(self, dt):
+    def update_shields(self, dt: float):
 
         self.data.player_shield.update(
             dt,
@@ -176,7 +179,7 @@ class CombatManager:
             self.data.current_enemy_ship.rooms[0].current_power
         )
         
-    def update_weapons(self, dt):
+    def update_weapons(self, dt: float):
 
         weapon_powered = (
             self.data.player_ship.rooms[1].current_power > 0
@@ -210,7 +213,7 @@ class CombatManager:
                 weapon.ammo_cost > 0
                 and self.data.player_missiles < weapon.ammo_cost
             ):
-                self.show_message("KEINE RAKETEN MEHR!")
+                self.state_manager.show_message("KEINE RAKETEN MEHR!")
                 continue
 
             if weapon.ammo_cost > 0:
@@ -230,7 +233,7 @@ class CombatManager:
 
             weapon.reset()
             
-    def update_enemy_weapon(self, dt):
+    def update_enemy_weapon(self, dt: float):
 
         weapon = self.data.enemy_weapon
 
@@ -259,7 +262,7 @@ class CombatManager:
 
         weapon.reset()
 
-    def update_projectiles(self, dt):
+    def update_projectiles(self, dt: float):
 
         for projectile in self.data.player_projectiles[:]:
 
@@ -275,19 +278,19 @@ class CombatManager:
 
             self.data.player_projectiles.remove(projectile)
             
-    def handle_player_hit(self, projectile):
+    def handle_player_hit(self, projectile: Projectile):
 
         ...
 
-    def handle_enemy_hit(self, projectile):
+    def handle_enemy_hit(self, projectile: Projectile):
 
         ...
 
-    def calculate_player_hit(self, projectile):
+    def calculate_player_hit(self, projectile: Projectile):
 
         ...
 
-    def calculate_enemy_hit(self, projectile):
+    def calculate_enemy_hit(self, projectile: Projectile):
 
         ...
         
@@ -326,7 +329,7 @@ class CombatManager:
 
         self.data.current_state = STATE_GAME_OVER
         
-    def show_message(self, text):
+    def show_message(self, text: str):
 
         self.data.combat_msg = text
         self.data.combat_msg_timer = 1.5

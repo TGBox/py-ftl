@@ -1,18 +1,20 @@
 import pygame
 
+from classes.Room import Room
+from classes.GameData import GameData
 from classes.Projectile import Projectile
 
 
 class WeaponManager:
 
-    def __init__(self, data):
+    def __init__(self, data: GameData):
         self.data = data
 
     # --------------------------------------------------
     # UPDATE
     # --------------------------------------------------
 
-    def update(self, dt):
+    def update(self, dt: float):
 
         weapon_powered = (
             self.data.player_ship.rooms[1].current_power > 0
@@ -28,7 +30,7 @@ class WeaponManager:
     # WAFFEN AUSWÄHLEN
     # --------------------------------------------------
 
-    def select_weapon(self, mx, my):
+    def select_weapon(self, mx: float, my: float):
 
         weapon_room = self.data.player_ship.rooms[1]
 
@@ -65,7 +67,7 @@ class WeaponManager:
     # ZIEL SETZEN
     # --------------------------------------------------
 
-    def assign_target(self, room, mouse_pos):
+    def assign_target(self, room: Room, mouse_pos: tuple[float, float]):
 
         idx = self.data.player_targeting_weapon_idx
 
@@ -77,7 +79,7 @@ class WeaponManager:
         self.data.player_weapon_targets[idx] = (
             room,
             self.data.player_targeting_start_pos,
-            mouse_pos,
+            (int(mouse_pos[0]), int(mouse_pos[1])),
         )
 
         self.data.is_player_targeting = False
@@ -97,9 +99,9 @@ class WeaponManager:
 
     def fire_weapon(
         self,
-        weapon_index,
-        target_room,
-        end_pos,
+        weapon_index: int,
+        target_room: Room,
+        end_pos: tuple[float, float],
     ):
 
         weapon = self.data.player_weapons[weapon_index]
@@ -215,7 +217,7 @@ class WeaponManager:
     # ZIEL ENTFERNEN
     # --------------------------------------------------
 
-    def remove_target(self, mx, my):
+    def remove_target(self, mx: float, my: float):
 
         for idx in list(
             self.data.player_weapon_targets.keys()
@@ -262,7 +264,7 @@ class WeaponManager:
     # HILFSMETHODEN
     # --------------------------------------------------
 
-    def show_message(self, text):
+    def show_message(self, text: str):
 
         self.data.combat_msg = text
 

@@ -1,20 +1,6 @@
-import copy
-import math
-import random
-import sys
-from typing import Literal
 import pygame
 
 from classes.GameData import GameData
-from classes.Crew import Crew
-import classes.EventManager
-from classes.Projectile import Projectile
-import classes.Reactor
-from classes.Room import Room
-from classes.ShieldSystem import ShieldSystem
-import classes.StarMap
-from classes.ShipModel import ENEMY_BOSS, ENEMY_SCOUT, PLAYER_SHIP
-from classes.Weapon import Weapon
 from managers.combat_manager import CombatManager
 from managers.input_manager import InputManager
 from managers.map_manager import MapManager
@@ -36,7 +22,7 @@ shop_manager = ShopManager(data)
 map_manager = MapManager(data)
 state_manager = StateManager(data)
 input_manager = InputManager(data, shop_manager, map_manager)
-combat_manager = CombatManager(data)
+combat_manager = CombatManager(data, state_manager)
 render_manager = RenderManager(screen, data)
 
 # --- MAIN LOOP ---

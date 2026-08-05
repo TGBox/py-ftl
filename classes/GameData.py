@@ -1,5 +1,5 @@
 import copy
-from typing import Literal
+from typing import Literal, Optional, Tuple
 
 from classes.EventManager import EventManager
 from classes.StarMap import StarMap
@@ -16,6 +16,9 @@ from settings import *
 class GameData:
     
     def __init__(self) -> None:
+        self.current_state: str = "MAIN_MENU" 
+        self.player_targeting_weapon_idx: Optional[int] = None
+        self.player_targeting_start_pos: Tuple[int, int] = (0, 0)
         # Player.
         self.player_ship: ShipModel = copy.deepcopy(PLAYER_SHIP)
         self.player_reactor: Reactor = Reactor(total_power=PLAYER_START_POWER)

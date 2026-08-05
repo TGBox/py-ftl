@@ -1,3 +1,4 @@
+from classes.GameData import GameData
 from settings import *
 
 
@@ -6,7 +7,7 @@ class StateManager:
     Verwaltet alle Zustandswechsel des Spiels.
     """
 
-    def __init__(self, data):
+    def __init__(self, data: GameData):
         self.data = data
 
     # --------------------------------------------------
@@ -14,7 +15,7 @@ class StateManager:
     # --------------------------------------------------
 
     @property
-    def current(self):
+    def current(self) -> str:
         return self.data.current_state
 
     @property
@@ -45,7 +46,7 @@ class StateManager:
     # Öffentliche Methoden
     # --------------------------------------------------
 
-    def change_state(self, new_state):
+    def change_state(self, new_state: str):
 
         if self.current == new_state:
             return
@@ -82,7 +83,7 @@ class StateManager:
     # Hooks
     # --------------------------------------------------
 
-    def on_leave(self, state):
+    def on_leave(self, state: str):
 
         if state == STATE_COMBAT:
             self.leave_combat()
@@ -93,7 +94,7 @@ class StateManager:
         elif state == STATE_SHOP:
             self.leave_shop()
 
-    def on_enter(self, state):
+    def on_enter(self, state: str):
 
         if state == STATE_MAP:
             self.enter_map_state()
@@ -170,3 +171,14 @@ class StateManager:
 
     def leave_shop(self):
         pass
+    
+    
+    # --------------------------------------------------
+    # HILFSMETHODEN
+    # --------------------------------------------------
+
+    def show_message(self, text: str):
+
+        self.data.combat_msg = text
+
+        self.data.combat_msg_timer = 1.5

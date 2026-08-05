@@ -1,10 +1,11 @@
 import pygame
 
+from classes.GameData import GameData
 from settings import *
 
 class RenderManager:
 
-    def __init__(self, screen, data):
+    def __init__(self, screen: pygame.Surface, data: GameData):
         self.screen = screen
         self.data = data
         self.screen.fill(COLOR_BG)  #[cite: 2]

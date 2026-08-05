@@ -1,15 +1,17 @@
 import copy
 
+from classes.Node import Node
+from classes.GameData import GameData
 from classes.ShipModel import ENEMY_BOSS, ENEMY_SCOUT
 from settings import *
 
 
 class MapManager:
 
-    def __init__(self, data):
+    def __init__(self, data: GameData):
         self.data = data
 
-    def travel_to_node(self, node):
+    def travel_to_node(self, node: Node):
 
         if self.data.player_fuel <= 0:
             print("NO FUEL")
@@ -24,7 +26,7 @@ class MapManager:
 
         return True
     
-    def handle_node_event(self, node):
+    def handle_node_event(self, node: Node):
 
         match node.event_type:
 
@@ -68,7 +70,7 @@ class MapManager:
 
         self.data.current_state = STATE_SHOP
         
-    def trigger_event(self, event_type):
+    def trigger_event(self, event_type: str):
 
         scrap, fuel = self.data.event_manager.trigger_event(
             event_type

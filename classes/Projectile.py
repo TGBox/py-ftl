@@ -10,8 +10,8 @@ class Projectile:
 
   def __init__(
       self,
-      start_pos: tuple[int, int],
-      target_pos: tuple[int, int],
+      start_pos: tuple[float, float],
+      target_pos: tuple[float, float],
       target_room: Room,
       is_player_shot: bool,
       w_type: str = "LASER",

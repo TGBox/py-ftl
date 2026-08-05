@@ -1,13 +1,14 @@
 import pygame
 
 from classes.Crew import Crew
+from classes.GameData import GameData
 from classes.Weapon import Weapon
 from settings import *
 
 
 class ShopManager:
 
-    def __init__(self, data):
+    def __init__(self, data: GameData):
         self.data = data
 
         self.btn_repair = pygame.Rect(200, 140, 500, 38)
@@ -18,7 +19,7 @@ class ShopManager:
         self.btn_buy_weapon = pygame.Rect(200, 365, 500, 38)
         self.btn_leave_shop = pygame.Rect(200, 420, 500, 38)
 
-    def handle_click(self, mx, my):
+    def handle_click(self, mx: float, my: float):
 
         if self.btn_repair.collidepoint(mx, my):
             self.buy_repair()

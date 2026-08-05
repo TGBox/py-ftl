@@ -227,12 +227,15 @@ import math
 
 import pygame
 
+from classes.GameData import GameData
+from managers.map_manager import MapManager
+from managers.shop_manager import ShopManager
 from settings import *
 
 
 class InputManager:
 
-    def __init__(self, data, shop_manager, map_manager):
+    def __init__(self, data: GameData, shop_manager: ShopManager, map_manager: MapManager):
         self.data = data
         self.shop_manager = shop_manager
         self.map_manager = map_manager
@@ -255,11 +258,11 @@ class InputManager:
                 elif event.button == 3:
                     self.handle_right_click(event)
                     
-    def handle_keydown(self, event):
+    def handle_keydown(self, event: pygame.event.Event):
         if event.key == pygame.K_SPACE:
             self.data.paused = not self.data.paused
     
-    def handle_left_click(self, event):
+    def handle_left_click(self, event: pygame.event.Event):
 
         mx, my = pygame.mouse.get_pos()
 
@@ -267,7 +270,7 @@ class InputManager:
             self.handle_map_click(mx, my)
 
         elif self.data.current_state == STATE_SHOP:
-            self.shop_manager.handle_click(event)
+            self.shop_manager.handle_click(mx, my)
 
         elif self.data.current_state == STATE_EVENT:
             self.handle_event_click()
@@ -278,7 +281,7 @@ class InputManager:
         elif self.data.current_state in (STATE_GAME_OVER, STATE_VICTORY):
             self.restart_game()
             
-    def handle_right_click(self, event):
+    def handle_right_click(self, event: pygame.event.Event):
         if self.data.current_state != STATE_COMBAT:
             return
         mx, my = pygame.mouse.get_pos()
@@ -288,7 +291,7 @@ class InputManager:
             return
         self.remove_room_power(mx, my)
         
-    def handle_map_click(self, mx, my):
+    def handle_map_click(self, mx: float, my: float):
 
         current_node = self.data.star_map.current_node
 
@@ -307,18 +310,28 @@ class InputManager:
                 self.map_manager.travel_to_node(node)
 
                 break        
-    def handle_shop_click(self, event):
-        mx, my = pygame.mouse.get_pos()           
+    def handle_shop_click(self, event: pygame.event.Event):
+        _mx, _my = pygame.mouse.get_pos()           
     def handle_event_click(self):
         self.map_manager.continue_event()       
-    def handle_combat_click(self, event):
-        mx, my = pygame.mouse.get_pos()     
+    def handle_combat_click(self, event: pygame.event.Event):
+        _mx, _my = pygame.mouse.get_pos()     
     def restart_game(self):
 
         self.map_manager.restart_game()        
-    def remove_weapon_target(self, mx, my):
+    def remove_weapon_target(self, mx: float, my: float):
         pass          
-    def deselect_crew(self, event):
-        mx, my = pygame.mouse.get_pos()     
-    def remove_room_power(self, mx, my):
+    def deselect_crew(self, event: pygame.event.Event):
+        _mx, _my = pygame.mouse.get_pos()     
+    def remove_room_power(self, mx: float, my: float):
         pass 
+    
+    # --------------------------------------------------
+    # HILFSMETHODEN
+    # --------------------------------------------------
+
+    def show_message(self, text: str):
+
+        self.data.combat_msg = text
+
+        self.data.combat_msg_timer = 1.5
