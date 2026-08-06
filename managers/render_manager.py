@@ -92,6 +92,9 @@ class RenderManager:
         elif self.data.current_state == STATE_SHOP:
             self.draw_shop()
 
+        elif self.data.current_state == STATE_TRAINING:
+            self.draw_training()
+
         elif self.data.current_state == STATE_GAME_OVER:
             self.draw_game_over()
 
@@ -416,6 +419,73 @@ class RenderManager:
             pygame.draw.rect(self.screen, (255, 120, 120), cancel_btn, 2)
             c_lbl = self.font.render("Abbrechen", True, (255, 200, 200))
             self.screen.blit(c_lbl, (cancel_btn.x + 70, cancel_btn.y + 8))
+
+    def draw_training(self):
+        panel_rect = pygame.Rect(40, 30, 820, 540)
+        pygame.draw.rect(self.screen, (20, 25, 40), panel_rect)
+        pygame.draw.rect(self.screen, COLOR_TRAINING_NODE, panel_rect, 3)
+
+        title_lbl = self.title_font.render("CREW-TRAININGSSATZ (20 Scrap / Skill)", True, (220, 180, 255))
+        scrap_lbl = self.font.render(f"Dein Schrott: {self.data.player.scrap} Scrap", True, (255, 220, 100))
+        self.screen.blit(title_lbl, (60, 45))
+        self.screen.blit(scrap_lbl, (670, 52))
+
+        tiny_font = pygame.font.SysFont(None, 15)
+
+        skills = [
+            ("repair", "Reparatur", "+25% Tempo"),
+            ("combat", "Nahkampf", "+30% Schaden"),
+            ("piloting", "Piloten", "+5% Evasion"),
+            ("fitness", "Fitness", "+15 Max HP"),
+        ]
+
+        for c_idx, crew in enumerate(self.data.player.crew):
+            card_y = 100 + c_idx * 95
+            card_rect = pygame.Rect(55, card_y, 790, 85)
+            pygame.draw.rect(self.screen, (30, 40, 60), card_rect)
+            pygame.draw.rect(self.screen, COLOR_BORDER, card_rect, 1)
+
+            # Crew-Icon & Details
+            c_color = (100, 200, 255) if crew.species == "Engi" else ((200, 255, 100) if crew.species == "Mantis" else COLOR_CREW)
+            pygame.draw.circle(self.screen, c_color, (card_rect.x + 30, card_rect.y + 30), 16)
+            b_lbl = self.font.render(crew.species[0], True, (0, 0, 0))
+            self.screen.blit(b_lbl, (card_rect.x + 24, card_rect.y + 18))
+
+            name_txt = self.font.render(f"{crew.name} ({crew.species})", True, (240, 240, 255))
+            hp_txt = tiny_font.render(f"HP: {int(crew.hp)}/{int(crew.max_hp)} | Trait: {crew.trait}", True, (180, 220, 240))
+            self.screen.blit(name_txt, (card_rect.x + 60, card_rect.y + 12))
+            self.screen.blit(hp_txt, (card_rect.x + 60, card_rect.y + 36))
+
+            # Render 4 Skill Upgrade Cards
+            for s_idx, (s_key, s_name, s_desc) in enumerate(skills):
+                s_box = pygame.Rect(465 + s_idx * 98, card_y + 8, 92, 68)
+                pygame.draw.rect(self.screen, (22, 30, 48), s_box)
+                pygame.draw.rect(self.screen, (70, 90, 130), s_box, 1)
+
+                cur_lvl = getattr(crew, f"skill_{s_key}", 0)
+                lvl_str = f"Lvl {cur_lvl}/3" if cur_lvl < 3 else "[MAX]"
+
+                lbl_sname = tiny_font.render(f"{s_name}", True, (220, 220, 255))
+                lbl_sdesc = tiny_font.render(lvl_str, True, (160, 220, 255))
+                self.screen.blit(lbl_sname, (s_box.x + 4, s_box.y + 4))
+                self.screen.blit(lbl_sdesc, (s_box.x + 4, s_box.y + 18))
+
+                upg_btn = pygame.Rect(s_box.x + 4, s_box.y + 36, 84, 26)
+                b_col = (110, 50, 160) if cur_lvl < 3 else (50, 60, 70)
+                pygame.draw.rect(self.screen, b_col, upg_btn)
+                pygame.draw.rect(self.screen, (210, 150, 255) if cur_lvl < 3 else (100, 100, 100), upg_btn, 1)
+
+                btn_txt_str = "Trainieren" if cur_lvl < 3 else "Max"
+                upg_lbl = tiny_font.render(btn_txt_str, True, (255, 255, 255) if cur_lvl < 3 else (160, 160, 160))
+                self.screen.blit(upg_lbl, (upg_btn.x + (upg_btn.width - upg_lbl.get_width()) // 2, upg_btn.y + 6))
+
+        # Button zum Verlassen
+        btn_leave = pygame.Rect(320, 510, 260, 42)
+        pygame.draw.rect(self.screen, (60, 40, 70), btn_leave)
+        pygame.draw.rect(self.screen, COLOR_TRAINING_NODE, btn_leave, 2)
+        l_lbl = self.font.render("Station verlassen", True, (240, 200, 255))
+        self.screen.blit(l_lbl, (btn_leave.x + (btn_leave.width - l_lbl.get_width()) // 2, btn_leave.y + 10))
+
     def draw_rooms(self):
         # 1. Reaktor zeichnen
         self.data.player.reactor.draw(self.screen, 30, 45)

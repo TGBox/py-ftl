@@ -3,6 +3,7 @@ import random
 from classes.Crew import Crew
 from classes.GameData import GameData
 from classes.Projectile import Projectile
+from classes.Weapon import Weapon
 from managers.state_manager import StateManager
 from settings import *
 
@@ -636,7 +637,8 @@ class CombatManager:
         # SRS 6.2 Evasion Formel: E = (E_Base_Engine + C_Engine_Bonus + C_Pilot_Bonus) * A_Multiplier + S_Cloak
         e_base_engine = self.data.player.ship.rooms[2].current_power * 0.10 if len(self.data.player.ship.rooms) > 2 else 0.10
         bridge_power = self.data.player.ship.rooms[2].current_power if len(self.data.player.ship.rooms) > 2 else 0
-        pilot_present = any(c.current_room == self.data.player.ship.rooms[2] for c in self.data.player.crew)
+        pilot_crew = next((c for c in self.data.player.crew if len(self.data.player.ship.rooms) > 2 and c.current_room == self.data.player.ship.rooms[2]), None)
+        pilot_present = pilot_crew is not None
         if pilot_present:
             a_multiplier = 1.0
         elif bridge_power >= 3:
@@ -646,7 +648,7 @@ class CombatManager:
         else:
             a_multiplier = 0.0
 
-        c_pilot_bonus = 0.10 if pilot_present else 0.0
+        c_pilot_bonus = (0.10 + getattr(pilot_crew, "skill_piloting", 0) * 0.05) if pilot_crew else 0.0
         c_engine_bonus = 0.05 if any(c.current_room == self.data.player.ship.rooms[0] for c in self.data.player.crew) else 0.0
         s_cloak = 0.0
 
@@ -843,4 +845,4 @@ class CombatManager:
         self.data.combat.msg = text
         self.data.combat.msg_timer = 1.5
 
-
+

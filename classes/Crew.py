@@ -42,6 +42,12 @@ class Crew:
         self.is_boarding: bool = False
         self.stun_timer: float = 0.0
 
+        # Trainings-Skills (Stufe 0 bis 3)
+        self.skill_repair: int = 0
+        self.skill_combat: int = 0
+        self.skill_piloting: int = 0
+        self.skill_fitness: int = 0
+
         # Spezies-Eigenschaften (Reparatur & Nahkampf)
         if self.species == "Engi":
             self.repair_multiplier: float = 2.0
@@ -59,6 +65,25 @@ class Crew:
             self.melee_multiplier += 0.3
 
         self.move_speed: float = 160.0 if self.trait == "Sprinter" else 120.0
+
+    def train_skill(self, skill_name: str) -> bool:
+        if skill_name == "repair" and self.skill_repair < 3:
+            self.skill_repair += 1
+            self.repair_multiplier *= 1.25
+            return True
+        elif skill_name == "combat" and self.skill_combat < 3:
+            self.skill_combat += 1
+            self.melee_multiplier *= 1.30
+            return True
+        elif skill_name == "piloting" and self.skill_piloting < 3:
+            self.skill_piloting += 1
+            return True
+        elif skill_name == "fitness" and self.skill_fitness < 3:
+            self.skill_fitness += 1
+            self.max_hp += 15.0
+            self.hp = min(self.max_hp, self.hp + 15.0)
+            return True
+        return False
 
     def update(self, dt: float, rooms: list[Room]) -> None:
         if self.stun_timer > 0.0:

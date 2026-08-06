@@ -43,7 +43,7 @@ class StarMap:
       )
 
       for y in y_positions:
-        event_type = random.choice(["COMBAT", "RESOURCE", "DISTRESS", "NEBULA", "SHOP", "EMPTY"])
+        event_type = random.choice(["COMBAT", "RESOURCE", "DISTRESS", "NEBULA", "SHOP", "TRAINING", "EMPTY"])
         node = Node(node_id, x, y, event_type)
         self.nodes.append(node)
         layer_nodes.append(node)
@@ -110,6 +110,8 @@ class StarMap:
         color = (255, 100, 255)
       elif node.event_type == "SHOP":
         color = COLOR_SHOP_NODE
+      elif node.event_type == "TRAINING":
+        color = COLOR_TRAINING_NODE
       else:
         color = COLOR_MAP_NODE
 

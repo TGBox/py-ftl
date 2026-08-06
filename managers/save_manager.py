@@ -128,6 +128,10 @@ class SaveManager:
                     trait=getattr(c, "trait", "Sprinter"),
                     x=c.x,
                     y=c.y,
+                    skill_repair=getattr(c, "skill_repair", 0),
+                    skill_combat=getattr(c, "skill_combat", 0),
+                    skill_piloting=getattr(c, "skill_piloting", 0),
+                    skill_fitness=getattr(c, "skill_fitness", 0),
                 )
                 for c in data.player.crew
             ]
@@ -285,6 +289,13 @@ class SaveManager:
                     c.hp = cs.hp
                     c.max_hp = cs.max_hp
                     c.trait = cs.trait
+                    c.skill_repair = getattr(cs, "skill_repair", 0)
+                    c.skill_combat = getattr(cs, "skill_combat", 0)
+                    c.skill_piloting = getattr(cs, "skill_piloting", 0)
+                    c.skill_fitness = getattr(cs, "skill_fitness", 0)
+                    # Skill-Boni neu anwenden
+                    c.repair_multiplier *= (1.25 ** c.skill_repair)
+                    c.melee_multiplier *= (1.30 ** c.skill_combat)
                     data.player.crew.append(c)
 
             # Transient states zurücksetzen

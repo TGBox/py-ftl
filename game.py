@@ -10,6 +10,7 @@ from managers.render_manager import RenderManager
 from managers.shop_manager import ShopManager
 from managers.sound_manager import SoundManager
 from managers.state_manager import StateManager
+from managers.training_manager import TrainingManager
 from managers.weapon_manager import WeaponManager
 from settings import *
 
@@ -41,6 +42,8 @@ class Game:
         self.sound = SoundManager()
         self.shop_manager = ShopManager(self.data)
         self.data.shop_manager = self.shop_manager
+        self.training_manager = TrainingManager(self.data)
+        self.data.training_manager = self.training_manager
         self.map_manager = MapManager(self.data)
         self.state_manager = StateManager(self.data)
         self.weapon_manager = WeaponManager(self.data)

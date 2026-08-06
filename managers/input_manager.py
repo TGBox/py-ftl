@@ -279,6 +279,11 @@ class InputManager:
         elif self.data.current_state == STATE_SHOP:
             self.shop_manager.handle_click(mx, my)
 
+        elif self.data.current_state == STATE_TRAINING:
+            training_mgr = getattr(self.data, "training_manager", None)
+            if training_mgr:
+                training_mgr.handle_click(mx, my)
+
         elif self.data.current_state == STATE_EVENT:
             self.handle_event_click()
 

@@ -46,6 +46,9 @@ class MapManager:
             case "SHOP":
                 self.enter_shop()
 
+            case "TRAINING":
+                self.enter_training()
+
             case _:
                 self.trigger_event(node.event_type)
 
@@ -117,6 +120,9 @@ class MapManager:
         if shop_mgr and hasattr(shop_mgr, "refresh_catalog"):
             shop_mgr.refresh_catalog()
         self.data.current_state = STATE_SHOP
+
+    def enter_training(self):
+        self.data.current_state = STATE_TRAINING
 
     def trigger_event(self, event_type: str):
 

@@ -65,6 +65,10 @@ class CrewSaveSchema(BaseModel):
     trait: str
     x: float
     y: float
+    skill_repair: int = 0
+    skill_combat: int = 0
+    skill_piloting: int = 0
+    skill_fitness: int = 0
 
 
 class RoomSaveSchema(BaseModel):
