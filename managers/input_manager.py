@@ -295,17 +295,18 @@ class InputManager:
         mx, my = self._logical_mouse_pos()
         ev_mgr = self.data.world.event_manager
 
-        # Wenn result_text angezeigt wird: Klick schließt Event ab
+        box_rect = pygame.Rect(120, 100, 660, 380)
+
+        # Wenn result_text angezeigt wird: Klick im Fenster schließt Event ab
         if ev_mgr.result_text:
-            cont_btn = pygame.Rect(280, 400, 340, 42)
-            if cont_btn.collidepoint(mx, my):
-                ev_mgr.result_text = ""
+            if box_rect.collidepoint(mx, my):
                 self.map_manager.continue_event()
             return
 
         choices = ev_mgr.choices
         if not choices:
-            self.map_manager.continue_event()
+            if box_rect.collidepoint(mx, my):
+                self.map_manager.continue_event()
             return
 
         for idx, choice in enumerate(choices):
@@ -313,9 +314,7 @@ class InputManager:
             btn_rect = pygame.Rect(150, btn_y, 600, 38)
             if btn_rect.collidepoint(mx, my):
                 action = choice.get("action", "")
-                res_txt = choice.get("result_text", "")
-                if res_txt and action in ("CLAIM_RESOURCES", "GIVE_RESOURCES", "SCAVENGE_FUEL", "CONTINUE", "TAKE_DAMAGE", "BUY_FUEL"):
-                    ev_mgr.result_text = res_txt
+                if self.sound: self.sound.play("click")
                 self.map_manager.handle_choice(action, choice)
                 return
 

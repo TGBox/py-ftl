@@ -21,6 +21,16 @@ class CombatManager:
         if self.data.paused or getattr(self.data, "show_pause_menu", False):
             return
 
+        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
+            self.data.player.ship.update_doors(dt)
+            self.data.enemy.ship.update_doors(dt)
+            self.update_crew(dt)
+
+            if len(self.data.player.crew) == 0:
+                if self.sound: self.sound.play("game_over")
+                self.player_lost()
+                return
+
         if self.data.current_state != STATE_COMBAT:
             return
 
@@ -29,9 +39,6 @@ class CombatManager:
             self.data.combat.msg_timer - dt
         )
 
-        self.data.player.ship.update_doors(dt)
-        self.data.enemy.ship.update_doors(dt)
-        self.update_crew(dt)
         self.update_shields(dt)
         self.update_weapons(dt)
         self.update_enemy_weapon(dt)

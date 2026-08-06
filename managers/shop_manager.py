@@ -25,11 +25,11 @@ class ShopManager:
         self.refresh_catalog()
 
         # Navigation & Basis-Buttons
-        self.btn_repair = pygame.Rect(140, 120, 320, 36)
-        self.btn_fuel = pygame.Rect(140, 162, 320, 36)
-        self.btn_missiles = pygame.Rect(140, 204, 320, 36)
-        self.btn_upgrade_reactor = pygame.Rect(140, 246, 320, 36)
-        self.btn_buy_crew = pygame.Rect(140, 288, 320, 36)
+        self.btn_repair = pygame.Rect(100, 120, 340, 36)
+        self.btn_fuel = pygame.Rect(100, 162, 340, 36)
+        self.btn_missiles = pygame.Rect(100, 204, 340, 36)
+        self.btn_upgrade_reactor = pygame.Rect(100, 246, 340, 36)
+        self.btn_buy_crew = pygame.Rect(100, 288, 340, 36)
         self.btn_leave_shop = pygame.Rect(320, 485, 260, 40)
 
     def refresh_catalog(self):
@@ -57,14 +57,15 @@ class ShopManager:
 
         # Klick auf Waffenkatalog zum Kaufen
         for idx, item in enumerate(self.catalog_stock):
-            item_btn = pygame.Rect(480, 120 + idx * 52, 360, 44)
+            item_btn = pygame.Rect(460, 120 + idx * 58, 340, 52)
             if item_btn.collidepoint(mx, my):
                 self.selecting_slot_item = item
                 return
 
         # Klick auf "Verkaufen" bei eigenen Waffen
         for idx, w in enumerate(self.data.player.weapons):
-            sell_btn = pygame.Rect(140 + idx * 180, 425, 160, 32)
+            card_x = 100 + idx * 245
+            sell_btn = pygame.Rect(card_x + 10, 407, 210, 22)
             if sell_btn.collidepoint(mx, my):
                 self.sell_weapon_at_slot(idx)
                 return
@@ -83,7 +84,7 @@ class ShopManager:
         # Slot-Buttons
         max_slots = getattr(self.data.player.ship, "max_weapons", 3)
         for slot_idx in range(max_slots):
-            slot_btn = pygame.Rect(150, 200 + slot_idx * 50, 580, 42)
+            slot_btn = pygame.Rect(150, 150 + slot_idx * 65, 600, 52)
             if slot_btn.collidepoint(mx, my):
                 self.buy_weapon_to_slot(item, slot_idx)
                 return

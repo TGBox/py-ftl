@@ -123,6 +123,9 @@ class MapManager:
 
     def handle_choice(self, action: str, choice_data: dict):
         has_result = bool(choice_data.get("result_text"))
+        if has_result:
+            self.data.world.event_manager.result_text = choice_data["result_text"]
+            self.data.world.event_manager.pending_action = action
 
         if action == "BUY_FUEL":
             if self.data.player.scrap >= 10:
@@ -152,7 +155,8 @@ class MapManager:
                 self.data.current_state = STATE_MAP
 
         elif action == "START_COMBAT":
-            self.start_normal_combat()
+            if not has_result:
+                self.start_normal_combat()
 
         elif action == "ENTER_SHOP":
             self.enter_shop()
@@ -162,13 +166,18 @@ class MapManager:
                 self.data.current_state = STATE_MAP
 
     def continue_event(self):
+        ev_mgr = self.data.world.event_manager
+        pending = getattr(ev_mgr, "pending_action", None)
+        ev_type = ev_mgr.current_event_type
 
-        if self.data.world.event_manager.current_event_type == "COMBAT":
+        ev_mgr.result_text = ""
+        ev_mgr.pending_action = None
 
+        if pending == "START_COMBAT" or (not pending and ev_type == "COMBAT"):
             self.start_normal_combat()
-
+        elif pending == "ENTER_SHOP" or (not pending and ev_type == "SHOP"):
+            self.enter_shop()
         else:
-
             self.data.current_state = STATE_MAP
 
     def start_normal_combat(self):
