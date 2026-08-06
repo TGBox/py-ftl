@@ -233,7 +233,6 @@ class CombatManager:
             if self.sound:
                 self.sound.play("crew_death")
             self.show_message(f"CREW-MITGLIED {dead.name.upper()} GEFALLEN!")
-
         # Gegnerische Crew initialisieren & updaten (Ausgewogene Anzahl nach Sektor)
         if not self.enemy_crew and len(self.data.enemy.ship.rooms) > 0:
             sector = self.data.world.star_map.sector
@@ -243,11 +242,46 @@ class CombatManager:
             for r in target_rooms:
                 self.enemy_crew.append(Crew(r.rect.centerx, r.rect.centery, name="Pirate", is_enemy=True))
 
+        enemy_rooms = self.data.enemy.ship.rooms
+        boarders = [c for c in self.data.player.crew if getattr(c, "is_boarding", False)]
         dead_enemy: list = []
         for e_crew in self.enemy_crew:
-            e_crew.update(dt, self.data.enemy.ship.rooms)
+            e_crew.update(dt, enemy_rooms)
             if e_crew.hp <= 0.0:
                 dead_enemy.append(e_crew)
+                continue
+
+            # Falls feindliches Crewmitglied am Ort steht -> Notfall-Aktionen (Feuer/Reparatur)
+            if not e_crew.target_pos and e_crew.current_room:
+                if e_crew.current_room.fire_level > 0.0:
+                    e_crew.current_room.fire_level = max(0.0, e_crew.current_room.fire_level - 25.0 * dt)
+                elif e_crew.current_room.health < e_crew.current_room.max_health:
+                    e_crew.current_room.repair(20.0 * e_crew.repair_multiplier * dt)
+
+            # KI Navigations-Triage (falls kein Bewegungsziel gesetzt)
+            if not e_crew.target_pos:
+                # 1. Geenterter Raum mit Enterern?
+                boarded_room = next((b.current_room for b in boarders if b.current_room and b.current_room.is_enemy), None)
+                if boarded_room and e_crew.current_room != boarded_room:
+                    e_crew.target_pos = (boarded_room.rect.centerx, boarded_room.rect.centery)
+                # 2. Brennender Raum?
+                elif any(r.fire_level > 0 for r in enemy_rooms):
+                    burning_room = next(r for r in enemy_rooms if r.fire_level > 0)
+                    if e_crew.current_room != burning_room:
+                        e_crew.target_pos = (burning_room.rect.centerx, burning_room.rect.centery)
+                # 3. Beschädigter Raum?
+                elif any(r.health < r.max_health for r in enemy_rooms):
+                    damaged_room = next(r for r in enemy_rooms if r.health < r.max_health)
+                    if e_crew.current_room != damaged_room:
+                        e_crew.target_pos = (damaged_room.rect.centerx, damaged_room.rect.centery)
+                # 4. Freie Station bemannen (Waffen, Schild, Brücke)
+                else:
+                    stations = [r for r in enemy_rooms if r.name in ("Brücke", "Waffen", "Schild")]
+                    if stations:
+                        station = random.choice(stations)
+                        if e_crew.current_room != station and random.random() < 0.05:
+                            e_crew.target_pos = (station.rect.centerx, station.rect.centery)
+
         for dead in dead_enemy:
             self.enemy_crew.remove(dead)
 
@@ -261,12 +295,18 @@ class CombatManager:
 
             # Nahkampf wenn beide Parteien im selben Raum stehen
             if p_in_r and e_in_r:
-                    p.hp = max(0.0, p.hp - (e_dps / len(p_in_r)) * dt)
+                for p_c in p_in_r:
+                    for e_c in e_in_r:
+                        p_c.hp = max(0.0, p_c.hp - 18.0 * e_c.melee_multiplier * dt)
+                        e_c.hp = max(0.0, e_c.hp - 18.0 * p_c.melee_multiplier * dt)
 
             # Sabotage wenn eigene Enter-Crew in unverteidigtem gegnerischen Raum steht
-            elif p_in_r and not e_in_r and r in self.data.enemy.ship.rooms:
-                sab_rate = sum(18.0 * getattr(c, "melee_multiplier", 1.0) for c in p_in_r)
-                r.health = max(0.0, r.health - sab_rate * dt)
+            elif r.is_enemy and p_in_r and not e_in_r:
+                r.apply_damage(12.0 * dt, self.data.enemy.reactor)
+                self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - int(1 * dt))
+            elif not r.is_enemy and e_in_r and not p_in_r:
+                r.apply_damage(12.0 * dt, self.data.player.reactor)
+                self.data.player.ship.hp = max(0, self.data.player.ship.hp - int(1 * dt))
 
     def teleport_selected_crew_to_room(self, target_room):
         selected_crew = [c for c in self.data.player.crew if c.selected]
@@ -432,8 +472,13 @@ class CombatManager:
         is_cloaked = getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0
         effective_dt = 0.0 if is_cloaked else dt
 
+        enemy_weapon_manned = any(
+            c.current_room and c.current_room.name == "Waffen" for c in self.enemy_crew
+        )
+        manned_mult = 1.20 if enemy_weapon_manned else 1.0
+
         weapon.update(
-            effective_dt,
+            effective_dt * manned_mult,
             self.data.enemy.ship.rooms[1].current_power > 0
             and self.data.enemy.ship.rooms[1].health > 20
         )
