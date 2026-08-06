@@ -27,13 +27,24 @@ class Game:
             pygame.mixer.set_reserved(4)
 
         # --- Display: logische Oberfläche + skaliertes Fenster ---
-        self.resolution_idx: int = 0
-        self.is_fullscreen: bool = False
+        info = pygame.display.Info()
+        self.desktop_w = info.current_w if (info and info.current_w > 0) else 1920
+        self.desktop_h = info.current_h if (info and info.current_h > 0) else 1080
+
+        # Füge die aktuelle Desktop-Auflösung zu RESOLUTIONS hinzu
+        self.resolutions = list(RESOLUTIONS)
+        if (self.desktop_w, self.desktop_h) not in self.resolutions:
+            self.resolutions.insert(0, (self.desktop_w, self.desktop_h))
+
+        self.resolution_idx: int = self.resolutions.index((self.desktop_w, self.desktop_h))
+        # Anzeigemodi: "FULLSCREEN_WINDOWED" (Fullscreen-Fenstermodus, Standard!), "WINDOWED", "FULLSCREEN"
+        self.display_mode: str = "FULLSCREEN_WINDOWED"
+
         self.logical_surface: pygame.Surface = pygame.Surface(
             (LOGICAL_WIDTH, LOGICAL_HEIGHT)
         )
         self.screen: pygame.Surface = pygame.display.set_mode(
-            (SCREEN_WIDTH, SCREEN_HEIGHT)
+            (self.desktop_w, self.desktop_h), pygame.NOFRAME
         )
         pygame.display.set_caption("FTL Clone - Pygame-CE Engine")
         self.clock: pygame.time.Clock = pygame.time.Clock()
@@ -67,30 +78,26 @@ class Game:
     # Display helpers
     # ------------------------------------------------------------------
 
-    def set_resolution(self, idx: int) -> None:
-        self.resolution_idx = idx % len(RESOLUTIONS)
-        w, h = RESOLUTIONS[self.resolution_idx]
-        if self.is_fullscreen:
-            self.screen = pygame.display.set_mode((w, h), pygame.FULLSCREEN)
-        else:
-            self.screen = pygame.display.set_mode((w, h))
+    def apply_display_mode(self) -> None:
+        target_w, target_h = self.resolutions[self.resolution_idx]
+        if self.display_mode == "FULLSCREEN_WINDOWED":
+            self.screen = pygame.display.set_mode((self.desktop_w, self.desktop_h), pygame.NOFRAME)
+        elif self.display_mode == "FULLSCREEN":
+            self.screen = pygame.display.set_mode((target_w, target_h), pygame.FULLSCREEN)
+        else:  # "WINDOWED"
+            self.screen = pygame.display.set_mode((target_w, target_h), pygame.RESIZABLE)
 
-    def toggle_fullscreen(self) -> None:
-        self.is_fullscreen = not self.is_fullscreen
-        w, h = RESOLUTIONS[self.resolution_idx]
-        if self.is_fullscreen:
-            # Use desktop resolution for fullscreen
-            info = pygame.display.Info()
-            self.screen = pygame.display.set_mode(
-                (info.current_w, info.current_h), pygame.FULLSCREEN
-            )
-        else:
-            self.screen = pygame.display.set_mode((w, h))
+    def cycle_display_mode(self) -> str:
+        modes = ["FULLSCREEN_WINDOWED", "WINDOWED", "FULLSCREEN"]
+        cur_i = modes.index(self.display_mode) if self.display_mode in modes else 0
+        self.display_mode = modes[(cur_i + 1) % len(modes)]
+        self.apply_display_mode()
+        return self.display_mode
 
     def cycle_resolution(self) -> tuple[int, int]:
-        next_idx = (self.resolution_idx + 1) % len(RESOLUTIONS)
-        self.set_resolution(next_idx)
-        return RESOLUTIONS[self.resolution_idx]
+        self.resolution_idx = (self.resolution_idx + 1) % len(self.resolutions)
+        self.apply_display_mode()
+        return self.resolutions[self.resolution_idx]
 
     def _scale_and_blit(self) -> None:
         """Scale the logical 900x600 surface to fill the actual window."""

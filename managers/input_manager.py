@@ -208,13 +208,13 @@ class InputManager:
             return
 
         if self.data.current_state == STATE_OPTIONS:
-            btn_toggle_fullscreen = pygame.Rect(220, 140, 460, 44)
-            btn_res_toggle = pygame.Rect(220, 195, 460, 44)
+            btn_toggle_fullscreen = pygame.Rect(210, 140, 480, 44)
+            btn_res_toggle = pygame.Rect(210, 195, 480, 44)
             btn_audio_toggle = pygame.Rect(220, 250, 460, 44)
             btn_close_options = pygame.Rect(350, 440, 200, 45)
             if btn_toggle_fullscreen.collidepoint(mx, my):
                 if self.game:
-                    self.game.toggle_fullscreen()
+                    self.game.cycle_display_mode()
                 if self.sound:
                     self.sound.play("click")
             elif btn_res_toggle.collidepoint(mx, my):
@@ -537,5 +537,7 @@ class InputManager:
 
     def show_message(self, text: str):
         self.data.combat.msg = text
-        self.data.combat.msg_timer = 1.5
+        self.data.combat.msg_timer = 2.0
+        self.data.save_toast_text = text
+        self.data.save_toast_timer = 2.5
 

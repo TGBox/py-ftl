@@ -319,12 +319,19 @@ class RenderManager:
 
         self.screen.blit(
             self.font.render("--- HÄNDLER-STATION ---", True, COLOR_SHOP_NODE),
-            (340, 75),
+            (340, 70),
         )
 
         small_font = pygame.font.SysFont(None, 20)
+
+        # Statusleiste im Shop (Dein Schrott & Hüllenzustand)
+        p_hp = self.data.player.ship.hp
+        p_max_hp = self.data.player.ship.max_hp
+        shop_status_txt = f"Dein Scrap: {self.data.player.scrap} Scrap  |  Schiff-Hülle: {p_hp}/{p_max_hp} HP"
+        self.screen.blit(small_font.render(shop_status_txt, True, (255, 220, 100)), (280, 94))
+
         items_left = [
-            (pygame.Rect(100, 120, 340, 32), "Hülle reparieren (+1 HP) - 2 Scrap"),
+            (pygame.Rect(100, 120, 340, 32), f"Hülle reparieren (+1 HP) - 2 Scrap (Aktuell: {p_hp}/{p_max_hp} HP)"),
             (pygame.Rect(100, 154, 340, 32), "Treibstoff kaufen (+1 Fuel) - 3 Scrap"),
             (pygame.Rect(100, 188, 340, 32), "Raketen kaufen (+3 Raketen) - 6 Scrap"),
             (pygame.Rect(100, 222, 340, 32), "Reaktor aufrüsten (+1 Power) - 15 Scrap"),
@@ -1069,26 +1076,31 @@ class RenderManager:
             (290, 95),
         )
 
-        # Read dynamic state from game reference
         game_ref = getattr(self, "game", None)
-        is_fs = getattr(game_ref, "is_fullscreen", False) if game_ref else False
+        mode_str = getattr(game_ref, "display_mode", "FULLSCREEN_WINDOWED") if game_ref else "FULLSCREEN_WINDOWED"
         res_idx = getattr(game_ref, "resolution_idx", 0) if game_ref else 0
-        from settings import RESOLUTIONS
-        cur_res = RESOLUTIONS[res_idx] if res_idx < len(RESOLUTIONS) else (900, 600)
+        res_list = getattr(game_ref, "resolutions", RESOLUTIONS) if game_ref else RESOLUTIONS
+        cur_res = res_list[res_idx] if res_idx < len(res_list) else (1920, 1080)
         sound_ref = getattr(game_ref, "sound", None) if game_ref else None
         audio_on = sound_ref.enabled if sound_ref else True
 
-        # 1. Vollbild
-        self.btn_toggle_fullscreen = pygame.Rect(220, 140, 460, 44)
-        fs_col = (60, 100, 60) if is_fs else (40, 60, 90)
-        pygame.draw.rect(self.screen, fs_col, self.btn_toggle_fullscreen)
-        pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_toggle_fullscreen, 2)
-        fs_label = "Vollbild: AN" if is_fs else "Vollbild: AUS (Fenster)"
-        fs_txt = self.font.render(fs_label, True, (100, 255, 100) if is_fs else (255, 255, 255))
-        self.screen.blit(fs_txt, (self.btn_toggle_fullscreen.x + 130, self.btn_toggle_fullscreen.y + 12))
+        mode_labels = {
+            "FULLSCREEN_WINDOWED": "Fullscreen Fenstermodus [STANDARD]",
+            "WINDOWED": "Fenstermodus (Normales Fenster)",
+            "FULLSCREEN": "Exklusives Vollbild (Hardware-Fullscreen)",
+        }
+        disp_mode_label = mode_labels.get(mode_str, mode_str)
+
+        # 1. Anzeigemodus Button
+        self.btn_toggle_fullscreen = pygame.Rect(210, 140, 480, 44)
+        m_col = (30, 80, 100) if mode_str == "FULLSCREEN_WINDOWED" else ((40, 60, 90) if mode_str == "WINDOWED" else (70, 50, 90))
+        pygame.draw.rect(self.screen, m_col, self.btn_toggle_fullscreen)
+        pygame.draw.rect(self.screen, (0, 200, 255), self.btn_toggle_fullscreen, 2)
+        fs_txt = pygame.font.SysFont(None, 17, bold=True).render(f"Anzeigemodus: {disp_mode_label}", True, (100, 255, 220))
+        self.screen.blit(fs_txt, (self.btn_toggle_fullscreen.x + 18, self.btn_toggle_fullscreen.y + 14))
 
         # 2. Fensterauflösung
-        self.btn_res_toggle = pygame.Rect(220, 195, 460, 44)
+        self.btn_res_toggle = pygame.Rect(210, 195, 480, 44)
         pygame.draw.rect(self.screen, (40, 60, 90), self.btn_res_toggle)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_res_toggle, 2)
         res_txt = self.font.render(f"Auflösung: {cur_res[0]} x {cur_res[1]} (Klick = Wechseln)", True, (220, 240, 255))
