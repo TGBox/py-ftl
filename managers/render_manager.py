@@ -294,16 +294,17 @@ class RenderManager:
 
         small_font = pygame.font.SysFont(None, 20)
         items_left = [
-            (pygame.Rect(100, 120, 340, 36), "Hülle reparieren (+1 HP) - 2 Scrap"),
-            (pygame.Rect(100, 162, 340, 36), "Treibstoff kaufen (+1 Fuel) - 3 Scrap"),
-            (pygame.Rect(100, 204, 340, 36), "Raketen kaufen (+3 Raketen) - 6 Scrap"),
-            (pygame.Rect(100, 246, 340, 36), "Reaktor aufrüsten (+1 Power) - 15 Scrap"),
-            (pygame.Rect(100, 288, 340, 36), "Crew-Mitglied anheuern - 25 Scrap"),
+            (pygame.Rect(100, 120, 340, 32), "Hülle reparieren (+1 HP) - 2 Scrap"),
+            (pygame.Rect(100, 154, 340, 32), "Treibstoff kaufen (+1 Fuel) - 3 Scrap"),
+            (pygame.Rect(100, 188, 340, 32), "Raketen kaufen (+3 Raketen) - 6 Scrap"),
+            (pygame.Rect(100, 222, 340, 32), "Reaktor aufrüsten (+1 Power) - 15 Scrap"),
+            (pygame.Rect(100, 256, 340, 32), "Crew-Mitglied anheuern - 25 Scrap"),
+            (pygame.Rect(100, 290, 340, 32), "Schiff-Layout umbauen - 15 Scrap"),
         ]
         for btn, text in items_left:
             pygame.draw.rect(self.screen, (40, 50, 70), btn)
             pygame.draw.rect(self.screen, COLOR_BORDER, btn, 2)
-            self.screen.blit(self.font.render(text, True, (220, 220, 220)), (btn.x + 12, btn.y + 8))
+            self.screen.blit(self.font.render(text, True, (220, 220, 220)), (btn.x + 12, btn.y + 6))
 
         self.screen.blit(self.font.render("Waffen & Augmentationen:", True, (255, 220, 100)), (460, 95))
         catalog = getattr(shop_mgr, "catalog_stock", []) if shop_mgr else []
@@ -374,10 +375,46 @@ class RenderManager:
                 self.screen.blit(lbl_empty, (card_rect.x + 8, card_rect.y + 12))
                 self.screen.blit(lbl_allow, (card_rect.x + 8, card_rect.y + 35))
 
-        btn_leave = pygame.Rect(320, 485, 260, 40)
+        btn_leave = pygame.Rect(320, 490, 260, 40)
         pygame.draw.rect(self.screen, (60, 40, 40), btn_leave)
         pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, btn_leave, 2)
         self.screen.blit(self.font.render("Shop verlassen", True, (255, 200, 200)), (btn_leave.x + 60, btn_leave.y + 10))
+
+        # Modal 1: Layout-Umbau Modal Overlay
+        is_swap_mode = getattr(shop_mgr, "layout_swap_mode", False) if shop_mgr else False
+        first_r = getattr(shop_mgr, "layout_swap_first_room", None) if shop_mgr else None
+
+        if is_swap_mode:
+            overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
+            overlay.fill((10, 15, 25, 210))
+            self.screen.blit(overlay, (0, 0))
+
+            title_txt = "SCHIFF-LAYOUT UMBAUEN (15 SCRAP)"
+            subtitle_txt = f"1. Raum: {first_r.name.upper()} | Klicke auf den 2. Raum zum Tauschen!" if first_r else "KLICKE AUF ZWEI RÄUME, UM DEREN SYSTEME ZU TAUSCHEN:"
+
+            t_lbl = self.font.render(title_txt, True, (255, 220, 100))
+            st_lbl = small_font.render(subtitle_txt, True, (100, 220, 255))
+            self.screen.blit(t_lbl, (240, 30))
+            self.screen.blit(st_lbl, (220, 58))
+
+            # Spielerschiff Räume zeichnen
+            for r in self.data.player.ship.rooms:
+                is_first = (r == first_r)
+                border_color = (255, 220, 0) if is_first else (100, 200, 255)
+                fill_color = (70, 70, 20) if is_first else (30, 45, 65)
+
+                pygame.draw.rect(self.screen, fill_color, r.rect)
+                pygame.draw.rect(self.screen, border_color, r.rect, 3 if is_first else 2)
+
+                lbl_r = small_font.render(r.name, True, (255, 255, 255))
+                self.screen.blit(lbl_r, (r.rect.x + 6, r.rect.y + 6))
+
+            cancel_btn = pygame.Rect(320, 490, 260, 40)
+            pygame.draw.rect(self.screen, (70, 40, 40), cancel_btn)
+            pygame.draw.rect(self.screen, (255, 120, 120), cancel_btn, 2)
+            c_lbl = self.font.render("Umbau Abbrechen", True, (255, 200, 200))
+            self.screen.blit(c_lbl, (cancel_btn.x + 40, cancel_btn.y + 10))
+            return
 
         sel_item = getattr(shop_mgr, "selecting_slot_item", None) if shop_mgr else None
         if sel_item:

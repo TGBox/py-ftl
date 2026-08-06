@@ -41,6 +41,32 @@ class ShipModel:
                     "allowed_types": None,
                 })
 
+    def swap_room_systems(self, r1: Room, r2: Room) -> None:
+        if r1 not in self.rooms or r2 not in self.rooms or r1 == r2:
+            return
+
+        # System-Eigenschaften tauschen (Name, Power, Health, Breach, Fire)
+        r1.name, r2.name = r2.name, r1.name
+        r1.max_power, r2.max_power = r2.max_power, r1.max_power
+        r1.current_power, r2.current_power = r2.current_power, r1.current_power
+        r1.health, r2.health = r2.health, r1.health
+        r1.max_health, r2.max_health = r2.max_health, r1.max_health
+        r1.oxygen, r2.oxygen = r2.oxygen, r1.oxygen
+        r1.has_breach, r2.has_breach = r2.has_breach, r1.has_breach
+        r1.fire_level, r2.fire_level = r2.fire_level, r1.fire_level
+        r1.ion_timer, r2.ion_timer = r2.ion_timer, r1.ion_timer
+
+        # Waffenslot-Positionen an die neue Position des Waffenraums anpassen
+        w_room = next((r for r in self.rooms if r.name == "Waffen"), None)
+        if w_room:
+            cx, cy = w_room.rect.centerx, w_room.rect.centery
+            for i, slot in enumerate(self.weapon_slots):
+                offset_y = (i - (len(self.weapon_slots) - 1) / 2.0) * 35.0
+                slot["pos"] = (int(cx), int(cy + offset_y))
+
+        # Türen & Luftschleusen neu berechnen
+        self.generate_doors()
+
     def generate_doors(self) -> None:
         self.doors.clear()
         # 1. Innentüren zwischen angrenzenden Räumen

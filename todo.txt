@@ -4,7 +4,7 @@ x 2026-08-05 (A) 2026-08-04 Es sollte möglich sein (je nach Schiffmodell) mehr 
 x 2026-08-05 (A) 2026-08-04 Es sollte Dauerkampfmodus geben, bei dem ich eine Checkbox in der GUI anhake und dann feuern die Waffen automatisch auf das aktuelle Ziel sobald sie fertig geladen haben. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Die Schusspfade sollen wie in FTL nach dem ziehen sichtbar sein. Alle Waffen sollten distinktive Zielstriche haben. Schaden sollte je nach Waffentyp über die ganze Linie hinweg angewendet werden, oder beim ersten getroffenen Raum. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Aktuell haben alle Schiffe (auch das des Spielers) immer das gleiche Layout. Ändern. +Refactoring @code
-(A) 2026-08-04 Es sollte (in eingeschränktem Maße) möglich sein, das Layout seines eigenen Schifftypens zu ändern. +Refactoring @code
+x 2026-08-06 (A) 2026-08-04 Es sollte (in eingeschränktem Maße) möglich sein, das Layout seines eigenen Schifftypens zu ändern. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Auf der Karte platzierte Schusslinien sollten individuell rückgängig gemacht werden können. und auch individuell ausgewählt werden können um sie abzufeuern. +Refactoring @code
 x 2026-08-06 (A) 2026-08-04 Es sollte manche Stationen geben bei denen man seine Crew trainieren kann, um deren individuelle Werte zu verbessern. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Crew Mitglieder sollten eigene Namen, Gesundheitsanzeigen, Fähigkeiten und Boni/Handicaps haben. +Refactoring @code

@@ -38,23 +38,33 @@ class ShopManager:
         self.data = data
         self.catalog_stock: list[dict] = []
         self.selecting_slot_item: dict | None = None
+        self.layout_swap_mode: bool = False
+        self.layout_swap_first_room = None
         self.refresh_catalog()
 
         # Navigation & Basis-Buttons
-        self.btn_repair = pygame.Rect(100, 120, 340, 36)
-        self.btn_fuel = pygame.Rect(100, 162, 340, 36)
-        self.btn_missiles = pygame.Rect(100, 204, 340, 36)
-        self.btn_upgrade_reactor = pygame.Rect(100, 246, 340, 36)
-        self.btn_buy_crew = pygame.Rect(100, 288, 340, 36)
-        self.btn_leave_shop = pygame.Rect(320, 485, 260, 40)
+        self.btn_repair = pygame.Rect(100, 120, 340, 32)
+        self.btn_fuel = pygame.Rect(100, 154, 340, 32)
+        self.btn_missiles = pygame.Rect(100, 188, 340, 32)
+        self.btn_upgrade_reactor = pygame.Rect(100, 222, 340, 32)
+        self.btn_buy_crew = pygame.Rect(100, 256, 340, 32)
+        self.btn_edit_layout = pygame.Rect(100, 290, 340, 32)
+        self.btn_leave_shop = pygame.Rect(320, 490, 260, 40)
 
     def refresh_catalog(self):
         w_sample = random.sample(WEAPON_CATALOG_MASTER, min(2, len(WEAPON_CATALOG_MASTER)))
         a_sample = random.sample(AUGMENT_CATALOG_MASTER, min(1, len(AUGMENT_CATALOG_MASTER)))
         self.catalog_stock = w_sample + a_sample
         self.selecting_slot_item = None
+        self.layout_swap_mode = False
+        self.layout_swap_first_room = None
 
     def handle_click(self, mx: float, my: float):
+        # Falls Layout-Umbau Modal aktiv ist:
+        if self.layout_swap_mode:
+            self.handle_layout_swap_click(mx, my)
+            return
+
         # Falls Slot-Auswahl Modal aktiv ist:
         if self.selecting_slot_item is not None:
             self.handle_slot_selection_click(mx, my)
@@ -70,6 +80,8 @@ class ShopManager:
             self.upgrade_reactor()
         elif self.btn_buy_crew.collidepoint(mx, my):
             self.buy_crew()
+        elif self.btn_edit_layout.collidepoint(mx, my):
+            self.start_layout_swap()
         elif self.btn_leave_shop.collidepoint(mx, my):
             self.leave_shop()
 
@@ -88,6 +100,43 @@ class ShopManager:
             card_x = 100 + idx * 245
             sell_btn = pygame.Rect(card_x + 10, 407, 210, 22)
             if sell_btn.collidepoint(mx, my):
+                self.sell_weapon_at_slot(idx)
+                return
+
+    def start_layout_swap(self):
+        if self.data.player.scrap < 15:
+            self.data.combat.msg = "NICHT GENUG SCRAP FÜR LAYOUT-UMBAU (15 SCRAP BENÖTIGT)!"
+            self.data.combat.msg_timer = 2.0
+            return
+        self.layout_swap_mode = True
+        self.layout_swap_first_room = None
+        self.data.combat.msg = "LAYOUT-UMBAU: KLICKE AUF DEN ERSTEN RAUM ZUM TAUSCHEN!"
+        self.data.combat.msg_timer = 3.0
+
+    def handle_layout_swap_click(self, mx: float, my: float):
+        btn_cancel = pygame.Rect(320, 490, 260, 40)
+        if btn_cancel.collidepoint(mx, my):
+            self.layout_swap_mode = False
+            self.layout_swap_first_room = None
+            return
+
+        # Raum auf dem Spielerschiff anklicken
+        for room in self.data.player.ship.rooms:
+            if room.rect.collidepoint(int(mx), int(my)):
+                if self.layout_swap_first_room is None:
+                    self.layout_swap_first_room = room
+                    self.data.combat.msg = f"1. RAUM ({room.name.upper()}) GEWÄHLT! KLICKE AUF DEN 2. RAUM."
+                    self.data.combat.msg_timer = 3.0
+                elif room != self.layout_swap_first_room:
+                    r1 = self.layout_swap_first_room
+                    r2 = room
+                    self.data.player.scrap -= 15
+                    self.data.player.ship.swap_room_systems(r1, r2)
+                    self.data.combat.msg = f"LAYOUT-UMBAU: {r1.name.upper()} UND {r2.name.upper()} GETAUSCHT!"
+                    self.data.combat.msg_timer = 3.0
+                    self.layout_swap_mode = False
+                    self.layout_swap_first_room = None
+                return
                 self.sell_weapon_at_slot(idx)
                 return
 
