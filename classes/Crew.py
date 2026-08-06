@@ -2,7 +2,7 @@ import math
 import pygame
 
 from classes.Room import Room
-from settings import COLOR_CREW, COLOR_SELECTED
+from settings import COLOR_CREW, COLOR_SELECTED, get_font
 
 
 import random
@@ -215,8 +215,7 @@ class Crew:
                 sy = draw_y + random.randint(-14, 14)
                 s_color = random.choice([(100, 240, 255), (255, 255, 100), (200, 220, 255)])
                 pygame.draw.circle(surface, s_color, (sx, sy), random.randint(2, 4))
-            b_font = pygame.font.SysFont(None, 12, bold=True)
-            stun_lbl = b_font.render("STUN", True, (100, 240, 255))
+            stun_lbl = get_font(12, bold=True).render("STUN", True, (100, 240, 255))
             surface.blit(stun_lbl, (cx - stun_lbl.get_width() // 2, draw_y - self.radius - 16))
 
         # HP-Balken über dem Crewmitglied
@@ -230,15 +229,11 @@ class Crew:
             pygame.draw.rect(surface, (50, 220, 100), (bar_x, bar_y, int(bar_w * hp_ratio), bar_h))
 
         # Spezies-Badge Buchstabe im Kreis
-        badge_font = pygame.font.SysFont(None, 13, bold=True)
         badge_char = "P" if self.is_enemy else (self.species[0] if self.species else "C")
-        badge_lbl = badge_font.render(badge_char, True, (0, 0, 0) if self.selected else (255, 255, 255))
+        badge_lbl = get_font(13, bold=True).render(badge_char, True, (0, 0, 0) if self.selected else (255, 255, 255))
         surface.blit(badge_lbl, (cx - badge_lbl.get_width() // 2, draw_y - badge_lbl.get_height() // 2))
 
         # Name & Trait-Badge zeichnen
-        font = pygame.font.SysFont(None, 13)
         trait_str = f" [{self.trait[:4]}]" if hasattr(self, "trait") and self.trait else ""
-        lbl = font.render(f"{self.name}{trait_str}", True, (220, 240, 255))
-        surface.blit(lbl, (cx - lbl.get_width() // 2, draw_y + self.radius + 2))
-
-
+        name_lbl = get_font(13).render(f"{self.name}{trait_str}", True, (255, 255, 255) if self.selected else (200, 210, 220))
+        surface.blit(name_lbl, (cx - name_lbl.get_width() // 2, draw_y + self.radius + 2))

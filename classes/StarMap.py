@@ -96,8 +96,7 @@ class StarMap:
     fleet_x = int(self.rebel_fleet_x)
     if fleet_x > 0:
       pygame.draw.line(surface, (220, 50, 50), (fleet_x, 60), (fleet_x, 520), 3)
-      font = pygame.font.SysFont(None, 18)
-      lbl = font.render("REBELLENFLOTTE", True, (255, 80, 80))
+      lbl = get_font(18).render("REBELLENFLOTTE", True, (255, 80, 80))
       surface.blit(lbl, (fleet_x + 5, 70))
 
     # Knoten zeichnen

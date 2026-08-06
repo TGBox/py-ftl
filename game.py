@@ -111,7 +111,7 @@ class Game:
 
         # Black letterbox
         self.screen.fill((0, 0, 0))
-        scaled = pygame.transform.smoothscale(
+        scaled = pygame.transform.scale(
             self.logical_surface, (scaled_w, scaled_h)
         )
         self.screen.blit(scaled, (offset_x, offset_y))

@@ -68,4 +68,16 @@ PLAYER_START_FUEL = 6
 PLAYER_START_SCRAP = 20
 PLAYER_START_MISSILES = 6
 PLAYER_START_POWER = 6
-ENEMY_START_POWER = 6
+ENEMY_START_POWER = 6
+
+# Font-Caching System (eliminiert CPU-Overhead durch SysFont Lookups)
+import pygame
+_FONT_CACHE: dict[tuple[int, bool], pygame.font.Font] = {}
+
+def get_font(size: int = 18, bold: bool = False) -> pygame.font.Font:
+    key = (size, bold)
+    if key not in _FONT_CACHE:
+        if not pygame.font.get_init():
+            pygame.font.init()
+        _FONT_CACHE[key] = pygame.font.SysFont(None, size, bold=bold)
+    return _FONT_CACHE[key]
