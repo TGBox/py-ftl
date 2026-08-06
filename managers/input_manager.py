@@ -351,6 +351,12 @@ class InputManager:
                 self.show_message(f"TELEPORTER LÄDT NOCH ({int(tp_cd)}s)!")
             return
 
+        btn_cloak = pygame.Rect(370, 480, 160, 30)
+        if btn_cloak.collidepoint(mx, my):
+            if combat_mgr:
+                combat_mgr.activate_cloaking()
+            return
+
         # Teleporter Zielauswahl auf dem Gegnerschiff
         if getattr(self.data.combat, "is_teleport_targeting", False):
             for e_room in self.data.enemy.ship.rooms:

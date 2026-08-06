@@ -38,6 +38,14 @@ class CombatManager:
             0.0,
             self.data.combat.msg_timer - dt
         )
+        self.data.combat.cloak_active_timer = max(
+            0.0,
+            getattr(self.data.combat, "cloak_active_timer", 0.0) - dt
+        )
+        self.data.combat.cloak_cooldown = max(
+            0.0,
+            getattr(self.data.combat, "cloak_cooldown", 0.0) - dt
+        )
 
         self.update_shields(dt)
         self.update_weapons(dt)
@@ -254,12 +262,35 @@ class CombatManager:
 
             weapon.reset()
 
+    def activate_cloaking(self):
+        cloak_room = next((r for r in self.data.player.ship.rooms if r.name == "Tarnung"), None)
+        if not cloak_room:
+            self.show_message("KEIN TARNSYSTEM VORHANDEN!")
+            return
+
+        if cloak_room.current_power <= 0:
+            self.show_message("TARNSYSTEM HAT KEINE ENERGIE!")
+            return
+
+        if getattr(self.data.combat, "cloak_cooldown", 0.0) > 0.0 or getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0:
+            self.show_message(f"TARNUNG LÄDT NOCH ({int(self.data.combat.cloak_cooldown)}s)!")
+            return
+
+        duration = 5.0 * cloak_room.current_power
+        self.data.combat.cloak_active_timer = duration
+        self.data.combat.cloak_cooldown = duration + 15.0
+        if self.sound: self.sound.play("click")
+        self.show_message(f"TARNUNG AKTIVIERT ({int(duration)}s)! (+100% Ausweichen)")
+
     def update_enemy_weapon(self, dt: float):
 
         weapon = self.data.enemy.weapon
 
+        is_cloaked = getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0
+        effective_dt = 0.0 if is_cloaked else dt
+
         weapon.update(
-            dt,
+            effective_dt,
             self.data.enemy.ship.rooms[1].current_power > 0
             and self.data.enemy.ship.rooms[1].health > 20
         )
@@ -337,6 +368,9 @@ class CombatManager:
                     projectile.target_room.apply_damage(projectile.damage, self.data.enemy.reactor)
 
     def handle_enemy_hit(self, projectile: Projectile):
+        if getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0:
+            self.show_message("AUSGEWICHEN (TARNUNG)!")
+            return
         # SRS 6.2 Evasion Formel: E = (E_Base_Engine + C_Engine_Bonus + C_Pilot_Bonus) * A_Multiplier + S_Cloak
         e_base_engine = self.data.player.ship.rooms[2].current_power * 0.10 if len(self.data.player.ship.rooms) > 2 else 0.10
         c_pilot_bonus = 0.10 if any(c.current_room == self.data.player.ship.rooms[2] for c in self.data.player.crew) else 0.0

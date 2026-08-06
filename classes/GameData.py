@@ -60,6 +60,8 @@ class CombatData:
         self.msg_timer: float = 0.0
         self.teleport_cooldown: float = 0.0
         self.is_teleport_targeting: bool = False
+        self.cloak_active_timer: float = 0.0
+        self.cloak_cooldown: float = 0.0
 
 
 class WorldData:

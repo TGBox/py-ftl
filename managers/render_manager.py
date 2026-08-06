@@ -13,6 +13,7 @@ class RenderManager:
         self.btn_autofire = pygame.Rect(710, 520, 160, 30)
         self.btn_teleport = pygame.Rect(710, 480, 160, 30)
         self.btn_recall = pygame.Rect(540, 480, 160, 30)
+        self.btn_cloak = pygame.Rect(370, 480, 160, 30)
         self.btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
         # Shop UI Buttons
         self.btn_repair = pygame.Rect(200, 140, 500, 38)  #[cite: 1]
@@ -296,11 +297,30 @@ class RenderManager:
         # 1. Reaktor zeichnen
         self.data.player.reactor.draw(self.screen, 30, 45)
 
+        # Tarnungs-Effekt (Stealth Shimmer) auf eigenem Schiff
+        cloak_active = getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0
+        if cloak_active:
+            s_overlay = pygame.Surface((380, 240), pygame.SRCALPHA)
+            s_overlay.fill((0, 220, 255, 35))
+            self.screen.blit(s_overlay, (50, 95))
+
         # 2. Räume & Türen zeichnen
         for r in self.data.player.ship.rooms:
             r.draw(self.screen)
+
+        # Sensor-Stufen Prüfung
+        sens_room = next((r for r in self.data.player.ship.rooms if r.name == "Sensoren"), None)
+        sensor_power = sens_room.current_power if sens_room else 1
+
         for r in self.data.enemy.ship.rooms:
             r.draw(self.screen)
+            if sensor_power == 0:
+                # Fog of War Overlay über dem Gegnerschiff
+                pygame.draw.rect(self.screen, (20, 25, 35), r.rect)
+                pygame.draw.rect(self.screen, (40, 50, 70), r.rect, 2)
+                f_font = pygame.font.SysFont(None, 13)
+                lbl = f_font.render("NEBEL", True, (100, 120, 150))
+                self.screen.blit(lbl, (r.rect.centerx - lbl.get_width() // 2, r.rect.centery - lbl.get_height() // 2))
 
         self.data.player.ship.draw_doors(self.screen)
         self.data.enemy.ship.draw_doors(self.screen)
@@ -320,12 +340,28 @@ class RenderManager:
             pygame.draw.circle(self.screen, (45, 20, 20), (hx, hy), 7)
             pygame.draw.circle(self.screen, (255, 100, 100), (hx, hy), 7, 2)
             pygame.draw.circle(self.screen, (255, 200, 100), (hx, hy), 2)
-            
-        # 3. Crew zeichnen
+
+        # 3. Crew zeichnen (wenn Sensor-Stufe >= 1 für Gegnerschiff)
         for c in self.data.player.crew:
+            if c.is_boarding and sensor_power == 0:
+                continue
             c.draw(self.screen)
-            
-        # 4. Schiffs-Hülle & Ausweichchance (UI)
+
+        if sensor_power >= 1:
+            for c in getattr(self.data.combat_manager, "enemy_crew", []):
+                c.draw(self.screen)
+
+        # 4. Sensor-Level 2: Gegner Waffendetails auf HUD
+        if sensor_power >= 2:
+            e_w = self.data.enemy.weapon
+            w_ratio = min(1.0, e_w.current_charge / e_w.charge_time)
+            pygame.draw.rect(self.screen, (40, 30, 30), (550, 180, 150, 14))
+            pygame.draw.rect(self.screen, (255, 140, 50), (550, 180, int(150 * w_ratio), 14))
+            pygame.draw.rect(self.screen, (200, 100, 100), (550, 180, 150, 14), 1)
+            w_lbl = small_font.render(f"Gegner-Waffe ({e_w.name}): {int(w_ratio*100)}%", True, (255, 220, 180))
+            self.screen.blit(w_lbl, (550, 166))
+
+        # 5. Schiffs-Hülle & Ausweichchance (UI)
         self.screen.blit(
             self.font.render(
                 f"Spieler Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp} HP",
@@ -444,6 +480,21 @@ class RenderManager:
         pygame.draw.rect(self.screen, COLOR_BORDER if (has_boarders and tp_cooldown <= 0) else (70, 70, 70), self.btn_recall, 2)
         rec_txt = self.font.render("Zurückbeamen", True, (255, 255, 255) if (has_boarders and tp_cooldown <= 0) else (140, 140, 140))
         self.screen.blit(rec_txt, (self.btn_recall.centerx - rec_txt.get_width() // 2, self.btn_recall.centery - rec_txt.get_height() // 2))
+
+        # 6. Tarnung [CLOAK] Button
+        cloak_room = next((r for r in self.data.player.ship.rooms if r.name == "Tarnung"), None)
+        cloak_active = getattr(self.data.combat, "cloak_active_timer", 0.0)
+        cloak_cd = getattr(self.data.combat, "cloak_cooldown", 0.0)
+
+        is_ready = cloak_room and cloak_room.current_power > 0 and cloak_cd <= 0.0 and cloak_active <= 0.0
+        c_bg = (60, 40, 100) if cloak_active > 0 else ((30, 80, 120) if is_ready else (40, 40, 50))
+        c_border = (180, 100, 255) if cloak_active > 0 else ((100, 220, 255) if is_ready else (70, 70, 70))
+        pygame.draw.rect(self.screen, c_bg, self.btn_cloak)
+        pygame.draw.rect(self.screen, c_border, self.btn_cloak, 2)
+
+        c_lbl = f"Tarnung ({int(cloak_active)}s)" if cloak_active > 0 else ("Tarnung [CLOAK]" if is_ready else f"Tarnung ({int(cloak_cd)}s)")
+        c_txt = self.font.render(c_lbl, True, (255, 255, 255) if is_ready or cloak_active > 0 else (140, 140, 140))
+        self.screen.blit(c_txt, (self.btn_cloak.centerx - c_txt.get_width() // 2, self.btn_cloak.centery - c_txt.get_height() // 2))
 
     def draw_messages(self):
         # Temporäre Kampfnachrichten
