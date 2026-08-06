@@ -17,8 +17,9 @@ class RenderManager:
         self.btn_fuel = pygame.Rect(200, 185, 500, 38)  #[cite: 1]
         self.btn_missiles = pygame.Rect(200, 230, 500, 38)  #[cite: 1]
         self.btn_upgrade_reactor = pygame.Rect(200, 275, 500, 38)  #[cite: 1]
-        self.btn_buy_crew = pygame.Rect(200, 320, 500, 38)  #[cite: 1]
-        self.btn_buy_weapon = pygame.Rect(200, 365, 500, 38)  #[cite: 1]
+        self.btn_buy_crew = pygame.Rect(200, 320, 500, 38)
+        self.btn_buy_weapon = pygame.Rect(200, 365, 500, 38)
+        self.btn_leave_shop = pygame.Rect(200, 420, 500, 38)
         # Pause UI Buttons
         self.btn_pause_resume = pygame.Rect(300, 160, 300, 42)
         self.btn_pause_save = pygame.Rect(300, 215, 300, 42)
