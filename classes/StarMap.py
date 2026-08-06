@@ -78,6 +78,11 @@ class StarMap:
     self.current_node = start_node
     self.current_node.visited = True
 
+    # Umweltgefahren zufällig auf ~25% der Kampf/Ressourcen-Knoten verteilen
+    for node in self.nodes:
+      if node.event_type in ("COMBAT", "EMPTY", "RESOURCE") and random.random() < 0.25:
+        node.hazard_type = random.choice(["SOLAR_FLARE", "ASTEROID_FIELD"])
+
 
   def draw(self, surface: pygame.Surface) -> None:
     # Linien zeichnen
@@ -109,6 +114,12 @@ class StarMap:
         color = COLOR_MAP_NODE
 
       pygame.draw.circle(surface, color, (node.x, node.y), 14)
+
+      # Umweltgefahr-Ring um Knoten zeichnen
+      if getattr(node, "hazard_type", "NONE") == "SOLAR_FLARE":
+        pygame.draw.circle(surface, (255, 140, 0), (node.x, node.y), 17, 2)
+      elif getattr(node, "hazard_type", "NONE") == "ASTEROID_FIELD":
+        pygame.draw.circle(surface, (160, 160, 180), (node.x, node.y), 17, 2)
 
       # Subtiler innerer Indikator für besuchte Knoten
       if node.visited and node != self.current_node:

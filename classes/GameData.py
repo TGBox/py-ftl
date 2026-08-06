@@ -62,6 +62,9 @@ class CombatData:
         self.is_teleport_targeting: bool = False
         self.cloak_active_timer: float = 0.0
         self.cloak_cooldown: float = 0.0
+        self.solar_flare_timer: float = 20.0
+        self.solar_flare_flash: float = 0.0
+        self.asteroid_timer: float = 2.5
 
 
 class WorldData:

@@ -47,6 +47,43 @@ class CombatManager:
             getattr(self.data.combat, "cloak_cooldown", 0.0) - dt
         )
 
+        # Umweltgefahren Verarbeitung (Solar Flares & Asteroid Fields)
+        current_node = self.data.world.star_map.current_node
+        hazard = getattr(current_node, "hazard_type", "NONE") if current_node else "NONE"
+
+        if hazard == "SOLAR_FLARE":
+            self.data.combat.solar_flare_flash = max(0.0, getattr(self.data.combat, "solar_flare_flash", 0.0) - dt)
+            sf_timer = getattr(self.data.combat, "solar_flare_timer", 20.0) - dt
+            if sf_timer <= 0.0:
+                self.data.combat.solar_flare_timer = 22.0
+                self.data.combat.solar_flare_flash = 0.6
+                p_targets = random.sample(self.data.player.ship.rooms, min(2, len(self.data.player.ship.rooms)))
+                e_targets = random.sample(self.data.enemy.ship.rooms, min(2, len(self.data.enemy.ship.rooms)))
+                for r in p_targets + e_targets:
+                    r.fire_level = min(100.0, r.fire_level + 45.0)
+                if self.sound: self.sound.play("explosion")
+                self.show_message("SONNEN-ERUPTION! BRÄNDE AUF BEIDEN SCHIFFEN ENTFACHT!")
+            else:
+                self.data.combat.solar_flare_timer = sf_timer
+
+        elif hazard == "ASTEROID_FIELD":
+            ast_timer = getattr(self.data.combat, "asteroid_timer", 2.5) - dt
+            if ast_timer <= 0.0:
+                self.data.combat.asteroid_timer = random.uniform(2.0, 3.5)
+                # Asteroid schlägt in zufälligen Raum ein
+                if random.random() < 0.5 and self.data.player.ship.rooms:
+                    t_room = random.choice(self.data.player.ship.rooms)
+                    self.data.player.projectiles.append(
+                        Projectile((0, random.randint(100, 400)), t_room.rect.center, target_room=t_room, is_player_shot=False, w_type="LASER", damage=20.0)
+                    )
+                elif self.data.enemy.ship.rooms:
+                    t_room = random.choice(self.data.enemy.ship.rooms)
+                    self.data.player.projectiles.append(
+                        Projectile((0, random.randint(100, 400)), t_room.rect.center, target_room=t_room, is_player_shot=True, w_type="LASER", damage=20.0)
+                    )
+            else:
+                self.data.combat.asteroid_timer = ast_timer
+
         self.update_shields(dt)
         self.update_weapons(dt)
         self.update_enemy_weapon(dt)

@@ -7,3 +7,4 @@ class Node:
     self.event_type: str = event_type  # 'COMBAT', 'RESOURCE', 'SHOP', 'EMPTY', 'EXIT'
     self.connections: list[Node] = []
     self.visited: bool = False
+    self.hazard_type: str = "NONE"  # 'NONE', 'SOLAR_FLARE', 'ASTEROID_FIELD'

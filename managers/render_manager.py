@@ -497,6 +497,25 @@ class RenderManager:
         self.screen.blit(c_txt, (self.btn_cloak.centerx - c_txt.get_width() // 2, self.btn_cloak.centery - c_txt.get_height() // 2))
 
     def draw_messages(self):
+        # Solar Flare Flash
+        sf_flash = getattr(self.data.combat, "solar_flare_flash", 0.0)
+        if sf_flash > 0.0:
+            flash_surf = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
+            alpha = int(min(200, sf_flash * 350))
+            flash_surf.fill((255, 140, 0, alpha))
+            self.screen.blit(flash_surf, (0, 0))
+
+        # Umweltgefahr Banner
+        current_node = self.data.world.star_map.current_node
+        hazard = getattr(current_node, "hazard_type", "NONE") if current_node else "NONE"
+        if hazard == "SOLAR_FLARE":
+            sf_timer = getattr(self.data.combat, "solar_flare_timer", 20.0)
+            h_lbl = self.font.render(f"SONNEN-ERUPTION IN: {int(sf_timer)}s", True, (255, 160, 50))
+            self.screen.blit(h_lbl, (SCREEN_WIDTH // 2 - h_lbl.get_width() // 2, 75))
+        elif hazard == "ASTEROID_FIELD":
+            h_lbl = self.font.render("UMWELTGEFAHR: ASTEROIDENFELD", True, (180, 200, 240))
+            self.screen.blit(h_lbl, (SCREEN_WIDTH // 2 - h_lbl.get_width() // 2, 75))
+
         # Temporäre Kampfnachrichten
         if self.data.combat.msg_timer > 0.0:
             msg_txt = self.font.render(self.data.combat.msg, True, COLOR_SELECTED)
