@@ -302,15 +302,24 @@ class RenderManager:
             pygame.draw.rect(self.screen, COLOR_BORDER, btn, 2)
             self.screen.blit(self.font.render(text, True, (220, 220, 220)), (btn.x + 12, btn.y + 8))
 
-        self.screen.blit(self.font.render("Waffen-Angebot:", True, (255, 220, 100)), (460, 95))
+        self.screen.blit(self.font.render("Waffen & Augmentationen:", True, (255, 220, 100)), (460, 95))
         catalog = getattr(shop_mgr, "catalog_stock", []) if shop_mgr else []
         for idx, item in enumerate(catalog):
             item_btn = pygame.Rect(460, 120 + idx * 58, 340, 52)
             pygame.draw.rect(self.screen, (35, 55, 80), item_btn)
             pygame.draw.rect(self.screen, (100, 200, 255), item_btn, 2)
 
-            name_lbl = self.font.render(f"{item['name']} ({item['w_type']})", True, (240, 240, 255))
-            stats_lbl = small_font.render(f"Dmg: {int(item['damage'])} | Pierce: {item['shield_pierce']} | Charge: {item['charge_time']}s", True, (180, 220, 240))
+            if item.get("type") == "AUGMENT":
+                name_lbl = self.font.render(f"{item['name']} (AUGMENT)", True, (240, 240, 255))
+                stats_lbl = small_font.render(item.get("desc", ""), True, (180, 220, 240))
+            else:
+                w_type = item.get("w_type", "WEAPON")
+                name_lbl = self.font.render(f"{item['name']} ({w_type})", True, (240, 240, 255))
+                stats_lbl = small_font.render(
+                    f"Dmg: {int(item.get('damage', 0))} | Pierce: {item.get('shield_pierce', 0)} | Charge: {item.get('charge_time', 0)}s",
+                    True,
+                    (180, 220, 240)
+                )
             price_lbl = self.font.render(f"{item['price']} Scrap", True, (255, 220, 100))
 
             self.screen.blit(name_lbl, (item_btn.x + 10, item_btn.y + 4))
@@ -382,7 +391,7 @@ class RenderManager:
 
                 if not has_w:
                     status_str = "Einbauen (Slot Leer)"
-                elif w_obj.w_type == sel_item["w_type"]:
+                elif w_obj.w_type == sel_item.get("w_type"):
                     status_str = f"WAFFEN-FUSION (Upgrade MK {w_obj.level} -> MK {w_obj.level+1})"
                 else:
                     status_str = f"ERSETZEN (Alte Waffe {w_obj.name} verkaufen)"

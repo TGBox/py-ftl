@@ -1,7 +1,9 @@
 import hashlib
 import json
 import os
+# pyrefly: ignore [missing-import]
 from Crypto.Cipher import AES
+# pyrefly: ignore [missing-import]
 from Crypto.Protocol.KDF import PBKDF2
 
 from classes.Crew import Crew
