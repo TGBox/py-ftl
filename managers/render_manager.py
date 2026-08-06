@@ -540,6 +540,17 @@ class RenderManager:
         r_txt = self.font.render("Rep-Drohne [2E]" if not r_active else "Rep-Drohne [AKTIV]", True, (255, 255, 255) if drone_power >= 2 or r_active else (140, 140, 140))
         self.screen.blit(r_txt, (self.btn_repair_drone.centerx - r_txt.get_width() // 2, self.btn_repair_drone.centery - r_txt.get_height() // 2))
 
+        # 8. Augmentations Badges
+        augments = getattr(self.data.player, "augments", [])
+        if augments:
+            small_font = pygame.font.SysFont(None, 14, bold=True)
+            for a_idx, aug_name in enumerate(augments):
+                a_rect = pygame.Rect(30 + a_idx * 165, 520, 155, 24)
+                pygame.draw.rect(self.screen, (30, 45, 65), a_rect)
+                pygame.draw.rect(self.screen, (100, 200, 255), a_rect, 1)
+                a_lbl = small_font.render(f"AUG: {aug_name}", True, (160, 230, 255))
+                self.screen.blit(a_lbl, (a_rect.centerx - a_lbl.get_width() // 2, a_rect.centery - a_lbl.get_height() // 2))
+
     def draw_messages(self):
         # Solar Flare Flash
         sf_flash = getattr(self.data.combat, "solar_flare_flash", 0.0)

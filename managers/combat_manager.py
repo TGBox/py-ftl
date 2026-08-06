@@ -32,7 +32,15 @@ class CombatManager:
                 return
 
         if self.data.current_state != STATE_COMBAT:
+            self.was_in_combat = False
             return
+
+        if not getattr(self, "was_in_combat", False):
+            self.was_in_combat = True
+            if "Waffen-Vorheizer" in getattr(self.data.player, "augments", []):
+                for w in self.data.player.weapons:
+                    w.current_charge = w.charge_time
+                self.show_message("WAFFEN-VORHEIZER AKTIV! Waffen voll geladen!")
 
         self.data.combat.msg_timer = max(
             0.0,
@@ -184,6 +192,17 @@ class CombatManager:
         self.show_message("REPARATURDROHNE GESTARTET! (-1 Drohnen-Teil)")
 
     def update_crew(self, dt: float):
+        # Automatisierte Relais & Sauerstoff-Konverter Augmentations
+        augments = getattr(self.data.player, "augments", [])
+        if "Automatisierte Relais" in augments:
+            for r in self.data.player.ship.rooms:
+                if r.health < r.max_health and r.fire_level == 0.0 and not r.has_breach:
+                    r.repair(4.5 * dt)
+        if "Sauerstoff-Konverter" in augments:
+            for r in self.data.player.ship.rooms:
+                if r.current_power > 0:
+                    r.oxygen = min(100.0, r.oxygen + 2.5 * dt)
+
         # Sauerstoff & Erstickungs-Schaden (SRS Kap. 5.1)
         for room in self.data.player.ship.rooms:
             room.update_oxygen(dt, self.data.player.ship.rooms)
@@ -242,12 +261,6 @@ class CombatManager:
 
             # Nahkampf wenn beide Parteien im selben Raum stehen
             if p_in_r and e_in_r:
-                p_dps = sum(18.0 * getattr(c, "melee_multiplier", 1.0) for c in p_in_r)
-                e_dps = sum(18.0 * getattr(c, "melee_multiplier", 1.0) for c in e_in_r)
-
-                for e in e_in_r:
-                    e.hp = max(0.0, e.hp - (p_dps / len(e_in_r)) * dt)
-                for p in p_in_r:
                     p.hp = max(0.0, p.hp - (e_dps / len(p_in_r)) * dt)
 
             # Sabotage wenn eigene Enter-Crew in unverteidigtem gegnerischen Raum steht
@@ -609,6 +622,8 @@ class CombatManager:
             v_tier = random.uniform(0.8, 1.3)
 
         scrap = int(b_sector * v_tier)
+        if "Schrott-Arm" in getattr(self.data.player, "augments", []):
+            scrap = int(scrap * 1.30)
         missiles = random.randint(1, 3)
 
         # 3% bis 6% Chance auf Bonus-Drop (SRS Kap. 6.3)

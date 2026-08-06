@@ -20,6 +20,15 @@ WEAPON_CATALOG_MASTER = [
 ]
 
 
+AUGMENT_CATALOG_MASTER = [
+    {"name": "Waffen-Vorheizer", "type": "AUGMENT", "desc": "Waffen starten zu 100% geladen!", "price": 80},
+    {"name": "Schild-Booster", "type": "AUGMENT", "desc": "+30% Schild-Erholung!", "price": 60},
+    {"name": "Automatisierte Relais", "type": "AUGMENT", "desc": "Repariert Räume automatisch!", "price": 50},
+    {"name": "Sauerstoff-Konverter", "type": "AUGMENT", "desc": "+50% O2-Regeneration!", "price": 40},
+    {"name": "Schrott-Arm", "type": "AUGMENT", "desc": "+30% Schrott-Beute!", "price": 55},
+]
+
+
 class ShopManager:
 
     def __init__(self, data: GameData):
@@ -37,7 +46,9 @@ class ShopManager:
         self.btn_leave_shop = pygame.Rect(320, 485, 260, 40)
 
     def refresh_catalog(self):
-        self.catalog_stock = random.sample(WEAPON_CATALOG_MASTER, min(3, len(WEAPON_CATALOG_MASTER)))
+        w_sample = random.sample(WEAPON_CATALOG_MASTER, min(2, len(WEAPON_CATALOG_MASTER)))
+        a_sample = random.sample(AUGMENT_CATALOG_MASTER, min(1, len(AUGMENT_CATALOG_MASTER)))
+        self.catalog_stock = w_sample + a_sample
         self.selecting_slot_item = None
 
     def handle_click(self, mx: float, my: float):
@@ -63,7 +74,10 @@ class ShopManager:
         for idx, item in enumerate(self.catalog_stock):
             item_btn = pygame.Rect(460, 120 + idx * 58, 340, 52)
             if item_btn.collidepoint(mx, my):
-                self.selecting_slot_item = item
+                if item.get("type") == "AUGMENT":
+                    self.buy_augment(item)
+                else:
+                    self.selecting_slot_item = item
                 return
 
         # Klick auf "Verkaufen" bei eigenen Waffen
@@ -204,10 +218,33 @@ class ShopManager:
             Crew(
                 spawn_room.rect.centerx,
                 spawn_room.rect.centery,
-                name=f"Crew {c_num}",
+                name=f"Rekrut #{c_num}",
                 species=species,
             )
         )
+
+    def buy_augment(self, item: dict):
+        name = item["name"]
+        price = item.get("price", 60)
+        augments = getattr(self.data.player, "augments", [])
+        if name in augments:
+            self.data.combat.msg = f"{name.upper()} BEREITS AUSGERÜSTET!"
+            self.data.combat.msg_timer = 2.0
+            return
+        if len(augments) >= 3:
+            self.data.combat.msg = "MAXIMAL 3 AUGMENTATIONS ERLAUBT!"
+            self.data.combat.msg_timer = 2.0
+            return
+        if self.data.player.scrap < price:
+            self.data.combat.msg = "NICHT GENUG SCRAP!"
+            self.data.combat.msg_timer = 1.8
+            return
+
+        self.data.player.scrap -= price
+        augments.append(name)
+        self.data.player.augments = augments
+        self.data.combat.msg = f"{name.upper()} GEKAUFT & AUSGERÜSTET!"
+        self.data.combat.msg_timer = 2.5
 
     def leave_shop(self):
         self.selecting_slot_item = None

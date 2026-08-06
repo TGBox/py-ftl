@@ -29,6 +29,7 @@ class PlayerData:
         self.fuel: int = PLAYER_START_FUEL
         self.missiles: int = PLAYER_START_MISSILES
         self.drone_parts: int = 5
+        self.augments: list[str] = ["Waffen-Vorheizer"]
         self.show_crew_menu: bool = False
         self.renaming_crew_idx: Optional[int] = None
         self.active_rename_idx: Optional[int] = None
