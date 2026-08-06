@@ -289,7 +289,12 @@ class RenderManager:
             btn_txt = "Tippen..." if self.data.player.active_rename_idx == idx else "Umbenennen"
             self.screen.blit(self.font.render(btn_txt, True, (220, 240, 255)), (rename_btn.x + 12, rename_btn.y + 8))
 
-            self.screen.blit(perk_lbl, (190, card_y + 35))
+            skills_str = f"Skills: Rep Lvl {crew.skill_repair}/3 | Dmg Lvl {crew.skill_combat}/3 | Nav Lvl {crew.skill_piloting}/3 | Fit Lvl {crew.skill_fitness}/3"
+            small_font = pygame.font.SysFont(None, 14, bold=True)
+            skills_lbl = small_font.render(skills_str, True, (160, 230, 255))
+
+            self.screen.blit(perk_lbl, (190, card_y + 30))
+            self.screen.blit(skills_lbl, (190, card_y + 46))
 
         close_btn = pygame.Rect(370, 465, 160, 38)
         pygame.draw.rect(self.screen, (70, 40, 40), close_btn)
@@ -694,13 +699,6 @@ class RenderManager:
             w_lbl = small_font.render(f"Gegner-Waffe ({e_w.name}): {int(w_ratio*100)}%", True, (255, 220, 180))
             self.screen.blit(w_lbl, (550, 166))
 
-        if sensor_power >= 3:
-            s3_font = pygame.font.SysFont(None, 12, bold=True)
-            for e_r in self.data.enemy.ship.rooms:
-                p_str = f"PWR: {e_r.current_power}/{e_r.max_power}"
-                p_lbl = s3_font.render(p_str, True, (100, 220, 255))
-                self.screen.blit(p_lbl, (e_r.rect.x + 4, e_r.rect.bottom - 14))
-
     def draw_shields(self):
         # Schilde zeichnen (mit den festen Koordinaten aus deinem alten Code)
         self.data.player.shield.draw_bubble(self.screen, (220, 245), 170)
@@ -808,7 +806,7 @@ class RenderManager:
             "ZURÜCKBEAMEN",
             is_hovered=self.btn_recall.collidepoint(mx, my),
             primary_color=(240, 120, 50),
-            enabled=(has_boarders and tp_cd <= 0),
+            enabled=has_boarders,
         )
         self.draw_scifi_button(
             self.btn_teleport,
@@ -840,17 +838,9 @@ class RenderManager:
         if "Flaggschiff" in getattr(self.data.enemy.ship, "name", ""):
             b_phase = getattr(self.data.combat, "boss_phase", 1)
             b_lbl = self.font.render(f"SEKTOR 5 FLAGGSCHIFF - PHASE {b_phase}/3", True, (255, 80, 80))
-            self.screen.blit(b_lbl, (SCREEN_WIDTH // 2 - b_lbl.get_width() // 2, 45))
+            self.screen.blit(b_lbl, (SCREEN_WIDTH // 2 - b_lbl.get_width() // 2, 40))
 
-        # Solar Flare Flash
-        sf_flash = getattr(self.data.combat, "solar_flare_flash", 0.0)
-        if sf_flash > 0.0:
-            flash_surf = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
-            alpha = int(min(200, sf_flash * 350))
-            flash_surf.fill((255, 140, 0, alpha))
-            self.screen.blit(flash_surf, (0, 0))
-
-        # Umweltgefahr Banner
+        # Umweltgefahren Banner
         current_node = self.data.world.star_map.current_node
         hazard = getattr(current_node, "hazard_type", "NONE") if current_node else "NONE"
         if hazard == "SOLAR_FLARE":
@@ -979,8 +969,8 @@ class RenderManager:
         unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
 
         for btn, name, hp, weapons, crew, rooms_count in ships_info:
-            is_sel = name == selected_name
-            is_unlocked = name in unlocked
+            is_sel = (name == selected_name)
+            is_unlocked = (name in unlocked)
             is_hov = btn.collidepoint(mx, my)
 
             c_surf = pygame.Surface((btn.width, btn.height), pygame.SRCALPHA)
@@ -1036,9 +1026,10 @@ class RenderManager:
                 self.draw_scifi_button(sel_btn_rect, "GESPERRT", enabled=False)
 
         # Action Buttons Leiste unten
-        self.btn_start = pygame.Rect(60, 395, 240, 44)
-        self.btn_continue_game = pygame.Rect(330, 395, 240, 44)
-        self.btn_options = pygame.Rect(600, 395, 240, 44)
+        self.btn_start = pygame.Rect(45, 395, 185, 44)
+        self.btn_continue_game = pygame.Rect(250, 395, 185, 44)
+        self.btn_options = pygame.Rect(455, 395, 185, 44)
+        self.btn_quit = pygame.Rect(660, 395, 185, 44)
 
         from managers.save_manager import SaveManager
 
@@ -1062,6 +1053,12 @@ class RenderManager:
             "OPTIONEN & TON",
             is_hovered=self.btn_options.collidepoint(mx, my),
             primary_color=(180, 120, 255),
+        )
+        self.draw_scifi_button(
+            self.btn_quit,
+            "SPIEL BEENDEN",
+            is_hovered=self.btn_quit.collidepoint(mx, my),
+            primary_color=(255, 70, 70),
         )
 
         if self.data.current_state == STATE_OPTIONS:

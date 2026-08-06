@@ -110,6 +110,13 @@ class Crew:
                 self.x += (dx / dist) * self.move_speed * dt
                 self.y += (dy / dist) * self.move_speed * dt
 
+            # Innentüren beim Durchlaufen automatisch öffnen
+            ship_doors = getattr(self, "ship_doors", [])
+            if ship_doors:
+                for d in ship_doors:
+                    if not d.is_airlock and d.rect.inflate(24, 24).collidepoint(int(self.x), int(self.y)):
+                        d.is_open = True
+
         self.current_room = None
         for room in rooms:
             if room.rect.collidepoint(int(self.x), int(self.y)):

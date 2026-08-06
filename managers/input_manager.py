@@ -241,9 +241,11 @@ class InputManager:
             btn_tarnschiff = pygame.Rect(375, 95, 155, 275)
             btn_zoltan = pygame.Rect(540, 95, 155, 275)
             btn_fed = pygame.Rect(705, 95, 155, 275)
-            btn_start = pygame.Rect(60, 395, 240, 44)
-            btn_continue_game = pygame.Rect(330, 395, 240, 44)
-            btn_options = pygame.Rect(600, 395, 240, 44)
+
+            btn_start = pygame.Rect(45, 395, 185, 44)
+            btn_continue_game = pygame.Rect(250, 395, 185, 44)
+            btn_options = pygame.Rect(455, 395, 185, 44)
+            btn_quit = pygame.Rect(660, 395, 185, 44)
 
             import copy
             from classes.ShipModel import SHIP_BLUEPRINTS
@@ -275,6 +277,10 @@ class InputManager:
             elif SaveManager.has_savegame() and btn_continue_game.collidepoint(mx, my):
                 if SaveManager.load_game(self.data):
                     if self.sound: self.sound.play("jump")
+            elif btn_quit.collidepoint(mx, my):
+                self.data.running = False
+                if self.sound: self.sound.play("click")
+            return
 
 
 
@@ -389,11 +395,12 @@ class InputManager:
             return
 
         if btn_recall.collidepoint(mx, my):
-            if tp_cd <= 0:
+            has_boarders = any(getattr(c, "is_boarding", False) for c in self.data.player.crew)
+            if has_boarders:
                 if combat_mgr:
                     combat_mgr.recall_boarding_crew()
             else:
-                self.show_message(f"TELEPORTER LÄDT NOCH ({int(tp_cd)}s)!")
+                self.show_message("KEINE CREW AUF DEM GEGNERSCHIFF!")
             return
 
         if btn_cloak.collidepoint(mx, my):

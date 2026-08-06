@@ -142,14 +142,14 @@ class Room:
         fire_lbl = b_font.render("FEUER", True, (255, 100, 0))
         surface.blit(fire_lbl, (self.rect.x + 6, self.rect.bottom - 16))
 
-    font = pygame.font.SysFont(None, 18)
+    r_font = pygame.font.SysFont(None, 14, bold=True)
     surface.blit(
-        font.render(self.name, True, (220, 220, 220)),
-        (self.rect.x + 6, self.rect.y + 5),
+        r_font.render(self.name, True, (230, 240, 255)),
+        (self.rect.x + 6, self.rect.y + 4),
     )
 
     if self.name == "Medbay" and self.current_power > 0:
-        med_font = pygame.font.SysFont(None, 14, bold=True)
+        med_font = pygame.font.SysFont(None, 13, bold=True)
         heal_lbl = med_font.render("+HEILEN", True, (100, 255, 100))
         surface.blit(heal_lbl, (self.rect.x + 6, self.rect.y + 28))
 
@@ -159,23 +159,24 @@ class Room:
     pygame.draw.rect(
         surface,
         (30, 30, 30),
-        (self.rect.x + 6, self.rect.y + 22, self.rect.width - 12, 4),
+        (self.rect.x + 6, self.rect.y + 20, self.rect.width - 12, 3),
     )
     pygame.draw.rect(
         surface,
         hp_color,
         (
             self.rect.x + 6,
-            self.rect.y + 22,
+            self.rect.y + 20,
             int((self.rect.width - 12) * hp_ratio),
-            4,
+            3,
         ),
     )
 
     # Sauerstoffanzeige (O2: 100%)
-    o2_color = (100, 200, 255) if self.oxygen > 40.0 else (255, 100, 100)
-    o2_txt = font.render(f"O2:{int(self.oxygen)}%", True, o2_color)
-    surface.blit(o2_txt, (self.rect.right - 44, self.rect.y + 5))
+    o2_font = pygame.font.SysFont(None, 12, bold=True)
+    o2_color = (100, 220, 255) if self.oxygen > 40.0 else (255, 100, 100)
+    o2_txt = o2_font.render(f"O2:{int(self.oxygen)}%", True, o2_color)
+    surface.blit(o2_txt, (self.rect.right - 36, self.rect.y + 5))
 
     # Hüllenleck Icon zeichnen (falls vorhanden)
     if self.has_breach:

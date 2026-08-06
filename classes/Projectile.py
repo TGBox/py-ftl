@@ -23,6 +23,8 @@ class Projectile:
       stun_duration: float = 0.0,
       crew_damage: float = 0.0,
   ) -> None:
+    self.start_x: float = float(start_pos[0])
+    self.start_y: float = float(start_pos[1])
     self.x: float = float(start_pos[0])
     self.y: float = float(start_pos[1])
     self.target_x: float = float(target_pos[0])
@@ -42,7 +44,7 @@ class Projectile:
     dx = self.target_x - self.x
     dy = self.target_y - self.y
     dist = math.hypot(dx, dy)
-    speed = 600.0 if w_type in ("BEAM", "BIO_BEAM") else (550.0 if w_type == "FLAK" else 400.0)
+    speed = 650.0 if w_type in ("BEAM", "BIO_BEAM") else (550.0 if w_type == "FLAK" else 400.0)
     self.vx: float = (dx / dist) * speed if dist != 0 else 0.0
     self.vy: float = (dy / dist) * speed if dist != 0 else 0.0
 
@@ -56,21 +58,21 @@ class Projectile:
     """Prüft per Liniensegment-Schnittpunkt, welche Räume vom Beam gekreuzt werden (SRS Kap. 6.2)."""
     intersected = []
     for room in rooms:
-        if room.rect.clipline((self.x, self.y), (self.target_x, self.target_y)):
+        if room.rect.clipline((self.start_x, self.start_y), (self.x, self.y)):
             intersected.append(room)
     return intersected if intersected else [self.target_room]
 
   def draw(self, surface: pygame.Surface) -> None:
     if self.subtype == "BIO" or self.w_type == "BIO_BEAM":
       if self.w_type == "BEAM":
-        pygame.draw.line(surface, (50, 255, 100), (int(self.x), int(self.y)), (int(self.target_x), int(self.target_y)), 4)
+        pygame.draw.line(surface, (50, 255, 100), (int(self.start_x), int(self.start_y)), (int(self.x), int(self.y)), 4)
         pygame.draw.circle(surface, (150, 255, 180), (int(self.x), int(self.y)), 7)
       else:
         pygame.draw.circle(surface, (50, 255, 120), (int(self.x), int(self.y)), 7)
         pygame.draw.circle(surface, (200, 255, 220), (int(self.x), int(self.y)), 3)
     elif self.subtype == "FIRE":
       if self.w_type == "BEAM":
-        pygame.draw.line(surface, (255, 120, 0), (int(self.x), int(self.y)), (int(self.target_x), int(self.target_y)), 4)
+        pygame.draw.line(surface, (255, 120, 0), (int(self.start_x), int(self.start_y)), (int(self.x), int(self.y)), 4)
         pygame.draw.circle(surface, (255, 220, 50), (int(self.x), int(self.y)), 8)
       else:
         pygame.draw.circle(surface, (255, 100, 0), (int(self.x), int(self.y)), 7)
@@ -96,10 +98,10 @@ class Projectile:
       pygame.draw.circle(surface, (255, 200, 200), (int(self.x), int(self.y)), 4)
     elif self.w_type == "BEAM":
       pygame.draw.line(
-          surface, (255, 255, 100), (int(self.x), int(self.y)), (int(self.target_x), int(self.target_y)), 3
+          surface, (255, 255, 100), (int(self.start_x), int(self.start_y)), (int(self.x), int(self.y)), 4
       )
       pygame.draw.circle(
-          surface, (255, 255, 100), (int(self.x), int(self.y)), 7
+          surface, (255, 255, 150), (int(self.x), int(self.y)), 7
       )
     else:  # LASER
       pygame.draw.circle(
