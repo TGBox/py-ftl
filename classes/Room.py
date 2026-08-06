@@ -24,6 +24,7 @@ class Room:
     self.max_health: float = 100.0
     self.oxygen: float = 100.0  # FTL Sauerstoffsystem (0.0 bis 100.0)
     self.has_breach: bool = False  # Hüllenleck
+    self.fire_level: float = 0.0  # Feuer (0.0 bis 100.0)
 
   def effective_max_power(self) -> int:
     return max(0, math.floor(self.max_power * (self.health / self.max_health)))
@@ -43,10 +44,11 @@ class Room:
 
   def apply_damage(self, amount: float, reactor: Reactor) -> None:
     self.health = max(0.0, self.health - amount)
-    # 30% Chance auf Hüllenleck
     import random
     if random.random() < 0.35:
         self.has_breach = True
+    if random.random() < 0.30:
+        self.fire_level = min(100.0, self.fire_level + 35.0)
     while self.current_power > self.effective_max_power():
       self.remove_power(reactor)
 
@@ -54,11 +56,13 @@ class Room:
     if self.has_breach:
         self.has_breach = False
         return
+    if self.fire_level > 0.0:
+        self.fire_level = max(0.0, self.fire_level - amount * 1.5)
+        return
     self.health = min(self.max_health, self.health + amount)
 
   def update_oxygen(self, dt: float, connected_rooms: list["Room"] = None) -> None:
-    """Updates oxygen levels for FTL oxygen system (SRS Kap. 5.1)."""
-    # Sauerstoffverlust durch Hüllenleck oder Beschädigung
+    """Updates oxygen levels and fire processing for FTL room simulation."""
     if self.has_breach:
       self.oxygen = max(0.0, self.oxygen - 25.0 * dt)
     elif self.health < 40.0:
@@ -66,6 +70,21 @@ class Room:
     elif self.current_power > 0 or not self.is_enemy:
       self.oxygen = min(100.0, self.oxygen + 3.0 * dt)
 
+    # Feuer-Verarbeitung & Vakuum-Löschung
+    if self.fire_level > 0.0:
+      if self.oxygen < 10.0:
+        # Vakuum erstickt das Feuer!
+        self.fire_level = max(0.0, self.fire_level - 40.0 * dt)
+      else:
+        self.oxygen = max(0.0, self.oxygen - (15.0 * self.fire_level / 100.0) * dt)
+        self.health = max(0.0, self.health - (6.0 * self.fire_level / 100.0) * dt)
+
+        # Feuer-Ausbreitung bei hoher Intensität
+        if self.fire_level > 60.0 and self.oxygen > 20.0 and connected_rooms:
+          import random
+          if random.random() < 0.15 * dt:
+            target = random.choice(connected_rooms)
+            target.fire_level = min(100.0, target.fire_level + 20.0)
 
     # Sauerstoffaustausch mit verbundenen Räumen bei offenen Türen
     if connected_rooms:
@@ -89,6 +108,22 @@ class Room:
     pygame.draw.rect(surface, fill_col, self.rect)
     pygame.draw.rect(surface, border_col, self.rect, 2)
 
+    # Feuer-Animation & Overlay
+    if self.fire_level > 0.0:
+        import random
+        # Flammen-Partikel zeichnen
+        cx, cy = self.rect.centerx, self.rect.centery
+        for _ in range(int(min(8, 2 + self.fire_level / 15))):
+            fx = cx + random.randint(-self.rect.width // 4, self.rect.width // 4)
+            fy = cy + random.randint(-self.rect.height // 4, self.rect.height // 4)
+            fr = random.randint(4, 10)
+            f_col = random.choice([(255, 60, 0), (255, 140, 0), (255, 220, 0)])
+            pygame.draw.circle(surface, f_col, (fx, fy), fr)
+
+        b_font = pygame.font.SysFont(None, 14, bold=True)
+        fire_lbl = b_font.render("FEUER", True, (255, 100, 0))
+        surface.blit(fire_lbl, (self.rect.x + 6, self.rect.bottom - 16))
+
     font = pygame.font.SysFont(None, 18)
     surface.blit(
         font.render(self.name, True, (220, 220, 220)),
@@ -99,7 +134,6 @@ class Room:
         med_font = pygame.font.SysFont(None, 14, bold=True)
         heal_lbl = med_font.render("+HEILEN", True, (100, 255, 100))
         surface.blit(heal_lbl, (self.rect.x + 6, self.rect.y + 28))
-
 
     # System-Gesundheitsbalken
     hp_ratio = self.health / self.max_health
@@ -135,7 +169,6 @@ class Room:
         surface.blit(lbl, (cx - lbl.get_width() // 2, cy - lbl.get_height() // 2))
 
     if not self.is_enemy:
-
       eff_max = self.effective_max_power()
       for i in range(self.max_power):
         if i < eff_max:

@@ -48,18 +48,21 @@ class CombatManager:
     def update_crew(self, dt: float):
         # Sauerstoff & Erstickungs-Schaden (SRS Kap. 5.1)
         for room in self.data.player.ship.rooms:
-            room.update_oxygen(dt)
+            room.update_oxygen(dt, self.data.player.ship.rooms)
         for room in self.data.enemy.ship.rooms:
-            room.update_oxygen(dt)
+            room.update_oxygen(dt, self.data.enemy.ship.rooms)
 
         dead_crew: list = []
         for crew in self.data.player.crew:
             target_rooms = self.data.enemy.ship.rooms if crew.is_boarding else self.data.player.ship.rooms
             crew.update(dt, target_rooms)
-            # Erstickungsschaden
-            if crew.current_room and crew.current_room.oxygen < 20.0:
-                asphyx_mod = 0.5 if getattr(crew, "trait", "") == "Sauerstoff-Sparer" else 1.0
-                crew.hp = max(0.0, crew.hp - 8.0 * asphyx_mod * dt)
+            # Erstickungs- & Feuerschaden
+            if crew.current_room:
+                if crew.current_room.oxygen < 20.0:
+                    asphyx_mod = 0.5 if getattr(crew, "trait", "") == "Sauerstoff-Sparer" else 1.0
+                    crew.hp = max(0.0, crew.hp - 8.0 * asphyx_mod * dt)
+                if crew.current_room.fire_level > 0.0:
+                    crew.hp = max(0.0, crew.hp - (14.0 * crew.current_room.fire_level / 100.0) * dt)
             # Medbay-Heilung: Crew in eigener Medbay wird geheilt wenn Raum Strom hat
             if not crew.is_boarding and crew.current_room and crew.current_room.name == "Medbay" and crew.current_room.current_power > 0:
                 heal_rate = 15.0 * crew.current_room.current_power
