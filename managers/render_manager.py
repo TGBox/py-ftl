@@ -19,7 +19,13 @@ class RenderManager:
         self.btn_upgrade_reactor = pygame.Rect(200, 275, 500, 38)  #[cite: 1]
         self.btn_buy_crew = pygame.Rect(200, 320, 500, 38)  #[cite: 1]
         self.btn_buy_weapon = pygame.Rect(200, 365, 500, 38)  #[cite: 1]
-        self.btn_leave_shop = pygame.Rect(200, 420, 500, 38)  #[cite: 1]
+        # Pause UI Buttons
+        self.btn_pause_resume = pygame.Rect(300, 160, 300, 42)
+        self.btn_pause_save = pygame.Rect(300, 215, 300, 42)
+        self.btn_pause_load = pygame.Rect(300, 270, 300, 42)
+        self.btn_pause_options = pygame.Rect(300, 325, 300, 42)
+        self.btn_pause_main_menu = pygame.Rect(300, 380, 300, 42)
+        self.btn_continue_game = pygame.Rect(300, 438, 300, 42)
 
     def draw(self):
         self.screen.fill(COLOR_BG)
@@ -42,7 +48,7 @@ class RenderManager:
             lbl = self.font.render("Crew-Menü", True, (220, 240, 255))
             self.screen.blit(lbl, (self.btn_crew_toggle.x + 18, self.btn_crew_toggle.y + 6))
 
-        if self.data.current_state in (STATE_MAIN_MENU, STATE_OPTIONS):
+        if self.data.current_state in (STATE_MAIN_MENU, STATE_OPTIONS) and not self.data.paused:
             self.draw_main_menu()
 
         elif self.data.current_state == STATE_MAP:
@@ -63,9 +69,14 @@ class RenderManager:
         elif self.data.current_state == STATE_VICTORY:
             self.draw_victory()
 
-
         if getattr(self.data.player, "show_crew_menu", False):
             self.draw_crew_menu()
+
+        if self.data.paused:
+            if self.data.current_state == STATE_OPTIONS:
+                self.draw_options_menu()
+            else:
+                self.draw_pause_menu()
 
     def draw_crew_menu(self):
         pygame.draw.rect(self.screen, (25, 35, 50), (140, 60, 620, 460))
@@ -231,18 +242,23 @@ class RenderManager:
     def draw_weapons(self):
         # 1. Dauerhafte Schusslinien (Weapon Targets)
         for idx, (_, start_p, end_p) in self.data.combat.weapon_targets.items():
-            color_line = (255, 100, 100) if idx == 1 else (100, 200, 255)
+            color_line = WEAPON_LINE_COLORS[idx % len(WEAPON_LINE_COLORS)]
             pygame.draw.line(self.screen, color_line, start_p, end_p, 2)
-            pygame.draw.circle(self.screen, color_line, end_p, 6, 2)
+            pygame.draw.circle(self.screen, color_line, end_p, 7, 2)
+            w_badge = self.font.render(f"W{idx+1}", True, color_line)
+            self.screen.blit(w_badge, (end_p[0] + 10, end_p[1] - 8))
 
         # 2. Zielen-Linie (beim aktiven Zielen mit Maus)
         if self.data.combat.is_targeting:
             mx, my = self._logical_mouse_pos()
+            t_idx = self.data.combat.target_weapon_idx if self.data.combat.target_weapon_idx is not None else 0
+            color_line = WEAPON_LINE_COLORS[t_idx % len(WEAPON_LINE_COLORS)]
             pygame.draw.line(
-                self.screen, COLOR_PROJECTILE, self.data.combat.start_pos, (mx, my), 2
+                self.screen, color_line, self.data.combat.start_pos, (mx, my), 2
             )
-            pygame.draw.circle(self.screen, COLOR_PROJECTILE, (mx, my), 5, 1)
-
+            pygame.draw.circle(self.screen, color_line, (mx, my), 7, 2)
+            w_badge = self.font.render(f"W{t_idx+1}", True, color_line)
+            self.screen.blit(w_badge, (mx + 10, my - 8))
 
         # 3. Waffen-UI-Bars
         weapon_ui_y = 310
@@ -261,9 +277,11 @@ class RenderManager:
             )
             pygame.draw.rect(self.screen, COLOR_BORDER, (bar_x, bar_y, 105, 15), 1)
 
-            # Zeige an, ob die Waffe ein Ziel hat
-            target_indicator = " [Z]" if i in self.data.combat.weapon_targets else ""
-            lbl = self.font.render(f"{w.name}{target_indicator}", True, (200, 220, 255))
+            # Zeige an, ob die Waffe ein Ziel hat (mit individueller Waffenfarbe)
+            w_color = WEAPON_LINE_COLORS[i % len(WEAPON_LINE_COLORS)]
+            target_indicator = f" [W{i+1}]" if i in self.data.combat.weapon_targets else ""
+            lbl_color = w_color if i in self.data.combat.weapon_targets else (200, 220, 255)
+            lbl = self.font.render(f"{w.name}{target_indicator}", True, lbl_color)
             self.screen.blit(lbl, (bar_x, bar_y - 18))
 
         # 4. Autofire Button (wird vom Manager gezeichnet, Logik in InputManager)
@@ -282,13 +300,33 @@ class RenderManager:
         # Temporäre Kampfnachrichten
         if self.data.combat.msg_timer > 0.0:
             msg_txt = self.font.render(self.data.combat.msg, True, COLOR_SELECTED)
-            self.screen.blit(msg_txt, (SCREEN_WIDTH // 2 - 80, 140))
-            
-        # Pause Text (falls du pause in GameData gespeichert hast)
-        if self.data.paused:
-            p_font = pygame.font.SysFont(None, 48)
-            p_txt = p_font.render("PAUSE", True, (255, 255, 100))
-            self.screen.blit(p_txt, (SCREEN_WIDTH // 2 - p_txt.get_width() // 2, 40))
+            self.screen.blit(msg_txt, (SCREEN_WIDTH // 2 - msg_txt.get_width() // 2, 140))
+
+    def draw_pause_menu(self):
+        overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((10, 15, 25, 200))
+        self.screen.blit(overlay, (0, 0))
+
+        pygame.draw.rect(self.screen, (25, 35, 50), (250, 90, 400, 420))
+        pygame.draw.rect(self.screen, (100, 200, 255), (250, 90, 400, 420), 3)
+
+        title_font = pygame.font.SysFont(None, 36, bold=True)
+        title_txt = title_font.render("--- SPIEL PAUSIERT ---", True, (255, 255, 100))
+        self.screen.blit(title_txt, (LOGICAL_WIDTH // 2 - title_txt.get_width() // 2, 110))
+
+        buttons = [
+            (self.btn_pause_resume, "Weiter (Spiel fortsetzen)", (50, 120, 70), (100, 255, 100)),
+            (self.btn_pause_save, "Spiel Speichern (S)", (40, 60, 90), COLOR_BORDER),
+            (self.btn_pause_load, "Spiel Laden (L)", (40, 60, 90), COLOR_BORDER),
+            (self.btn_pause_options, "Optionen & Einstellungen", (60, 75, 100), (120, 160, 220)),
+            (self.btn_pause_main_menu, "Zurück zum Hauptmenü", (80, 40, 40), (255, 100, 100)),
+        ]
+
+        for btn, text, bg_col, border_col in buttons:
+            pygame.draw.rect(self.screen, bg_col, btn)
+            pygame.draw.rect(self.screen, border_col, btn, 2)
+            txt_surf = self.font.render(text, True, (240, 240, 240))
+            self.screen.blit(txt_surf, (btn.x + (btn.width - txt_surf.get_width()) // 2, btn.y + 11))
             
     def draw_main_menu(self):
         # Titel
@@ -356,6 +394,13 @@ class RenderManager:
         pygame.draw.rect(self.screen, (120, 160, 220), self.btn_options, 2)
         self.screen.blit(self.font.render("Optionen", True, (220, 240, 255)), (self.btn_options.x + 50, self.btn_options.y + 14))
 
+        from managers.save_manager import SaveManager
+        if SaveManager.has_savegame():
+            pygame.draw.rect(self.screen, (40, 80, 120), self.btn_continue_game)
+            pygame.draw.rect(self.screen, (100, 200, 255), self.btn_continue_game, 2)
+            cont_txt = self.font.render("Spiel Fortsetzen (Letzter Speicherstand)", True, (220, 240, 255))
+            self.screen.blit(cont_txt, (self.btn_continue_game.x + (self.btn_continue_game.width - cont_txt.get_width()) // 2, self.btn_continue_game.y + 11))
+
         if self.data.current_state == STATE_OPTIONS:
             self.draw_options_menu()
 
@@ -418,7 +463,8 @@ class RenderManager:
         self.btn_close_options = pygame.Rect(350, 440, 200, 45)
         pygame.draw.rect(self.screen, (70, 40, 40), self.btn_close_options)
         pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, self.btn_close_options, 2)
-        self.screen.blit(self.font.render("Zurück zum Menü", True, (255, 200, 200)), (self.btn_close_options.x + 30, self.btn_close_options.y + 12))
+        close_txt = "Zurück zur Pause" if self.data.paused else "Zurück zum Menü"
+        self.screen.blit(self.font.render(close_txt, True, (255, 200, 200)), (self.btn_close_options.x + 25, self.btn_close_options.y + 12))
 
 
 

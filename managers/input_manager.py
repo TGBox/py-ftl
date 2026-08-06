@@ -68,12 +68,16 @@ class InputManager:
 
         if event.key == pygame.K_SPACE:
             self.data.paused = not self.data.paused
-        elif event.key == pygame.K_s:
+            if not self.data.paused and self.data.current_state == STATE_OPTIONS:
+                self.data.current_state = STATE_MAP
+        elif event.key == pygame.K_s and (self.data.paused or self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY)):
             from managers.save_manager import SaveManager
-            SaveManager.save_game(self.data)
+            if SaveManager.save_game(self.data):
+                self.show_message("SPIELSTAND ERFOLGREICH GESPEICHERT!")
         elif event.key == pygame.K_l:
             from managers.save_manager import SaveManager
-            SaveManager.load_game(self.data)
+            if SaveManager.load_game(self.data):
+                self.show_message("SPIELSTAND ERFOLGREICH GELADEN!")
 
     def handle_left_click(self, event: pygame.event.Event):
 
@@ -101,6 +105,36 @@ class InputManager:
                     return
             return
 
+        # Pause-Menü Interaktion (wenn Spiel pausiert ist)
+        if self.data.paused and self.data.current_state != STATE_OPTIONS:
+            btn_pause_resume = pygame.Rect(300, 160, 300, 42)
+            btn_pause_save = pygame.Rect(300, 215, 300, 42)
+            btn_pause_load = pygame.Rect(300, 270, 300, 42)
+            btn_pause_options = pygame.Rect(300, 325, 300, 42)
+            btn_pause_main_menu = pygame.Rect(300, 380, 300, 42)
+
+            from managers.save_manager import SaveManager
+
+            if btn_pause_resume.collidepoint(mx, my):
+                self.data.paused = False
+                if self.sound: self.sound.play("click")
+            elif btn_pause_save.collidepoint(mx, my):
+                if SaveManager.save_game(self.data):
+                    self.show_message("SPIELSTAND ERFOLGREICH GESPEICHERT!")
+                if self.sound: self.sound.play("click")
+            elif btn_pause_load.collidepoint(mx, my):
+                if SaveManager.load_game(self.data):
+                    self.show_message("SPIELSTAND ERFOLGREICH GELADEN!")
+                if self.sound: self.sound.play("click")
+            elif btn_pause_options.collidepoint(mx, my):
+                self.data.current_state = STATE_OPTIONS
+                if self.sound: self.sound.play("click")
+            elif btn_pause_main_menu.collidepoint(mx, my):
+                self.data.paused = False
+                self.data.current_state = STATE_MAIN_MENU
+                if self.sound: self.sound.play("click")
+            return
+
         if self.data.current_state == STATE_OPTIONS:
             btn_toggle_fullscreen = pygame.Rect(220, 140, 460, 44)
             btn_res_toggle = pygame.Rect(220, 195, 460, 44)
@@ -123,7 +157,10 @@ class InputManager:
             elif btn_close_options.collidepoint(mx, my):
                 if self.sound:
                     self.sound.play("click")
-                self.data.current_state = STATE_MAIN_MENU
+                if self.data.paused:
+                    self.data.current_state = STATE_MAP
+                else:
+                    self.data.current_state = STATE_MAIN_MENU
             return
 
         if self.data.current_state == STATE_MAIN_MENU:
@@ -134,9 +171,11 @@ class InputManager:
             btn_fed = pygame.Rect(710, 150, 150, 200)
             btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 190, 380, 180, 48)
             btn_options = pygame.Rect(SCREEN_WIDTH // 2 + 10, 380, 180, 48)
+            btn_continue_game = pygame.Rect(300, 438, 300, 42)
 
             import copy
             from classes.ShipModel import SHIP_BLUEPRINTS
+            from managers.save_manager import SaveManager
 
             unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
 
@@ -161,6 +200,9 @@ class InputManager:
             elif btn_start.collidepoint(mx, my):
                 self.data.current_state = STATE_MAP
                 if self.sound: self.sound.play("jump")
+            elif SaveManager.has_savegame() and btn_continue_game.collidepoint(mx, my):
+                if SaveManager.load_game(self.data):
+                    if self.sound: self.sound.play("jump")
 
 
 

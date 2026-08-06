@@ -99,16 +99,20 @@ class StarMap:
     for node in self.nodes:
       if node == self.current_node:
         color = COLOR_SELECTED
+      elif node.visited:
+        color = COLOR_MAP_VISITED
       elif node.event_type == "EXIT":
         color = (255, 100, 255)
-      elif node.event_type == "SHOP" and not node.visited:
+      elif node.event_type == "SHOP":
         color = COLOR_SHOP_NODE
-      elif node.visited:
-        color = (100, 255, 100)
       else:
         color = COLOR_MAP_NODE
 
       pygame.draw.circle(surface, color, (node.x, node.y), 14)
+
+      # Subtiler innerer Indikator für besuchte Knoten
+      if node.visited and node != self.current_node:
+        pygame.draw.circle(surface, (40, 50, 65), (node.x, node.y), 5)
 
       if (
           self.current_node is not None

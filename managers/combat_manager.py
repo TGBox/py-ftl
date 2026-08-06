@@ -62,9 +62,13 @@ class CombatManager:
                 self.sound.play("crew_death")
             self.show_message(f"CREW-MITGLIED {dead.name.upper()} GEFALLEN!")
 
-        # Gegnerische Crew initialisieren & updaten
+        # Gegnerische Crew initialisieren & updaten (Ausgewogene Anzahl nach Sektor)
         if not self.enemy_crew and len(self.data.enemy.ship.rooms) > 0:
-            for r in self.data.enemy.ship.rooms:
+            sector = self.data.world.star_map.sector
+            is_boss = "Boss" in self.data.enemy.ship.name or "Flaggschiff" in self.data.enemy.ship.name
+            crew_count = 3 if is_boss else (2 if sector >= 2 else 1)
+            target_rooms = self.data.enemy.ship.rooms[:crew_count]
+            for r in target_rooms:
                 self.enemy_crew.append(Crew(r.rect.centerx, r.rect.centery, name="Pirate", is_enemy=True))
 
         dead_enemy: list = []
