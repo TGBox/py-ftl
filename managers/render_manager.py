@@ -11,6 +11,8 @@ class RenderManager:
         self.screen.fill(COLOR_BG)  #[cite: 2]
         self.font = pygame.font.SysFont(None, 24)
         self.btn_autofire = pygame.Rect(710, 520, 160, 30)
+        self.btn_teleport = pygame.Rect(710, 480, 160, 30)
+        self.btn_recall = pygame.Rect(540, 480, 160, 30)
         self.btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
         # Shop UI Buttons
         self.btn_repair = pygame.Rect(200, 140, 500, 38)  #[cite: 1]
@@ -422,6 +424,26 @@ class RenderManager:
             (100, 255, 100) if self.data.combat.autofire_enabled else (200, 200, 200),
         )
         self.screen.blit(autofire_txt, (self.btn_autofire.x + 15, self.btn_autofire.y + 5))
+
+        # 5. Teleporter Entern & Recall Buttons
+        tp_cooldown = getattr(self.data.combat, "teleport_cooldown", 0.0)
+        is_tp_target = getattr(self.data.combat, "is_teleport_targeting", False)
+
+        tp_color = (40, 140, 180) if tp_cooldown <= 0 else (40, 40, 50)
+        border_color = (100, 255, 255) if is_tp_target else (COLOR_BORDER if tp_cooldown <= 0 else (70, 70, 70))
+        pygame.draw.rect(self.screen, tp_color, self.btn_teleport)
+        pygame.draw.rect(self.screen, border_color, self.btn_teleport, 2)
+
+        tp_label = "Ziel wählen..." if is_tp_target else ("Entern [BEAM]" if tp_cooldown <= 0 else f"Entern ({int(tp_cooldown)}s)")
+        tp_txt = self.font.render(tp_label, True, (255, 255, 255) if tp_cooldown <= 0 else (140, 140, 140))
+        self.screen.blit(tp_txt, (self.btn_teleport.centerx - tp_txt.get_width() // 2, self.btn_teleport.centery - tp_txt.get_height() // 2))
+
+        has_boarders = any(getattr(c, "is_boarding", False) for c in self.data.player.crew)
+        rec_color = (180, 80, 40) if (has_boarders and tp_cooldown <= 0) else (40, 40, 50)
+        pygame.draw.rect(self.screen, rec_color, self.btn_recall)
+        pygame.draw.rect(self.screen, COLOR_BORDER if (has_boarders and tp_cooldown <= 0) else (70, 70, 70), self.btn_recall, 2)
+        rec_txt = self.font.render("Zurückbeamen", True, (255, 255, 255) if (has_boarders and tp_cooldown <= 0) else (140, 140, 140))
+        self.screen.blit(rec_txt, (self.btn_recall.centerx - rec_txt.get_width() // 2, self.btn_recall.centery - rec_txt.get_height() // 2))
 
     def draw_messages(self):
         # Temporäre Kampfnachrichten

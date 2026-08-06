@@ -49,16 +49,19 @@ class CombatManager:
         # Sauerstoff & Erstickungs-Schaden (SRS Kap. 5.1)
         for room in self.data.player.ship.rooms:
             room.update_oxygen(dt)
+        for room in self.data.enemy.ship.rooms:
+            room.update_oxygen(dt)
 
         dead_crew: list = []
         for crew in self.data.player.crew:
-            crew.update(dt, self.data.player.ship.rooms)
+            target_rooms = self.data.enemy.ship.rooms if crew.is_boarding else self.data.player.ship.rooms
+            crew.update(dt, target_rooms)
             # Erstickungsschaden
             if crew.current_room and crew.current_room.oxygen < 20.0:
                 asphyx_mod = 0.5 if getattr(crew, "trait", "") == "Sauerstoff-Sparer" else 1.0
                 crew.hp = max(0.0, crew.hp - 8.0 * asphyx_mod * dt)
-            # Medbay-Heilung: Crew in Medbay-Raum wird geheilt wenn Raum Strom hat
-            if crew.current_room and crew.current_room.name == "Medbay" and crew.current_room.current_power > 0:
+            # Medbay-Heilung: Crew in eigener Medbay wird geheilt wenn Raum Strom hat
+            if not crew.is_boarding and crew.current_room and crew.current_room.name == "Medbay" and crew.current_room.current_power > 0:
                 heal_rate = 15.0 * crew.current_room.current_power
                 crew.hp = min(crew.max_hp, crew.hp + heal_rate * dt)
             # Tod prüfen
@@ -87,6 +90,83 @@ class CombatManager:
                 dead_enemy.append(e_crew)
         for dead in dead_enemy:
             self.enemy_crew.remove(dead)
+
+        # ------------------------------------------------------
+        # NAHKAMPF & SYSTEM-SABOTAGE (Melee Combat & Sabotage)
+        # ------------------------------------------------------
+        all_rooms = self.data.player.ship.rooms + self.data.enemy.ship.rooms
+        for r in all_rooms:
+            p_in_r = [c for c in self.data.player.crew if c.current_room == r]
+            e_in_r = [c for c in self.enemy_crew if c.current_room == r]
+
+            # Nahkampf wenn beide Parteien im selben Raum stehen
+            if p_in_r and e_in_r:
+                p_dps = sum(18.0 * getattr(c, "melee_multiplier", 1.0) for c in p_in_r)
+                e_dps = sum(18.0 * getattr(c, "melee_multiplier", 1.0) for c in e_in_r)
+
+                for e in e_in_r:
+                    e.hp = max(0.0, e.hp - (p_dps / len(e_in_r)) * dt)
+                for p in p_in_r:
+                    p.hp = max(0.0, p.hp - (e_dps / len(p_in_r)) * dt)
+
+            # Sabotage wenn eigene Enter-Crew in unverteidigtem gegnerischen Raum steht
+            elif p_in_r and not e_in_r and r in self.data.enemy.ship.rooms:
+                sab_rate = sum(18.0 * getattr(c, "melee_multiplier", 1.0) for c in p_in_r)
+                r.health = max(0.0, r.health - sab_rate * dt)
+
+    def teleport_selected_crew_to_room(self, target_room):
+        selected_crew = [c for c in self.data.player.crew if c.selected]
+        if not selected_crew:
+            tp_room = next((r for r in self.data.player.ship.rooms if r.name == "Teleporter"), None)
+            if tp_room:
+                selected_crew = [c for c in self.data.player.crew if c.current_room == tp_room]
+
+        if not selected_crew:
+            self.show_message("KEINE CREW ZUM ENTERN AUSGEWÄHLT!")
+            return
+
+        for c in selected_crew:
+            c.is_boarding = True
+            c.x = float(target_room.rect.centerx)
+            c.y = float(target_room.rect.centery)
+            c.target_pos = None
+            c.current_room = target_room
+            c.selected = False
+
+        self.data.combat.teleport_cooldown = 12.0
+        self.data.combat.is_teleport_targeting = False
+        if self.sound: self.sound.play("click")
+        self.show_message(f"{len(selected_crew)} CREW-MITGLIEDER AUFS GEGNERSCHIFF GEBEAMT!")
+
+    def recall_boarding_crew(self):
+        boarders = [c for c in self.data.player.crew if getattr(c, "is_boarding", False)]
+        if not boarders:
+            self.show_message("KEINE CREW AUF DEM GEGNERSCHIFF!")
+            return
+
+        dest_room = next((r for r in self.data.player.ship.rooms if r.name in ("Medbay", "Teleporter")), self.data.player.ship.rooms[0])
+        for c in boarders:
+            c.is_boarding = False
+            c.x = float(dest_room.rect.centerx)
+            c.y = float(dest_room.rect.centery)
+            c.target_pos = None
+            c.current_room = dest_room
+            c.selected = False
+
+        self.data.combat.teleport_cooldown = 12.0
+        if self.sound: self.sound.play("click")
+        self.show_message("ENTER-CREW ZURÜCKGEBEAMT!")
+
+    def recall_boarding_crew_silent(self):
+        dest_room = next((r for r in self.data.player.ship.rooms if r.name in ("Medbay", "Teleporter")), self.data.player.ship.rooms[0])
+        for c in self.data.player.crew:
+            if getattr(c, "is_boarding", False):
+                c.is_boarding = False
+                c.x = float(dest_room.rect.centerx)
+                c.y = float(dest_room.rect.centery)
+                c.target_pos = None
+                c.current_room = dest_room
+                c.selected = False
 
 
     def update_shields(self, dt: float):
@@ -300,13 +380,22 @@ class CombatManager:
 
 
     def check_end_of_battle(self):
-
         if self.data.enemy.ship.hp <= 0:
             if self.sound: self.sound.play("explosion")
+            self.recall_boarding_crew_silent()
             self.player_won()
             return
 
-        if self.data.player.ship.hp <= 0:
+        # Schiffs-Kaperung (Enemy crew completely eliminated by boarding)
+        if len(self.enemy_crew) == 0 and len(self.data.player.crew) > 0 and self.data.current_state == STATE_COMBAT:
+            self.show_message("SCHIFF GEKAPERT! Feindliche Crew eliminiert (+BONUS BEUTE)!")
+            self.data.player.scrap += 35
+            self.data.player.fuel += 2
+            self.recall_boarding_crew_silent()
+            self.player_won()
+            return
+
+        if self.data.player.ship.hp <= 0 or len(self.data.player.crew) == 0:
             if self.sound: self.sound.play("game_over")
             self.player_lost()
 

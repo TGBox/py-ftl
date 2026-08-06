@@ -58,6 +58,8 @@ class CombatData:
         self.weapon_targets: dict[int, tuple[Room, tuple[int, int], tuple[int, int]]] = {}
         self.msg: str = ""
         self.msg_timer: float = 0.0
+        self.teleport_cooldown: float = 0.0
+        self.is_teleport_targeting: bool = False
 
 
 class WorldData:

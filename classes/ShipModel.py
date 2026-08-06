@@ -102,6 +102,7 @@ PLAYER_SHIP = ShipModel("Kestrel", 15, [
     Room("Waffen", (160, 200, 90, 90)),
     Room("Brücke", (260, 200, 90, 90), max_power=2),
     Room("Medbay", (160, 100, 90, 90), max_power=2),
+    Room("Teleporter", (260, 100, 90, 90), max_power=1),
 ], max_weapons=3, max_crew=4, weapon_slots=[
     {"slot_id": 1, "pos": (205, 185), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
     {"slot_id": 2, "pos": (205, 305), "allowed_types": ["LASER", "MISSILE"]},

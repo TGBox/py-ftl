@@ -329,6 +329,38 @@ class InputManager:
             self.data.combat.autofire_enabled = not self.data.combat.autofire_enabled
             return
 
+        # Teleporter & Recall Button Klicks
+        btn_teleport = pygame.Rect(710, 480, 160, 30)
+        btn_recall = pygame.Rect(540, 480, 160, 30)
+        tp_cd = getattr(self.data.combat, "teleport_cooldown", 0.0)
+        combat_mgr = getattr(self.data, "combat_manager", None)
+
+        if btn_teleport.collidepoint(mx, my):
+            if tp_cd <= 0:
+                self.data.combat.is_teleport_targeting = not getattr(self.data.combat, "is_teleport_targeting", False)
+                if self.sound: self.sound.play("click")
+            else:
+                self.show_message(f"TELEPORTER LÄDT NOCH ({int(tp_cd)}s)!")
+            return
+
+        if btn_recall.collidepoint(mx, my):
+            if tp_cd <= 0:
+                if combat_mgr:
+                    combat_mgr.recall_boarding_crew()
+            else:
+                self.show_message(f"TELEPORTER LÄDT NOCH ({int(tp_cd)}s)!")
+            return
+
+        # Teleporter Zielauswahl auf dem Gegnerschiff
+        if getattr(self.data.combat, "is_teleport_targeting", False):
+            for e_room in self.data.enemy.ship.rooms:
+                if e_room.rect.collidepoint(mx, my):
+                    if combat_mgr:
+                        combat_mgr.teleport_selected_crew_to_room(e_room)
+                    break
+            self.data.combat.is_teleport_targeting = False
+            return
+
         if self.data.combat.is_targeting:
             for e_room in self.data.enemy.ship.rooms:
                 if e_room.rect.collidepoint(mx, my):
@@ -392,15 +424,27 @@ class InputManager:
 
         if not clicked_crew:
             has_selected = any(c.selected for c in self.data.player.crew)
-            for room in self.data.player.ship.rooms:
-                if room.rect.collidepoint(mx, my):
-                    if has_selected:
+            if has_selected:
+                # Klick auf Gegnerschiff für Bewegung von Enter-Crew
+                for e_room in self.data.enemy.ship.rooms:
+                    if e_room.rect.collidepoint(mx, my):
                         for c in self.data.player.crew:
-                            if c.selected:
+                            if c.selected and c.is_boarding:
                                 c.target_pos = (int(mx), int(my))
-                    else:
+                        return
+
+                # Klick auf eigenes Schiff für Bewegung von normaler Crew
+                for room in self.data.player.ship.rooms:
+                    if room.rect.collidepoint(mx, my):
+                        for c in self.data.player.crew:
+                            if c.selected and not c.is_boarding:
+                                c.target_pos = (int(mx), int(my))
+                        return
+            else:
+                for room in self.data.player.ship.rooms:
+                    if room.rect.collidepoint(mx, my):
                         room.add_power(self.data.player.reactor)
-                    break
+                        break
 
     def restart_game(self):
         self.map_manager.restart_game()

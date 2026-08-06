@@ -48,6 +48,7 @@ class Game:
             self.data, self.shop_manager, self.map_manager, self.weapon_manager
         )
         self.combat_manager = CombatManager(self.data, self.state_manager)
+        self.data.combat_manager = self.combat_manager
         self.render_manager = RenderManager(self.logical_surface, self.data)
 
         # Give managers access to sound

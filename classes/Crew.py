@@ -39,16 +39,23 @@ class Crew:
         self.current_room: Room | None = None
         self.trait: str = random.choice(CREW_TRAITS)
 
-        # Spezies-Eigenschaften
+        self.is_boarding: bool = False
+
+        # Spezies-Eigenschaften (Reparatur & Nahkampf)
         if self.species == "Engi":
             self.repair_multiplier: float = 2.0
+            self.melee_multiplier: float = 0.5
         elif self.species == "Mantis":
             self.repair_multiplier: float = 0.6
+            self.melee_multiplier: float = 2.0
         else:  # Mensch / standard
             self.repair_multiplier: float = 1.0
+            self.melee_multiplier: float = 1.0
 
         if self.trait == "Feuerwehr":
             self.repair_multiplier *= 1.4
+        elif self.trait == "Kampfveteran":
+            self.melee_multiplier += 0.3
 
         self.move_speed: float = 160.0 if self.trait == "Sprinter" else 120.0
 
