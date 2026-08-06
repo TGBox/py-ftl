@@ -28,6 +28,7 @@ class PlayerData:
         self.scrap: int = PLAYER_START_SCRAP
         self.fuel: int = PLAYER_START_FUEL
         self.missiles: int = PLAYER_START_MISSILES
+        self.drone_parts: int = 5
         self.show_crew_menu: bool = False
         self.renaming_crew_idx: Optional[int] = None
         self.active_rename_idx: Optional[int] = None
@@ -65,6 +66,11 @@ class CombatData:
         self.solar_flare_timer: float = 20.0
         self.solar_flare_flash: float = 0.0
         self.asteroid_timer: float = 2.5
+        self.combat_drone_active: bool = False
+        self.repair_drone_active: bool = False
+        self.drone_orbit_angle: float = 0.0
+        self.drone_fire_timer: float = 0.0
+        self.repair_drone_pos: tuple[float, float] = (160.0, 245.0)
 
 
 class WorldData:

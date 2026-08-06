@@ -34,20 +34,24 @@ class RenderManager:
         self.btn_doors_open_all = pygame.Rect(750, 45, 130, 26)
         self.btn_doors_close_all = pygame.Rect(750, 75, 130, 26)
         self.btn_airlocks_vent = pygame.Rect(750, 105, 130, 26)
+        self.btn_cloak = pygame.Rect(370, 480, 160, 30)
+        self.btn_combat_drone = pygame.Rect(200, 480, 160, 30)
+        self.btn_repair_drone = pygame.Rect(30, 480, 160, 30)
+        self.btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
 
     def draw(self):
         self.screen.fill(COLOR_BG)
 
         self.screen.blit(
-              self.font.render(
-                  f"Treibstoff: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  Scrap: {self.data.player.scrap}  |"
-                  f"  Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp}  |  Sektor:"
-                  f" {self.data.world.star_map.sector}",  #[cite: 12]
-                  True,
-                  (255, 255, 255),
-              ),
-              (20, 15),
-          )
+            self.font.render(
+                f"Treibstoff: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  Drohnen: {getattr(self.data.player, 'drone_parts', 5)}  |  Scrap: {self.data.player.scrap}  |"
+                f"  Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp}  |  Sektor:"
+                f" {self.data.world.star_map.sector}",
+                True,
+                (255, 255, 255),
+            ),
+            (20, 15),
+        )
 
         # Crew-Menü & Tür-Steuerung Buttons oben rechts
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
@@ -351,6 +355,24 @@ class RenderManager:
             for c in getattr(self.data.combat_manager, "enemy_crew", []):
                 c.draw(self.screen)
 
+        # 4. Drohnen im Raum & Orbit zeichnen
+        import math
+        if getattr(self.data.combat, "combat_drone_active", False):
+            ang = getattr(self.data.combat, "drone_orbit_angle", 0.0)
+            d_x = int(670 + math.cos(ang) * 160)
+            d_y = int(240 + math.sin(ang) * 110)
+            pygame.draw.circle(self.screen, (255, 100, 50), (d_x, d_y), 9)
+            pygame.draw.circle(self.screen, (255, 255, 255), (d_x, d_y), 9, 2)
+            d_lbl = small_font.render("KAMPFDROHNE", True, (255, 160, 100))
+            self.screen.blit(d_lbl, (d_x - d_lbl.get_width() // 2, d_y - 18))
+
+        if getattr(self.data.combat, "repair_drone_active", False):
+            rx, ry = getattr(self.data.combat, "repair_drone_pos", (160.0, 245.0))
+            pygame.draw.rect(self.screen, (160, 190, 220), (int(rx) - 10, int(ry) - 10, 20, 20))
+            pygame.draw.rect(self.screen, (50, 220, 100), (int(rx) - 10, int(ry) - 10, 20, 20), 2)
+            r_lbl = small_font.render("REP-DROHNE", True, (100, 255, 100))
+            self.screen.blit(r_lbl, (int(rx) - r_lbl.get_width() // 2, int(ry) + 12))
+
         # 4. Sensor-Level 2: Gegner Waffendetails auf HUD
         if sensor_power >= 2:
             e_w = self.data.enemy.weapon
@@ -495,6 +517,28 @@ class RenderManager:
         c_lbl = f"Tarnung ({int(cloak_active)}s)" if cloak_active > 0 else ("Tarnung [CLOAK]" if is_ready else f"Tarnung ({int(cloak_cd)}s)")
         c_txt = self.font.render(c_lbl, True, (255, 255, 255) if is_ready or cloak_active > 0 else (140, 140, 140))
         self.screen.blit(c_txt, (self.btn_cloak.centerx - c_txt.get_width() // 2, self.btn_cloak.centery - c_txt.get_height() // 2))
+
+        # 7. Drohnen Steuerungs-Buttons
+        drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
+        drone_power = drone_room.current_power if drone_room else 0
+
+        # Kampfdrohne Button
+        c_active = getattr(self.data.combat, "combat_drone_active", False)
+        c_bg = (180, 80, 40) if c_active else ((30, 70, 100) if drone_power >= 1 else (40, 40, 50))
+        c_border = (255, 160, 50) if c_active else ((100, 220, 255) if drone_power >= 1 else (70, 70, 70))
+        pygame.draw.rect(self.screen, c_bg, self.btn_combat_drone)
+        pygame.draw.rect(self.screen, c_border, self.btn_combat_drone, 2)
+        c_txt = self.font.render("Kampfdrohne [1E]" if not c_active else "Kampfdrohne [AKTIV]", True, (255, 255, 255) if drone_power >= 1 or c_active else (140, 140, 140))
+        self.screen.blit(c_txt, (self.btn_combat_drone.centerx - c_txt.get_width() // 2, self.btn_combat_drone.centery - c_txt.get_height() // 2))
+
+        # Reparaturdrohne Button
+        r_active = getattr(self.data.combat, "repair_drone_active", False)
+        r_bg = (40, 140, 80) if r_active else ((30, 70, 100) if drone_power >= 2 else (40, 40, 50))
+        r_border = (100, 255, 150) if r_active else ((100, 220, 255) if drone_power >= 2 else (70, 70, 70))
+        pygame.draw.rect(self.screen, r_bg, self.btn_repair_drone)
+        pygame.draw.rect(self.screen, r_border, self.btn_repair_drone, 2)
+        r_txt = self.font.render("Rep-Drohne [2E]" if not r_active else "Rep-Drohne [AKTIV]", True, (255, 255, 255) if drone_power >= 2 or r_active else (140, 140, 140))
+        self.screen.blit(r_txt, (self.btn_repair_drone.centerx - r_txt.get_width() // 2, self.btn_repair_drone.centery - r_txt.get_height() // 2))
 
     def draw_messages(self):
         # Solar Flare Flash

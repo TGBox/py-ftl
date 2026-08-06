@@ -84,11 +84,104 @@ class CombatManager:
             else:
                 self.data.combat.asteroid_timer = ast_timer
 
+        # ------------------------------------------------------
+        # DROHNEN-SIMULATION (Combat Drones & Repair Drones)
+        # ------------------------------------------------------
+        drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
+        drone_power = drone_room.current_power if (drone_room and drone_room.health > 10) else 0
+
+        # 1. Kampfdrohne (Orbit & Laserfeuer auf Gegnerschiff)
+        if getattr(self.data.combat, "combat_drone_active", False):
+            if drone_power < 1:
+                self.data.combat.combat_drone_active = False
+                self.show_message("KAMPFDROHNE DEAKTIVIERT (Keine Drohnen-Energie)!")
+            else:
+                import math
+                self.data.combat.drone_orbit_angle = (getattr(self.data.combat, "drone_orbit_angle", 0.0) + 1.2 * dt) % (2 * math.pi)
+                self.data.combat.drone_fire_timer = getattr(self.data.combat, "drone_fire_timer", 0.0) - dt
+                if self.data.combat.drone_fire_timer <= 0.0:
+                    self.data.combat.drone_fire_timer = 4.5
+                    if self.data.enemy.ship.rooms:
+                        t_room = random.choice(self.data.enemy.ship.rooms)
+                        ang = self.data.combat.drone_orbit_angle
+                        d_x = int(670 + math.cos(ang) * 160)
+                        d_y = int(240 + math.sin(ang) * 110)
+                        self.data.player.projectiles.append(
+                            Projectile((d_x, d_y), t_room.rect.center, target_room=t_room, is_player_shot=True, w_type="LASER", damage=25.0)
+                        )
+                        if self.sound: self.sound.play("laser_fire")
+
+        # 2. Reparaturdrohne (Autonome Reparatur & Brandbekämpfung)
+        if getattr(self.data.combat, "repair_drone_active", False):
+            if drone_power < 2:
+                self.data.combat.repair_drone_active = False
+                self.show_message("REPARATURDROHNE DEAKTIVIERT (Braucht 2 Drohnen-Energie)!")
+            else:
+                import math
+                rx, ry = getattr(self.data.combat, "repair_drone_pos", (160.0, 245.0))
+                damaged_rooms = [r for r in self.data.player.ship.rooms if r.health < r.max_health or r.fire_level > 0 or r.has_breach]
+                target_room = damaged_rooms[0] if damaged_rooms else self.data.player.ship.rooms[0]
+
+                tx, ty = float(target_room.rect.centerx), float(target_room.rect.centery)
+                dx, dy = tx - rx, ty - ry
+                dist = math.hypot(dx, dy)
+                if dist < 140.0 * dt:
+                    rx, ry = tx, ty
+                    if damaged_rooms:
+                        target_room.repair(30.0 * dt)
+                else:
+                    rx += (dx / dist) * 140.0 * dt
+                    ry += (dy / dist) * 140.0 * dt
+                self.data.combat.repair_drone_pos = (rx, ry)
+
         self.update_shields(dt)
         self.update_weapons(dt)
         self.update_enemy_weapon(dt)
         self.update_projectiles(dt)
         self.check_end_of_battle()
+
+    def toggle_combat_drone(self):
+        if getattr(self.data.combat, "combat_drone_active", False):
+            self.data.combat.combat_drone_active = False
+            self.show_message("KAMPFDROHNE DEAKTIVIERT!")
+            return
+
+        drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
+        power = drone_room.current_power if drone_room else 0
+        if power < 1:
+            self.show_message("DROHNEN-SYSTEM BRAUCHT MINDESTENS 1 ENERGIE!")
+            return
+
+        if self.data.player.drone_parts < 1:
+            self.show_message("KEINE DROHNEN-TEILE MEHR!")
+            return
+
+        self.data.player.drone_parts -= 1
+        self.data.combat.combat_drone_active = True
+        self.data.combat.drone_fire_timer = 2.0
+        if self.sound: self.sound.play("click")
+        self.show_message("KAMPFDROHNE GESTARTET! (-1 Drohnen-Teil)")
+
+    def toggle_repair_drone(self):
+        if getattr(self.data.combat, "repair_drone_active", False):
+            self.data.combat.repair_drone_active = False
+            self.show_message("REPARATURDROHNE DEAKTIVIERT!")
+            return
+
+        drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
+        power = drone_room.current_power if drone_room else 0
+        if power < 2:
+            self.show_message("REPARATURDROHNE BRAUCHT MINDESTENS 2 ENERGIE!")
+            return
+
+        if self.data.player.drone_parts < 1:
+            self.show_message("KEINE DROHNEN-TEILE MEHR!")
+            return
+
+        self.data.player.drone_parts -= 1
+        self.data.combat.repair_drone_active = True
+        if self.sound: self.sound.play("click")
+        self.show_message("REPARATURDROHNE GESTARTET! (-1 Drohnen-Teil)")
 
     def update_crew(self, dt: float):
         # Sauerstoff & Erstickungs-Schaden (SRS Kap. 5.1)

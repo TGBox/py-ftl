@@ -357,6 +357,18 @@ class InputManager:
                 combat_mgr.activate_cloaking()
             return
 
+        btn_combat_drone = pygame.Rect(200, 480, 160, 30)
+        if btn_combat_drone.collidepoint(mx, my):
+            if combat_mgr:
+                combat_mgr.toggle_combat_drone()
+            return
+
+        btn_repair_drone = pygame.Rect(30, 480, 160, 30)
+        if btn_repair_drone.collidepoint(mx, my):
+            if combat_mgr:
+                combat_mgr.toggle_repair_drone()
+            return
+
         # Teleporter Zielauswahl auf dem Gegnerschiff
         if getattr(self.data.combat, "is_teleport_targeting", False):
             for e_room in self.data.enemy.ship.rooms:
