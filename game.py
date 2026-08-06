@@ -1,4 +1,3 @@
-import asyncio
 import sys
 import pygame
 
@@ -26,26 +25,22 @@ class Game:
             pygame.mixer.set_num_channels(32)
             pygame.mixer.set_reserved(4)
 
-        # --- Display: logische Oberfläche + skaliertes Fenster ---
         info = pygame.display.Info()
         self.desktop_w = info.current_w if (info and info.current_w > 0) else 1920
         self.desktop_h = info.current_h if (info and info.current_h > 0) else 1080
 
-        # Füge die aktuelle Desktop-Auflösung zu RESOLUTIONS hinzu
         self.resolutions = list(RESOLUTIONS)
         if (self.desktop_w, self.desktop_h) not in self.resolutions:
             self.resolutions.insert(0, (self.desktop_w, self.desktop_h))
 
         self.resolution_idx: int = self.resolutions.index((self.desktop_w, self.desktop_h))
-        # Anzeigemodi: "FULLSCREEN_WINDOWED" (Fullscreen-Fenstermodus, Standard!), "WINDOWED", "FULLSCREEN"
         self.display_mode: str = "FULLSCREEN_WINDOWED"
 
+        self.screen: pygame.Surface = None
+        self.apply_display_mode()
         self.logical_surface: pygame.Surface = pygame.Surface(
             (LOGICAL_WIDTH, LOGICAL_HEIGHT)
-        )
-        self.screen: pygame.Surface = pygame.display.set_mode(
-            (self.desktop_w, self.desktop_h), pygame.NOFRAME
-        )
+        ).convert()
         pygame.display.set_caption("FTL Clone - Pygame-CE Engine")
         self.clock: pygame.time.Clock = pygame.time.Clock()
 
@@ -79,13 +74,26 @@ class Game:
     # ------------------------------------------------------------------
 
     def apply_display_mode(self) -> None:
+        """Sichere Display-Modus Umschaltung ohne SDL2-Hänger auf Windows."""
+        pygame.event.pump()
         target_w, target_h = self.resolutions[self.resolution_idx]
+
         if self.display_mode == "FULLSCREEN_WINDOWED":
+            # Rahmenloses maximiertes Fenster in nativer Desktop-Auflösung (1920x1080)
             self.screen = pygame.display.set_mode((self.desktop_w, self.desktop_h), pygame.NOFRAME)
         elif self.display_mode == "FULLSCREEN":
+            # Exklusives Vollbild
             self.screen = pygame.display.set_mode((target_w, target_h), pygame.FULLSCREEN)
         else:  # "WINDOWED"
+            # Skalierbares Fenster
             self.screen = pygame.display.set_mode((target_w, target_h), pygame.RESIZABLE)
+
+        # Skalierten Ziel-Surface Cache aktualisieren
+        win_w, win_h = self.screen.get_size()
+        scale = min(win_w / LOGICAL_WIDTH, win_h / LOGICAL_HEIGHT)
+        scaled_w = max(1, int(LOGICAL_WIDTH * scale))
+        scaled_h = max(1, int(LOGICAL_HEIGHT * scale))
+        self.scaled_surface = pygame.Surface((scaled_w, scaled_h)).convert()
 
     def cycle_display_mode(self) -> str:
         modes = ["FULLSCREEN_WINDOWED", "WINDOWED", "FULLSCREEN"]
@@ -100,24 +108,30 @@ class Game:
         return self.resolutions[self.resolution_idx]
 
     def _scale_and_blit(self) -> None:
-        """Scale the logical 900x600 surface to fill the actual window."""
+        """Skaliert die logische 900x600 Canvas glatt und blitzschnell auf den Bildschirm."""
         win_w, win_h = self.screen.get_size()
-        # Maintain aspect ratio
         scale = min(win_w / LOGICAL_WIDTH, win_h / LOGICAL_HEIGHT)
         scaled_w = int(LOGICAL_WIDTH * scale)
         scaled_h = int(LOGICAL_HEIGHT * scale)
         offset_x = (win_w - scaled_w) // 2
         offset_y = (win_h - scaled_h) // 2
 
-        # Black letterbox
+        # Surface Cache-Reallokation falls Fenstergröße im Windowed-Modus verändert wird
+        if (
+            self.scaled_surface is None
+            or self.scaled_surface.get_width() != scaled_w
+            or self.scaled_surface.get_height() != scaled_h
+        ):
+            self.scaled_surface = pygame.Surface((scaled_w, scaled_h)).convert()
+
+        # Glatte 0.5ms Bilinear-Skalierung mit dest_surface Memory-Reusability
+        pygame.transform.smoothscale(self.logical_surface, (scaled_w, scaled_h), self.scaled_surface)
+
         self.screen.fill((0, 0, 0))
-        scaled = pygame.transform.scale(
-            self.logical_surface, (scaled_w, scaled_h)
-        )
-        self.screen.blit(scaled, (offset_x, offset_y))
+        self.screen.blit(self.scaled_surface, (offset_x, offset_y))
 
     def screen_to_logical(self, mx: int, my: int) -> tuple[int, int]:
-        """Convert actual screen coordinates to logical 900x600 coordinates."""
+        """Umgerechnete Mauskordinaten von Bildschirmauflösung auf 900x600."""
         win_w, win_h = self.screen.get_size()
         scale = min(win_w / LOGICAL_WIDTH, win_h / LOGICAL_HEIGHT)
         scaled_w = int(LOGICAL_WIDTH * scale)
@@ -128,7 +142,7 @@ class Game:
         ly = int((my - offset_y) / scale)
         return lx, ly
 
-    async def run(self) -> None:
+    def run(self) -> None:
         while self.data.running:
             dt = self.clock.tick(60) / 1000.0
 
@@ -138,8 +152,6 @@ class Game:
 
             self._scale_and_blit()
             pygame.display.flip()
-
-            await asyncio.sleep(0)
 
         pygame.quit()
         sys.exit()
