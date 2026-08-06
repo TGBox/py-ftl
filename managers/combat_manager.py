@@ -461,6 +461,11 @@ class CombatManager:
                     w_type=weapon.w_type,
                     shield_pierce=weapon.shield_pierce,
                     damage=weapon.damage,
+                    subtype=getattr(weapon, "subtype", "STANDARD"),
+                    fire_chance=getattr(weapon, "fire_chance", 0.0),
+                    breach_chance=getattr(weapon, "breach_chance", 0.0),
+                    stun_duration=getattr(weapon, "stun_duration", 0.0),
+                    crew_damage=getattr(weapon, "crew_damage", 0.0),
                 )
             )
 
@@ -527,6 +532,11 @@ class CombatManager:
                 w_type=weapon.w_type,
                 shield_pierce=weapon.shield_pierce,
                 damage=weapon.damage,
+                subtype=getattr(weapon, "subtype", "STANDARD"),
+                fire_chance=getattr(weapon, "fire_chance", 0.0),
+                breach_chance=getattr(weapon, "breach_chance", 0.0),
+                stun_duration=getattr(weapon, "stun_duration", 0.0),
+                crew_damage=getattr(weapon, "crew_damage", 0.0),
             )
         )
 
@@ -587,25 +597,37 @@ class CombatManager:
 
             if hit_successful:
                 if self.sound: self.sound.play("hull_hit")
-                if projectile.w_type == "BOMB":
-                    self.show_message(f"BOMBE DETONIERT IN {projectile.target_room.name.upper()}!")
-                    if "Feuer" in getattr(projectile, "name", "") or projectile.damage == 0:
-                        projectile.target_room.fire_level = min(100.0, projectile.target_room.fire_level + 65.0)
-                    elif "Hüllenbruch" in getattr(projectile, "name", "") or projectile.damage == 15:
-                        projectile.target_room.has_breach = True
-                        projectile.target_room.apply_damage(40.0, self.data.enemy.reactor)
-                        self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
-                    else:
-                        projectile.target_room.apply_damage(30.0, self.data.enemy.reactor)
-                        self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
-                elif projectile.w_type == "BEAM":
-                    intersected_rooms = projectile.get_intersected_rooms(self.data.enemy.ship.rooms)
-                    for room in intersected_rooms:
+                target_rooms = projectile.get_intersected_rooms(self.data.enemy.ship.rooms) if projectile.w_type == "BEAM" else [projectile.target_room]
+
+                for room in target_rooms:
+                    if projectile.damage > 0:
                         self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
                         room.apply_damage(projectile.damage, self.data.enemy.reactor)
-                else:
-                    self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
-                    projectile.target_room.apply_damage(projectile.damage, self.data.enemy.reactor)
+
+                    # Subtyp & Statuseffekte anwenden
+                    if projectile.fire_chance > 0 and random.random() < projectile.fire_chance:
+                        room.fire_level = min(100.0, room.fire_level + 60.0)
+                        self.show_message(f"FEUER ENTFACHT IN {room.name.upper()}!")
+
+                    if projectile.breach_chance > 0 and random.random() < projectile.breach_chance:
+                        room.has_breach = True
+                        self.show_message(f"HÜLLENBRUCH IN {room.name.upper()}!")
+
+                    # Effekte auf gegnerische Crew in diesem Raum
+                    affected_crew = [c for c in self.enemy_crew if c.current_room == room]
+                    for e_c in affected_crew:
+                        if projectile.crew_damage > 0:
+                            e_c.hp = max(0.0, e_c.hp - projectile.crew_damage)
+                        elif projectile.subtype == "BIO":
+                            e_c.hp = max(0.0, e_c.hp - 65.0)
+
+                        if projectile.stun_duration > 0:
+                            e_c.stun_timer = max(e_c.stun_timer, projectile.stun_duration)
+
+                    if projectile.subtype == "BIO" and affected_crew:
+                        self.show_message(f"BIO-SCHADEN AN CREW IN {room.name.upper()}!")
+                    elif projectile.stun_duration > 0 and affected_crew:
+                        self.show_message(f"CREW IN {room.name.upper()} GELÄHMT!")
 
     def handle_enemy_hit(self, projectile: Projectile):
         if getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0:
@@ -658,25 +680,35 @@ class CombatManager:
 
             if hit_successful:
                 if self.sound: self.sound.play("hull_hit")
-                if projectile.w_type == "BOMB":
-                    self.show_message(f"BOMBE DETONIERT IN DEINEM {projectile.target_room.name.upper()}!")
-                    projectile.target_room.fire_level = min(100.0, projectile.target_room.fire_level + 50.0)
-                    projectile.target_room.apply_damage(25.0, self.data.player.reactor)
-                    self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
-                elif projectile.w_type == "BEAM":
-                    intersected_rooms = projectile.get_intersected_rooms(self.data.player.ship.rooms)
-                    for room in intersected_rooms:
+                target_rooms = projectile.get_intersected_rooms(self.data.player.ship.rooms) if projectile.w_type == "BEAM" else [projectile.target_room]
+
+                for room in target_rooms:
+                    if projectile.damage > 0:
                         self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
                         room.apply_damage(projectile.damage, self.data.player.reactor)
-                        for crew in self.data.player.crew:
-                            if crew.current_room == room:
-                                crew.hp = max(0.0, crew.hp - 15.0)
-                else:
-                    self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
-                    projectile.target_room.apply_damage(projectile.damage, self.data.player.reactor)
-                    for crew in self.data.player.crew:
-                        if crew.current_room == projectile.target_room:
-                            crew.hp = max(0.0, crew.hp - 20.0)
+
+                    if projectile.fire_chance > 0 and random.random() < projectile.fire_chance:
+                        room.fire_level = min(100.0, room.fire_level + 60.0)
+                        self.show_message(f"FEUER IN DEINEM {room.name.upper()}!")
+
+                    if projectile.breach_chance > 0 and random.random() < projectile.breach_chance:
+                        room.has_breach = True
+                        self.show_message(f"HÜLLENBRUCH IN DEINEM {room.name.upper()}!")
+
+                    affected_crew = [c for c in self.data.player.crew if c.current_room == room]
+                    for p_c in affected_crew:
+                        if projectile.crew_damage > 0:
+                            p_c.hp = max(0.0, p_c.hp - projectile.crew_damage)
+                        elif projectile.subtype == "BIO":
+                            p_c.hp = max(0.0, p_c.hp - 60.0)
+                        else:
+                            p_c.hp = max(0.0, p_c.hp - 15.0)
+
+                        if projectile.stun_duration > 0:
+                            p_c.stun_timer = max(p_c.stun_timer, projectile.stun_duration)
+
+                    if projectile.stun_duration > 0 and affected_crew:
+                        self.show_message(f"DEINE CREW IN {room.name.upper()} GELÄHMT!")
 
 
     def check_end_of_battle(self):

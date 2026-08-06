@@ -10,7 +10,11 @@ class WeaponSchema(BaseModel):
     damage: float = 35.0
     ammo_cost: int = 0
     level: int = 1
-
+    subtype: str = "STANDARD"
+    fire_chance: float = 0.0
+    breach_chance: float = 0.0
+    stun_duration: float = 0.0
+    crew_damage: float = 0.0
 
 
 class RoomConfigSchema(BaseModel):
@@ -81,6 +85,11 @@ class WeaponSaveSchema(BaseModel):
     damage: float = 35.0
     ammo_cost: int = 0
     level: int = 1
+    subtype: str = "STANDARD"
+    fire_chance: float = 0.0
+    breach_chance: float = 0.0
+    stun_duration: float = 0.0
+    crew_damage: float = 0.0
 
 
 class SavegameSchema(BaseModel):

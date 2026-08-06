@@ -40,6 +40,7 @@ class Crew:
         self.trait: str = random.choice(CREW_TRAITS)
 
         self.is_boarding: bool = False
+        self.stun_timer: float = 0.0
 
         # Spezies-Eigenschaften (Reparatur & Nahkampf)
         if self.species == "Engi":
@@ -60,6 +61,16 @@ class Crew:
         self.move_speed: float = 160.0 if self.trait == "Sprinter" else 120.0
 
     def update(self, dt: float, rooms: list[Room]) -> None:
+        if self.stun_timer > 0.0:
+            self.stun_timer = max(0.0, self.stun_timer - dt)
+            # Gelähmt: Kann sich weder bewegen noch reparieren
+            self.current_room = None
+            for room in rooms:
+                if room.rect.collidepoint(int(self.x), int(self.y)):
+                    self.current_room = room
+                    break
+            return
+
         if self.target_pos:
             tx, ty = self.target_pos
             dx, dy = tx - self.x, ty - self.y
@@ -70,7 +81,6 @@ class Crew:
             else:
                 self.x += (dx / dist) * self.move_speed * dt
                 self.y += (dy / dist) * self.move_speed * dt
-
 
         self.current_room = None
         for room in rooms:
@@ -98,6 +108,17 @@ class Crew:
         pygame.draw.circle(
             surface, (255, 255, 255) if self.selected else (0, 0, 0), (int(self.x), int(self.y)), self.radius, 1
         )
+
+        # Stun-Effekt Overlay (Funken um Crew-Mitglied)
+        if self.stun_timer > 0.0:
+            for _ in range(3):
+                sx = int(self.x) + random.randint(-14, 14)
+                sy = int(self.y) + random.randint(-14, 14)
+                s_color = random.choice([(100, 240, 255), (255, 255, 100), (200, 220, 255)])
+                pygame.draw.circle(surface, s_color, (sx, sy), random.randint(2, 4))
+            b_font = pygame.font.SysFont(None, 12, bold=True)
+            stun_lbl = b_font.render("STUN", True, (100, 240, 255))
+            surface.blit(stun_lbl, (int(self.x) - stun_lbl.get_width() // 2, int(self.y) - self.radius - 16))
 
         # HP-Balken über dem Crewmitglied
         if self.hp < self.max_hp or self.selected:

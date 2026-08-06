@@ -109,6 +109,11 @@ class SaveManager:
                     damage=w.damage,
                     ammo_cost=w.ammo_cost,
                     level=getattr(w, "level", 1),
+                    subtype=getattr(w, "subtype", "STANDARD"),
+                    fire_chance=getattr(w, "fire_chance", 0.0),
+                    breach_chance=getattr(w, "breach_chance", 0.0),
+                    stun_duration=getattr(w, "stun_duration", 0.0),
+                    crew_damage=getattr(w, "crew_damage", 0.0),
                 )
                 for w in data.player.weapons
             ]
@@ -263,6 +268,11 @@ class SaveManager:
                         ammo_cost=ws.ammo_cost,
                         shield_pierce=ws.shield_pierce,
                         level=getattr(ws, "level", 1),
+                        subtype=getattr(ws, "subtype", "STANDARD"),
+                        fire_chance=getattr(ws, "fire_chance", 0.0),
+                        breach_chance=getattr(ws, "breach_chance", 0.0),
+                        stun_duration=getattr(ws, "stun_duration", 0.0),
+                        crew_damage=getattr(ws, "crew_damage", 0.0),
                     )
                     for ws in schema.weapons
                 ]

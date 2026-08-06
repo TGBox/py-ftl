@@ -314,12 +314,22 @@ class RenderManager:
                 stats_lbl = small_font.render(item.get("desc", ""), True, (180, 220, 240))
             else:
                 w_type = item.get("w_type", "WEAPON")
-                name_lbl = self.font.render(f"{item['name']} ({w_type})", True, (240, 240, 255))
-                stats_lbl = small_font.render(
-                    f"Dmg: {int(item.get('damage', 0))} | Pierce: {item.get('shield_pierce', 0)} | Charge: {item.get('charge_time', 0)}s",
-                    True,
-                    (180, 220, 240)
-                )
+                sub = item.get("subtype", "STANDARD")
+                sub_tag = f" [{sub}]" if sub != "STANDARD" else ""
+                name_lbl = self.font.render(f"{item['name']} ({w_type}){sub_tag}", True, (240, 240, 255))
+
+                if sub == "BIO":
+                    eff_txt = f"Crew Dmg: {int(item.get('crew_damage', 60))} | Ladezeit: {item.get('charge_time', 0)}s"
+                elif sub == "FIRE":
+                    eff_txt = f"Dmg: {int(item.get('damage', 0))} | Brand: {int(item.get('fire_chance', 0)*100)}% | Ladezeit: {item.get('charge_time', 0)}s"
+                elif sub == "BREACH":
+                    eff_txt = f"Dmg: {int(item.get('damage', 0))} | Bruch: {int(item.get('breach_chance', 0)*100)}% | Ladezeit: {item.get('charge_time', 0)}s"
+                elif sub == "STUN":
+                    eff_txt = f"Dmg: {int(item.get('damage', 0))} | Stun: {int(item.get('stun_duration', 0))}s | Ladezeit: {item.get('charge_time', 0)}s"
+                else:
+                    eff_txt = f"Dmg: {int(item.get('damage', 0))} | Pierce: {item.get('shield_pierce', 0)} | Ladezeit: {item.get('charge_time', 0)}s"
+
+                stats_lbl = small_font.render(eff_txt, True, (180, 220, 240))
             price_lbl = self.font.render(f"{item['price']} Scrap", True, (255, 220, 100))
 
             self.screen.blit(name_lbl, (item_btn.x + 10, item_btn.y + 4))
@@ -342,8 +352,10 @@ class RenderManager:
 
             if idx < len(self.data.player.weapons):
                 w = self.data.player.weapons[idx]
+                w_sub = getattr(w, "subtype", "STANDARD")
+                w_sub_tag = f" [{w_sub}]" if w_sub != "STANDARD" else ""
                 refund = max(15, 15 * w.level)
-                lbl_name = small_font.render(f"Slot {idx+1}: {w.name} (MK {w.level})", True, (100, 255, 180))
+                lbl_name = small_font.render(f"Slot {idx+1}: {w.name}{w_sub_tag}", True, (100, 255, 180))
                 lbl_allow = small_font.render(f"Erlaubt: {allowed_txt}", True, (160, 180, 200))
                 self.screen.blit(lbl_name, (card_rect.x + 8, card_rect.y + 6))
                 self.screen.blit(lbl_allow, (card_rect.x + 8, card_rect.y + 24))
