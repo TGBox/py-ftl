@@ -334,6 +334,20 @@ class CombatManager:
         self.data.player.projectiles.clear()
         self.data.combat.weapon_targets.clear()
 
+        from managers.save_manager import SaveManager
+        ship_sequence = ["Kestrel", "Kreuzer", "Tarnschiff", "Zoltan-Fregatte", "Federations-Kreuzer"]
+        unlocked = SaveManager.load_unlocks()
+        new_ship = None
+        for s in ship_sequence:
+            if s not in unlocked:
+                unlocked.append(s)
+                new_ship = s
+                SaveManager.save_unlocks(unlocked)
+                break
+        self.data.player.unlocked_ships = unlocked
+        if new_ship:
+            self.data.player.newly_unlocked_ship = new_ship
+
         if is_final_boss:
             self.data.current_state = STATE_VICTORY
         elif is_mini_boss:
@@ -342,17 +356,12 @@ class CombatManager:
             self.data.world.star_map.generate_map()
             self.data.player.scrap += 25
 
-            unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
-            unlock_map = {1: "Kreuzer", 2: "Tarnschiff", 3: "Zoltan-Fregatte", 4: "Federations-Kreuzer"}
-            new_ship = unlock_map.get(sec, "Kreuzer")
-            if new_ship not in unlocked:
-                unlocked.append(new_ship)
+            if new_ship:
                 self.show_message(f"NEUES SCHIFF FREIGESCHALTET: {new_ship}!")
             else:
                 self.show_message(f"MINI-BOSS BESIEGT! WEITER ZU SEKTOR {self.data.world.star_map.sector}")
 
             self.data.current_state = STATE_MAP
-
         else:
             self.data.current_state = STATE_MAP
 

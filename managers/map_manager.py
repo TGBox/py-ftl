@@ -218,6 +218,9 @@ class MapManager:
         self.data.combat.weapon_targets.clear()
         self.data.combat.is_targeting = False
         self.data.combat.target_weapon_idx = None
+        from managers.save_manager import SaveManager
+        self.data.player.unlocked_ships = SaveManager.load_unlocks()
+        self.data.player.newly_unlocked_ship = None
         self.data.paused = False
 
         self.data.world.star_map.sector = 1

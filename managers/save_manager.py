@@ -32,6 +32,30 @@ class SaveManager:
         return PBKDF2(PASSPHRASE, KEY_SALT, dkLen=32, count=1000)
 
     @classmethod
+    def load_unlocks(cls, filepath: str = "unlocks.json") -> list[str]:
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    ships = data.get("unlocked_ships", ["Kestrel"])
+                    if "Kestrel" not in ships:
+                        ships.insert(0, "Kestrel")
+                    return ships
+            except Exception:
+                pass
+        return ["Kestrel"]
+
+    @classmethod
+    def save_unlocks(cls, unlocked_ships: list[str], filepath: str = "unlocks.json") -> bool:
+        try:
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump({"unlocked_ships": unlocked_ships}, f, indent=2)
+            return True
+        except Exception as e:
+            print(f"Fehler beim Speichern der Unlocks: {e}")
+            return False
+
+    @classmethod
     def has_savegame(cls, filepath: str = "savegame.dat") -> bool:
         return os.path.exists(filepath) and os.path.getsize(filepath) > 0
 

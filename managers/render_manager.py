@@ -557,9 +557,29 @@ class RenderManager:
     def draw_victory(self):
         self.screen.blit(
             self.font.render(
-                "SIEG! Das Flaggschiff wurde vernichtet! [Klick für Neustart]",
+                "SIEG! Das Flaggschiff wurde vernichtet!",
                 True,
                 (100, 255, 100),
             ),
-            (200, 250),
+            (260, 220),
+        )
+
+        newly_unlocked = getattr(self.data.player, "newly_unlocked_ship", None)
+        if newly_unlocked:
+            self.screen.blit(
+                self.font.render(
+                    f"NEUES SCHIFF FREIGESCHALTET: {newly_unlocked}!",
+                    True,
+                    (255, 220, 100),
+                ),
+                (230, 260),
+            )
+
+        self.screen.blit(
+            self.font.render(
+                "[ Klick zum Fortfahren / Neustarten ]",
+                True,
+                (200, 220, 255),
+            ),
+            (260, 310),
         )
