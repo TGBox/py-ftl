@@ -373,6 +373,14 @@ class RenderManager:
             r_lbl = small_font.render("REP-DROHNE", True, (100, 255, 100))
             self.screen.blit(r_lbl, (int(rx) - r_lbl.get_width() // 2, int(ry) + 12))
 
+        # Zoltan Super-Schild Aura (Phase 3 Boss)
+        zoltan_hp = getattr(self.data.combat, "zoltan_shield_hp", 0)
+        if zoltan_hp > 0:
+            pygame.draw.ellipse(self.screen, (100, 255, 120), (530, 80, 350, 220), 4)
+            z_font = pygame.font.SysFont(None, 14, bold=True)
+            z_lbl = z_font.render(f"ZOLTAN SUPER-SCHILD: {zoltan_hp} HP", True, (120, 255, 150))
+            self.screen.blit(z_lbl, (705 - z_lbl.get_width() // 2, 65))
+
         # 4. Sensor-Level 2: Gegner Waffendetails auf HUD
         if sensor_power >= 2:
             e_w = self.data.enemy.weapon
@@ -552,6 +560,12 @@ class RenderManager:
                 self.screen.blit(a_lbl, (a_rect.centerx - a_lbl.get_width() // 2, a_rect.centery - a_lbl.get_height() // 2))
 
     def draw_messages(self):
+        # Boss Phase HUD Banner
+        if "Flaggschiff" in getattr(self.data.enemy.ship, "name", ""):
+            b_phase = getattr(self.data.combat, "boss_phase", 1)
+            b_lbl = self.font.render(f"SEKTOR 5 FLAGGSCHIFF - PHASE {b_phase}/3", True, (255, 80, 80))
+            self.screen.blit(b_lbl, (SCREEN_WIDTH // 2 - b_lbl.get_width() // 2, 45))
+
         # Solar Flare Flash
         sf_flash = getattr(self.data.combat, "solar_flare_flash", 0.0)
         if sf_flash > 0.0:

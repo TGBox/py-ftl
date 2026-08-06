@@ -94,19 +94,22 @@ class MapManager:
         self.data.current_state = STATE_COMBAT
 
     def start_boss_fight(self):
-
-        self.data.enemy.ship = copy.deepcopy(
-            ENEMY_BOSS
-        )
-
+        self.data.combat.boss_phase = 1
+        self.data.combat.zoltan_shield_hp = 0
+        self.data.combat.drone_surge_timer = 18.0
+        self.data.combat.boss_teleport_timer = 20.0
+        self.data.enemy.ship = copy.deepcopy(ENEMY_BOSS)
+        self.data.enemy.ship.hp = 30
+        self.data.enemy.ship.max_hp = 30
 
         for room in self.data.enemy.ship.rooms:
             room.current_power = 1
 
-        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER)
+        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + 5)
         self.data.enemy.shield = ShieldSystem()
-        self.data.enemy.weapon = Weapon("Laser", charge_time=4.5, w_type="LASER")
-
+        self.data.enemy.weapon = Weapon("Dreifach-Rakete (Phase 1)", charge_time=4.0, w_type="MISSILE", damage=45.0, ammo_cost=1)
+        self.data.combat.msg = "SEKTOR 5 ENDBOSS-KAMPF GESTARTET! FLAGGSCHIFF PHASE 1!"
+        self.data.combat.msg_timer = 4.0
         self.data.current_state = STATE_COMBAT
 
     def enter_shop(self):

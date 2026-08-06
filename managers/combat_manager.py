@@ -142,6 +142,34 @@ class CombatManager:
                     ry += (dy / dist) * 140.0 * dt
                 self.data.combat.repair_drone_pos = (rx, ry)
 
+        # ------------------------------------------------------
+        # FLAGGSCHIFF BOSS MECHANIKEN (Phase 2 Surge & Phase 3 Boarders)
+        # ------------------------------------------------------
+        if "Flaggschiff" in getattr(self.data.enemy.ship, "name", ""):
+            b_phase = getattr(self.data.combat, "boss_phase", 1)
+            if b_phase == 2:
+                self.data.combat.drone_surge_timer = getattr(self.data.combat, "drone_surge_timer", 18.0) - dt
+                if self.data.combat.drone_surge_timer <= 0.0:
+                    self.data.combat.drone_surge_timer = 18.0
+                    self.show_message("ACHTUNG! DROHNENSCHWARM POWER SURGE!")
+                    if self.sound: self.sound.play("alarm")
+                    for _ in range(4):
+                        if self.data.player.ship.rooms:
+                            t_r = random.choice(self.data.player.ship.rooms)
+                            self.data.player.projectiles.append(
+                                Projectile((700, random.randint(100, 400)), t_r.rect.center, target_room=t_r, is_player_shot=False, w_type="LASER", damage=25.0)
+                            )
+            elif b_phase == 3:
+                self.data.combat.boss_teleport_timer = getattr(self.data.combat, "boss_teleport_timer", 20.0) - dt
+                if self.data.combat.boss_teleport_timer <= 0.0:
+                    self.data.combat.boss_teleport_timer = 20.0
+                    if len(self.enemy_crew) < 6 and self.data.player.ship.rooms:
+                        t_r = random.choice(self.data.player.ship.rooms)
+                        for _ in range(2):
+                            self.enemy_crew.append(Crew(t_r.rect.centerx, t_r.rect.centery, name="Elite-Pirate", is_enemy=True))
+                        self.show_message("WARNUNG! REBELLEN-BOARDER AUF DEIN SCHIFF TELEPORTIERT!")
+                        if self.sound: self.sound.play("alarm")
+
         self.update_shields(dt)
         self.update_weapons(dt)
         self.update_enemy_weapon(dt)
@@ -521,6 +549,12 @@ class CombatManager:
             self.data.player.projectiles.remove(projectile)
 
     def handle_player_hit(self, projectile: Projectile):
+        if getattr(self.data.combat, "zoltan_shield_hp", 0) > 0:
+            self.data.combat.zoltan_shield_hp = max(0, self.data.combat.zoltan_shield_hp - 1)
+            if self.sound: self.sound.play("shield_hit")
+            self.show_message(f"ZOLTAN SUPER-SCHILD ABSORBIERT TREFFER! ({self.data.combat.zoltan_shield_hp} HP übrig)")
+            return
+
         # SRS 6.2 Evasion Berechnung
         base_engine = self.data.enemy.ship.rooms[2].current_power * 0.10 if len(self.data.enemy.ship.rooms) > 2 else 0.10
         enemy_evade = base_engine
@@ -637,6 +671,34 @@ class CombatManager:
 
     def check_end_of_battle(self):
         if self.data.enemy.ship.hp <= 0:
+            if "Flaggschiff" in getattr(self.data.enemy.ship, "name", ""):
+                b_phase = getattr(self.data.combat, "boss_phase", 1)
+                if b_phase == 1:
+                    self.data.combat.boss_phase = 2
+                    self.data.enemy.ship.hp = 35
+                    self.data.enemy.ship.max_hp = 35
+                    self.data.enemy.weapon = Weapon("Schwarm-Laser (Phase 2)", charge_time=3.2, w_type="LASER", damage=35.0)
+                    for r in self.data.enemy.ship.rooms:
+                        r.health = r.max_health
+                        r.fire_level = 0.0
+                        r.has_breach = False
+                    if self.sound: self.sound.play("explosion")
+                    self.show_message("PHASE 1 ZERSTÖRT! FLAGGSCHIFF WECHSELT IN PHASE 2 (DROHNENSCHWARM)!")
+                    return
+                elif b_phase == 2:
+                    self.data.combat.boss_phase = 3
+                    self.data.enemy.ship.hp = 40
+                    self.data.enemy.ship.max_hp = 40
+                    self.data.combat.zoltan_shield_hp = 12
+                    self.data.enemy.weapon = Weapon("Super-Artillerie (Phase 3)", charge_time=3.8, w_type="HEAVY_LASER", damage=50.0)
+                    for r in self.data.enemy.ship.rooms:
+                        r.health = r.max_health
+                        r.fire_level = 0.0
+                        r.has_breach = False
+                    if self.sound: self.sound.play("explosion")
+                    self.show_message("PHASE 2 ZERSTÖRT! PHASE 3 AKTIVIERT (ZOLTAN SUPER-SCHILD)!")
+                    return
+
             if self.sound: self.sound.play("explosion")
             self.recall_boarding_crew_silent()
             self.player_won()

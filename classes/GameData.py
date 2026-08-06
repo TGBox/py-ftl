@@ -72,6 +72,10 @@ class CombatData:
         self.drone_orbit_angle: float = 0.0
         self.drone_fire_timer: float = 0.0
         self.repair_drone_pos: tuple[float, float] = (160.0, 245.0)
+        self.boss_phase: int = 1
+        self.zoltan_shield_hp: int = 0
+        self.drone_surge_timer: float = 18.0
+        self.boss_teleport_timer: float = 20.0
 
 
 class WorldData:
