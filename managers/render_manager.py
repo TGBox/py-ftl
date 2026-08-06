@@ -11,11 +11,21 @@ class RenderManager:
         self.load_assets()
         self.font = pygame.font.SysFont(None, 24)
         self.title_font = pygame.font.SysFont(None, 36, bold=True)
-        self.btn_autofire = pygame.Rect(710, 520, 160, 30)
-        self.btn_teleport = pygame.Rect(710, 480, 160, 30)
-        self.btn_recall = pygame.Rect(540, 480, 160, 30)
-        self.btn_cloak = pygame.Rect(370, 480, 160, 30)
-        self.btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
+        # Top-Right Buttons
+        self.btn_crew_toggle = pygame.Rect(750, 8, 130, 26)
+        self.btn_doors_open_all = pygame.Rect(750, 38, 130, 26)
+        self.btn_doors_close_all = pygame.Rect(750, 68, 130, 26)
+        self.btn_airlocks_vent = pygame.Rect(750, 98, 130, 26)
+        self.btn_help_toggle = pygame.Rect(750, 128, 130, 26)
+
+        # Bottom Action Buttons
+        self.btn_repair_drone = pygame.Rect(415, 470, 140, 34)
+        self.btn_combat_drone = pygame.Rect(565, 470, 140, 34)
+        self.btn_cloak = pygame.Rect(715, 470, 140, 34)
+        self.btn_recall = pygame.Rect(415, 512, 140, 34)
+        self.btn_teleport = pygame.Rect(565, 512, 140, 34)
+        self.btn_autofire = pygame.Rect(715, 512, 140, 34)
+
         # Shop UI Buttons
         self.btn_repair = pygame.Rect(200, 140, 500, 38)
         self.btn_fuel = pygame.Rect(200, 185, 500, 38)
@@ -31,29 +41,34 @@ class RenderManager:
         self.btn_pause_options = pygame.Rect(300, 325, 300, 42)
         self.btn_pause_main_menu = pygame.Rect(300, 380, 300, 42)
         self.btn_continue_game = pygame.Rect(300, 438, 300, 42)
-        # Door UI Buttons
-        self.btn_doors_open_all = pygame.Rect(750, 45, 130, 26)
-        self.btn_doors_close_all = pygame.Rect(750, 75, 130, 26)
-        self.btn_airlocks_vent = pygame.Rect(750, 105, 130, 26)
-        self.btn_cloak = pygame.Rect(370, 480, 160, 30)
-        self.btn_combat_drone = pygame.Rect(200, 480, 160, 30)
-        self.btn_repair_drone = pygame.Rect(30, 480, 160, 30)
-        self.btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
-        self.btn_help_toggle = pygame.Rect(750, 135, 130, 26)
 
     def load_assets(self):
         import os
+
         self.assets = {}
         asset_defs = {
-            "space_bg": ("assets/space_bg.png", (LOGICAL_WIDTH, LOGICAL_HEIGHT)),
-            "main_menu_bg": ("assets/main_menu_bg.png", (LOGICAL_WIDTH, LOGICAL_HEIGHT)),
-            "kestrel_hull": ("assets/kestrel_hull.png", (450, 260)),
-            "enemy_scout": ("assets/enemy_scout.png", (340, 220)),
+            "space_bg": ("assets/space_bg.png", (LOGICAL_WIDTH, LOGICAL_HEIGHT), None),
+            "main_menu_bg": ("assets/main_menu_bg.png", (LOGICAL_WIDTH, LOGICAL_HEIGHT), None),
+            "kestrel_hull": ("assets/kestrel_hull.png", (450, 260), (0, 0, 0)),
+            "enemy_scout": ("assets/enemy_scout.png", (340, 220), (255, 255, 255)),
         }
-        for key, (path, size) in asset_defs.items():
+        for key, (path, size, colorkey) in asset_defs.items():
             if os.path.exists(path):
                 try:
-                    img = pygame.image.load(path).convert_alpha()
+                    img = pygame.image.load(path)
+                    if colorkey is not None:
+                        img = img.convert_alpha()
+                        w, h = img.get_size()
+                        for x in range(w):
+                            for y in range(h):
+                                r, g, b, a = img.get_at((x, y))
+                                if colorkey == (0, 0, 0) and r < 35 and g < 35 and b < 35:
+                                    img.set_at((x, y), (0, 0, 0, 0))
+                                elif colorkey == (255, 255, 255) and r > 220 and g > 220 and b > 220:
+                                    img.set_at((x, y), (255, 255, 255, 0))
+                    else:
+                        img = img.convert_alpha()
+
                     if size:
                         img = pygame.transform.scale(img, size)
                     self.assets[key] = img
@@ -66,39 +81,31 @@ class RenderManager:
         else:
             self.screen.fill(COLOR_BG)
 
-        self.screen.blit(
-            self.font.render(
-                f"Treibstoff: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  Drohnen: {getattr(self.data.player, 'drone_parts', 5)}  |  Scrap: {self.data.player.scrap}  |"
-                f"  Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp}  |  Sektor:"
-                f" {self.data.world.star_map.sector}",
-                True,
-                (255, 255, 255),
-            ),
-            (20, 15),
-        )
-
-        # Crew-Menü & Tür-Steuerung Buttons oben rechts
+        # Top Status Banner (Rohstoffe & Sektor)
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
-            pygame.draw.rect(self.screen, (50, 70, 95), self.btn_crew_toggle)
-            pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_crew_toggle, 2)
-            lbl = self.font.render("Crew-Menü", True, (220, 240, 255))
-            self.screen.blit(lbl, (self.btn_crew_toggle.x + 18, self.btn_crew_toggle.y + 6))
+            b_rect = pygame.Rect(10, 6, 735, 24)
+            b_surf = pygame.Surface((b_rect.width, b_rect.height), pygame.SRCALPHA)
+            b_surf.fill((12, 20, 35, 210))
+            self.screen.blit(b_surf, (b_rect.x, b_rect.y))
+            pygame.draw.rect(self.screen, (0, 200, 255), b_rect, 1)
 
-            for btn, text, col in [
-                (self.btn_doors_open_all, "Türen auf [O]", (40, 70, 95)),
-                (self.btn_doors_close_all, "Türen zu [L]", (75, 40, 45)),
-                (self.btn_airlocks_vent, "Vakuum [V]", (30, 80, 100)),
-            ]:
-                pygame.draw.rect(self.screen, col, btn)
-                pygame.draw.rect(self.screen, COLOR_BORDER, btn, 1)
-                d_lbl = self.font.render(text, True, (220, 240, 255))
-                self.screen.blit(d_lbl, (btn.x + (btn.width - d_lbl.get_width()) // 2, btn.y + 4))
+            status_str = (
+                f"Treibstoff: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  "
+                f"Drohnen: {getattr(self.data.player, 'drone_parts', 5)}  |  Scrap: {self.data.player.scrap}  |  "
+                f"Sektor: {self.data.world.star_map.sector}"
+            )
+            lbl = pygame.font.SysFont(None, 20).render(status_str, True, (240, 245, 255))
+            self.screen.blit(lbl, (b_rect.x + 10, b_rect.y + 4))
 
-            # [?] HILFE Button
-            pygame.draw.rect(self.screen, (80, 60, 120), self.btn_help_toggle)
-            pygame.draw.rect(self.screen, (180, 140, 255), self.btn_help_toggle, 1)
-            h_lbl = self.font.render("[?] HILFE [H]", True, (240, 220, 255))
-            self.screen.blit(h_lbl, (self.btn_help_toggle.x + (self.btn_help_toggle.width - h_lbl.get_width()) // 2, self.btn_help_toggle.y + 4))
+            # Buttons oben rechts (Sci-Fi Glassmorphism Style)
+            raw_mx, raw_my = pygame.mouse.get_pos()
+            mx, my = raw_mx, raw_my
+
+            self.draw_scifi_button(self.btn_crew_toggle, "Crew-Menü", is_hovered=self.btn_crew_toggle.collidepoint(mx, my), primary_color=(0, 180, 255))
+            self.draw_scifi_button(self.btn_doors_open_all, "Türen auf [O]", is_hovered=self.btn_doors_open_all.collidepoint(mx, my), primary_color=(0, 220, 130))
+            self.draw_scifi_button(self.btn_doors_close_all, "Türen zu [L]", is_hovered=self.btn_doors_close_all.collidepoint(mx, my), primary_color=(230, 80, 80))
+            self.draw_scifi_button(self.btn_airlocks_vent, "Vakuum [V]", is_hovered=self.btn_airlocks_vent.collidepoint(mx, my), primary_color=(0, 200, 220))
+            self.draw_scifi_button(self.btn_help_toggle, "[?] HILFE [H]", is_hovered=self.btn_help_toggle.collidepoint(mx, my), primary_color=(180, 120, 255))
 
         if self.data.current_state in (STATE_MAIN_MENU, STATE_OPTIONS) and not self.data.paused:
             self.draw_main_menu()
@@ -129,10 +136,10 @@ class RenderManager:
 
         # Taktische Pause Banner (SPACE)
         if self.data.paused and not getattr(self.data, "show_pause_menu", False):
-            banner_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 160, 42, 320, 26)
+            banner_rect = pygame.Rect(245, 34, 265, 22)
             pygame.draw.rect(self.screen, (30, 40, 60), banner_rect)
-            pygame.draw.rect(self.screen, (255, 220, 100), banner_rect, 2)
-            p_lbl = self.font.render("--- PAUSE (TAKTISCHER MODUS) ---", True, (255, 255, 100))
+            pygame.draw.rect(self.screen, (255, 220, 100), banner_rect, 1)
+            p_lbl = pygame.font.SysFont(None, 16, bold=True).render("--- PAUSE (TAKTISCHER MODUS) ---", True, (255, 255, 100))
             self.screen.blit(p_lbl, (banner_rect.x + (banner_rect.width - p_lbl.get_width()) // 2, banner_rect.y + 4))
 
         # Pause-Menü Modal (ESC)
@@ -560,8 +567,32 @@ class RenderManager:
             min_y = min(r.rect.top for r in e_rooms) - 25
             self.screen.blit(self.assets["enemy_scout"], (min_x, min_y))
 
-        # 1. Reaktor zeichnen
-        self.data.player.reactor.draw(self.screen, 30, 45)
+        # 1. Reaktor zeichnen (links am Rand)
+        self.data.player.reactor.draw(self.screen, 15, 45)
+
+        # Kompakte Infoboxen OBERHALB der Schiffe (Absolut KEINE Überlappungen!)
+        small_font = pygame.font.SysFont(None, 17, bold=True)
+
+        p_box = pygame.Rect(10, 34, 225, 22)
+        p_surf = pygame.Surface((p_box.width, p_box.height), pygame.SRCALPHA)
+        p_surf.fill((14, 25, 42, 210))
+        self.screen.blit(p_surf, (p_box.x, p_box.y))
+        pygame.draw.rect(self.screen, (0, 200, 255), p_box, 1)
+
+        evade_val = int(self.data.player.ship.rooms[2].current_power * 0.20 * 100) if len(self.data.player.ship.rooms) > 2 else 10
+        p_lbl = small_font.render(f"Spieler Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp} HP  |  Ausw: {evade_val}%", True, (130, 240, 170))
+        self.screen.blit(p_lbl, (p_box.x + 8, p_box.y + 4))
+
+        e_box = pygame.Rect(520, 34, 225, 22)
+        e_surf = pygame.Surface((e_box.width, e_box.height), pygame.SRCALPHA)
+        e_surf.fill((35, 18, 25, 210))
+        self.screen.blit(e_surf, (e_box.x, e_box.y))
+        pygame.draw.rect(self.screen, (255, 90, 90), e_box, 1)
+
+        e_name = getattr(self.data.enemy.ship, "name", "Gegner")
+        e_disp = e_name if len(e_name) <= 12 else e_name[:11] + "."
+        e_lbl = small_font.render(f"{e_disp}: {self.data.enemy.ship.hp}/{self.data.enemy.ship.max_hp} HP", True, (255, 140, 140))
+        self.screen.blit(e_lbl, (e_box.x + 8, e_box.y + 4))
 
         # Tarnungs-Effekt (Stealth Shimmer) auf eigenem Schiff
         cloak_active = getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0
@@ -621,6 +652,7 @@ class RenderManager:
 
         # 4. Drohnen im Raum & Orbit zeichnen
         import math
+
         if getattr(self.data.combat, "combat_drone_active", False):
             ang = getattr(self.data.combat, "drone_orbit_angle", 0.0)
             d_x = int(670 + math.cos(ang) * 160)
@@ -662,31 +694,6 @@ class RenderManager:
                 p_lbl = s3_font.render(p_str, True, (100, 220, 255))
                 self.screen.blit(p_lbl, (e_r.rect.x + 4, e_r.rect.bottom - 14))
 
-        # 5. Schiffs-Hülle & Ausweichchance (UI)
-        self.screen.blit(
-            self.font.render(
-                f"Spieler Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp} HP",
-                True,
-                (100, 255, 100),
-            ),
-            (60, 155),
-        )
-        current_evade = int(self.data.player.ship.rooms[2].current_power * 0.20 * 100)
-        self.screen.blit(
-            self.font.render(
-                f"Ausweichchance: {current_evade}%", True, (150, 200, 255)
-            ),
-            (60, 175),
-        )
-        self.screen.blit(
-            self.font.render(
-                f"Gegner Hülle: {self.data.enemy.ship.hp}/{self.data.enemy.ship.max_hp} HP",
-                True,
-                (255, 100, 100),
-            ),
-            (550, 155),
-        )
-
     def draw_shields(self):
         # Schilde zeichnen (mit den festen Koordinaten aus deinem alten Code)
         self.data.player.shield.draw_bubble(self.screen, (220, 245), 170)
@@ -717,117 +724,108 @@ class RenderManager:
             mx, my = self._logical_mouse_pos()
             t_idx = self.data.combat.target_weapon_idx if self.data.combat.target_weapon_idx is not None else 0
             color_line = WEAPON_LINE_COLORS[t_idx % len(WEAPON_LINE_COLORS)]
-            pygame.draw.line(
-                self.screen, color_line, self.data.combat.start_pos, (mx, my), 2
-            )
+            pygame.draw.line(self.screen, color_line, self.data.combat.start_pos, (mx, my), 2)
             pygame.draw.circle(self.screen, color_line, (mx, my), 7, 2)
             w_badge = self.font.render(f"W{t_idx+1}", True, color_line)
             self.screen.blit(w_badge, (mx + 10, my - 8))
 
-        # 3. Waffen-UI-Bars
-        weapon_ui_y = 485
-        self.screen.blit(
-            self.font.render("Waffensysteme:", True, (200, 200, 200)), (30, weapon_ui_y)
-        )
+        # 3. Waffen-UI-Bars (Unten Links)
+        weapon_ui_y = 465
+        self.screen.blit(self.font.render("Waffensysteme:", True, (200, 220, 255)), (25, weapon_ui_y))
         small_font = pygame.font.SysFont(None, 18)
         for i, w in enumerate(self.data.player.weapons):
-            bar_x, bar_y = 30 + i * 135, weapon_ui_y + 35
+            bar_x, bar_y = 25 + i * 125, weapon_ui_y + 35
             charge_ratio = w.current_charge / w.charge_time
-            pygame.draw.rect(self.screen, (40, 40, 40), (bar_x, bar_y, 120, 16))
-            bar_color = (
-                COLOR_POWER_ACTIVE if w.is_ready() else COLOR_WEAPON_CHARGE
-            )
-            pygame.draw.rect(
-                self.screen, bar_color, (bar_x, bar_y, int(120 * charge_ratio), 16)
-            )
-            pygame.draw.rect(self.screen, COLOR_BORDER, (bar_x, bar_y, 120, 16), 1)
+            pygame.draw.rect(self.screen, (30, 35, 45), (bar_x, bar_y, 115, 16))
+            bar_color = COLOR_POWER_ACTIVE if w.is_ready() else COLOR_WEAPON_CHARGE
+            pygame.draw.rect(self.screen, bar_color, (bar_x, bar_y, int(115 * charge_ratio), 16))
+            pygame.draw.rect(self.screen, COLOR_BORDER, (bar_x, bar_y, 115, 16), 1)
 
-            # Zeige an, ob die Waffe ein Ziel hat (mit individueller Waffenfarbe)
             w_color = WEAPON_LINE_COLORS[i % len(WEAPON_LINE_COLORS)]
             target_indicator = f" [W{i+1}]" if i in self.data.combat.weapon_targets else ""
             lbl_color = w_color if i in self.data.combat.weapon_targets else (200, 220, 255)
-            disp_name = w.name if len(w.name) <= 15 else w.name[:14] + "."
+            disp_name = w.name if len(w.name) <= 14 else w.name[:13] + "."
             lbl = small_font.render(f"{disp_name}{target_indicator}", True, lbl_color)
             self.screen.blit(lbl, (bar_x, bar_y - 18))
 
-        # 4. Autofire Button (wird vom Manager gezeichnet, Logik in InputManager)
-        pygame.draw.rect(self.screen, (50, 60, 80), self.btn_autofire)
-        pygame.draw.rect(
-            self.screen, COLOR_SELECTED if self.data.combat.autofire_enabled else COLOR_BORDER, self.btn_autofire, 2
-        )
-        autofire_txt = self.font.render(
-            f"Autofire: {'AN' if self.data.combat.autofire_enabled else 'AUS'}",
-            True,
-            (100, 255, 100) if self.data.combat.autofire_enabled else (200, 200, 200),
-        )
-        self.screen.blit(autofire_txt, (self.btn_autofire.x + 15, self.btn_autofire.y + 5))
+        # 4. Untere Aktions-Buttons (Sci-Fi Glassmorphism Style)
+        raw_mx, raw_my = pygame.mouse.get_pos()
+        mx, my = raw_mx, raw_my
 
-        # 5. Teleporter Entern & Recall Buttons
-        tp_cooldown = getattr(self.data.combat, "teleport_cooldown", 0.0)
+        tp_cd = getattr(self.data.combat, "teleport_cooldown", 0.0)
         is_tp_target = getattr(self.data.combat, "is_teleport_targeting", False)
-
-        tp_color = (40, 140, 180) if tp_cooldown <= 0 else (40, 40, 50)
-        border_color = (100, 255, 255) if is_tp_target else (COLOR_BORDER if tp_cooldown <= 0 else (70, 70, 70))
-        pygame.draw.rect(self.screen, tp_color, self.btn_teleport)
-        pygame.draw.rect(self.screen, border_color, self.btn_teleport, 2)
-
-        tp_label = "Ziel wählen..." if is_tp_target else ("Entern [BEAM]" if tp_cooldown <= 0 else f"Entern ({int(tp_cooldown)}s)")
-        tp_txt = self.font.render(tp_label, True, (255, 255, 255) if tp_cooldown <= 0 else (140, 140, 140))
-        self.screen.blit(tp_txt, (self.btn_teleport.centerx - tp_txt.get_width() // 2, self.btn_teleport.centery - tp_txt.get_height() // 2))
-
         has_boarders = any(getattr(c, "is_boarding", False) for c in self.data.player.crew)
-        rec_color = (180, 80, 40) if (has_boarders and tp_cooldown <= 0) else (40, 40, 50)
-        pygame.draw.rect(self.screen, rec_color, self.btn_recall)
-        pygame.draw.rect(self.screen, COLOR_BORDER if (has_boarders and tp_cooldown <= 0) else (70, 70, 70), self.btn_recall, 2)
-        rec_txt = self.font.render("Zurückbeamen", True, (255, 255, 255) if (has_boarders and tp_cooldown <= 0) else (140, 140, 140))
-        self.screen.blit(rec_txt, (self.btn_recall.centerx - rec_txt.get_width() // 2, self.btn_recall.centery - rec_txt.get_height() // 2))
+        tp_label = "ZIEL WÄHLEN..." if is_tp_target else ("ENTERN [BEAM]" if tp_cd <= 0 else f"ENTERN ({int(tp_cd)}s)")
 
-        # 6. Tarnung [CLOAK] Button
         cloak_room = next((r for r in self.data.player.ship.rooms if r.name == "Tarnung"), None)
         cloak_active = getattr(self.data.combat, "cloak_active_timer", 0.0)
         cloak_cd = getattr(self.data.combat, "cloak_cooldown", 0.0)
+        cloak_ready = cloak_room and cloak_room.current_power > 0 and cloak_cd <= 0.0 and cloak_active <= 0.0
+        cloak_lbl = f"TARNUNG ({int(cloak_active)}s)" if cloak_active > 0 else ("TARNUNG [CLOAK]" if cloak_ready else f"TARNUNG ({int(cloak_cd)}s)")
 
-        is_ready = cloak_room and cloak_room.current_power > 0 and cloak_cd <= 0.0 and cloak_active <= 0.0
-        c_bg = (60, 40, 100) if cloak_active > 0 else ((30, 80, 120) if is_ready else (40, 40, 50))
-        c_border = (180, 100, 255) if cloak_active > 0 else ((100, 220, 255) if is_ready else (70, 70, 70))
-        pygame.draw.rect(self.screen, c_bg, self.btn_cloak)
-        pygame.draw.rect(self.screen, c_border, self.btn_cloak, 2)
-
-        c_lbl = f"Tarnung ({int(cloak_active)}s)" if cloak_active > 0 else ("Tarnung [CLOAK]" if is_ready else f"Tarnung ({int(cloak_cd)}s)")
-        c_txt = self.font.render(c_lbl, True, (255, 255, 255) if is_ready or cloak_active > 0 else (140, 140, 140))
-        self.screen.blit(c_txt, (self.btn_cloak.centerx - c_txt.get_width() // 2, self.btn_cloak.centery - c_txt.get_height() // 2))
-
-        # 7. Drohnen Steuerungs-Buttons
         drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
         drone_power = drone_room.current_power if drone_room else 0
-
-        # Kampfdrohne Button
         c_active = getattr(self.data.combat, "combat_drone_active", False)
-        c_bg = (180, 80, 40) if c_active else ((30, 70, 100) if drone_power >= 1 else (40, 40, 50))
-        c_border = (255, 160, 50) if c_active else ((100, 220, 255) if drone_power >= 1 else (70, 70, 70))
-        pygame.draw.rect(self.screen, c_bg, self.btn_combat_drone)
-        pygame.draw.rect(self.screen, c_border, self.btn_combat_drone, 2)
-        c_txt = self.font.render("Kampfdrohne [1E]" if not c_active else "Kampfdrohne [AKTIV]", True, (255, 255, 255) if drone_power >= 1 or c_active else (140, 140, 140))
-        self.screen.blit(c_txt, (self.btn_combat_drone.centerx - c_txt.get_width() // 2, self.btn_combat_drone.centery - c_txt.get_height() // 2))
-
-        # Reparaturdrohne Button
         r_active = getattr(self.data.combat, "repair_drone_active", False)
-        r_bg = (40, 140, 80) if r_active else ((30, 70, 100) if drone_power >= 2 else (40, 40, 50))
-        r_border = (100, 255, 150) if r_active else ((100, 220, 255) if drone_power >= 2 else (70, 70, 70))
-        pygame.draw.rect(self.screen, r_bg, self.btn_repair_drone)
-        pygame.draw.rect(self.screen, r_border, self.btn_repair_drone, 2)
-        r_txt = self.font.render("Rep-Drohne [2E]" if not r_active else "Rep-Drohne [AKTIV]", True, (255, 255, 255) if drone_power >= 2 or r_active else (140, 140, 140))
-        self.screen.blit(r_txt, (self.btn_repair_drone.centerx - r_txt.get_width() // 2, self.btn_repair_drone.centery - r_txt.get_height() // 2))
 
-        # 8. Augmentations Badges
+        c_drone_lbl = "KAMPFDROHNE [1E]" if not c_active else "KAMPFDROHNE [AKTIV]"
+        r_drone_lbl = "REP-DROHNE [2E]" if not r_active else "REP-DROHNE [AKTIV]"
+
+        self.draw_scifi_button(
+            self.btn_repair_drone,
+            r_drone_lbl,
+            is_active=r_active,
+            is_hovered=self.btn_repair_drone.collidepoint(mx, my),
+            primary_color=(0, 220, 150) if r_active else (0, 200, 255),
+            enabled=(drone_power >= 2 or r_active),
+        )
+        self.draw_scifi_button(
+            self.btn_combat_drone,
+            c_drone_lbl,
+            is_active=c_active,
+            is_hovered=self.btn_combat_drone.collidepoint(mx, my),
+            primary_color=(255, 140, 50),
+            enabled=(drone_power >= 1 or c_active),
+        )
+        self.draw_scifi_button(
+            self.btn_cloak,
+            cloak_lbl,
+            is_active=(cloak_active > 0),
+            is_hovered=self.btn_cloak.collidepoint(mx, my),
+            primary_color=(180, 120, 255),
+            enabled=(cloak_ready or cloak_active > 0),
+        )
+
+        self.draw_scifi_button(
+            self.btn_recall,
+            "ZURÜCKBEAMEN",
+            is_hovered=self.btn_recall.collidepoint(mx, my),
+            primary_color=(240, 120, 50),
+            enabled=(has_boarders and tp_cd <= 0),
+        )
+        self.draw_scifi_button(
+            self.btn_teleport,
+            tp_label,
+            is_hovered=self.btn_teleport.collidepoint(mx, my),
+            primary_color=(0, 220, 255),
+            enabled=(tp_cd <= 0),
+        )
+        self.draw_scifi_button(
+            self.btn_autofire,
+            f"AUTOFIRE: {'AN' if self.data.combat.autofire_enabled else 'AUS'}",
+            is_hovered=self.btn_autofire.collidepoint(mx, my),
+            primary_color=(0, 230, 140) if self.data.combat.autofire_enabled else (120, 140, 170),
+        )
+
+        # 5. Augmentations Badges
         augments = getattr(self.data.player, "augments", [])
         if augments:
             small_font = pygame.font.SysFont(None, 14, bold=True)
             for a_idx, aug_name in enumerate(augments):
-                a_rect = pygame.Rect(30 + a_idx * 165, 520, 155, 24)
+                a_rect = pygame.Rect(25 + a_idx * 130, 520, 120, 24)
                 pygame.draw.rect(self.screen, (30, 45, 65), a_rect)
                 pygame.draw.rect(self.screen, (100, 200, 255), a_rect, 1)
-                a_lbl = small_font.render(f"AUG: {aug_name}", True, (160, 230, 255))
+                a_lbl = small_font.render(f"AUG: {aug_name[:12]}", True, (160, 230, 255))
                 self.screen.blit(a_lbl, (a_rect.centerx - a_lbl.get_width() // 2, a_rect.centery - a_lbl.get_height() // 2))
 
     def draw_messages(self):
@@ -856,10 +854,13 @@ class RenderManager:
             h_lbl = self.font.render("UMWELTGEFAHR: ASTEROIDENFELD", True, (180, 200, 240))
             self.screen.blit(h_lbl, (SCREEN_WIDTH // 2 - h_lbl.get_width() // 2, 75))
 
-        # Temporäre Kampfnachrichten
+        # Temporäre Kampfnachrichten (Unten über der Waffenleiste)
         if self.data.combat.msg_timer > 0.0:
             msg_txt = self.font.render(self.data.combat.msg, True, COLOR_SELECTED)
-            self.screen.blit(msg_txt, (SCREEN_WIDTH // 2 - msg_txt.get_width() // 2, 140))
+            msg_box = pygame.Rect(SCREEN_WIDTH // 2 - msg_txt.get_width() // 2 - 10, 438, msg_txt.get_width() + 20, 24)
+            pygame.draw.rect(self.screen, (15, 25, 40), msg_box)
+            pygame.draw.rect(self.screen, COLOR_SELECTED, msg_box, 1)
+            self.screen.blit(msg_txt, (msg_box.x + 10, msg_box.y + 4))
 
     def draw_pause_menu(self):
         overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)

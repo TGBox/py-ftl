@@ -38,6 +38,8 @@ class Crew:
         self.max_hp: float = 100.0
         self.current_room: Room | None = None
         self.trait: str = random.choice(CREW_TRAITS)
+        self.variant_idx: int = random.randint(0, 2)
+        self.anim_timer: float = random.uniform(0.0, 5.0)
 
         self.is_boarding: bool = False
         self.stun_timer: float = 0.0
@@ -86,9 +88,10 @@ class Crew:
         return False
 
     def update(self, dt: float, rooms: list[Room]) -> None:
+        self.anim_timer += dt
+
         if self.stun_timer > 0.0:
             self.stun_timer = max(0.0, self.stun_timer - dt)
-            # Gelähmt: Kann sich weder bewegen noch reparieren
             self.current_room = None
             for room in rooms:
                 if room.rect.collidepoint(int(self.x), int(self.y)):
@@ -116,55 +119,119 @@ class Crew:
                 break
 
     def draw(self, surface: pygame.Surface) -> None:
+        cx, cy = int(self.x), int(self.y)
+        is_moving = self.target_pos is not None
+        is_repairing = (not is_moving and self.current_room and self.current_room.health < self.current_room.max_health)
+        is_manning = (not is_moving and not is_repairing and self.current_room and self.current_room.current_power > 0)
+
+        # Lauf-Bobbing Y-Offset
+        bob_y = math.sin(self.anim_timer * 14.0) * 3.0 if is_moving else 0.0
+        draw_y = cy + int(bob_y)
+
+        # 1. Spezies-Farben & Sprite-Merkmale
         if self.is_enemy:
-            base_color = (255, 80, 80)
+            body_color = (240, 60, 60)
+            detail_color = (120, 20, 20)
+            visor_color = (255, 200, 100)
         elif self.species == "Engi":
-            base_color = (100, 200, 255)
+            var_cols = [(100, 200, 255), (255, 200, 80), (200, 230, 255)]
+            body_color = var_cols[self.variant_idx % 3]
+            detail_color = (40, 60, 90)
+            visor_color = (0, 255, 255)
         elif self.species == "Mantis":
-            base_color = (200, 255, 100)
-        else:
-            base_color = COLOR_CREW
+            var_cols = [(140, 240, 80), (40, 180, 70), (220, 220, 60)]
+            body_color = var_cols[self.variant_idx % 3]
+            detail_color = (20, 80, 30)
+            visor_color = (255, 60, 60)
+        elif self.species == "Zoltan":
+            var_cols = [(100, 255, 140), (100, 220, 255), (255, 230, 100)]
+            body_color = var_cols[self.variant_idx % 3]
+            detail_color = (255, 255, 255)
+            visor_color = (255, 255, 255)
+        elif self.species == "Rock":
+            var_cols = [(180, 100, 60), (220, 80, 40), (120, 110, 100)]
+            body_color = var_cols[self.variant_idx % 3]
+            detail_color = (60, 35, 20)
+            visor_color = (255, 180, 60)
+        else:  # Mensch
+            var_cols = [(60, 140, 240), (240, 240, 240), (120, 130, 160)]
+            body_color = var_cols[self.variant_idx % 3]
+            detail_color = (30, 50, 80)
+            visor_color = (255, 220, 150)
 
-        color = COLOR_SELECTED if self.selected else base_color
+        if self.selected:
+            body_color = COLOR_SELECTED
 
-        pygame.draw.circle(
-            surface, color, (int(self.x), int(self.y)), self.radius
-        )
-        pygame.draw.circle(
-            surface, (255, 255, 255) if self.selected else (0, 0, 0), (int(self.x), int(self.y)), self.radius, 1
-        )
+        # Bemannungs-Pulsieren am Raumterminal
+        if is_manning:
+            pulse_r = int(14 + math.sin(self.anim_timer * 6.0) * 3)
+            pygame.draw.circle(surface, (100, 220, 255, 150), (cx, draw_y), pulse_r, 1)
+
+        # Haupt-Körper (Kopf & Torso Sprite)
+        pygame.draw.circle(surface, body_color, (cx, draw_y), self.radius)
+        pygame.draw.circle(surface, (255, 255, 255) if self.selected else (0, 0, 0), (cx, draw_y), self.radius, 1)
+
+        # Spezies-spezifische Sprite-Details (Augen/Klauen/Sensoren)
+        if self.species == "Mantis":
+            # Klauen / Scythes
+            pygame.draw.line(surface, visor_color, (cx - 8, draw_y - 4), (cx - 14, draw_y + 4), 2)
+            pygame.draw.line(surface, visor_color, (cx + 8, draw_y - 4), (cx + 14, draw_y + 4), 2)
+        elif self.species == "Engi":
+            # Scanner-Visor
+            pygame.draw.rect(surface, visor_color, (cx - 6, draw_y - 3, 12, 4))
+        elif self.species == "Zoltan":
+            # Energie-Aura Ring
+            pygame.draw.circle(surface, (255, 255, 255), (cx, draw_y), self.radius + 3, 1)
+        elif self.species == "Rock":
+            # Schulterpanzer
+            pygame.draw.circle(surface, detail_color, (cx - 9, draw_y + 2), 4)
+            pygame.draw.circle(surface, detail_color, (cx + 9, draw_y + 2), 4)
+        else:  # Mensch Visor / Cap
+            pygame.draw.line(surface, visor_color, (cx - 4, draw_y - 2), (cx + 4, draw_y - 2), 2)
+
+        # Reparatur-Animation: Schweißfunken & Werkzeugbewegung
+        if is_repairing:
+            arm_x = cx + int(math.sin(self.anim_timer * 18.0) * 6)
+            arm_y = draw_y - 8
+            pygame.draw.line(surface, (255, 240, 100), (cx, draw_y), (arm_x, arm_y), 2)
+
+            for _ in range(2):
+                sx = cx + random.randint(-12, 12)
+                sy = draw_y + random.randint(-12, 12)
+                spark_col = random.choice([(255, 240, 100), (100, 240, 255), (255, 255, 255)])
+                pygame.draw.circle(surface, spark_col, (sx, sy), random.randint(1, 2))
 
         # Stun-Effekt Overlay (Funken um Crew-Mitglied)
         if self.stun_timer > 0.0:
             for _ in range(3):
-                sx = int(self.x) + random.randint(-14, 14)
-                sy = int(self.y) + random.randint(-14, 14)
+                sx = cx + random.randint(-14, 14)
+                sy = draw_y + random.randint(-14, 14)
                 s_color = random.choice([(100, 240, 255), (255, 255, 100), (200, 220, 255)])
                 pygame.draw.circle(surface, s_color, (sx, sy), random.randint(2, 4))
             b_font = pygame.font.SysFont(None, 12, bold=True)
             stun_lbl = b_font.render("STUN", True, (100, 240, 255))
-            surface.blit(stun_lbl, (int(self.x) - stun_lbl.get_width() // 2, int(self.y) - self.radius - 16))
+            surface.blit(stun_lbl, (cx - stun_lbl.get_width() // 2, draw_y - self.radius - 16))
 
         # HP-Balken über dem Crewmitglied
         if self.hp < self.max_hp or self.selected:
             bar_w = 20
             bar_h = 3
-            bar_x = int(self.x) - bar_w // 2
-            bar_y = int(self.y) - self.radius - 6
+            bar_x = cx - bar_w // 2
+            bar_y = draw_y - self.radius - 6
             hp_ratio = max(0.0, self.hp / self.max_hp)
             pygame.draw.rect(surface, (40, 40, 40), (bar_x, bar_y, bar_w, bar_h))
             pygame.draw.rect(surface, (50, 220, 100), (bar_x, bar_y, int(bar_w * hp_ratio), bar_h))
 
         # Spezies-Badge Buchstabe im Kreis
-        badge_font = pygame.font.SysFont(None, 14, bold=True)
+        badge_font = pygame.font.SysFont(None, 13, bold=True)
         badge_char = "P" if self.is_enemy else (self.species[0] if self.species else "C")
         badge_lbl = badge_font.render(badge_char, True, (0, 0, 0) if self.selected else (255, 255, 255))
-        surface.blit(badge_lbl, (int(self.x) - badge_lbl.get_width() // 2, int(self.y) - badge_lbl.get_height() // 2))
+        surface.blit(badge_lbl, (cx - badge_lbl.get_width() // 2, draw_y - badge_lbl.get_height() // 2))
 
         # Name & Trait-Badge zeichnen
         font = pygame.font.SysFont(None, 13)
         trait_str = f" [{self.trait[:4]}]" if hasattr(self, "trait") and self.trait else ""
         lbl = font.render(f"{self.name}{trait_str}", True, (220, 240, 255))
-        surface.blit(lbl, (int(self.x) - lbl.get_width() // 2, int(self.y) + self.radius + 2))
+        surface.blit(lbl, (cx - lbl.get_width() // 2, draw_y + self.radius + 2))
 
 

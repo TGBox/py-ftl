@@ -124,68 +124,68 @@ class ShipModel:
 
 
 PLAYER_SHIP = ShipModel("Kestrel", 15, [
-    Room("Schild", (60, 200, 90, 90)),
-    Room("Waffen", (160, 200, 90, 90)),
-    Room("Brücke", (260, 200, 90, 90), max_power=2),
-    Room("Medbay", (160, 100, 90, 90), max_power=2),
-    Room("Teleporter", (260, 100, 90, 90), max_power=1),
-    Room("Tarnung", (60, 100, 90, 90), max_power=2),
-    Room("Sensoren", (360, 200, 90, 90), max_power=2),
-    Room("Drohnen-Kontrolle", (360, 100, 90, 90), max_power=3),
+    Room("Schild", (60, 245, 90, 90)),
+    Room("Waffen", (160, 245, 90, 90)),
+    Room("Brücke", (260, 245, 90, 90), max_power=2),
+    Room("Medbay", (160, 145, 90, 90), max_power=2),
+    Room("Teleporter", (260, 145, 90, 90), max_power=1),
+    Room("Tarnung", (60, 145, 90, 90), max_power=2),
+    Room("Sensoren", (360, 245, 90, 90), max_power=2),
+    Room("Drohnen-Kontrolle", (360, 145, 90, 90), max_power=3),
 ], max_weapons=3, max_crew=4, weapon_slots=[
-    {"slot_id": 1, "pos": (205, 185), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
-    {"slot_id": 2, "pos": (205, 305), "allowed_types": ["LASER", "MISSILE"]},
-    {"slot_id": 3, "pos": (335, 245), "allowed_types": ["MISSILE", "BEAM"]},
+    {"slot_id": 1, "pos": (205, 230), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
+    {"slot_id": 2, "pos": (205, 350), "allowed_types": ["LASER", "MISSILE"]},
+    {"slot_id": 3, "pos": (335, 290), "allowed_types": ["MISSILE", "BEAM"]},
 ])
 
 CRUISER_SHIP = ShipModel("Kreuzer", 18, [
-    Room("Schild", (50, 190, 85, 85)),
-    Room("Waffen", (145, 190, 85, 85)),
-    Room("Maschinen", (240, 190, 85, 85)),
-    Room("Brücke", (335, 190, 85, 85), max_power=2),
-    Room("Medbay", (145, 95, 85, 85), max_power=2),
+    Room("Schild", (50, 235, 85, 85)),
+    Room("Waffen", (145, 235, 85, 85)),
+    Room("Maschinen", (240, 235, 85, 85)),
+    Room("Brücke", (335, 235, 85, 85), max_power=2),
+    Room("Medbay", (145, 140, 85, 85), max_power=2),
 ], max_weapons=4, max_crew=6, weapon_slots=[
-    {"slot_id": 1, "pos": (187, 175), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
-    {"slot_id": 2, "pos": (187, 290), "allowed_types": ["LASER", "BEAM"]},
-    {"slot_id": 3, "pos": (282, 175), "allowed_types": ["MISSILE", "BEAM"]},
-    {"slot_id": 4, "pos": (377, 245), "allowed_types": ["LASER", "MISSILE"]},
+    {"slot_id": 1, "pos": (187, 220), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
+    {"slot_id": 2, "pos": (187, 335), "allowed_types": ["LASER", "BEAM"]},
+    {"slot_id": 3, "pos": (282, 220), "allowed_types": ["MISSILE", "BEAM"]},
+    {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
 ])
 
 STEALTH_SHIP = ShipModel("Tarnschiff", 12, [
-    Room("Tarnung", (70, 200, 80, 80)),
-    Room("Waffen", (160, 200, 80, 80)),
-    Room("Brücke", (250, 200, 80, 80), max_power=2),
-    Room("Medbay", (160, 110, 80, 80), max_power=1),
+    Room("Tarnung", (70, 245, 80, 80)),
+    Room("Waffen", (160, 245, 80, 80)),
+    Room("Brücke", (250, 245, 80, 80), max_power=2),
+    Room("Medbay", (160, 155, 80, 80), max_power=1),
 ], max_weapons=3, max_crew=3, weapon_slots=[
-    {"slot_id": 1, "pos": (200, 185), "allowed_types": ["LASER", "BEAM"]},
-    {"slot_id": 2, "pos": (200, 295), "allowed_types": ["BEAM"]},
-    {"slot_id": 3, "pos": (290, 240), "allowed_types": ["LASER", "MISSILE"]},
+    {"slot_id": 1, "pos": (200, 230), "allowed_types": ["LASER", "BEAM"]},
+    {"slot_id": 2, "pos": (200, 340), "allowed_types": ["BEAM"]},
+    {"slot_id": 3, "pos": (290, 285), "allowed_types": ["LASER", "MISSILE"]},
 ])
 
 ZOLTAN_SHIP = ShipModel("Zoltan-Fregatte", 14, [
-    Room("Schild", (50, 190, 85, 85)),
-    Room("Super-Schild", (145, 190, 85, 85)),
-    Room("Waffen", (240, 190, 85, 85)),
-    Room("Brücke", (335, 190, 85, 85), max_power=2),
-    Room("Medbay", (240, 95, 85, 85), max_power=2),
+    Room("Schild", (50, 235, 85, 85)),
+    Room("Super-Schild", (145, 235, 85, 85)),
+    Room("Waffen", (240, 235, 85, 85)),
+    Room("Brücke", (335, 235, 85, 85), max_power=2),
+    Room("Medbay", (240, 140, 85, 85), max_power=2),
 ], max_weapons=4, max_crew=4, weapon_slots=[
-    {"slot_id": 1, "pos": (282, 175), "allowed_types": ["BEAM", "LASER"]},
-    {"slot_id": 2, "pos": (282, 290), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
-    {"slot_id": 3, "pos": (187, 175), "allowed_types": ["LASER"]},
-    {"slot_id": 4, "pos": (377, 245), "allowed_types": ["MISSILE", "BEAM"]},
+    {"slot_id": 1, "pos": (282, 220), "allowed_types": ["BEAM", "LASER"]},
+    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
+    {"slot_id": 3, "pos": (187, 220), "allowed_types": ["LASER"]},
+    {"slot_id": 4, "pos": (377, 290), "allowed_types": ["MISSILE", "BEAM"]},
 ])
 
 FEDERATION_SHIP = ShipModel("Federations-Kreuzer", 20, [
-    Room("Artillerie", (50, 190, 85, 85)),
-    Room("Schild", (145, 190, 85, 85)),
-    Room("Waffen", (240, 190, 85, 85)),
-    Room("Brücke", (335, 190, 85, 85), max_power=2),
-    Room("Medbay", (50, 95, 85, 85), max_power=3),
+    Room("Artillerie", (50, 235, 85, 85)),
+    Room("Schild", (145, 235, 85, 85)),
+    Room("Waffen", (240, 235, 85, 85)),
+    Room("Brücke", (335, 235, 85, 85), max_power=2),
+    Room("Medbay", (50, 140, 85, 85), max_power=3),
 ], max_weapons=4, max_crew=5, weapon_slots=[
-    {"slot_id": 1, "pos": (282, 175), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
-    {"slot_id": 2, "pos": (282, 290), "allowed_types": ["BEAM", "MISSILE"]},
-    {"slot_id": 3, "pos": (92, 175), "allowed_types": ["BEAM"]},
-    {"slot_id": 4, "pos": (377, 245), "allowed_types": ["LASER", "MISSILE"]},
+    {"slot_id": 1, "pos": (282, 220), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
+    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["BEAM", "MISSILE"]},
+    {"slot_id": 3, "pos": (92, 220), "allowed_types": ["BEAM"]},
+    {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
 ])
 
 SHIP_BLUEPRINTS = {
@@ -198,21 +198,21 @@ SHIP_BLUEPRINTS = {
 
 
 ENEMY_SCOUT = ShipModel("Scout", 8, [
-    Room("Schild", (600, 200, 80, 80), is_enemy=True),
-    Room("Waffen", (690, 200, 80, 80), is_enemy=True),
-    Room("Brücke", (780, 200, 80, 80), is_enemy=True)
+    Room("Schild", (600, 220, 80, 80), is_enemy=True),
+    Room("Waffen", (690, 220, 80, 80), is_enemy=True),
+    Room("Brücke", (780, 220, 80, 80), is_enemy=True)
 ], is_enemy=True)
 
 ENEMY_FIGHTER = ShipModel("Rebellen Jäger", 12, [
-    Room("Schild", (580, 190, 85, 85), is_enemy=True),
-    Room("Waffen", (675, 190, 85, 85), is_enemy=True),
-    Room("Antrieb", (770, 190, 85, 85), is_enemy=True)
+    Room("Schild", (580, 210, 85, 85), is_enemy=True),
+    Room("Waffen", (675, 210, 85, 85), is_enemy=True),
+    Room("Antrieb", (770, 210, 85, 85), is_enemy=True)
 ], is_enemy=True)
 
 ENEMY_BOMBER = ShipModel("Kaper-Bomber", 14, [
-    Room("Schild", (570, 180, 90, 90), is_enemy=True),
-    Room("Raketen", (670, 180, 90, 90), is_enemy=True),
-    Room("Brücke", (770, 180, 90, 90), is_enemy=True)
+    Room("Schild", (570, 200, 90, 90), is_enemy=True),
+    Room("Raketen", (670, 200, 90, 90), is_enemy=True),
+    Room("Brücke", (770, 200, 90, 90), is_enemy=True)
 ], is_enemy=True)
 
 ENEMY_CRUISER = ShipModel("Schwerer Kreuzer", 18, [

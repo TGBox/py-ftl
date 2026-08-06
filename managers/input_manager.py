@@ -155,16 +155,22 @@ class InputManager:
             return
 
         # Crew-Menü Toggle & Interaction
-        btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
+        btn_crew_toggle = pygame.Rect(750, 8, 130, 26)
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY) and btn_crew_toggle.collidepoint(mx, my):
             self.data.player.show_crew_menu = not getattr(self.data.player, "show_crew_menu", False)
             return
 
         # Tür-Steuerung UI Buttons & Tür-Direktklicks
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
-            btn_open_all = pygame.Rect(750, 45, 130, 26)
-            btn_close_all = pygame.Rect(750, 75, 130, 26)
-            btn_vent = pygame.Rect(750, 105, 130, 26)
+            btn_open_all = pygame.Rect(750, 38, 130, 26)
+            btn_close_all = pygame.Rect(750, 68, 130, 26)
+            btn_vent = pygame.Rect(750, 98, 130, 26)
+            btn_help_toggle = pygame.Rect(750, 128, 130, 26)
+
+            if btn_help_toggle.collidepoint(mx, my):
+                self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
+                if self.sound: self.sound.play("click")
+                return
 
             if btn_open_all.collidepoint(mx, my):
                 self.data.player.ship.open_all_doors()
@@ -360,16 +366,19 @@ class InputManager:
         mx, my = self._logical_mouse_pos()
         self.data.world.event_manager.current_event_type = None
 
-        btn_autofire = pygame.Rect(710, 520, 160, 30)
+        btn_repair_drone = pygame.Rect(415, 470, 140, 34)
+        btn_combat_drone = pygame.Rect(565, 470, 140, 34)
+        btn_cloak = pygame.Rect(715, 470, 140, 34)
+        btn_recall = pygame.Rect(415, 512, 140, 34)
+        btn_teleport = pygame.Rect(565, 512, 140, 34)
+        btn_autofire = pygame.Rect(715, 512, 140, 34)
+
+        tp_cd = getattr(self.data.combat, "teleport_cooldown", 0.0)
+        combat_mgr = getattr(self.data, "combat_manager", None)
+
         if btn_autofire.collidepoint(mx, my):
             self.data.combat.autofire_enabled = not self.data.combat.autofire_enabled
             return
-
-        # Teleporter & Recall Button Klicks
-        btn_teleport = pygame.Rect(710, 480, 160, 30)
-        btn_recall = pygame.Rect(540, 480, 160, 30)
-        tp_cd = getattr(self.data.combat, "teleport_cooldown", 0.0)
-        combat_mgr = getattr(self.data, "combat_manager", None)
 
         if btn_teleport.collidepoint(mx, my):
             if tp_cd <= 0:
@@ -387,19 +396,16 @@ class InputManager:
                 self.show_message(f"TELEPORTER LÄDT NOCH ({int(tp_cd)}s)!")
             return
 
-        btn_cloak = pygame.Rect(370, 480, 160, 30)
         if btn_cloak.collidepoint(mx, my):
             if combat_mgr:
                 combat_mgr.activate_cloaking()
             return
 
-        btn_combat_drone = pygame.Rect(200, 480, 160, 30)
         if btn_combat_drone.collidepoint(mx, my):
             if combat_mgr:
                 combat_mgr.toggle_combat_drone()
             return
 
-        btn_repair_drone = pygame.Rect(30, 480, 160, 30)
         if btn_repair_drone.collidepoint(mx, my):
             if combat_mgr:
                 combat_mgr.toggle_repair_drone()
