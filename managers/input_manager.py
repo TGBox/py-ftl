@@ -230,14 +230,14 @@ class InputManager:
             return
 
         if self.data.current_state == STATE_MAIN_MENU:
-            btn_kestrel = pygame.Rect(50, 150, 150, 200)
-            btn_kreuzer = pygame.Rect(215, 150, 150, 200)
-            btn_tarnschiff = pygame.Rect(380, 150, 150, 200)
-            btn_zoltan = pygame.Rect(545, 150, 150, 200)
-            btn_fed = pygame.Rect(710, 150, 150, 200)
-            btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 190, 380, 180, 48)
-            btn_options = pygame.Rect(SCREEN_WIDTH // 2 + 10, 380, 180, 48)
-            btn_continue_game = pygame.Rect(300, 438, 300, 42)
+            btn_kestrel = pygame.Rect(45, 95, 155, 275)
+            btn_kreuzer = pygame.Rect(210, 95, 155, 275)
+            btn_tarnschiff = pygame.Rect(375, 95, 155, 275)
+            btn_zoltan = pygame.Rect(540, 95, 155, 275)
+            btn_fed = pygame.Rect(705, 95, 155, 275)
+            btn_start = pygame.Rect(60, 395, 240, 44)
+            btn_continue_game = pygame.Rect(330, 395, 240, 44)
+            btn_options = pygame.Rect(600, 395, 240, 44)
 
             import copy
             from classes.ShipModel import SHIP_BLUEPRINTS

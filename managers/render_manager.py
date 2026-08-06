@@ -8,18 +8,19 @@ class RenderManager:
     def __init__(self, screen: pygame.Surface, data: GameData):
         self.screen = screen
         self.data = data
-        self.screen.fill(COLOR_BG)  #[cite: 2]
+        self.load_assets()
         self.font = pygame.font.SysFont(None, 24)
+        self.title_font = pygame.font.SysFont(None, 36, bold=True)
         self.btn_autofire = pygame.Rect(710, 520, 160, 30)
         self.btn_teleport = pygame.Rect(710, 480, 160, 30)
         self.btn_recall = pygame.Rect(540, 480, 160, 30)
         self.btn_cloak = pygame.Rect(370, 480, 160, 30)
         self.btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
         # Shop UI Buttons
-        self.btn_repair = pygame.Rect(200, 140, 500, 38)  #[cite: 1]
-        self.btn_fuel = pygame.Rect(200, 185, 500, 38)  #[cite: 1]
-        self.btn_missiles = pygame.Rect(200, 230, 500, 38)  #[cite: 1]
-        self.btn_upgrade_reactor = pygame.Rect(200, 275, 500, 38)  #[cite: 1]
+        self.btn_repair = pygame.Rect(200, 140, 500, 38)
+        self.btn_fuel = pygame.Rect(200, 185, 500, 38)
+        self.btn_missiles = pygame.Rect(200, 230, 500, 38)
+        self.btn_upgrade_reactor = pygame.Rect(200, 275, 500, 38)
         self.btn_buy_crew = pygame.Rect(200, 320, 500, 38)
         self.btn_buy_weapon = pygame.Rect(200, 365, 500, 38)
         self.btn_leave_shop = pygame.Rect(200, 420, 500, 38)
@@ -40,8 +41,30 @@ class RenderManager:
         self.btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
         self.btn_help_toggle = pygame.Rect(750, 135, 130, 26)
 
+    def load_assets(self):
+        import os
+        self.assets = {}
+        asset_defs = {
+            "space_bg": ("assets/space_bg.png", (LOGICAL_WIDTH, LOGICAL_HEIGHT)),
+            "main_menu_bg": ("assets/main_menu_bg.png", (LOGICAL_WIDTH, LOGICAL_HEIGHT)),
+            "kestrel_hull": ("assets/kestrel_hull.png", (450, 260)),
+            "enemy_scout": ("assets/enemy_scout.png", (340, 220)),
+        }
+        for key, (path, size) in asset_defs.items():
+            if os.path.exists(path):
+                try:
+                    img = pygame.image.load(path).convert_alpha()
+                    if size:
+                        img = pygame.transform.scale(img, size)
+                    self.assets[key] = img
+                except Exception as e:
+                    print(f"Fehler beim Laden von {path}: {e}")
+
     def draw(self):
-        self.screen.fill(COLOR_BG)
+        if "space_bg" in self.assets and self.data.current_state not in (STATE_MAIN_MENU, STATE_OPTIONS):
+            self.screen.blit(self.assets["space_bg"], (0, 0))
+        else:
+            self.screen.fill(COLOR_BG)
 
         self.screen.blit(
             self.font.render(
@@ -524,6 +547,19 @@ class RenderManager:
         self.screen.blit(l_lbl, (btn_leave.x + (btn_leave.width - l_lbl.get_width()) // 2, btn_leave.y + 10))
 
     def draw_rooms(self):
+        # 0. Schiffshüllen (Player & Enemy Hull Sprites)
+        if "kestrel_hull" in self.assets and self.data.player.ship.rooms:
+            p_rooms = self.data.player.ship.rooms
+            min_x = min(r.rect.left for r in p_rooms) - 25
+            min_y = min(r.rect.top for r in p_rooms) - 25
+            self.screen.blit(self.assets["kestrel_hull"], (min_x, min_y))
+
+        if "enemy_scout" in self.assets and self.data.enemy.ship.rooms:
+            e_rooms = self.data.enemy.ship.rooms
+            min_x = min(r.rect.left for r in e_rooms) - 25
+            min_y = min(r.rect.top for r in e_rooms) - 25
+            self.screen.blit(self.assets["enemy_scout"], (min_x, min_y))
+
         # 1. Reaktor zeichnen
         self.data.player.reactor.draw(self.screen, 30, 45)
 
@@ -851,78 +887,174 @@ class RenderManager:
             txt_surf = self.font.render(text, True, (240, 240, 240))
             self.screen.blit(txt_surf, (btn.x + (btn.width - txt_surf.get_width()) // 2, btn.y + 11))
             
-    def draw_main_menu(self):
-        # Titel
-        title_font = pygame.font.SysFont(None, 64)
-        title_txt = title_font.render("FTL KLON - RAUMSCHIFF WÄHLEN", True, (255, 255, 255))
-        self.screen.blit(title_txt, (SCREEN_WIDTH // 2 - title_txt.get_width() // 2, 70))
+    def draw_scifi_button(
+        self,
+        rect: pygame.Rect,
+        text: str,
+        is_active: bool = False,
+        is_hovered: bool = False,
+        primary_color: tuple[int, int, int] = (0, 200, 255),
+        enabled: bool = True,
+    ):
+        s = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+        if not enabled:
+            bg_col = (20, 25, 35, 180)
+            border_col = (60, 70, 85)
+            text_col = (120, 130, 145)
+        elif is_hovered or is_active:
+            bg_col = (primary_color[0] // 3, primary_color[1] // 3 + 20, primary_color[2] // 3 + 40, 220)
+            border_col = (min(255, primary_color[0] + 50), min(255, primary_color[1] + 50), min(255, primary_color[2] + 50))
+            text_col = (255, 255, 255)
+        else:
+            bg_col = (18, 28, 45, 190)
+            border_col = primary_color
+            text_col = (220, 240, 255)
 
-        # Schiffswahl Karten
-        self.btn_ship_kestrel = pygame.Rect(50, 150, 150, 200)
-        self.btn_ship_kreuzer = pygame.Rect(215, 150, 150, 200)
-        self.btn_ship_tarnschiff = pygame.Rect(380, 150, 150, 200)
-        self.btn_ship_zoltan = pygame.Rect(545, 150, 150, 200)
-        self.btn_ship_fed = pygame.Rect(710, 150, 150, 200)
+        s.fill(bg_col)
+        self.screen.blit(s, (rect.x, rect.y))
+
+        b_width = 3 if (is_hovered or is_active) else 2
+        pygame.draw.rect(self.screen, border_col, rect, b_width)
+
+        if enabled:
+            hl_color = (255, 255, 255, 100) if is_hovered else (border_col[0], border_col[1], border_col[2], 60)
+            hl_surf = pygame.Surface((rect.width - 4, 2), pygame.SRCALPHA)
+            hl_surf.fill(hl_color)
+            self.screen.blit(hl_surf, (rect.x + 2, rect.y + 2))
+
+        btn_font = pygame.font.SysFont(None, 22, bold=True)
+        txt_surf = btn_font.render(text, True, text_col)
+        self.screen.blit(
+            txt_surf,
+            (rect.x + (rect.width - txt_surf.get_width()) // 2, rect.y + (rect.height - txt_surf.get_height()) // 2),
+        )
+
+    def draw_main_menu(self):
+        if "main_menu_bg" in self.assets:
+            self.screen.blit(self.assets["main_menu_bg"], (0, 0))
+        else:
+            self.screen.fill((10, 15, 25))
+
+        raw_mx, raw_my = pygame.mouse.get_pos()
+        mx, my = raw_mx, raw_my
+
+        # Header Title Banner
+        banner_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 270, 20, 540, 52)
+        b_surf = pygame.Surface((banner_rect.width, banner_rect.height), pygame.SRCALPHA)
+        b_surf.fill((12, 20, 35, 210))
+        self.screen.blit(b_surf, (banner_rect.x, banner_rect.y))
+        pygame.draw.rect(self.screen, (0, 200, 255), banner_rect, 2)
+
+        title_font = pygame.font.SysFont(None, 36, bold=True)
+        title_txt = title_font.render("FTL KLON: HANGAR & RAUMSCHIFFE", True, (240, 245, 255))
+        self.screen.blit(
+            title_txt, (banner_rect.x + (banner_rect.width - title_txt.get_width()) // 2, banner_rect.y + 12)
+        )
+
+        # 5 Schiffskarten
+        self.btn_ship_kestrel = pygame.Rect(45, 95, 155, 275)
+        self.btn_ship_kreuzer = pygame.Rect(210, 95, 155, 275)
+        self.btn_ship_tarnschiff = pygame.Rect(375, 95, 155, 275)
+        self.btn_ship_zoltan = pygame.Rect(540, 95, 155, 275)
+        self.btn_ship_fed = pygame.Rect(705, 95, 155, 275)
 
         selected_name = getattr(self.data.player.ship, "name", "Kestrel")
 
-        for btn, name, hp, weapons, crew, rooms_count in [
+        ships_info = [
             (self.btn_ship_kestrel, "Kestrel", 15, 3, 4, 3),
             (self.btn_ship_kreuzer, "Kreuzer", 18, 4, 6, 4),
             (self.btn_ship_tarnschiff, "Tarnschiff", 12, 3, 3, 3),
             (self.btn_ship_zoltan, "Zoltan-Fregatte", 14, 4, 4, 4),
             (self.btn_ship_fed, "Federations-Kreuzer", 20, 4, 5, 4),
-        ]:
-            is_sel = (name == selected_name)
-            bg_col = (40, 70, 100) if is_sel else (30, 40, 55)
-            border_col = (100, 220, 255) if is_sel else (80, 90, 110)
+        ]
 
-            pygame.draw.rect(self.screen, bg_col, btn)
-            pygame.draw.rect(self.screen, border_col, btn, 3 if is_sel else 2)
+        unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
 
-            name_txt = self.font.render(name[:11], True, (255, 255, 255) if is_sel else (200, 200, 200))
-            hp_txt = self.font.render(f"Hülle: {hp} HP", True, (150, 220, 150))
-            w_txt = self.font.render(f"Waffen: {weapons}", True, (220, 220, 150))
-            c_txt = self.font.render(f"Crew: {crew}", True, (150, 200, 255))
-            sel_txt = self.font.render("[ GEWÄHLT ]" if is_sel else "[ WÄHLEN ]", True, (100, 255, 100) if is_sel else (150, 150, 150))
+        for btn, name, hp, weapons, crew, rooms_count in ships_info:
+            is_sel = name == selected_name
+            is_unlocked = name in unlocked
+            is_hov = btn.collidepoint(mx, my)
 
-            self.screen.blit(name_txt, (btn.x + 10, btn.y + 10))
-            self.screen.blit(hp_txt, (btn.x + 10, btn.y + 35))
-            self.screen.blit(w_txt, (btn.x + 10, btn.y + 55))
-            self.screen.blit(c_txt, (btn.x + 10, btn.y + 75))
+            c_surf = pygame.Surface((btn.width, btn.height), pygame.SRCALPHA)
+            if is_sel:
+                c_surf.fill((25, 45, 70, 220))
+                border_col = (0, 220, 255)
+            elif is_hov:
+                c_surf.fill((20, 35, 55, 200))
+                border_col = (100, 200, 255)
+            else:
+                c_surf.fill((14, 22, 38, 190))
+                border_col = (60, 80, 110)
 
-            # Mini Layout-Vorschau (Raster-Vorschau)
+            self.screen.blit(c_surf, (btn.x, btn.y))
+            pygame.draw.rect(self.screen, border_col, btn, 3 if is_sel else (2 if is_hov else 1))
+
+            name_disp = name if len(name) <= 12 else name[:11] + "."
+            name_txt = self.font.render(name_disp, True, (255, 255, 255) if is_sel else (210, 220, 240))
+            self.screen.blit(name_txt, (btn.x + 12, btn.y + 12))
+
+            pygame.draw.line(
+                self.screen, border_col, (btn.x + 10, btn.y + 38), (btn.x + btn.width - 10, btn.y + 38), 1
+            )
+
+            hp_txt = self.font.render(f"Hülle: {hp} HP", True, (140, 230, 160))
+            w_txt = self.font.render(f"Waffen: {weapons}", True, (240, 220, 130))
+            c_txt = self.font.render(f"Crew: {crew}", True, (130, 210, 255))
+
+            self.screen.blit(hp_txt, (btn.x + 12, btn.y + 48))
+            self.screen.blit(w_txt, (btn.x + 12, btn.y + 72))
+            self.screen.blit(c_txt, (btn.x + 12, btn.y + 96))
+
+            lbl_rooms = pygame.font.SysFont(None, 14).render("RAUM-LAYOUT:", True, (160, 180, 210))
+            self.screen.blit(lbl_rooms, (btn.x + 12, btn.y + 124))
             for r in range(rooms_count):
-                rx = btn.x + 10 + r * 32
-                ry = btn.y + 105
-                pygame.draw.rect(self.screen, (60, 90, 120), (rx, ry, 28, 28))
-                pygame.draw.rect(self.screen, (200, 220, 255), (rx, ry, 28, 28), 1)
+                rx = btn.x + 12 + r * 32
+                ry = btn.y + 142
+                pygame.draw.rect(self.screen, (35, 60, 90), (rx, ry, 26, 26))
+                pygame.draw.rect(self.screen, (0, 200, 255) if is_sel else (100, 130, 160), (rx, ry, 26, 26), 1)
 
-            # Crew Icons Vorschau
             for c in range(min(crew, 4)):
-                cx = btn.x + 18 + c * 30
-                cy = btn.y + 148
-                pygame.draw.circle(self.screen, (50, 200, 100), (cx, cy), 8)
+                cx = btn.x + 20 + c * 30
+                cy = btn.y + 185
+                c_color = (0, 230, 140) if is_sel else (80, 160, 120)
+                pygame.draw.circle(self.screen, c_color, (cx, cy), 8)
 
-            self.screen.blit(sel_txt, (btn.x + 10, btn.y + 172))
+            sel_btn_rect = pygame.Rect(btn.x + 10, btn.y + 225, btn.width - 20, 36)
+            if is_sel:
+                self.draw_scifi_button(sel_btn_rect, "GEWÄHLT", is_active=True, primary_color=(0, 230, 140))
+            elif is_unlocked:
+                self.draw_scifi_button(sel_btn_rect, "WÄHLEN", is_hovered=is_hov, primary_color=(0, 180, 255))
+            else:
+                self.draw_scifi_button(sel_btn_rect, "GESPERRT", enabled=False)
 
-        # Start-Button & Optionen-Button
-        self.btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 190, 380, 180, 48)
-        pygame.draw.rect(self.screen, (50, 120, 70), self.btn_start)
-        pygame.draw.rect(self.screen, (100, 255, 100), self.btn_start, 2)
-        self.screen.blit(self.font.render("Reise Starten", True, (255, 255, 255)), (self.btn_start.x + 35, self.btn_start.y + 14))
-
-        self.btn_options = pygame.Rect(SCREEN_WIDTH // 2 + 10, 380, 180, 48)
-        pygame.draw.rect(self.screen, (60, 75, 100), self.btn_options)
-        pygame.draw.rect(self.screen, (120, 160, 220), self.btn_options, 2)
-        self.screen.blit(self.font.render("Optionen", True, (220, 240, 255)), (self.btn_options.x + 50, self.btn_options.y + 14))
+        # Action Buttons Leiste unten
+        self.btn_start = pygame.Rect(60, 395, 240, 44)
+        self.btn_continue_game = pygame.Rect(330, 395, 240, 44)
+        self.btn_options = pygame.Rect(600, 395, 240, 44)
 
         from managers.save_manager import SaveManager
-        if SaveManager.has_savegame():
-            pygame.draw.rect(self.screen, (40, 80, 120), self.btn_continue_game)
-            pygame.draw.rect(self.screen, (100, 200, 255), self.btn_continue_game, 2)
-            cont_txt = self.font.render("Spiel Fortsetzen (Letzter Speicherstand)", True, (220, 240, 255))
-            self.screen.blit(cont_txt, (self.btn_continue_game.x + (self.btn_continue_game.width - cont_txt.get_width()) // 2, self.btn_continue_game.y + 11))
+
+        has_save = SaveManager.has_savegame()
+
+        self.draw_scifi_button(
+            self.btn_start,
+            "REISE STARTEN",
+            is_hovered=self.btn_start.collidepoint(mx, my),
+            primary_color=(0, 220, 130),
+        )
+        self.draw_scifi_button(
+            self.btn_continue_game,
+            "SPIELSTAND LADEN",
+            is_hovered=self.btn_continue_game.collidepoint(mx, my),
+            primary_color=(0, 180, 255),
+            enabled=has_save,
+        )
+        self.draw_scifi_button(
+            self.btn_options,
+            "OPTIONEN & TON",
+            is_hovered=self.btn_options.collidepoint(mx, my),
+            primary_color=(180, 120, 255),
+        )
 
         if self.data.current_state == STATE_OPTIONS:
             self.draw_options_menu()
