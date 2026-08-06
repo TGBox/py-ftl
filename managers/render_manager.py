@@ -38,6 +38,7 @@ class RenderManager:
         self.btn_combat_drone = pygame.Rect(200, 480, 160, 30)
         self.btn_repair_drone = pygame.Rect(30, 480, 160, 30)
         self.btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
+        self.btn_help_toggle = pygame.Rect(750, 135, 130, 26)
 
     def draw(self):
         self.screen.fill(COLOR_BG)
@@ -61,14 +62,20 @@ class RenderManager:
             self.screen.blit(lbl, (self.btn_crew_toggle.x + 18, self.btn_crew_toggle.y + 6))
 
             for btn, text, col in [
-                (self.btn_doors_open_all, "Türen öffnen", (40, 70, 95)),
-                (self.btn_doors_close_all, "Türen zu", (75, 40, 45)),
-                (self.btn_airlocks_vent, "Luftschleusen", (30, 80, 100)),
+                (self.btn_doors_open_all, "Türen auf [O]", (40, 70, 95)),
+                (self.btn_doors_close_all, "Türen zu [L]", (75, 40, 45)),
+                (self.btn_airlocks_vent, "Vakuum [V]", (30, 80, 100)),
             ]:
                 pygame.draw.rect(self.screen, col, btn)
                 pygame.draw.rect(self.screen, COLOR_BORDER, btn, 1)
                 d_lbl = self.font.render(text, True, (220, 240, 255))
                 self.screen.blit(d_lbl, (btn.x + (btn.width - d_lbl.get_width()) // 2, btn.y + 4))
+
+            # [?] HILFE Button
+            pygame.draw.rect(self.screen, (80, 60, 120), self.btn_help_toggle)
+            pygame.draw.rect(self.screen, (180, 140, 255), self.btn_help_toggle, 1)
+            h_lbl = self.font.render("[?] HILFE [H]", True, (240, 220, 255))
+            self.screen.blit(h_lbl, (self.btn_help_toggle.x + (self.btn_help_toggle.width - h_lbl.get_width()) // 2, self.btn_help_toggle.y + 4))
 
         if self.data.current_state in (STATE_MAIN_MENU, STATE_OPTIONS) and not self.data.paused:
             self.draw_main_menu()
@@ -108,6 +115,97 @@ class RenderManager:
                 self.draw_options_menu()
             else:
                 self.draw_pause_menu()
+
+        # Hilfe-Overlay Modal (H / F1)
+        if getattr(self.data, "show_help_overlay", False):
+            self.draw_help_overlay()
+
+    def draw_help_overlay(self):
+        overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((10, 15, 25, 220))
+        self.screen.blit(overlay, (0, 0))
+
+        box = pygame.Rect(120, 50, 660, 440)
+        pygame.draw.rect(self.screen, (20, 30, 45), box)
+        pygame.draw.rect(self.screen, (100, 200, 255), box, 2)
+
+        title_font = pygame.font.SysFont(None, 24, bold=True)
+        head = title_font.render("❓ TASTATUR-STEUERUNG & ANLEITUNG (QUICKHELP)", True, (255, 220, 100))
+        self.screen.blit(head, (box.centerx - head.get_width() // 2, box.y + 15))
+
+        font = pygame.font.SysFont(None, 15)
+        bold_font = pygame.font.SysFont(None, 15, bold=True)
+
+        col1_x = box.x + 30
+        col2_x = box.x + 350
+        y = box.y + 55
+
+        # Spalte 1: Kampf & Schiff
+        lbl1 = bold_font.render("KAMPF & SYSTEM-STEUERUNG:", True, (100, 220, 255))
+        self.screen.blit(lbl1, (col1_x, y))
+        y += 24
+
+        controls_col1 = [
+            ("LEERTASTE", "Taktische Pause (Befehle erteilen)"),
+            ("ESC", "Hauptmenü / Speichern"),
+            ("H / F1", "Hilfe-Overlay (AN / AUS)"),
+            ("1 - 5", "Waffen-Slot anwählen"),
+            ("A", "Auto-Feuer Umschalten"),
+            ("B", "Enter-Trupp entsenden (Teleport)"),
+            ("R", "Enter-Trupp zurückbeamen"),
+            ("C", "Tarnung (Cloaking) aktivieren"),
+            ("K", "Kampfdrohne starten / stoppen"),
+            ("D", "Reparaturdrohne starten / stoppen"),
+        ]
+
+        for key, desc in controls_col1:
+            k_lbl = bold_font.render(key, True, (255, 200, 100))
+            d_lbl = font.render(desc, True, (220, 230, 240))
+            self.screen.blit(k_lbl, (col1_x, y))
+            self.screen.blit(d_lbl, (col1_x + 95, y))
+            y += 20
+
+        # Spalte 2: Türen & Tipps
+        y2 = box.y + 55
+        lbl2 = bold_font.render("TÜR- & RAUM-STEUERUNG:", True, (100, 220, 255))
+        self.screen.blit(lbl2, (col2_x, y2))
+        y2 += 24
+
+        controls_col2 = [
+            ("O", "Alle Innentüren öffnen"),
+            ("L", "Alle Innentüren schließen"),
+            ("V", "Luftschleusen ins Weltall öffnen"),
+            ("TAB", "Tür-Steuerung Schnellschalter"),
+        ]
+
+        for key, desc in controls_col2:
+            k_lbl = bold_font.render(key, True, (255, 200, 100))
+            d_lbl = font.render(desc, True, (220, 230, 240))
+            self.screen.blit(k_lbl, (col2_x, y2))
+            self.screen.blit(d_lbl, (col2_x + 65, y2))
+            y2 += 20
+
+        y2 += 15
+        tips_lbl = bold_font.render("ÜBERLEBENS-TIPPS:", True, (100, 255, 150))
+        self.screen.blit(tips_lbl, (col2_x, y2))
+        y2 += 24
+
+        tips = [
+            "• Feuer löschen: Öffne Luftschleusen (V), um",
+            "  Räume ins Vakuum zu entlüften!",
+            "• Waffen-Vorheizer: Kaufe den Vorheizer im Shop",
+            "  für 100% Ladung zu Kampfbeginn!",
+            "• Schiffe kapern: Eliminiere die gegnerische Crew",
+            "  per Entern für 35+ Scrap Extra-Beute!",
+        ]
+
+        for tip in tips:
+            t_lbl = font.render(tip, True, (200, 230, 210))
+            self.screen.blit(t_lbl, (col2_x, y2))
+            y2 += 18
+
+        close_lbl = font.render("Drücke H, F1 oder klicke den [?] Button zum Schließen", True, (180, 190, 200))
+        self.screen.blit(close_lbl, (box.centerx - close_lbl.get_width() // 2, box.bottom - 25))
 
     def draw_crew_menu(self):
         pygame.draw.rect(self.screen, (25, 35, 50), (140, 60, 620, 460))

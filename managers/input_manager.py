@@ -66,6 +66,34 @@ class InputManager:
                 self.data.player.rename_buffer += event.unicode
             return
 
+        # Hilfe-Overlay Umschalten (H / F1)
+        if event.key in (pygame.K_h, pygame.K_F1):
+            self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
+            if self.sound: self.sound.play("click")
+            return
+
+        combat_mgr = getattr(self.data, "combat_manager", None)
+        if self.data.current_state == STATE_COMBAT:
+            if event.key == pygame.K_a:
+                self.data.combat.autofire_enabled = not self.data.combat.autofire_enabled
+            elif event.key == pygame.K_b:
+                if getattr(self.data.combat, "teleport_cooldown", 0.0) <= 0:
+                    self.data.combat.is_teleport_targeting = not getattr(self.data.combat, "is_teleport_targeting", False)
+            elif event.key == pygame.K_r:
+                if combat_mgr: combat_mgr.recall_boarding_crew()
+            elif event.key == pygame.K_c:
+                if combat_mgr: combat_mgr.activate_cloaking()
+            elif event.key == pygame.K_k:
+                if combat_mgr: combat_mgr.toggle_combat_drone()
+            elif event.key == pygame.K_d:
+                if combat_mgr: combat_mgr.toggle_repair_drone()
+
+        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
+            if event.key == pygame.K_o:
+                self.data.player.ship.open_all_doors()
+            elif event.key == pygame.K_v:
+                self.data.player.ship.open_airlocks()
+
         if event.key == pygame.K_SPACE:
             # Taktische Pause umschalten (Spiel-Interaktionen bleiben möglich)
             self.data.paused = not self.data.paused
@@ -83,14 +111,17 @@ class InputManager:
             from managers.save_manager import SaveManager
             if SaveManager.save_game(self.data):
                 self.show_message("SPIELSTAND ERFOLGREICH GESPEICHERT!")
-        elif event.key == pygame.K_l:
-            from managers.save_manager import SaveManager
-            if SaveManager.load_game(self.data):
-                self.show_message("SPIELSTAND ERFOLGREICH GELADEN!")
 
     def handle_left_click(self, event: pygame.event.Event):
 
         mx, my = self._logical_mouse_pos()
+
+        # [?] HILFE Toggle Button Klick
+        btn_help_toggle = pygame.Rect(750, 135, 130, 26)
+        if btn_help_toggle.collidepoint(mx, my):
+            self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
+            if self.sound: self.sound.play("click")
+            return
 
         # Pause-Menü Modal Interaktion (wenn ESC-Pausemenü geöffnet ist)
         if getattr(self.data, "show_pause_menu", False) and self.data.current_state != STATE_OPTIONS:
