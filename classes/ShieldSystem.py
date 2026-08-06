@@ -2,11 +2,12 @@ import pygame
 
 class ShieldSystem:
 
-  def __init__(self, recharge_time: float = 4.0) -> None:
+  def __init__(self, recharge_time: float = 4.0, hit_delay: float = 1.5) -> None:
     self.max_layers: int = 0
     self.current_layers: int = 0
     self.recharge_timer: float = 0.0
     self.recharge_time: float = recharge_time
+    self.hit_delay: float = hit_delay
 
   def update(self, dt: float, powered_layers: int) -> None:
     self.max_layers = powered_layers
@@ -24,7 +25,8 @@ class ShieldSystem:
   def attempt_block(self) -> bool:
     if self.current_layers > 0:
       self.current_layers -= 1
-      self.recharge_timer = 0.0
+      # Trefferverzögerung vor Erholungsbeginn
+      self.recharge_timer = -self.hit_delay
       return True
     return False
 

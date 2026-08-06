@@ -13,10 +13,20 @@ COLOR_REACTOR = (0, 180, 255)
 COLOR_WEAPON_CHARGE = (255, 180, 0)
 COLOR_PROJECTILE = (255, 50, 50)
 COLOR_MAP_NODE = (150, 180, 220)
+COLOR_MAP_VISITED = (75, 95, 115)
 COLOR_MAP_LINE = (50, 70, 100)
 COLOR_SHOP_NODE = (220, 180, 60)
 COLOR_HP_GREEN = (50, 220, 100)
 COLOR_HP_RED = (220, 60, 60)
+
+# Zielschusslinien-Farben für verschiedene Waffen
+WEAPON_LINE_COLORS = [
+    (255, 80, 80),   # Waffe 1: Hellrot
+    (80, 220, 255),  # Waffe 2: Cyan
+    (255, 200, 50),  # Waffe 3: Gelb
+    (220, 100, 255), # Waffe 4: Violett
+    (100, 255, 150), # Waffe 5: Grün
+]
 
 # Zustände
 STATE_MAP = "MAP"

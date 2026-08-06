@@ -44,11 +44,65 @@ class EventNodeSchema(BaseModel):
     choices: list[EventChoiceSchema]
 
 
+class NodeSaveSchema(BaseModel):
+    id: int
+    x: int
+    y: int
+    event_type: str
+    visited: bool = False
+    connection_ids: list[int] = Field(default_factory=list)
+
+
+class CrewSaveSchema(BaseModel):
+    name: str
+    species: str
+    hp: float
+    max_hp: float
+    trait: str
+    x: float
+    y: float
+
+
+class RoomSaveSchema(BaseModel):
+    name: str
+    health: float
+    max_health: float
+    current_power: int
+    max_power: int
+    oxygen: float
+    has_breach: bool = False
+
+
+class WeaponSaveSchema(BaseModel):
+    name: str
+    charge_time: float
+    w_type: str = "LASER"
+    shield_pierce: int = 0
+    damage: float = 35.0
+    ammo_cost: int = 0
+    level: int = 1
+
+
 class SavegameSchema(BaseModel):
-    schema_version: int = 1
+    schema_version: int = 2
     current_sector: int = 1
-    player_scrap: int = 10
-    player_fuel: int = 10
-    player_missiles: int = 5
+    rebel_fleet_x: float = 30.0
+    sector_type: str = "Zivil"
+    current_state: str = "MAP"
+    current_node_id: int = 0
+    nodes: list[NodeSaveSchema] = Field(default_factory=list)
+
+    player_scrap: int = 20
+    player_fuel: int = 6
+    player_missiles: int = 6
     ship_name: str = "Kestrel"
     ship_hp: int = 15
+    max_hp: int = 15
+    reactor_total_power: int = 6
+    reactor_available_power: int = 6
+    shield_max_layers: int = 0
+
+    rooms: list[RoomSaveSchema] = Field(default_factory=list)
+    weapons: list[WeaponSaveSchema] = Field(default_factory=list)
+    crew: list[CrewSaveSchema] = Field(default_factory=list)
+    unlocked_ships: list[str] = Field(default_factory=lambda: ["Kestrel"])

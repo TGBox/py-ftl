@@ -67,23 +67,92 @@ class InputManager:
             return
 
         if event.key == pygame.K_SPACE:
+            # Taktische Pause umschalten (Spiel-Interaktionen bleiben möglich)
             self.data.paused = not self.data.paused
-        elif event.key == pygame.K_s:
+        elif event.key == pygame.K_ESCAPE:
+            # Pause-Menü Modal (ESC)
+            if self.data.current_state == STATE_OPTIONS:
+                if getattr(self.data, "show_pause_menu", False):
+                    self.data.current_state = STATE_MAP
+                else:
+                    self.data.current_state = STATE_MAIN_MENU
+            elif self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
+                self.data.show_pause_menu = not getattr(self.data, "show_pause_menu", False)
+                if self.sound: self.sound.play("click")
+        elif event.key == pygame.K_s and (self.data.paused or getattr(self.data, "show_pause_menu", False) or self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY)):
             from managers.save_manager import SaveManager
-            SaveManager.save_game(self.data)
+            if SaveManager.save_game(self.data):
+                self.show_message("SPIELSTAND ERFOLGREICH GESPEICHERT!")
         elif event.key == pygame.K_l:
             from managers.save_manager import SaveManager
-            SaveManager.load_game(self.data)
+            if SaveManager.load_game(self.data):
+                self.show_message("SPIELSTAND ERFOLGREICH GELADEN!")
 
     def handle_left_click(self, event: pygame.event.Event):
 
         mx, my = self._logical_mouse_pos()
+
+        # Pause-Menü Modal Interaktion (wenn ESC-Pausemenü geöffnet ist)
+        if getattr(self.data, "show_pause_menu", False) and self.data.current_state != STATE_OPTIONS:
+            btn_pause_resume = pygame.Rect(300, 160, 300, 42)
+            btn_pause_save = pygame.Rect(300, 215, 300, 42)
+            btn_pause_load = pygame.Rect(300, 270, 300, 42)
+            btn_pause_options = pygame.Rect(300, 325, 300, 42)
+            btn_pause_main_menu = pygame.Rect(300, 380, 300, 42)
+
+            from managers.save_manager import SaveManager
+
+            if btn_pause_resume.collidepoint(mx, my):
+                self.data.show_pause_menu = False
+                if self.sound: self.sound.play("click")
+            elif btn_pause_save.collidepoint(mx, my):
+                if SaveManager.save_game(self.data):
+                    self.show_message("SPIELSTAND ERFOLGREICH GESPEICHERT!")
+                if self.sound: self.sound.play("click")
+            elif btn_pause_load.collidepoint(mx, my):
+                if SaveManager.load_game(self.data):
+                    self.show_message("SPIELSTAND ERFOLGREICH GELADEN!")
+                if self.sound: self.sound.play("click")
+            elif btn_pause_options.collidepoint(mx, my):
+                self.data.current_state = STATE_OPTIONS
+                if self.sound: self.sound.play("click")
+            elif btn_pause_main_menu.collidepoint(mx, my):
+                self.data.show_pause_menu = False
+                self.data.paused = False
+                self.data.current_state = STATE_MAIN_MENU
+                if self.sound: self.sound.play("click")
+            return
 
         # Crew-Menü Toggle & Interaction
         btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY) and btn_crew_toggle.collidepoint(mx, my):
             self.data.player.show_crew_menu = not getattr(self.data.player, "show_crew_menu", False)
             return
+
+        # Tür-Steuerung UI Buttons & Tür-Direktklicks
+        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
+            btn_open_all = pygame.Rect(750, 45, 130, 26)
+            btn_close_all = pygame.Rect(750, 75, 130, 26)
+            btn_vent = pygame.Rect(750, 105, 130, 26)
+
+            if btn_open_all.collidepoint(mx, my):
+                self.data.player.ship.open_all_doors()
+                if self.sound: self.sound.play("click")
+                return
+            elif btn_close_all.collidepoint(mx, my):
+                self.data.player.ship.close_all_doors()
+                if self.sound: self.sound.play("click")
+                return
+            elif btn_vent.collidepoint(mx, my):
+                self.data.player.ship.open_airlocks()
+                if self.sound: self.sound.play("click")
+                return
+
+            for d in self.data.player.ship.doors:
+                if d.rect.collidepoint(mx, my):
+                    d.toggle()
+                    if self.sound: self.sound.play("click")
+                    return
 
         if getattr(self.data.player, "show_crew_menu", False):
             close_btn = pygame.Rect(370, 465, 160, 38)
@@ -123,7 +192,10 @@ class InputManager:
             elif btn_close_options.collidepoint(mx, my):
                 if self.sound:
                     self.sound.play("click")
-                self.data.current_state = STATE_MAIN_MENU
+                if getattr(self.data, "show_pause_menu", False) or self.data.paused:
+                    self.data.current_state = STATE_MAP
+                else:
+                    self.data.current_state = STATE_MAIN_MENU
             return
 
         if self.data.current_state == STATE_MAIN_MENU:
@@ -134,9 +206,11 @@ class InputManager:
             btn_fed = pygame.Rect(710, 150, 150, 200)
             btn_start = pygame.Rect(SCREEN_WIDTH // 2 - 190, 380, 180, 48)
             btn_options = pygame.Rect(SCREEN_WIDTH // 2 + 10, 380, 180, 48)
+            btn_continue_game = pygame.Rect(300, 438, 300, 42)
 
             import copy
             from classes.ShipModel import SHIP_BLUEPRINTS
+            from managers.save_manager import SaveManager
 
             unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
 
@@ -161,6 +235,9 @@ class InputManager:
             elif btn_start.collidepoint(mx, my):
                 self.data.current_state = STATE_MAP
                 if self.sound: self.sound.play("jump")
+            elif SaveManager.has_savegame() and btn_continue_game.collidepoint(mx, my):
+                if SaveManager.load_game(self.data):
+                    if self.sound: self.sound.play("jump")
 
 
 
@@ -216,21 +293,31 @@ class InputManager:
 
     def handle_event_click(self):
         mx, my = self._logical_mouse_pos()
-        choices = self.data.world.event_manager.choices
+        ev_mgr = self.data.world.event_manager
+
+        # Wenn result_text angezeigt wird: Klick schließt Event ab
+        if ev_mgr.result_text:
+            cont_btn = pygame.Rect(280, 400, 340, 42)
+            if cont_btn.collidepoint(mx, my):
+                ev_mgr.result_text = ""
+                self.map_manager.continue_event()
+            return
+
+        choices = ev_mgr.choices
         if not choices:
             self.map_manager.continue_event()
             return
 
         for idx, choice in enumerate(choices):
-            btn_rect = pygame.Rect(180, 240 + idx * 48, 540, 38)
+            btn_y = 200 + idx * 44
+            btn_rect = pygame.Rect(150, btn_y, 600, 38)
             if btn_rect.collidepoint(mx, my):
                 action = choice.get("action", "")
+                res_txt = choice.get("result_text", "")
+                if res_txt and action in ("CLAIM_RESOURCES", "GIVE_RESOURCES", "SCAVENGE_FUEL", "CONTINUE", "TAKE_DAMAGE", "BUY_FUEL"):
+                    ev_mgr.result_text = res_txt
                 self.map_manager.handle_choice(action, choice)
                 return
-
-        if len(choices) == 1:
-            action = choices[0].get("action", "")
-            self.map_manager.handle_choice(action, choices[0])
 
 
 
@@ -238,7 +325,7 @@ class InputManager:
         mx, my = self._logical_mouse_pos()
         self.data.world.event_manager.current_event_type = None
 
-        btn_autofire = pygame.Rect(730, 310, 140, 30)
+        btn_autofire = pygame.Rect(710, 520, 160, 30)
         if btn_autofire.collidepoint(mx, my):
             self.data.combat.autofire_enabled = not self.data.combat.autofire_enabled
             return
@@ -279,16 +366,20 @@ class InputManager:
         weapon_room = self.data.player.ship.rooms[1]
         clicked_weapon_idx = None
         for idx, w in enumerate(self.data.player.weapons):
-            bar_x = 30 + idx * 115
-            bar_rect = pygame.Rect(bar_x, 335, 105, 15)
-            if bar_rect.collidepoint(mx, my) or weapon_room.rect.collidepoint(mx, my):
+            bar_x = 30 + idx * 135
+            bar_rect = pygame.Rect(bar_x, 500, 120, 35)
+            if bar_rect.collidepoint(mx, my):
                 clicked_weapon_idx = idx
                 break
 
         if clicked_weapon_idx is not None and self.data.player.weapons[clicked_weapon_idx].is_ready():
             self.data.combat.is_targeting = True
             self.data.combat.target_weapon_idx = clicked_weapon_idx
-            self.data.combat.start_pos = weapon_room.rect.center
+            slots = getattr(self.data.player.ship, "weapon_slots", [])
+            if slots and clicked_weapon_idx < len(slots):
+                self.data.combat.start_pos = slots[clicked_weapon_idx]["pos"]
+            else:
+                self.data.combat.start_pos = weapon_room.rect.center
             return
 
         clicked_crew = False

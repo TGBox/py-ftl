@@ -110,7 +110,9 @@ class MapManager:
         self.data.current_state = STATE_COMBAT
 
     def enter_shop(self):
-
+        shop_mgr = getattr(self.data, "shop_manager", None)
+        if shop_mgr and hasattr(shop_mgr, "refresh_catalog"):
+            shop_mgr.refresh_catalog()
         self.data.current_state = STATE_SHOP
 
     def trigger_event(self, event_type: str):
@@ -120,20 +122,34 @@ class MapManager:
 
 
     def handle_choice(self, action: str, choice_data: dict):
+        has_result = bool(choice_data.get("result_text"))
+
         if action == "BUY_FUEL":
             if self.data.player.scrap >= 10:
                 self.data.player.scrap -= 10
                 self.data.player.fuel += 2
-            self.data.current_state = STATE_MAP
+            if not has_result:
+                self.data.current_state = STATE_MAP
 
         elif action == "SCAVENGE_FUEL":
-            self.data.player.fuel += 1
-            self.data.current_state = STATE_MAP
+            self.data.player.fuel += choice_data.get("fuel", 1)
+            if not has_result:
+                self.data.current_state = STATE_MAP
 
-        elif action == "CLAIM_RESOURCES":
+        elif action in ("CLAIM_RESOURCES", "GIVE_RESOURCES"):
             self.data.player.scrap += choice_data.get("scrap", 0)
             self.data.player.fuel += choice_data.get("fuel", 0)
-            self.data.current_state = STATE_MAP
+            self.data.player.missiles += choice_data.get("missiles", 0)
+            if not has_result:
+                self.data.current_state = STATE_MAP
+
+        elif action == "TAKE_DAMAGE":
+            cost_scrap = choice_data.get("cost_scrap", 0)
+            self.data.player.scrap = max(0, self.data.player.scrap - cost_scrap)
+            dmg = choice_data.get("damage", 0)
+            self.data.player.ship.hp = max(0, self.data.player.ship.hp - dmg)
+            if not has_result:
+                self.data.current_state = STATE_MAP
 
         elif action == "START_COMBAT":
             self.start_normal_combat()
@@ -142,7 +158,8 @@ class MapManager:
             self.enter_shop()
 
         else:
-            self.data.current_state = STATE_MAP
+            if not has_result:
+                self.data.current_state = STATE_MAP
 
     def continue_event(self):
 
@@ -203,6 +220,9 @@ class MapManager:
         self.data.combat.weapon_targets.clear()
         self.data.combat.is_targeting = False
         self.data.combat.target_weapon_idx = None
+        from managers.save_manager import SaveManager
+        self.data.player.unlocked_ships = SaveManager.load_unlocks()
+        self.data.player.newly_unlocked_ship = None
         self.data.paused = False
 
         self.data.world.star_map.sector = 1

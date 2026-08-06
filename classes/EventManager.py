@@ -1,22 +1,51 @@
+import json
+import os
 import random
 
 
 class EventManager:
 
-    def __init__(self) -> None:
+    def __init__(self, json_path: str = "data/events.json") -> None:
         self.current_event_text: str = ""
         self.current_event_type: str | None = None
+        self.result_text: str = ""
         self.choices: list[dict] = []
+        self.events_db: list[dict] = []
+        self.load_events_json(json_path)
+
+    def load_events_json(self, json_path: str) -> None:
+        if os.path.exists(json_path):
+            try:
+                with open(json_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    self.events_db = data.get("events", [])
+            except Exception as e:
+                print(f"Fehler beim Laden von {json_path}: {e}")
 
     def trigger_event(self, event_type: str, player_crew: list = None) -> tuple[int, int]:
         self.current_event_type = event_type
         self.choices.clear()
-        has_engi = any(getattr(c, "species", "") == "Engi" for c in (player_crew or []))
+        self.result_text = ""
+        crew_species = [getattr(c, "species", "") for c in (player_crew or [])]
 
+        # Finde passende Events aus events.json
+        matching = [e for e in self.events_db if e.get("event_type") == event_type]
+        if matching:
+            event_def = random.choice(matching)
+            self.current_event_text = event_def.get("text", "")
+            raw_choices = event_def.get("choices", [])
+
+            for ch in raw_choices:
+                req = ch.get("requires_species")
+                if req and req not in crew_species:
+                    continue  # Erfülle Spezies-Voraussetzung nicht -> ausblenden
+                self.choices.append(ch)
+            return 0, 0
+
+        # Fallback Standard-Events falls keine in events.json matchten
         if event_type == "DISTRESS":
             self.current_event_text = "KEIN TREIBSTOFF MEHR! Die Notfall-Bake sendet ein Signal..."
-            self.choices = []
-            if has_engi:
+            if "Engi" in crew_species:
                 self.choices.append({
                     "text": "[Engi-Spezial] Notfall-Reaktor modifizieren (+2 Treibstoff)",
                     "action": "SCAVENGE_FUEL",
@@ -31,11 +60,8 @@ class EventManager:
         elif event_type == "RESOURCE":
             scrap_found = random.randint(10, 25)
             fuel_found = random.randint(1, 2)
-            self.current_event_text = (
-                f"Ein verlassenes Schiffswrack entdeckt! Fund: {scrap_found} Scrap, {fuel_found} Treibstoff."
-            )
-            self.choices = []
-            if has_engi:
+            self.current_event_text = f"Ein verlassenes Schiffswrack entdeckt! Fund: {scrap_found} Scrap, {fuel_found} Treibstoff."
+            if "Engi" in crew_species:
                 self.choices.append({
                     "text": "[Engi-Spezial] Bauteile optimal verwerten (+35 Scrap, +3 Fuel)",
                     "action": "CLAIM_RESOURCES",
@@ -63,45 +89,9 @@ class EventManager:
             ]
             return 0, 0
 
-        elif event_type == "PLASMA_STORM":
-            self.current_event_text = "ACHTUNG! Ein Plasma-Sturm stört die Schiffssysteme! Reaktor-Leistung halbfertig."
-            self.choices = []
-            if has_engi:
-                self.choices.append({
-                    "text": "[Engi-Spezial] Plasma-Energie absorbieren (+30 Scrap)",
-                    "action": "CLAIM_RESOURCES",
-                    "is_blue": True,
-                    "scrap": 30,
-                    "fuel": 1
-                })
-            self.choices.extend([
-                {"text": "1. Nebel durchfliegen (+15 Scrap)", "action": "CLAIM_RESOURCES", "scrap": 15, "fuel": 0},
-                {"text": "2. Umkehren & ausweichen", "action": "CONTINUE"}
-            ])
-            return 15, 0
-
-        elif event_type == "ABANDONED_STATION":
-            self.current_event_text = "Eine verlassene Raumstation treibt im All. Notsignale sind aktiv."
-            self.choices = []
-            if has_engi:
-                self.choices.append({
-                    "text": "[Engi-Spezial] Stationscomputer hacken (+25 Scrap, +2 Raketen)",
-                    "action": "CLAIM_RESOURCES",
-                    "is_blue": True,
-                    "scrap": 25,
-                    "fuel": 2
-                })
-            self.choices.extend([
-                {"text": "1. Station durchsuchen (+20 Scrap)", "action": "CLAIM_RESOURCES", "scrap": 20, "fuel": 1},
-                {"text": "2. Ignorieren & weiterfliegen", "action": "CONTINUE"}
-            ])
-            return 20, 1
-
         else:
             self.current_event_text = "Dieser Sektor ist ruhig. Keine ungewöhnlichen Aktivitäten gemeldet."
             self.choices = [
                 {"text": "1. Weiterfliegen", "action": "CONTINUE"}
             ]
             return 0, 0
-
-

@@ -32,7 +32,9 @@ class PlayerData:
         self.renaming_crew_idx: Optional[int] = None
         self.active_rename_idx: Optional[int] = None
         self.rename_buffer: str = ""
-        self.unlocked_ships: list[str] = ["Kestrel"]
+        from managers.save_manager import SaveManager
+        self.unlocked_ships: list[str] = SaveManager.load_unlocks()
+        self.newly_unlocked_ship: Optional[str] = None
 
 
 
@@ -70,6 +72,7 @@ class GameData:
     def __init__(self) -> None:
         self.running: bool = True
         self.paused: bool = False
+        self.show_pause_menu: bool = False
         self.current_state: str = STATE_MAIN_MENU
 
         self.player: PlayerData = PlayerData()

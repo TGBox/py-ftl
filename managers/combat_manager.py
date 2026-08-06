@@ -18,7 +18,7 @@ class CombatManager:
     def update(self, dt: float):
         """Wird einmal pro Frame aufgerufen."""
 
-        if self.data.paused:
+        if self.data.paused or getattr(self.data, "show_pause_menu", False):
             return
 
         if self.data.current_state != STATE_COMBAT:
@@ -29,6 +29,8 @@ class CombatManager:
             self.data.combat.msg_timer - dt
         )
 
+        self.data.player.ship.update_doors(dt)
+        self.data.enemy.ship.update_doors(dt)
         self.update_crew(dt)
         self.update_shields(dt)
         self.update_weapons(dt)
@@ -62,9 +64,13 @@ class CombatManager:
                 self.sound.play("crew_death")
             self.show_message(f"CREW-MITGLIED {dead.name.upper()} GEFALLEN!")
 
-        # Gegnerische Crew initialisieren & updaten
+        # Gegnerische Crew initialisieren & updaten (Ausgewogene Anzahl nach Sektor)
         if not self.enemy_crew and len(self.data.enemy.ship.rooms) > 0:
-            for r in self.data.enemy.ship.rooms:
+            sector = self.data.world.star_map.sector
+            is_boss = "Boss" in self.data.enemy.ship.name or "Flaggschiff" in self.data.enemy.ship.name
+            crew_count = 3 if is_boss else (2 if sector >= 2 else 1)
+            target_rooms = self.data.enemy.ship.rooms[:crew_count]
+            for r in target_rooms:
                 self.enemy_crew.append(Crew(r.rect.centerx, r.rect.centery, name="Pirate", is_enemy=True))
 
         dead_enemy: list = []
@@ -134,9 +140,12 @@ class CombatManager:
             if weapon.ammo_cost > 0:
                 self.data.player.missiles -= weapon.ammo_cost
 
+            slots = getattr(self.data.player.ship, "weapon_slots", [])
+            start_pos = slots[idx]["pos"] if (slots and idx < len(slots)) else weapon_room.rect.center
+
             self.data.player.projectiles.append(
                 Projectile(
-                    weapon_room.rect.center,
+                    start_pos,
                     end_pos,
                     target_room,
                     is_player_shot=True,
@@ -169,10 +178,12 @@ class CombatManager:
             return
 
         target_room = random.choice(self.data.player.ship.rooms)
+        enemy_slots = getattr(self.data.enemy.ship, "weapon_slots", [])
+        enemy_start = enemy_slots[0]["pos"] if enemy_slots else self.data.enemy.ship.rooms[1].rect.center
 
         self.data.player.projectiles.append(
             Projectile(
-                self.data.enemy.ship.rooms[1].rect.center,
+                enemy_start,
                 target_room.rect.center,
                 target_room=target_room,
                 is_player_shot=False,
@@ -317,7 +328,8 @@ class CombatManager:
     def player_won(self):
 
         is_mini_boss = "Mini-Boss" in self.data.enemy.ship.name
-        tier = "High" if (self.data.enemy.ship.name == "Flaggschiff" or is_mini_boss) else "Medium"
+        is_final_boss = "Flaggschiff" in self.data.enemy.ship.name or (self.data.world.star_map.sector >= 5 and not is_mini_boss)
+        tier = "High" if (is_final_boss or is_mini_boss) else "Medium"
         scrap_reward, missile_reward = self.calculate_stochastic_rewards(tier)
 
         self.data.player.scrap += scrap_reward
@@ -327,10 +339,21 @@ class CombatManager:
         self.data.player.projectiles.clear()
         self.data.combat.weapon_targets.clear()
 
-        if (
-            self.data.world.star_map.sector == 3
-            and self.data.enemy.ship.name == "Flaggschiff"
-        ):
+        from managers.save_manager import SaveManager
+        ship_sequence = ["Kestrel", "Kreuzer", "Tarnschiff", "Zoltan-Fregatte", "Federations-Kreuzer"]
+        unlocked = SaveManager.load_unlocks()
+        new_ship = None
+        for s in ship_sequence:
+            if s not in unlocked:
+                unlocked.append(s)
+                new_ship = s
+                SaveManager.save_unlocks(unlocked)
+                break
+        self.data.player.unlocked_ships = unlocked
+        if new_ship:
+            self.data.player.newly_unlocked_ship = new_ship
+
+        if is_final_boss:
             self.data.current_state = STATE_VICTORY
         elif is_mini_boss:
             sec = self.data.world.star_map.sector
@@ -338,17 +361,12 @@ class CombatManager:
             self.data.world.star_map.generate_map()
             self.data.player.scrap += 25
 
-            unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
-            unlock_map = {1: "Kreuzer", 2: "Tarnschiff", 3: "Zoltan-Fregatte", 4: "Federations-Kreuzer"}
-            new_ship = unlock_map.get(sec, "Kreuzer")
-            if new_ship not in unlocked:
-                unlocked.append(new_ship)
+            if new_ship:
                 self.show_message(f"NEUES SCHIFF FREIGESCHALTET: {new_ship}!")
             else:
                 self.show_message(f"MINI-BOSS BESIEGT! WEITER ZU SEKTOR {self.data.world.star_map.sector}")
 
             self.data.current_state = STATE_MAP
-
         else:
             self.data.current_state = STATE_MAP
 
