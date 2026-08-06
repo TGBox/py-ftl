@@ -326,7 +326,9 @@ class RenderManager:
                 lbl = f_font.render("NEBEL", True, (100, 120, 150))
                 self.screen.blit(lbl, (r.rect.centerx - lbl.get_width() // 2, r.rect.centery - lbl.get_height() // 2))
 
-        self.data.player.ship.draw_doors(self.screen)
+        door_room = next((r for r in self.data.player.ship.rooms if r.name == "Türen"), None)
+        door_level = door_room.current_power if door_room else 1
+        self.data.player.ship.draw_doors(self.screen, door_level=door_level)
         self.data.enemy.ship.draw_doors(self.screen)
 
         # Hardpoint Waffenslots auf den Schiffen zeichnen
@@ -381,7 +383,7 @@ class RenderManager:
             z_lbl = z_font.render(f"ZOLTAN SUPER-SCHILD: {zoltan_hp} HP", True, (120, 255, 150))
             self.screen.blit(z_lbl, (705 - z_lbl.get_width() // 2, 65))
 
-        # 4. Sensor-Level 2: Gegner Waffendetails auf HUD
+        # 5. Sensor-Level 2 & 3: Gegner Waffendetails & Raum-Energie
         if sensor_power >= 2:
             e_w = self.data.enemy.weapon
             w_ratio = min(1.0, e_w.current_charge / e_w.charge_time)
@@ -390,6 +392,13 @@ class RenderManager:
             pygame.draw.rect(self.screen, (200, 100, 100), (550, 180, 150, 14), 1)
             w_lbl = small_font.render(f"Gegner-Waffe ({e_w.name}): {int(w_ratio*100)}%", True, (255, 220, 180))
             self.screen.blit(w_lbl, (550, 166))
+
+        if sensor_power >= 3:
+            s3_font = pygame.font.SysFont(None, 12, bold=True)
+            for e_r in self.data.enemy.ship.rooms:
+                p_str = f"PWR: {e_r.current_power}/{e_r.max_power}"
+                p_lbl = s3_font.render(p_str, True, (100, 220, 255))
+                self.screen.blit(p_lbl, (e_r.rect.x + 4, e_r.rect.bottom - 14))
 
         # 5. Schiffs-Hülle & Ausweichchance (UI)
         self.screen.blit(

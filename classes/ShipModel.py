@@ -78,9 +78,9 @@ class ShipModel:
         for d in self.doors:
             d.update(dt)
 
-    def draw_doors(self, surface) -> None:
+    def draw_doors(self, surface, door_level: int = 1) -> None:
         for d in self.doors:
-            d.draw(surface)
+            d.draw(surface, door_level=door_level)
 
     def open_all_doors(self) -> None:
         for d in self.doors:

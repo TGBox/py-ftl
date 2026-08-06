@@ -613,12 +613,22 @@ class CombatManager:
             return
         # SRS 6.2 Evasion Formel: E = (E_Base_Engine + C_Engine_Bonus + C_Pilot_Bonus) * A_Multiplier + S_Cloak
         e_base_engine = self.data.player.ship.rooms[2].current_power * 0.10 if len(self.data.player.ship.rooms) > 2 else 0.10
-        c_pilot_bonus = 0.10 if any(c.current_room == self.data.player.ship.rooms[2] for c in self.data.player.crew) else 0.0
+        bridge_power = self.data.player.ship.rooms[2].current_power if len(self.data.player.ship.rooms) > 2 else 0
+        pilot_present = any(c.current_room == self.data.player.ship.rooms[2] for c in self.data.player.crew)
+        if pilot_present:
+            a_multiplier = 1.0
+        elif bridge_power >= 3:
+            a_multiplier = 0.80
+        elif bridge_power == 2:
+            a_multiplier = 0.50
+        else:
+            a_multiplier = 0.0
+
+        c_pilot_bonus = 0.10 if pilot_present else 0.0
         c_engine_bonus = 0.05 if any(c.current_room == self.data.player.ship.rooms[0] for c in self.data.player.crew) else 0.0
-        a_multiplier = 1.0 if c_pilot_bonus > 0 else 0.0
         s_cloak = 0.0
 
-        player_evade = (e_base_engine + c_engine_bonus + c_pilot_bonus) * (a_multiplier if c_pilot_bonus > 0 else 1.0) + s_cloak
+        player_evade = (e_base_engine + c_engine_bonus + c_pilot_bonus) * a_multiplier + s_cloak
 
         if random.random() < player_evade:
             self.show_message("AUSGEWICHEN!")
