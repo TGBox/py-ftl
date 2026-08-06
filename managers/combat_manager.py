@@ -140,9 +140,12 @@ class CombatManager:
             if weapon.ammo_cost > 0:
                 self.data.player.missiles -= weapon.ammo_cost
 
+            slots = getattr(self.data.player.ship, "weapon_slots", [])
+            start_pos = slots[idx]["pos"] if (slots and idx < len(slots)) else weapon_room.rect.center
+
             self.data.player.projectiles.append(
                 Projectile(
-                    weapon_room.rect.center,
+                    start_pos,
                     end_pos,
                     target_room,
                     is_player_shot=True,
@@ -175,10 +178,12 @@ class CombatManager:
             return
 
         target_room = random.choice(self.data.player.ship.rooms)
+        enemy_slots = getattr(self.data.enemy.ship, "weapon_slots", [])
+        enemy_start = enemy_slots[0]["pos"] if enemy_slots else self.data.enemy.ship.rooms[1].rect.center
 
         self.data.player.projectiles.append(
             Projectile(
-                self.data.enemy.ship.rooms[1].rect.center,
+                enemy_start,
                 target_room.rect.center,
                 target_room=target_room,
                 is_player_shot=False,

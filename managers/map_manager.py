@@ -110,7 +110,9 @@ class MapManager:
         self.data.current_state = STATE_COMBAT
 
     def enter_shop(self):
-
+        shop_mgr = getattr(self.data, "shop_manager", None)
+        if shop_mgr and hasattr(shop_mgr, "refresh_catalog"):
+            shop_mgr.refresh_catalog()
         self.data.current_state = STATE_SHOP
 
     def trigger_event(self, event_type: str):

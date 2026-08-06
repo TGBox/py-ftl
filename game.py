@@ -40,6 +40,7 @@ class Game:
         self.data = GameData()
         self.sound = SoundManager()
         self.shop_manager = ShopManager(self.data)
+        self.data.shop_manager = self.shop_manager
         self.map_manager = MapManager(self.data)
         self.state_manager = StateManager(self.data)
         self.weapon_manager = WeaponManager(self.data)

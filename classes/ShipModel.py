@@ -13,6 +13,7 @@ class ShipModel:
         is_enemy: bool = False,
         max_weapons: int = 3,
         max_crew: int = 4,
+        weapon_slots: list[dict] | None = None,
     ):
         self.name = name
         self.max_hp = max_hp
@@ -21,8 +22,24 @@ class ShipModel:
         self.is_enemy = is_enemy
         self.max_weapons = max_weapons
         self.max_crew = max_crew
+        self.weapon_slots: list[dict] = weapon_slots or []
         self.doors: list[Door] = []
         self.generate_doors()
+        if not self.weapon_slots:
+            self.generate_default_weapon_slots()
+
+    def generate_default_weapon_slots(self) -> None:
+        self.weapon_slots = []
+        if self.rooms:
+            w_room = self.rooms[1] if len(self.rooms) > 1 else self.rooms[0]
+            cx, cy = w_room.rect.centerx, w_room.rect.centery
+            for i in range(self.max_weapons):
+                offset_y = (i - (self.max_weapons - 1) / 2.0) * 35.0
+                self.weapon_slots.append({
+                    "slot_id": i + 1,
+                    "pos": (int(cx), int(cy + offset_y)),
+                    "allowed_types": None,
+                })
 
     def generate_doors(self) -> None:
         self.doors.clear()
@@ -85,7 +102,11 @@ PLAYER_SHIP = ShipModel("Kestrel", 15, [
     Room("Waffen", (160, 200, 90, 90)),
     Room("Brücke", (260, 200, 90, 90), max_power=2),
     Room("Medbay", (160, 100, 90, 90), max_power=2),
-], max_weapons=3, max_crew=4)
+], max_weapons=3, max_crew=4, weapon_slots=[
+    {"slot_id": 1, "pos": (205, 185), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
+    {"slot_id": 2, "pos": (205, 305), "allowed_types": ["LASER", "MISSILE"]},
+    {"slot_id": 3, "pos": (335, 245), "allowed_types": ["MISSILE", "BEAM"]},
+])
 
 CRUISER_SHIP = ShipModel("Kreuzer", 18, [
     Room("Schild", (50, 190, 85, 85)),
@@ -93,14 +114,23 @@ CRUISER_SHIP = ShipModel("Kreuzer", 18, [
     Room("Maschinen", (240, 190, 85, 85)),
     Room("Brücke", (335, 190, 85, 85), max_power=2),
     Room("Medbay", (145, 95, 85, 85), max_power=2),
-], max_weapons=4, max_crew=6)
+], max_weapons=4, max_crew=6, weapon_slots=[
+    {"slot_id": 1, "pos": (187, 175), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
+    {"slot_id": 2, "pos": (187, 290), "allowed_types": ["LASER", "BEAM"]},
+    {"slot_id": 3, "pos": (282, 175), "allowed_types": ["MISSILE", "BEAM"]},
+    {"slot_id": 4, "pos": (377, 245), "allowed_types": ["LASER", "MISSILE"]},
+])
 
 STEALTH_SHIP = ShipModel("Tarnschiff", 12, [
     Room("Tarnung", (70, 200, 80, 80)),
     Room("Waffen", (160, 200, 80, 80)),
     Room("Brücke", (250, 200, 80, 80), max_power=2),
     Room("Medbay", (160, 110, 80, 80), max_power=1),
-], max_weapons=3, max_crew=3)
+], max_weapons=3, max_crew=3, weapon_slots=[
+    {"slot_id": 1, "pos": (200, 185), "allowed_types": ["LASER", "BEAM"]},
+    {"slot_id": 2, "pos": (200, 295), "allowed_types": ["BEAM"]},
+    {"slot_id": 3, "pos": (290, 240), "allowed_types": ["LASER", "MISSILE"]},
+])
 
 ZOLTAN_SHIP = ShipModel("Zoltan-Fregatte", 14, [
     Room("Schild", (50, 190, 85, 85)),
@@ -108,7 +138,12 @@ ZOLTAN_SHIP = ShipModel("Zoltan-Fregatte", 14, [
     Room("Waffen", (240, 190, 85, 85)),
     Room("Brücke", (335, 190, 85, 85), max_power=2),
     Room("Medbay", (240, 95, 85, 85), max_power=2),
-], max_weapons=4, max_crew=4)
+], max_weapons=4, max_crew=4, weapon_slots=[
+    {"slot_id": 1, "pos": (282, 175), "allowed_types": ["BEAM", "LASER"]},
+    {"slot_id": 2, "pos": (282, 290), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
+    {"slot_id": 3, "pos": (187, 175), "allowed_types": ["LASER"]},
+    {"slot_id": 4, "pos": (377, 245), "allowed_types": ["MISSILE", "BEAM"]},
+])
 
 FEDERATION_SHIP = ShipModel("Federations-Kreuzer", 20, [
     Room("Artillerie", (50, 190, 85, 85)),
@@ -116,7 +151,12 @@ FEDERATION_SHIP = ShipModel("Federations-Kreuzer", 20, [
     Room("Waffen", (240, 190, 85, 85)),
     Room("Brücke", (335, 190, 85, 85), max_power=2),
     Room("Medbay", (50, 95, 85, 85), max_power=3),
-], max_weapons=4, max_crew=5)
+], max_weapons=4, max_crew=5, weapon_slots=[
+    {"slot_id": 1, "pos": (282, 175), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
+    {"slot_id": 2, "pos": (282, 290), "allowed_types": ["BEAM", "MISSILE"]},
+    {"slot_id": 3, "pos": (92, 175), "allowed_types": ["BEAM"]},
+    {"slot_id": 4, "pos": (377, 245), "allowed_types": ["LASER", "MISSILE"]},
+])
 
 SHIP_BLUEPRINTS = {
     "Kestrel": PLAYER_SHIP,

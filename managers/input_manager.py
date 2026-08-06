@@ -375,7 +375,11 @@ class InputManager:
         if clicked_weapon_idx is not None and self.data.player.weapons[clicked_weapon_idx].is_ready():
             self.data.combat.is_targeting = True
             self.data.combat.target_weapon_idx = clicked_weapon_idx
-            self.data.combat.start_pos = weapon_room.rect.center
+            slots = getattr(self.data.player.ship, "weapon_slots", [])
+            if slots and clicked_weapon_idx < len(slots):
+                self.data.combat.start_pos = slots[clicked_weapon_idx]["pos"]
+            else:
+                self.data.combat.start_pos = weapon_room.rect.center
             return
 
         clicked_crew = False
