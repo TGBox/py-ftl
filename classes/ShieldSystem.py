@@ -8,9 +8,14 @@ class ShieldSystem:
     self.recharge_timer: float = 0.0
     self.recharge_time: float = recharge_time
     self.hit_delay: float = hit_delay
+    self.lock_timer: float = 0.0
 
   def update(self, dt: float, powered_layers: int) -> None:
     self.max_layers = powered_layers
+    if self.lock_timer > 0.0:
+      self.lock_timer = max(0.0, self.lock_timer - dt)
+      return
+
     if self.current_layers > self.max_layers:
       self.current_layers = self.max_layers
 

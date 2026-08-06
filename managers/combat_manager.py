@@ -341,8 +341,16 @@ class CombatManager:
             self.show_message("FEIND IST AUSGEWICHEN!")
         else:
             hit_successful = False
-            if projectile.w_type == "MISSILE":
+            if projectile.w_type in ("MISSILE", "BOMB"):
                 hit_successful = True
+            elif projectile.w_type == "ION":
+                if self.data.enemy.shield.current_layers > 0:
+                    self.data.enemy.shield.attempt_block()
+                    self.data.enemy.shield.lock_timer = 5.0
+                    self.show_message("GEGNERISCHES SCHILD IONISIERT (Sperre 5s)!")
+                else:
+                    projectile.target_room.ion_timer = 6.0
+                    self.show_message(f"GEGNER-RAUM {projectile.target_room.name.upper()} IONISIERT (Sperre 6s)!")
             elif projectile.w_type == "BEAM":
                 if self.data.enemy.shield.current_layers <= projectile.shield_pierce:
                     hit_successful = True
@@ -357,8 +365,18 @@ class CombatManager:
 
             if hit_successful:
                 if self.sound: self.sound.play("hull_hit")
-                if projectile.w_type == "BEAM":
-                    # Beam schneidet mehrere Räume per Liniensegment-Schnittpunkt (SRS 6.2)
+                if projectile.w_type == "BOMB":
+                    self.show_message(f"BOMBE DETONIERT IN {projectile.target_room.name.upper()}!")
+                    if "Feuer" in getattr(projectile, "name", "") or projectile.damage == 0:
+                        projectile.target_room.fire_level = min(100.0, projectile.target_room.fire_level + 65.0)
+                    elif "Hüllenbruch" in getattr(projectile, "name", "") or projectile.damage == 15:
+                        projectile.target_room.has_breach = True
+                        projectile.target_room.apply_damage(40.0, self.data.enemy.reactor)
+                        self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
+                    else:
+                        projectile.target_room.apply_damage(30.0, self.data.enemy.reactor)
+                        self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
+                elif projectile.w_type == "BEAM":
                     intersected_rooms = projectile.get_intersected_rooms(self.data.enemy.ship.rooms)
                     for room in intersected_rooms:
                         self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
@@ -384,8 +402,16 @@ class CombatManager:
             self.show_message("AUSGEWICHEN!")
         else:
             hit_successful = False
-            if projectile.w_type == "MISSILE":
+            if projectile.w_type in ("MISSILE", "BOMB"):
                 hit_successful = True
+            elif projectile.w_type == "ION":
+                if self.data.player.shield.current_layers > 0:
+                    self.data.player.shield.attempt_block()
+                    self.data.player.shield.lock_timer = 5.0
+                    self.show_message("SCHILD IONISIERT (Sperre 5s)!")
+                else:
+                    projectile.target_room.ion_timer = 6.0
+                    self.show_message(f"RAUM {projectile.target_room.name.upper()} IONISIERT (Sperre 6s)!")
             elif projectile.w_type == "BEAM":
                 if self.data.player.shield.current_layers <= projectile.shield_pierce:
                     hit_successful = True
@@ -400,7 +426,12 @@ class CombatManager:
 
             if hit_successful:
                 if self.sound: self.sound.play("hull_hit")
-                if projectile.w_type == "BEAM":
+                if projectile.w_type == "BOMB":
+                    self.show_message(f"BOMBE DETONIERT IN DEINEM {projectile.target_room.name.upper()}!")
+                    projectile.target_room.fire_level = min(100.0, projectile.target_room.fire_level + 50.0)
+                    projectile.target_room.apply_damage(25.0, self.data.player.reactor)
+                    self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
+                elif projectile.w_type == "BEAM":
                     intersected_rooms = projectile.get_intersected_rooms(self.data.player.ship.rooms)
                     for room in intersected_rooms:
                         self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)

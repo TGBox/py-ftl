@@ -12,7 +12,11 @@ WEAPON_CATALOG_MASTER = [
     {"name": "Burst Laser MK II", "charge_time": 4.0, "w_type": "LASER", "shield_pierce": 0, "damage": 60.0, "ammo_cost": 0, "price": 70},
     {"name": "Artemis Rakete", "charge_time": 4.0, "w_type": "MISSILE", "shield_pierce": 1, "damage": 40.0, "ammo_cost": 1, "price": 40},
     {"name": "Pike Strahl", "charge_time": 5.0, "w_type": "BEAM", "shield_pierce": 1, "damage": 35.0, "ammo_cost": 0, "price": 60},
-    {"name": "Ion-Strahler", "charge_time": 3.2, "w_type": "BEAM", "shield_pierce": 1, "damage": 25.0, "ammo_cost": 0, "price": 45},
+    {"name": "Ion Blast MK I", "charge_time": 3.0, "w_type": "ION", "shield_pierce": 0, "damage": 10.0, "ammo_cost": 0, "price": 45},
+    {"name": "Ion Blast MK II", "charge_time": 2.2, "w_type": "ION", "shield_pierce": 0, "damage": 15.0, "ammo_cost": 0, "price": 65},
+    {"name": "Feuer-Bombe", "charge_time": 4.5, "w_type": "BOMB", "shield_pierce": 99, "damage": 0.0, "ammo_cost": 1, "price": 55},
+    {"name": "Hüllenbruch-Bombe", "charge_time": 5.0, "w_type": "BOMB", "shield_pierce": 99, "damage": 15.0, "ammo_cost": 1, "price": 60},
+    {"name": "Kleine Bombe", "charge_time": 3.8, "w_type": "BOMB", "shield_pierce": 99, "damage": 30.0, "ammo_cost": 1, "price": 50},
 ]
 
 

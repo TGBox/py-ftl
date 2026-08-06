@@ -25,9 +25,13 @@ class Room:
     self.oxygen: float = 100.0  # FTL Sauerstoffsystem (0.0 bis 100.0)
     self.has_breach: bool = False  # Hüllenleck
     self.fire_level: float = 0.0  # Feuer (0.0 bis 100.0)
+    self.ion_timer: float = 0.0  # Ion-Sperre (Sekunden)
 
   def effective_max_power(self) -> int:
-    return max(0, math.floor(self.max_power * (self.health / self.max_health)))
+    eff = math.floor(self.max_power * (self.health / self.max_health))
+    if self.ion_timer > 0.0:
+        eff = max(0, eff - 1)
+    return max(0, eff)
 
   def add_power(self, reactor: Reactor) -> None:
     if (
@@ -62,7 +66,9 @@ class Room:
     self.health = min(self.max_health, self.health + amount)
 
   def update_oxygen(self, dt: float, connected_rooms: list["Room"] = None) -> None:
-    """Updates oxygen levels and fire processing for FTL room simulation."""
+    """Updates oxygen levels, fire processing, and ion timers for FTL room simulation."""
+    self.ion_timer = max(0.0, self.ion_timer - dt)
+
     if self.has_breach:
       self.oxygen = max(0.0, self.oxygen - 25.0 * dt)
     elif self.health < 40.0:
@@ -107,6 +113,18 @@ class Room:
 
     pygame.draw.rect(surface, fill_col, self.rect)
     pygame.draw.rect(surface, border_col, self.rect, 2)
+
+    # Ion-Sperren Animation & Overlay
+    if self.ion_timer > 0.0:
+        import random
+        cx, cy = self.rect.centerx, self.rect.centery
+        for _ in range(3):
+            ix = cx + random.randint(-self.rect.width // 4, self.rect.width // 4)
+            iy = cy + random.randint(-self.rect.height // 4, self.rect.height // 4)
+            pygame.draw.circle(surface, (100, 220, 255), (ix, iy), random.randint(3, 6))
+        b_font = pygame.font.SysFont(None, 13, bold=True)
+        ion_lbl = b_font.render(f"ION ({int(self.ion_timer)}s)", True, (100, 220, 255))
+        surface.blit(ion_lbl, (self.rect.x + 6, self.rect.y + 36))
 
     # Feuer-Animation & Overlay
     if self.fire_level > 0.0:
