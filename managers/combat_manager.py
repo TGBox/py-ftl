@@ -18,7 +18,7 @@ class CombatManager:
     def update(self, dt: float):
         """Wird einmal pro Frame aufgerufen."""
 
-        if self.data.paused:
+        if self.data.paused or getattr(self.data, "show_pause_menu", False):
             return
 
         if self.data.current_state != STATE_COMBAT:

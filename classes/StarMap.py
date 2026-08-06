@@ -43,7 +43,7 @@ class StarMap:
       )
 
       for y in y_positions:
-        event_type = random.choice(["COMBAT", "COMBAT", "RESOURCE", "SHOP", "EMPTY"])
+        event_type = random.choice(["COMBAT", "RESOURCE", "DISTRESS", "NEBULA", "SHOP", "EMPTY"])
         node = Node(node_id, x, y, event_type)
         self.nodes.append(node)
         layer_nodes.append(node)

@@ -10,7 +10,7 @@ class RenderManager:
         self.data = data
         self.screen.fill(COLOR_BG)  #[cite: 2]
         self.font = pygame.font.SysFont(None, 24)
-        self.btn_autofire = pygame.Rect(730, 310, 140, 30)
+        self.btn_autofire = pygame.Rect(710, 520, 160, 30)
         self.btn_crew_toggle = pygame.Rect(750, 10, 130, 30)
         # Shop UI Buttons
         self.btn_repair = pygame.Rect(200, 140, 500, 38)  #[cite: 1]
@@ -87,7 +87,16 @@ class RenderManager:
         if getattr(self.data.player, "show_crew_menu", False):
             self.draw_crew_menu()
 
-        if self.data.paused:
+        # Taktische Pause Banner (SPACE)
+        if self.data.paused and not getattr(self.data, "show_pause_menu", False):
+            banner_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 160, 42, 320, 26)
+            pygame.draw.rect(self.screen, (30, 40, 60), banner_rect)
+            pygame.draw.rect(self.screen, (255, 220, 100), banner_rect, 2)
+            p_lbl = self.font.render("--- PAUSE (TAKTISCHER MODUS) ---", True, (255, 255, 100))
+            self.screen.blit(p_lbl, (banner_rect.x + (banner_rect.width - p_lbl.get_width()) // 2, banner_rect.y + 4))
+
+        # Pause-Menü Modal (ESC)
+        if getattr(self.data, "show_pause_menu", False):
             if self.data.current_state == STATE_OPTIONS:
                 self.draw_options_menu()
             else:
@@ -279,27 +288,29 @@ class RenderManager:
             self.screen.blit(w_badge, (mx + 10, my - 8))
 
         # 3. Waffen-UI-Bars
-        weapon_ui_y = 310
+        weapon_ui_y = 485
         self.screen.blit(
             self.font.render("Waffensysteme:", True, (200, 200, 200)), (30, weapon_ui_y)
         )
+        small_font = pygame.font.SysFont(None, 18)
         for i, w in enumerate(self.data.player.weapons):
-            bar_x, bar_y = 30 + i * 115, weapon_ui_y + 25
+            bar_x, bar_y = 30 + i * 135, weapon_ui_y + 35
             charge_ratio = w.current_charge / w.charge_time
-            pygame.draw.rect(self.screen, (40, 40, 40), (bar_x, bar_y, 105, 15))
+            pygame.draw.rect(self.screen, (40, 40, 40), (bar_x, bar_y, 120, 16))
             bar_color = (
                 COLOR_POWER_ACTIVE if w.is_ready() else COLOR_WEAPON_CHARGE
             )
             pygame.draw.rect(
-                self.screen, bar_color, (bar_x, bar_y, int(105 * charge_ratio), 15)
+                self.screen, bar_color, (bar_x, bar_y, int(120 * charge_ratio), 16)
             )
-            pygame.draw.rect(self.screen, COLOR_BORDER, (bar_x, bar_y, 105, 15), 1)
+            pygame.draw.rect(self.screen, COLOR_BORDER, (bar_x, bar_y, 120, 16), 1)
 
             # Zeige an, ob die Waffe ein Ziel hat (mit individueller Waffenfarbe)
             w_color = WEAPON_LINE_COLORS[i % len(WEAPON_LINE_COLORS)]
             target_indicator = f" [W{i+1}]" if i in self.data.combat.weapon_targets else ""
             lbl_color = w_color if i in self.data.combat.weapon_targets else (200, 220, 255)
-            lbl = self.font.render(f"{w.name}{target_indicator}", True, lbl_color)
+            disp_name = w.name if len(w.name) <= 15 else w.name[:14] + "."
+            lbl = small_font.render(f"{disp_name}{target_indicator}", True, lbl_color)
             self.screen.blit(lbl, (bar_x, bar_y - 18))
 
         # 4. Autofire Button (wird vom Manager gezeichnet, Logik in InputManager)

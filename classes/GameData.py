@@ -70,6 +70,7 @@ class GameData:
     def __init__(self) -> None:
         self.running: bool = True
         self.paused: bool = False
+        self.show_pause_menu: bool = False
         self.current_state: str = STATE_MAIN_MENU
 
         self.player: PlayerData = PlayerData()
