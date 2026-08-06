@@ -120,20 +120,34 @@ class MapManager:
 
 
     def handle_choice(self, action: str, choice_data: dict):
+        has_result = bool(choice_data.get("result_text"))
+
         if action == "BUY_FUEL":
             if self.data.player.scrap >= 10:
                 self.data.player.scrap -= 10
                 self.data.player.fuel += 2
-            self.data.current_state = STATE_MAP
+            if not has_result:
+                self.data.current_state = STATE_MAP
 
         elif action == "SCAVENGE_FUEL":
-            self.data.player.fuel += 1
-            self.data.current_state = STATE_MAP
+            self.data.player.fuel += choice_data.get("fuel", 1)
+            if not has_result:
+                self.data.current_state = STATE_MAP
 
-        elif action == "CLAIM_RESOURCES":
+        elif action in ("CLAIM_RESOURCES", "GIVE_RESOURCES"):
             self.data.player.scrap += choice_data.get("scrap", 0)
             self.data.player.fuel += choice_data.get("fuel", 0)
-            self.data.current_state = STATE_MAP
+            self.data.player.missiles += choice_data.get("missiles", 0)
+            if not has_result:
+                self.data.current_state = STATE_MAP
+
+        elif action == "TAKE_DAMAGE":
+            cost_scrap = choice_data.get("cost_scrap", 0)
+            self.data.player.scrap = max(0, self.data.player.scrap - cost_scrap)
+            dmg = choice_data.get("damage", 0)
+            self.data.player.ship.hp = max(0, self.data.player.ship.hp - dmg)
+            if not has_result:
+                self.data.current_state = STATE_MAP
 
         elif action == "START_COMBAT":
             self.start_normal_combat()
@@ -142,7 +156,8 @@ class MapManager:
             self.enter_shop()
 
         else:
-            self.data.current_state = STATE_MAP
+            if not has_result:
+                self.data.current_state = STATE_MAP
 
     def continue_event(self):
 

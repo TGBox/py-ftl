@@ -82,6 +82,7 @@ class SaveManager:
                     shield_pierce=w.shield_pierce,
                     damage=w.damage,
                     ammo_cost=w.ammo_cost,
+                    level=getattr(w, "level", 1),
                 )
                 for w in data.player.weapons
             ]
@@ -235,6 +236,7 @@ class SaveManager:
                         damage=ws.damage,
                         ammo_cost=ws.ammo_cost,
                         shield_pierce=ws.shield_pierce,
+                        level=getattr(ws, "level", 1),
                     )
                     for ws in schema.weapons
                 ]

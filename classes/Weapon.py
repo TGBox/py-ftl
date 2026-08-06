@@ -8,6 +8,7 @@ class Weapon:
       ammo_cost: int = 0,
       shield_pierce: int = 0,
       damage: float = 35.0,
+      level: int = 1,
   ) -> None:
     self.name: str = name
     self.charge_time: float = charge_time
@@ -16,14 +17,16 @@ class Weapon:
     self.ammo_cost: int = ammo_cost
     self.shield_pierce: int = shield_pierce
     self.damage: float = damage
-    self.level: int = 1  # Upgradestufe (1 bis 3)
+    self.level: int = level  # Upgradestufe (1 bis 5)
 
   def upgrade(self) -> bool:
-    if self.level < 3:
+    if self.level < 5:
       self.level += 1
       self.damage = round(self.damage * 1.25, 1)
-      self.charge_time = max(1.5, round(self.charge_time * 0.85, 1))
-      self.name = f"{self.name.split(' (L')[0]} (Lvl {self.level})"
+      self.charge_time = max(1.2, round(self.charge_time * 0.85, 1))
+      roman = ["I", "II", "III", "IV", "V"]
+      base_name = self.name.split(" MK")[0].split(" (Lvl")[0]
+      self.name = f"{base_name} MK {roman[self.level - 1]}"
       return True
     return False
 

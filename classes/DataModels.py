@@ -80,6 +80,7 @@ class WeaponSaveSchema(BaseModel):
     shield_pierce: int = 0
     damage: float = 35.0
     ammo_cost: int = 0
+    level: int = 1
 
 
 class SavegameSchema(BaseModel):

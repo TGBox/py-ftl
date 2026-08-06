@@ -89,6 +89,31 @@ class InputManager:
             self.data.player.show_crew_menu = not getattr(self.data.player, "show_crew_menu", False)
             return
 
+        # Tür-Steuerung UI Buttons & Tür-Direktklicks
+        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
+            btn_open_all = pygame.Rect(750, 45, 130, 26)
+            btn_close_all = pygame.Rect(750, 75, 130, 26)
+            btn_vent = pygame.Rect(750, 105, 130, 26)
+
+            if btn_open_all.collidepoint(mx, my):
+                self.data.player.ship.open_all_doors()
+                if self.sound: self.sound.play("click")
+                return
+            elif btn_close_all.collidepoint(mx, my):
+                self.data.player.ship.close_all_doors()
+                if self.sound: self.sound.play("click")
+                return
+            elif btn_vent.collidepoint(mx, my):
+                self.data.player.ship.open_airlocks()
+                if self.sound: self.sound.play("click")
+                return
+
+            for d in self.data.player.ship.doors:
+                if d.rect.collidepoint(mx, my):
+                    d.toggle()
+                    if self.sound: self.sound.play("click")
+                    return
+
         if getattr(self.data.player, "show_crew_menu", False):
             close_btn = pygame.Rect(370, 465, 160, 38)
             if close_btn.collidepoint(mx, my):
@@ -258,21 +283,31 @@ class InputManager:
 
     def handle_event_click(self):
         mx, my = self._logical_mouse_pos()
-        choices = self.data.world.event_manager.choices
+        ev_mgr = self.data.world.event_manager
+
+        # Wenn result_text angezeigt wird: Klick schließt Event ab
+        if ev_mgr.result_text:
+            cont_btn = pygame.Rect(280, 400, 340, 42)
+            if cont_btn.collidepoint(mx, my):
+                ev_mgr.result_text = ""
+                self.map_manager.continue_event()
+            return
+
+        choices = ev_mgr.choices
         if not choices:
             self.map_manager.continue_event()
             return
 
         for idx, choice in enumerate(choices):
-            btn_rect = pygame.Rect(180, 240 + idx * 48, 540, 38)
+            btn_y = 200 + idx * 44
+            btn_rect = pygame.Rect(150, btn_y, 600, 38)
             if btn_rect.collidepoint(mx, my):
                 action = choice.get("action", "")
+                res_txt = choice.get("result_text", "")
+                if res_txt and action in ("CLAIM_RESOURCES", "GIVE_RESOURCES", "SCAVENGE_FUEL", "CONTINUE", "TAKE_DAMAGE", "BUY_FUEL"):
+                    ev_mgr.result_text = res_txt
                 self.map_manager.handle_choice(action, choice)
                 return
-
-        if len(choices) == 1:
-            action = choices[0].get("action", "")
-            self.map_manager.handle_choice(action, choices[0])
 
 
 

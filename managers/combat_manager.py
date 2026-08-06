@@ -29,6 +29,8 @@ class CombatManager:
             self.data.combat.msg_timer - dt
         )
 
+        self.data.player.ship.update_doors(dt)
+        self.data.enemy.ship.update_doors(dt)
         self.update_crew(dt)
         self.update_shields(dt)
         self.update_weapons(dt)
@@ -321,7 +323,8 @@ class CombatManager:
     def player_won(self):
 
         is_mini_boss = "Mini-Boss" in self.data.enemy.ship.name
-        tier = "High" if (self.data.enemy.ship.name == "Flaggschiff" or is_mini_boss) else "Medium"
+        is_final_boss = "Flaggschiff" in self.data.enemy.ship.name or (self.data.world.star_map.sector >= 5 and not is_mini_boss)
+        tier = "High" if (is_final_boss or is_mini_boss) else "Medium"
         scrap_reward, missile_reward = self.calculate_stochastic_rewards(tier)
 
         self.data.player.scrap += scrap_reward
@@ -331,10 +334,7 @@ class CombatManager:
         self.data.player.projectiles.clear()
         self.data.combat.weapon_targets.clear()
 
-        if (
-            self.data.world.star_map.sector == 3
-            and self.data.enemy.ship.name == "Flaggschiff"
-        ):
+        if is_final_boss:
             self.data.current_state = STATE_VICTORY
         elif is_mini_boss:
             sec = self.data.world.star_map.sector

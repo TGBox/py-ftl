@@ -143,12 +143,14 @@ class ShopManager:
                 break
 
         if matching_weapon:
-            self.data.player.scrap -= cost
-            matching_weapon.damage = round(matching_weapon.damage * 1.4, 1)
-            matching_weapon.charge_time = max(1.5, round(matching_weapon.charge_time * 0.8, 1))
-            matching_weapon.name = f"{matching_weapon.w_type.capitalize()} MK II"
-            self.data.combat.msg = f"WAFFEN-FUSION! {matching_weapon.name} (+40% Schaden, -20% Ladezeit)"
-            self.data.combat.msg_timer = 3.0
+            if matching_weapon.level < 5:
+                self.data.player.scrap -= cost
+                matching_weapon.upgrade()
+                self.data.combat.msg = f"WAFFEN-FUSION! {matching_weapon.name} (Stufe {matching_weapon.level}/5)!"
+                self.data.combat.msg_timer = 3.0
+            else:
+                self.data.combat.msg = f"MAXIMALES FUSION-LEVEL (MK V) FÜR {matching_weapon.w_type.capitalize()} ERREICHT!"
+                self.data.combat.msg_timer = 2.5
         else:
             self.data.combat.msg = "KEIN SLOT FREI (Kein gleicher Waffentyp zur Fusion)!"
             self.data.combat.msg_timer = 2.0

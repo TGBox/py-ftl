@@ -26,6 +26,10 @@ class RenderManager:
         self.btn_pause_options = pygame.Rect(300, 325, 300, 42)
         self.btn_pause_main_menu = pygame.Rect(300, 380, 300, 42)
         self.btn_continue_game = pygame.Rect(300, 438, 300, 42)
+        # Door UI Buttons
+        self.btn_doors_open_all = pygame.Rect(750, 45, 130, 26)
+        self.btn_doors_close_all = pygame.Rect(750, 75, 130, 26)
+        self.btn_airlocks_vent = pygame.Rect(750, 105, 130, 26)
 
     def draw(self):
         self.screen.fill(COLOR_BG)
@@ -41,12 +45,22 @@ class RenderManager:
               (20, 15),
           )
 
-        # Crew-Menü Button oben rechts
+        # Crew-Menü & Tür-Steuerung Buttons oben rechts
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
             pygame.draw.rect(self.screen, (50, 70, 95), self.btn_crew_toggle)
             pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_crew_toggle, 2)
             lbl = self.font.render("Crew-Menü", True, (220, 240, 255))
             self.screen.blit(lbl, (self.btn_crew_toggle.x + 18, self.btn_crew_toggle.y + 6))
+
+            for btn, text, col in [
+                (self.btn_doors_open_all, "Türen öffnen", (40, 70, 95)),
+                (self.btn_doors_close_all, "Türen zu", (75, 40, 45)),
+                (self.btn_airlocks_vent, "Luftschleusen", (30, 80, 100)),
+            ]:
+                pygame.draw.rect(self.screen, col, btn)
+                pygame.draw.rect(self.screen, COLOR_BORDER, btn, 1)
+                d_lbl = self.font.render(text, True, (220, 240, 255))
+                self.screen.blit(d_lbl, (btn.x + (btn.width - d_lbl.get_width()) // 2, btn.y + 4))
 
         if self.data.current_state in (STATE_MAIN_MENU, STATE_OPTIONS) and not self.data.paused:
             self.draw_main_menu()
@@ -188,11 +202,14 @@ class RenderManager:
         # 1. Reaktor zeichnen
         self.data.player.reactor.draw(self.screen, 30, 45)
 
-        # 2. Räume zeichnen
+        # 2. Räume & Türen zeichnen
         for r in self.data.player.ship.rooms:
             r.draw(self.screen)
         for r in self.data.enemy.ship.rooms:
             r.draw(self.screen)
+
+        self.data.player.ship.draw_doors(self.screen)
+        self.data.enemy.ship.draw_doors(self.screen)
             
         # 3. Crew zeichnen
         for c in self.data.player.crew:
@@ -470,24 +487,41 @@ class RenderManager:
 
 
     def draw_event(self):
-        pygame.draw.rect(self.screen, (30, 40, 55), (150, 130, 600, 300))
-        pygame.draw.rect(self.screen, COLOR_BORDER, (150, 130, 600, 300), 3)
+        pygame.draw.rect(self.screen, (30, 40, 55), (120, 100, 660, 380))
+        pygame.draw.rect(self.screen, COLOR_BORDER, (120, 100, 660, 380), 3)
+
+        ev_text = self.data.world.event_manager.current_event_text
         self.screen.blit(
-            self.font.render(self.data.world.event_manager.current_event_text, True, (240, 240, 240)),
-            (180, 170),
+            self.font.render(ev_text, True, (240, 240, 240)),
+            (150, 130),
         )
+
+        res_text = getattr(self.data.world.event_manager, "result_text", "")
+        if res_text:
+            self.screen.blit(
+                self.font.render(res_text, True, (100, 255, 180)),
+                (150, 175),
+            )
+            cont_btn = pygame.Rect(280, 400, 340, 42)
+            pygame.draw.rect(self.screen, (40, 70, 100), cont_btn)
+            pygame.draw.rect(self.screen, (100, 200, 255), cont_btn, 2)
+            lbl = self.font.render("Weiter (Fortfahren)", True, (255, 255, 255))
+            self.screen.blit(lbl, (cont_btn.x + (cont_btn.width - lbl.get_width()) // 2, cont_btn.y + 11))
+            return
 
         choices = self.data.world.event_manager.choices
         if not choices:
-            self.screen.blit(
-                self.font.render("[ Klick zum Fortfahren ]", True, COLOR_SELECTED),
-                (340, 370),
-            )
+            cont_btn = pygame.Rect(280, 400, 340, 42)
+            pygame.draw.rect(self.screen, (40, 70, 100), cont_btn)
+            pygame.draw.rect(self.screen, (100, 200, 255), cont_btn, 2)
+            lbl = self.font.render("Weiter (Fortfahren)", True, (255, 255, 255))
+            self.screen.blit(lbl, (cont_btn.x + (cont_btn.width - lbl.get_width()) // 2, cont_btn.y + 11))
         else:
             for idx, choice in enumerate(choices):
-                btn = pygame.Rect(180, 240 + idx * 48, 540, 38)
+                btn_y = 200 + idx * 44
+                btn = pygame.Rect(150, btn_y, 600, 38)
                 is_blue = choice.get("is_blue", False)
-                bg_color = (30, 90, 190) if is_blue else (50, 65, 90)
+                bg_color = (30, 90, 190) if is_blue else (45, 60, 85)
                 border_color = (100, 200, 255) if is_blue else COLOR_BORDER
                 text_color = (180, 240, 255) if is_blue else (220, 240, 255)
 

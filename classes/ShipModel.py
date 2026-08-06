@@ -1,5 +1,6 @@
 import copy
 
+from classes.Door import Door
 from classes.Room import Room
 
 
@@ -20,6 +21,63 @@ class ShipModel:
         self.is_enemy = is_enemy
         self.max_weapons = max_weapons
         self.max_crew = max_crew
+        self.doors: list[Door] = []
+        self.generate_doors()
+
+    def generate_doors(self) -> None:
+        self.doors.clear()
+        # 1. Innentüren zwischen angrenzenden Räumen
+        for i in range(len(self.rooms)):
+            for j in range(i + 1, len(self.rooms)):
+                r1 = self.rooms[i]
+                r2 = self.rooms[j]
+                rect1 = r1.rect
+                rect2 = r2.rect
+
+                if abs(rect1.right - rect2.left) <= 15 or abs(rect2.right - rect1.left) <= 15:
+                    top = max(rect1.top, rect2.top)
+                    bottom = min(rect1.bottom, rect2.bottom)
+                    if bottom - top >= 20:
+                        mid_y = (top + bottom) // 2
+                        x = rect1.right if abs(rect1.right - rect2.left) <= 15 else rect2.right
+                        self.doors.append(Door(r1, r2, (x - 3, mid_y - 12, 6, 24), is_airlock=False))
+
+                elif abs(rect1.bottom - rect2.top) <= 15 or abs(rect2.bottom - rect1.top) <= 15:
+                    left = max(rect1.left, rect2.left)
+                    right = min(rect1.right, rect2.right)
+                    if right - left >= 20:
+                        mid_x = (left + right) // 2
+                        y = rect1.bottom if abs(rect1.bottom - rect2.top) <= 15 else rect2.bottom
+                        self.doors.append(Door(r1, r2, (mid_x - 12, y - 3, 24, 6), is_airlock=False))
+
+        # 2. Äußere Luftschleusen (Airlocks nach außen ins Weltall)
+        if not self.is_enemy and self.rooms:
+            min_x_room = min(self.rooms, key=lambda r: r.rect.left)
+            max_x_room = max(self.rooms, key=lambda r: r.rect.right)
+            self.doors.append(Door(min_x_room, None, (min_x_room.rect.left - 4, min_x_room.rect.centery - 12, 6, 24), is_airlock=True))
+            self.doors.append(Door(max_x_room, None, (max_x_room.rect.right - 2, max_x_room.rect.centery - 12, 6, 24), is_airlock=True))
+
+    def update_doors(self, dt: float) -> None:
+        for d in self.doors:
+            d.update(dt)
+
+    def draw_doors(self, surface) -> None:
+        for d in self.doors:
+            d.draw(surface)
+
+    def open_all_doors(self) -> None:
+        for d in self.doors:
+            if not d.is_airlock:
+                d.is_open = True
+
+    def close_all_doors(self) -> None:
+        for d in self.doors:
+            d.is_open = False
+
+    def open_airlocks(self) -> None:
+        for d in self.doors:
+            if d.is_airlock:
+                d.is_open = not d.is_open
 
 
 PLAYER_SHIP = ShipModel("Kestrel", 15, [
