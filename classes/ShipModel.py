@@ -14,6 +14,8 @@ class ShipModel:
         max_weapons: int = 3,
         max_crew: int = 4,
         weapon_slots: list[dict] | None = None,
+        hull_image: str = "ships/kestrel_a_hull.png",
+        floorplan_image: str = "ships/kestrel_a_floorplan.png",
     ):
         self.name = name
         self.max_hp = max_hp
@@ -23,6 +25,8 @@ class ShipModel:
         self.max_weapons = max_weapons
         self.max_crew = max_crew
         self.weapon_slots: list[dict] = weapon_slots or []
+        self.hull_image: str = hull_image
+        self.floorplan_image: str = floorplan_image
         self.doors: list[Door] = []
         self.generate_doors()
         if not self.weapon_slots:
@@ -150,7 +154,7 @@ PLAYER_SHIP = ShipModel("Kestrel", 15, [
     {"slot_id": 1, "pos": (205, 230), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
     {"slot_id": 2, "pos": (205, 350), "allowed_types": ["LASER", "MISSILE"]},
     {"slot_id": 3, "pos": (335, 290), "allowed_types": ["MISSILE", "BEAM"]},
-])
+], hull_image="ships/kestrel_a_hull.png", floorplan_image="ships/kestrel_a_floorplan.png")
 
 CRUISER_SHIP = ShipModel("Kreuzer", 18, [
     Room("Schild", (50, 235, 85, 85)),
@@ -163,7 +167,7 @@ CRUISER_SHIP = ShipModel("Kreuzer", 18, [
     {"slot_id": 2, "pos": (187, 335), "allowed_types": ["LASER", "BEAM"]},
     {"slot_id": 3, "pos": (282, 220), "allowed_types": ["MISSILE", "BEAM"]},
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
-])
+], hull_image="ships/red_tail_hull.png", floorplan_image="ships/red_tail_floorplan.png")
 
 STEALTH_SHIP = ShipModel("Tarnschiff", 12, [
     Room("Tarnung", (70, 245, 80, 80)),
@@ -174,7 +178,7 @@ STEALTH_SHIP = ShipModel("Tarnschiff", 12, [
     {"slot_id": 1, "pos": (200, 230), "allowed_types": ["LASER", "BEAM"]},
     {"slot_id": 2, "pos": (200, 340), "allowed_types": ["BEAM"]},
     {"slot_id": 3, "pos": (290, 285), "allowed_types": ["LASER", "MISSILE"]},
-])
+], hull_image="ships/swallow_hull.png", floorplan_image="ships/swallow_floorplan.png")
 
 ZOLTAN_SHIP = ShipModel("Zoltan-Fregatte", 14, [
     Room("Schild", (50, 235, 85, 85)),
@@ -187,7 +191,7 @@ ZOLTAN_SHIP = ShipModel("Zoltan-Fregatte", 14, [
     {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
     {"slot_id": 3, "pos": (187, 220), "allowed_types": ["LASER"]},
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["MISSILE", "BEAM"]},
-])
+], hull_image="ships/nisos_hull.png", floorplan_image="ships/nisos_floorplan.png")
 
 FEDERATION_SHIP = ShipModel("Federations-Kreuzer", 20, [
     Room("Artillerie", (50, 235, 85, 85)),
@@ -200,7 +204,7 @@ FEDERATION_SHIP = ShipModel("Federations-Kreuzer", 20, [
     {"slot_id": 2, "pos": (282, 335), "allowed_types": ["BEAM", "MISSILE"]},
     {"slot_id": 3, "pos": (92, 220), "allowed_types": ["BEAM"]},
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
-])
+], hull_image="ships/osprey_hull.png", floorplan_image="ships/osprey_floorplan.png")
 
 MANTIS_SHIP = ShipModel("Mantis-Kaperer", 16, [
     Room("Teleporter", (50, 235, 85, 85), max_power=2),
@@ -213,7 +217,7 @@ MANTIS_SHIP = ShipModel("Mantis-Kaperer", 16, [
     {"slot_id": 1, "pos": (282, 220), "allowed_types": ["LASER", "MISSILE"]},
     {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM"]},
     {"slot_id": 3, "pos": (187, 220), "allowed_types": ["MISSILE", "BEAM"]},
-])
+], hull_image="ships/fregatidae_hull.png", floorplan_image="ships/fregatidae_floorplan.png")
 
 ROCK_SHIP = ShipModel("Rock-Schlachtschiff", 22, [
     Room("Schild", (50, 235, 85, 85)),

@@ -1,3 +1,5 @@
+import math
+import os
 import pygame
 
 from classes.GameData import GameData
@@ -309,27 +311,25 @@ class RenderManager:
         pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, close_btn, 2)
         self.screen.blit(self.font.render("Schließen", True, (255, 200, 200)), (close_btn.x + 40, close_btn.y + 10))
 
-
-            
     def draw_combat(self):
 
-        # Triebwerks-Partikel dynamisch am Heck (Unterseite) der Schiffe emittieren (nach unten)
+        # Triebwerks-Partikel waagerecht am Heck (linke Seite) der Schiffe emittieren (nach links)
         if hasattr(self.data, "particle_manager"):
             if self.data.player.ship.rooms:
                 p_left = min(r.rect.left for r in self.data.player.ship.rooms)
-                p_right = max(r.rect.right for r in self.data.player.ship.rooms)
+                p_top = min(r.rect.top for r in self.data.player.ship.rooms)
                 p_bottom = max(r.rect.bottom for r in self.data.player.ship.rooms)
-                p_w = p_right - p_left
-                self.data.particle_manager.emit_thruster(p_left + int(p_w * 0.35), p_bottom + 6, direction_x=0.0, direction_y=1.0)
-                self.data.particle_manager.emit_thruster(p_left + int(p_w * 0.65), p_bottom + 6, direction_x=0.0, direction_y=1.0)
+                p_h = p_bottom - p_top
+                self.data.particle_manager.emit_thruster(p_left - 8, p_top + int(p_h * 0.35), direction_x=-1.0, direction_y=0.0)
+                self.data.particle_manager.emit_thruster(p_left - 8, p_top + int(p_h * 0.65), direction_x=-1.0, direction_y=0.0)
 
             if self.data.enemy.ship.rooms:
-                e_left = min(r.rect.left for r in self.data.enemy.ship.rooms)
                 e_right = max(r.rect.right for r in self.data.enemy.ship.rooms)
+                e_top = min(r.rect.top for r in self.data.enemy.ship.rooms)
                 e_bottom = max(r.rect.bottom for r in self.data.enemy.ship.rooms)
-                e_w = e_right - e_left
-                self.data.particle_manager.emit_thruster(e_left + int(e_w * 0.35), e_bottom + 6, direction_x=0.0, direction_y=1.0)
-                self.data.particle_manager.emit_thruster(e_left + int(e_w * 0.65), e_bottom + 6, direction_x=0.0, direction_y=1.0)
+                e_h = e_bottom - e_top
+                self.data.particle_manager.emit_thruster(e_right + 8, e_top + int(e_h * 0.35), direction_x=1.0, direction_y=0.0)
+                self.data.particle_manager.emit_thruster(e_right + 8, e_top + int(e_h * 0.65), direction_x=1.0, direction_y=0.0)
 
         self.draw_rooms()
 
@@ -341,6 +341,68 @@ class RenderManager:
         self.draw_shields()
 
         self.draw_weapons()
+
+        self.draw_messages()
+
+    def get_loaded_ship_sprite(self, path: str, size: tuple[int, int], flip_x: bool = False):
+        if not path:
+            return None
+        key = f"{path}_{size[0]}x{size[1]}_{flip_x}"
+        if key not in self.assets:
+            full_path = os.path.join("assets", path)
+            if os.path.exists(full_path):
+                try:
+                    img = pygame.image.load(full_path).convert_alpha()
+                    if flip_x:
+                        img = pygame.transform.flip(img, True, False)
+                    img = pygame.transform.scale(img, size)
+                    self.assets[key] = img
+                except Exception as e:
+                    print(f"Fehler beim Laden von {full_path}: {e}")
+                    return None
+            else:
+                return None
+        return self.assets.get(key)
+
+    def draw_rooms(self):
+        # 0. Schiffshüllen & Grundrisse (Player & Enemy Hull/Floorplan Sprites)
+        if self.data.player.ship.rooms:
+            p_rooms = self.data.player.ship.rooms
+            min_x = min(r.rect.left for r in p_rooms) - 30
+            min_y = min(r.rect.top for r in p_rooms) - 30
+            max_x = max(r.rect.right for r in p_rooms) + 30
+            max_y = max(r.rect.bottom for r in p_rooms) + 30
+            w, h = max_x - min_x, max_y - min_y
+
+            p_hull_path = getattr(self.data.player.ship, "hull_image", "ships/kestrel_a_hull.png")
+            p_fp_path = getattr(self.data.player.ship, "floorplan_image", "ships/kestrel_a_floorplan.png")
+
+            hull_img = self.get_loaded_ship_sprite(p_hull_path, (w + 40, h + 30), flip_x=False)
+            fp_img = self.get_loaded_ship_sprite(p_fp_path, (w - 10, h - 10), flip_x=False)
+
+            if hull_img:
+                self.screen.blit(hull_img, (min_x - 20, min_y - 15))
+            if fp_img:
+                self.screen.blit(fp_img, (min_x + 5, min_y + 5))
+
+        if self.data.enemy.ship.rooms:
+            e_rooms = self.data.enemy.ship.rooms
+            min_x = min(r.rect.left for r in e_rooms) - 30
+            min_y = min(r.rect.top for r in e_rooms) - 30
+            max_x = max(r.rect.right for r in e_rooms) + 30
+            max_y = max(r.rect.bottom for r in e_rooms) + 30
+            w, h = max_x - min_x, max_y - min_y
+
+            e_hull_path = getattr(self.data.enemy.ship, "hull_image", "ships/osprey_hull.png")
+            e_fp_path = getattr(self.data.enemy.ship, "floorplan_image", "ships/osprey_floorplan.png")
+
+            e_hull_img = self.get_loaded_ship_sprite(e_hull_path, (w + 40, h + 30), flip_x=True)
+            e_fp_img = self.get_loaded_ship_sprite(e_fp_path, (w - 10, h - 10), flip_x=True)
+
+            if e_hull_img:
+                self.screen.blit(e_hull_img, (min_x - 20, min_y - 15))
+            if e_fp_img:
+                self.screen.blit(e_fp_img, (min_x + 5, min_y + 5))
 
         self.draw_messages()
         
@@ -626,20 +688,6 @@ class RenderManager:
         pygame.draw.rect(self.screen, COLOR_TRAINING_NODE, btn_leave, 2)
         l_lbl = self.font.render("Station verlassen", True, (240, 200, 255))
         self.screen.blit(l_lbl, (btn_leave.x + (btn_leave.width - l_lbl.get_width()) // 2, btn_leave.y + 10))
-
-    def draw_rooms(self):
-        # 0. Schiffshüllen (Player & Enemy Hull Sprites)
-        if "kestrel_hull" in self.assets and self.data.player.ship.rooms:
-            p_rooms = self.data.player.ship.rooms
-            min_x = min(r.rect.left for r in p_rooms) - 25
-            min_y = min(r.rect.top for r in p_rooms) - 25
-            self.screen.blit(self.assets["kestrel_hull"], (min_x, min_y))
-
-        if "enemy_scout" in self.assets and self.data.enemy.ship.rooms:
-            e_rooms = self.data.enemy.ship.rooms
-            min_x = min(r.rect.left for r in e_rooms) - 25
-            min_y = min(r.rect.top for r in e_rooms) - 25
-            self.screen.blit(self.assets["enemy_scout"], (min_x, min_y))
 
         # 1. Reaktor zeichnen (links am Rand)
         self.data.player.reactor.draw(self.screen, 15, 45)

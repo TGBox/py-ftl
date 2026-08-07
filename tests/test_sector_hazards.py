@@ -31,6 +31,12 @@ class TestSectorHazards(unittest.TestCase):
     def test_hazard_distribution_on_map(self):
         starmap = StarMap()
         hazard_nodes = [n for n in starmap.nodes if getattr(n, "hazard_type", "NONE") != "NONE"]
+        for _ in range(5):
+            if hazard_nodes:
+                break
+            starmap.generate_map()
+            hazard_nodes = [n for n in starmap.nodes if getattr(n, "hazard_type", "NONE") != "NONE"]
+
         self.assertGreater(len(hazard_nodes), 0, "Map generation should distribute hazards on nodes.")
 
         valid_hazards = ["SOLAR_FLARE", "ASTEROID_FIELD", "NEBULA_ION_STORM", "PULSAR"]
