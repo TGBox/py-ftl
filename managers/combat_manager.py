@@ -487,6 +487,7 @@ class CombatManager:
                     breach_chance=getattr(weapon, "breach_chance", 0.0),
                     stun_duration=getattr(weapon, "stun_duration", 0.0),
                     crew_damage=getattr(weapon, "crew_damage", 0.0),
+                    max_range=getattr(weapon, "max_range", None),
                 )
             )
 
@@ -557,6 +558,7 @@ class CombatManager:
                 breach_chance=getattr(weapon, "breach_chance", 0.0),
                 stun_duration=getattr(weapon, "stun_duration", 0.0),
                 crew_damage=getattr(weapon, "crew_damage", 0.0),
+                max_range=getattr(weapon, "max_range", None),
             )
         )
 
@@ -567,6 +569,12 @@ class CombatManager:
         for projectile in self.data.player.projectiles[:]:
 
             projectile.update(dt)
+
+            if getattr(projectile, "out_of_range", False):
+                self.show_message("SCHUSS AUßER REICHWEITE DISSIPPIERT!")
+                self.data.particle_manager.emit_sparks(projectile.x, projectile.y, count=8)
+                self.data.player.projectiles.remove(projectile)
+                continue
 
             if projectile.alive:
                 continue

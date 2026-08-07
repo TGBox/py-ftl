@@ -14,6 +14,7 @@ class Weapon:
       breach_chance: float = 0.0,
       stun_duration: float = 0.0,
       crew_damage: float = 0.0,
+      max_range: float | None = None,
   ) -> None:
     self.name: str = name
     self.charge_time: float = charge_time
@@ -28,6 +29,7 @@ class Weapon:
     self.breach_chance: float = breach_chance
     self.stun_duration: float = stun_duration
     self.crew_damage: float = crew_damage
+    self.max_range: float | None = max_range
 
   def upgrade(self) -> bool:
     if self.level < 5:

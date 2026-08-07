@@ -115,6 +115,7 @@ class SaveManager:
                     breach_chance=getattr(w, "breach_chance", 0.0),
                     stun_duration=getattr(w, "stun_duration", 0.0),
                     crew_damage=getattr(w, "crew_damage", 0.0),
+                    max_range=getattr(w, "max_range", None),
                 )
                 for w in data.player.weapons
             ]
@@ -281,6 +282,7 @@ class SaveManager:
                         breach_chance=getattr(ws, "breach_chance", 0.0),
                         stun_duration=getattr(ws, "stun_duration", 0.0),
                         crew_damage=getattr(ws, "crew_damage", 0.0),
+                        max_range=getattr(ws, "max_range", None),
                     )
                     for ws in schema.weapons
                 ]

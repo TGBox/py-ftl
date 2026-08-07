@@ -491,28 +491,83 @@ class RenderManager:
 
         if is_swap_mode:
             overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
-            overlay.fill((10, 15, 25, 210))
+            overlay.fill((10, 15, 25, 220))
             self.screen.blit(overlay, (0, 0))
 
-            title_txt = "SCHIFF-LAYOUT UMBAUEN (15 SCRAP)"
-            subtitle_txt = f"1. Raum: {first_r.name.upper()} | Klicke auf den 2. Raum zum Tauschen!" if first_r else "KLICKE AUF ZWEI RÄUME, UM DEREN SYSTEME ZU TAUSCHEN:"
+            swap_type = getattr(shop_mgr, "layout_swap_type", "ROOMS")
+            first_sel = getattr(shop_mgr, "layout_swap_first_selection", None)
 
-            t_lbl = self.font.render(title_txt, True, (255, 220, 100))
+            # Tab-Buttons rendern
+            tab_rooms = pygame.Rect(200, 20, 190, 32)
+            tab_weapons = pygame.Rect(410, 20, 190, 32)
+
+            col_r_fill = (50, 70, 100) if swap_type == "ROOMS" else (25, 35, 50)
+            col_r_bord = (255, 220, 100) if swap_type == "ROOMS" else (80, 120, 160)
+            pygame.draw.rect(self.screen, col_r_fill, tab_rooms)
+            pygame.draw.rect(self.screen, col_r_bord, tab_rooms, 2)
+            lbl_tr = self.small_font.render("Räume tauschen", True, (255, 255, 255))
+            self.screen.blit(lbl_tr, (tab_rooms.x + (tab_rooms.width - lbl_tr.get_width()) // 2, tab_rooms.y + 8))
+
+            col_w_fill = (50, 70, 100) if swap_type == "WEAPONS" else (25, 35, 50)
+            col_w_bord = (255, 220, 100) if swap_type == "WEAPONS" else (80, 120, 160)
+            pygame.draw.rect(self.screen, col_w_fill, tab_weapons)
+            pygame.draw.rect(self.screen, col_w_bord, tab_weapons, 2)
+            lbl_tw = self.small_font.render("Waffenslots tauschen", True, (255, 255, 255))
+            self.screen.blit(lbl_tw, (tab_weapons.x + (tab_weapons.width - lbl_tw.get_width()) // 2, tab_weapons.y + 8))
+
+            if swap_type == "ROOMS":
+                first_r_name = first_sel.name if (first_sel and hasattr(first_sel, "name")) else ""
+                subtitle_txt = f"1. Raum: {first_r_name.upper()} | Klicke auf den 2. Raum zum Tauschen!" if first_r_name else "KLICKE AUF ZWEI RÄUME, UM DEREN SYSTEME ZU TAUSCHEN:"
+            else:
+                s1_num = f"H{first_sel+1}" if isinstance(first_sel, int) else ""
+                subtitle_txt = f"1. Slot: {s1_num} | Klicke auf den 2. Waffenslot zum Tauschen!" if s1_num else "KLICKE AUF ZWEI WAFFENSLOTS, UM DEREN TYPEN ZU TAUSCHEN:"
+
             st_lbl = self.small_font.render(subtitle_txt, True, (100, 220, 255))
-            self.screen.blit(t_lbl, (240, 30))
             self.screen.blit(st_lbl, (220, 58))
 
-            # Spielerschiff Räume zeichnen
-            for r in self.data.player.ship.rooms:
-                is_first = (r == first_r)
-                border_color = (255, 220, 0) if is_first else (100, 200, 255)
-                fill_color = (70, 70, 20) if is_first else (30, 45, 65)
+            if swap_type == "ROOMS":
+                # Spielerschiff Räume zeichnen
+                for r in self.data.player.ship.rooms:
+                    is_first = (r == first_sel)
+                    border_color = (255, 220, 0) if is_first else (100, 200, 255)
+                    fill_color = (70, 70, 20) if is_first else (30, 45, 65)
 
-                pygame.draw.rect(self.screen, fill_color, r.rect)
-                pygame.draw.rect(self.screen, border_color, r.rect, 3 if is_first else 2)
+                    pygame.draw.rect(self.screen, fill_color, r.rect)
+                    pygame.draw.rect(self.screen, border_color, r.rect, 3 if is_first else 2)
 
-                lbl_r = self.small_font.render(r.name, True, (255, 255, 255))
-                self.screen.blit(lbl_r, (r.rect.x + 6, r.rect.y + 6))
+                    lbl_r = self.small_font.render(r.name, True, (255, 255, 255))
+                    self.screen.blit(lbl_r, (r.rect.x + 6, r.rect.y + 6))
+            else:
+                # Spielerschiff Räume abgedunkelt im Hintergrund
+                for r in self.data.player.ship.rooms:
+                    pygame.draw.rect(self.screen, (20, 30, 45), r.rect)
+                    pygame.draw.rect(self.screen, (40, 60, 90), r.rect, 1)
+
+                # Waffenslot-Karten zeichnen
+                tiny_font = pygame.font.SysFont(None, 13)
+                small_font = pygame.font.SysFont(None, 14, bold=True)
+                for idx, slot in enumerate(getattr(self.data.player.ship, "weapon_slots", [])):
+                    hx, hy = slot["pos"]
+                    slot_rect = pygame.Rect(hx - 65, hy - 25, 130, 50)
+                    is_first = (isinstance(first_sel, int) and first_sel == idx)
+
+                    b_fill = (80, 75, 25) if is_first else (22, 35, 55)
+                    b_bord = (255, 220, 0) if is_first else (100, 200, 255)
+
+                    pygame.draw.rect(self.screen, b_fill, slot_rect)
+                    pygame.draw.rect(self.screen, b_bord, slot_rect, 2)
+
+                    allowed = slot.get("allowed_types")
+                    allowed_str = ", ".join(allowed) if allowed else "ALLE"
+                    w_name = self.data.player.weapons[idx].name if idx < len(self.data.player.weapons) else "[Leer]"
+
+                    lbl_title = small_font.render(f"Slot H{idx+1}", True, (255, 220, 100) if is_first else (200, 240, 255))
+                    lbl_type = tiny_font.render(f"Typ: {allowed_str}", True, (160, 220, 255))
+                    lbl_weap = tiny_font.render(f"Waffe: {w_name}", True, (255, 255, 200))
+
+                    self.screen.blit(lbl_title, (slot_rect.x + 6, slot_rect.y + 4))
+                    self.screen.blit(lbl_type, (slot_rect.x + 6, slot_rect.y + 20))
+                    self.screen.blit(lbl_weap, (slot_rect.x + 6, slot_rect.y + 34))
 
             cancel_btn = pygame.Rect(320, 490, 260, 40)
             pygame.draw.rect(self.screen, (70, 40, 40), cancel_btn)

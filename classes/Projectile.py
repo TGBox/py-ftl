@@ -22,6 +22,7 @@ class Projectile:
       breach_chance: float = 0.0,
       stun_duration: float = 0.0,
       crew_damage: float = 0.0,
+      max_range: float | None = None,
   ) -> None:
     self.start_x: float = float(start_pos[0])
     self.start_y: float = float(start_pos[1])
@@ -39,6 +40,9 @@ class Projectile:
     self.breach_chance: float = breach_chance
     self.stun_duration: float = stun_duration
     self.crew_damage: float = crew_damage
+    self.max_range: float | None = max_range
+    self.distance_traveled: float = 0.0
+    self.out_of_range: bool = False
     self.alive: bool = True
 
     dx = self.target_x - self.x
@@ -49,8 +53,17 @@ class Projectile:
     self.vy: float = (dy / dist) * speed if dist != 0 else 0.0
 
   def update(self, dt: float) -> None:
-    self.x += self.vx * dt
-    self.y += self.vy * dt
+    step_x = self.vx * dt
+    step_y = self.vy * dt
+    self.x += step_x
+    self.y += step_y
+    self.distance_traveled += math.hypot(step_x, step_y)
+
+    if self.max_range is not None and self.distance_traveled >= self.max_range:
+      self.alive = False
+      self.out_of_range = True
+      return
+
     if math.hypot(self.target_x - self.x, self.target_y - self.y) < 10:
       self.alive = False
 

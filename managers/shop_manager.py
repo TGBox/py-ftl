@@ -12,6 +12,7 @@ WEAPON_CATALOG_MASTER = [
     {"name": "Burst Laser MK II", "charge_time": 4.0, "w_type": "LASER", "shield_pierce": 0, "damage": 60.0, "ammo_cost": 0, "price": 70, "subtype": "STANDARD"},
     {"name": "Artemis Rakete", "charge_time": 4.0, "w_type": "MISSILE", "shield_pierce": 1, "damage": 40.0, "ammo_cost": 1, "price": 40, "subtype": "STANDARD"},
     {"name": "Pike Strahl", "charge_time": 5.0, "w_type": "BEAM", "shield_pierce": 1, "damage": 35.0, "ammo_cost": 0, "price": 60, "subtype": "STANDARD"},
+    {"name": "Halberd Strahl", "charge_time": 5.5, "w_type": "BEAM", "shield_pierce": 1, "damage": 45.0, "ammo_cost": 0, "price": 75, "subtype": "STANDARD"},
     {"name": "Ion Blast MK I", "charge_time": 3.0, "w_type": "ION", "shield_pierce": 0, "damage": 10.0, "ammo_cost": 0, "price": 45, "subtype": "STANDARD"},
     {"name": "Bio-Strahl MK I", "charge_time": 4.5, "w_type": "BEAM", "shield_pierce": 0, "damage": 0.0, "ammo_cost": 0, "price": 65, "subtype": "BIO", "crew_damage": 65.0},
     {"name": "Brand-Laser MK I", "charge_time": 3.8, "w_type": "LASER", "shield_pierce": 0, "damage": 15.0, "ammo_cost": 0, "price": 55, "subtype": "FIRE", "fire_chance": 0.75},
@@ -20,6 +21,8 @@ WEAPON_CATALOG_MASTER = [
     {"name": "Anti-Materie Kanone", "charge_time": 4.8, "w_type": "MISSILE", "shield_pierce": 1, "damage": 10.0, "ammo_cost": 1, "price": 75, "subtype": "BIO", "crew_damage": 85.0},
     {"name": "Feuer-Bombe", "charge_time": 4.5, "w_type": "BOMB", "shield_pierce": 99, "damage": 0.0, "ammo_cost": 1, "price": 55, "subtype": "FIRE", "fire_chance": 0.90},
     {"name": "Hüllenbruch-Bombe", "charge_time": 5.0, "w_type": "BOMB", "shield_pierce": 99, "damage": 15.0, "ammo_cost": 1, "price": 60, "subtype": "BREACH", "breach_chance": 0.90},
+    {"name": "Kurzstrecken-Flak", "charge_time": 3.2, "w_type": "FLAK", "shield_pierce": 0, "damage": 30.0, "ammo_cost": 0, "price": 45, "subtype": "STANDARD", "max_range": 350.0},
+    {"name": "Impuls-Laser (Kurz)", "charge_time": 2.5, "w_type": "LASER", "shield_pierce": 0, "damage": 25.0, "ammo_cost": 0, "price": 40, "subtype": "STANDARD", "max_range": 320.0},
 ]
 
 
@@ -39,7 +42,8 @@ class ShopManager:
         self.catalog_stock: list[dict] = []
         self.selecting_slot_item: dict | None = None
         self.layout_swap_mode: bool = False
-        self.layout_swap_first_room = None
+        self.layout_swap_type: str = "ROOMS"  # "ROOMS" oder "WEAPONS"
+        self.layout_swap_first_selection = None
         self.refresh_catalog()
 
         # Navigation & Basis-Buttons
@@ -154,36 +158,72 @@ class ShopManager:
             self.data.combat.msg_timer = 2.0
             return
         self.layout_swap_mode = True
-        self.layout_swap_first_room = None
-        self.data.combat.msg = "LAYOUT-UMBAU: KLICKE AUF DEN ERSTEN RAUM ZUM TAUSCHEN!"
+        self.layout_swap_type = "ROOMS"
+        self.layout_swap_first_selection = None
+        self.data.combat.msg = "LAYOUT-UMBAU: WÄHLE RÄUME ODER WAFFENSLOTS ZUM TAUSCHEN!"
         self.data.combat.msg_timer = 3.0
 
     def handle_layout_swap_click(self, mx: float, my: float):
         btn_cancel = pygame.Rect(320, 490, 260, 40)
         if btn_cancel.collidepoint(mx, my):
             self.layout_swap_mode = False
-            self.layout_swap_first_room = None
+            self.layout_swap_first_selection = None
             return
 
-        # Raum auf dem Spielerschiff anklicken
-        for room in self.data.player.ship.rooms:
-            if room.rect.collidepoint(int(mx), int(my)):
-                if self.layout_swap_first_room is None:
-                    self.layout_swap_first_room = room
-                    self.data.combat.msg = f"1. RAUM ({room.name.upper()}) GEWÄHLT! KLICKE AUF DEN 2. RAUM."
-                    self.data.combat.msg_timer = 3.0
-                elif room != self.layout_swap_first_room:
-                    r1 = self.layout_swap_first_room
-                    r2 = room
-                    self.data.player.scrap -= 15
-                    self.data.player.ship.swap_room_systems(r1, r2)
-                    self.data.combat.msg = f"LAYOUT-UMBAU: {r1.name.upper()} UND {r2.name.upper()} GETAUSCHT!"
-                    self.data.combat.msg_timer = 3.0
-                    self.layout_swap_mode = False
-                    self.layout_swap_first_room = None
-                return
-                self.sell_weapon_at_slot(idx)
-                return
+        # Tab-Buttons für Tauschmodus (Räume vs. Waffenslots)
+        tab_rooms = pygame.Rect(200, 50, 190, 32)
+        tab_weapons = pygame.Rect(410, 50, 190, 32)
+        if tab_rooms.collidepoint(mx, my):
+            self.layout_swap_type = "ROOMS"
+            self.layout_swap_first_selection = None
+            self.data.combat.msg = "RAUM-TAUSCH MODUS GEWÄHLT."
+            self.data.combat.msg_timer = 2.0
+            return
+        if tab_weapons.collidepoint(mx, my):
+            self.layout_swap_type = "WEAPONS"
+            self.layout_swap_first_selection = None
+            self.data.combat.msg = "WAFFENSLOT-TAUSCH MODUS GEWÄHLT."
+            self.data.combat.msg_timer = 2.0
+            return
+
+        if getattr(self, "layout_swap_type", "ROOMS") == "ROOMS":
+            # Räume tauschen
+            for room in self.data.player.ship.rooms:
+                if room.rect.collidepoint(int(mx), int(my)):
+                    if self.layout_swap_first_selection is None:
+                        self.layout_swap_first_selection = room
+                        self.data.combat.msg = f"1. RAUM ({room.name.upper()}) GEWÄHLT! KLICKE AUF DEN 2. RAUM."
+                        self.data.combat.msg_timer = 3.0
+                    elif room != self.layout_swap_first_selection and hasattr(self.layout_swap_first_selection, "name"):
+                        r1 = self.layout_swap_first_selection
+                        r2 = room
+                        self.data.player.scrap -= 15
+                        self.data.player.ship.swap_room_systems(r1, r2)
+                        self.data.combat.msg = f"LAYOUT-UMBAU: {r1.name.upper()} UND {r2.name.upper()} GETAUSCHT!"
+                        self.data.combat.msg_timer = 3.0
+                        self.layout_swap_mode = False
+                        self.layout_swap_first_selection = None
+                    return
+        else:
+            # Waffenslots tauschen
+            for idx, slot in enumerate(self.data.player.ship.weapon_slots):
+                hx, hy = slot["pos"]
+                slot_rect = pygame.Rect(hx - 65, hy - 25, 130, 50)
+                if slot_rect.collidepoint(int(mx), int(my)):
+                    if self.layout_swap_first_selection is None:
+                        self.layout_swap_first_selection = idx
+                        self.data.combat.msg = f"1. WAFFENSLOT H{idx+1} GEWÄHLT! KLICKE AUF DEN 2. SLOT."
+                        self.data.combat.msg_timer = 3.0
+                    elif idx != self.layout_swap_first_selection and isinstance(self.layout_swap_first_selection, int):
+                        s1 = self.layout_swap_first_selection
+                        s2 = idx
+                        self.data.player.scrap -= 15
+                        self.data.player.ship.swap_weapon_slots(s1, s2, self.data.player.weapons)
+                        self.data.combat.msg = f"LAYOUT-UMBAU: WAFFENSLOT H{s1+1} UND H{s2+1} GETAUSCHT!"
+                        self.data.combat.msg_timer = 3.0
+                        self.layout_swap_mode = False
+                        self.layout_swap_first_selection = None
+                    return
 
     def handle_slot_selection_click(self, mx: float, my: float):
         item = self.selecting_slot_item

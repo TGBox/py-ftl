@@ -95,6 +95,7 @@ class WeaponSaveSchema(BaseModel):
     breach_chance: float = 0.0
     stun_duration: float = 0.0
     crew_damage: float = 0.0
+    max_range: float | None = None
 
 
 class SavegameSchema(BaseModel):
