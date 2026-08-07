@@ -649,14 +649,23 @@ class CombatManager:
                     affected_crew = [c for c in self.enemy_crew if c.current_room == room]
                     for e_c in affected_crew:
                         if projectile.crew_damage > 0:
-                            e_c.hp = max(0.0, e_c.hp - projectile.crew_damage)
+                            c_dmg = projectile.crew_damage
                         elif projectile.subtype == "BIO":
-                            e_c.hp = max(0.0, e_c.hp - 65.0)
+                            c_dmg = 65.0
+                        elif projectile.w_type == "MISSILE":
+                            c_dmg = max(35.0, projectile.damage * 0.75)
+                        else:
+                            c_dmg = 0.0
+
+                        if c_dmg > 0:
+                            e_c.hp = max(0.0, e_c.hp - c_dmg)
 
                         if projectile.stun_duration > 0:
                             e_c.stun_timer = max(e_c.stun_timer, projectile.stun_duration)
 
-                    if projectile.subtype == "BIO" and affected_crew:
+                    if projectile.w_type == "MISSILE" and affected_crew:
+                        self.show_message(f"RAKETENTREFFER VERLETZT GEGNER-CREW IN {room.name.upper()}!")
+                    elif projectile.subtype == "BIO" and affected_crew:
                         self.show_message(f"BIO-SCHADEN AN CREW IN {room.name.upper()}!")
                     elif projectile.stun_duration > 0 and affected_crew:
                         self.show_message(f"CREW IN {room.name.upper()} GELÄHMT!")
@@ -751,16 +760,22 @@ class CombatManager:
                     affected_crew = [c for c in self.data.player.crew if c.current_room == room]
                     for p_c in affected_crew:
                         if projectile.crew_damage > 0:
-                            p_c.hp = max(0.0, p_c.hp - projectile.crew_damage)
+                            c_dmg = projectile.crew_damage
                         elif projectile.subtype == "BIO":
-                            p_c.hp = max(0.0, p_c.hp - 60.0)
+                            c_dmg = 60.0
+                        elif projectile.w_type == "MISSILE":
+                            c_dmg = max(35.0, projectile.damage * 0.75)
                         else:
-                            p_c.hp = max(0.0, p_c.hp - 15.0)
+                            c_dmg = 15.0
+
+                        p_c.hp = max(0.0, p_c.hp - c_dmg)
 
                         if projectile.stun_duration > 0:
                             p_c.stun_timer = max(p_c.stun_timer, projectile.stun_duration)
 
-                    if projectile.stun_duration > 0 and affected_crew:
+                    if projectile.w_type == "MISSILE" and affected_crew:
+                        self.show_message(f"RAKETENTREFFER VERLETZT DEINE CREW IN {room.name.upper()}!")
+                    elif projectile.stun_duration > 0 and affected_crew:
                         self.show_message(f"DEINE CREW IN {room.name.upper()} GELÄHMT!")
 
 

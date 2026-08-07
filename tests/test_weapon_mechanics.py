@@ -81,6 +81,32 @@ class TestWeaponMechanics(unittest.TestCase):
         self.assertLess(c1.hp, init_c1_hp)
         self.assertLess(c2.hp, init_c2_hp)
 
+    def test_missile_causes_crew_damage(self):
+        from unittest.mock import patch
+        r1 = Room("Waffen", (100, 100, 80, 80), is_enemy=True)
+        self.data.enemy.ship.rooms = [r1]
+
+        c1 = Crew(140, 140, name="Enemy1", is_enemy=True)
+        c1.current_room = r1
+        self.combat_mgr.enemy_crew = [c1]
+
+        proj = Projectile(
+            (10.0, 140.0),
+            (140.0, 140.0),
+            target_room=r1,
+            is_player_shot=True,
+            w_type="MISSILE",
+            damage=40.0,
+            crew_damage=35.0,
+        )
+
+        init_hp = c1.hp
+        with patch("random.random", return_value=0.99):
+            self.combat_mgr.handle_player_hit(proj)
+
+        # Enemy crew member in target room took explosive missile damage
+        self.assertEqual(c1.hp, init_hp - 35.0)
+
 
 if __name__ == "__main__":
     unittest.main()
