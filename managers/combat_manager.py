@@ -7,6 +7,7 @@ from classes.Projectile import Projectile
 from classes.Weapon import Weapon
 from managers.state_manager import StateManager
 from settings import *
+from utils import get_room_manning_bonus
 
 
 def center_crew_in_rooms(crew_list: list[Crew], rooms: list):
@@ -260,9 +261,11 @@ class CombatManager:
                     crew.hp = max(0.0, crew.hp - 8.0 * asphyx_mod * dt)
                 if crew.current_room.fire_level > 0.0:
                     crew.hp = max(0.0, crew.hp - (14.0 * crew.current_room.fire_level / 100.0) * dt)
-            # Medbay-Heilung: Crew in eigener Medbay wird geheilt wenn Raum Strom hat
+            # Medbay-Heilung: Crew in eigener Medbay wird geheilt wenn Raum Strom hat (1 Crew: +25%, 2+ Crew: +50%)
             if not crew.is_boarding and crew.current_room and crew.current_room.name == "Medbay" and crew.current_room.current_power > 0:
-                heal_rate = 15.0 * crew.current_room.current_power
+                m_count = len([c for c in self.data.player.crew if c.current_room == crew.current_room])
+                m_bonus = get_room_manning_bonus("Medbay", m_count)
+                heal_rate = 15.0 * crew.current_room.current_power * m_bonus["multiplier"]
                 crew.hp = min(crew.max_hp, crew.hp + heal_rate * dt)
             # Tod prüfen
             if crew.hp <= 0.0:
@@ -405,28 +408,33 @@ class CombatManager:
 
 
     def update_shields(self, dt: float):
+        s_room = next((r for r in self.data.player.ship.rooms if r.name == "Schild"), None)
+        s_power = s_room.current_power if s_room else 0
+        s_count = len([c for c in self.data.player.crew if c.current_room == s_room]) if s_room else 0
+        s_bonus = get_room_manning_bonus("Schild", s_count)
 
         self.data.player.shield.update(
-            dt,
-            self.data.player.ship.rooms[0].current_power
+            dt * s_bonus["multiplier"],
+            s_power
         )
 
+        enemy_s_room = next((r for r in self.data.enemy.ship.rooms if r.name == "Schild"), None)
+        enemy_s_power = enemy_s_room.current_power if enemy_s_room else 0
+        enemy_s_count = len([c for c in self.enemy_crew if c.current_room == enemy_s_room]) if enemy_s_room else 0
+        enemy_s_bonus = get_room_manning_bonus("Schild", enemy_s_count)
+
         self.data.enemy.shield.update(
-            dt,
-            self.data.enemy.ship.rooms[0].current_power
+            dt * enemy_s_bonus["multiplier"],
+            enemy_s_power
         )
 
     def update_weapons(self, dt: float):
+        w_room = next((r for r in self.data.player.ship.rooms if r.name == "Waffen"), None)
+        weapon_powered = w_room.current_power > 0 if w_room else False
 
-        weapon_powered = (
-            self.data.player.ship.rooms[1].current_power > 0
-        )
-
-        # Waffen-Bemannungsbonus (falls Crew in Waffenraum steht)
-        weapon_manned = any(
-            c.current_room == self.data.player.ship.rooms[1] for c in self.data.player.crew
-        )
-        charge_mult = 1.25 if weapon_manned else 1.0
+        # Waffen-Bemannungsbonus (1 Crew: +20%, 2+ Crew: +35%)
+        w_manned_count = len([c for c in self.data.player.crew if c.current_room == w_room]) if w_room else 0
+        charge_mult = get_room_manning_bonus("Waffen", w_manned_count)["multiplier"]
 
         for weapon in self.data.player.weapons:
             weapon.update(dt * charge_mult, weapon_powered)
@@ -518,10 +526,9 @@ class CombatManager:
         is_cloaked = getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0
         effective_dt = 0.0 if is_cloaked else dt
 
-        enemy_weapon_manned = any(
-            c.current_room and c.current_room.name == "Waffen" for c in self.enemy_crew
-        )
-        manned_mult = 1.20 if enemy_weapon_manned else 1.0
+        enemy_w_room = next((r for r in self.data.enemy.ship.rooms if r.name == "Waffen"), None)
+        enemy_w_count = len([c for c in self.enemy_crew if c.current_room == enemy_w_room]) if enemy_w_room else 0
+        manned_mult = get_room_manning_bonus("Waffen", enemy_w_count)["multiplier"]
 
         weapon.update(
             effective_dt * manned_mult,
@@ -646,29 +653,45 @@ class CombatManager:
                     elif projectile.stun_duration > 0 and affected_crew:
                         self.show_message(f"CREW IN {room.name.upper()} GELÄHMT!")
 
-    def handle_enemy_hit(self, projectile: Projectile):
+    def get_player_evasion(self) -> float:
+        bridge_room = next((r for r in self.data.player.ship.rooms if r.name == "Brücke"), None)
+        engine_room = next((r for r in self.data.player.ship.rooms if r.name == "Maschinen"), None)
+
+        pilot_crews = [c for c in self.data.player.crew if bridge_room and c.current_room == bridge_room]
+        engine_crews = [c for c in self.data.player.crew if engine_room and c.current_room == engine_room]
+
+        pilot_count = len(pilot_crews)
+        engine_count = len(engine_crews)
+
+        if pilot_count >= 1:
+            a_multiplier = 1.0
+            pilot_crew = pilot_crews[0]
+            b_bonus = get_room_manning_bonus("Brücke", pilot_count)
+            c_pilot_bonus = b_bonus["evasion"] + getattr(pilot_crew, "skill_piloting", 0) * 0.05
+        else:
+            bridge_power = bridge_room.current_power if bridge_room else 0
+            if bridge_power >= 3:
+                a_multiplier = 0.80
+            elif bridge_power == 2:
+                a_multiplier = 0.50
+            else:
+                a_multiplier = 0.0
+            c_pilot_bonus = 0.0
+
+        eng_bonus = get_room_manning_bonus("Maschinen", engine_count)
+        c_engine_bonus = eng_bonus["evasion"]
+
+        s_cloak = 0.60 if getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0 else 0.0
+        e_base_engine = (engine_room.current_power * 0.10) if engine_room else 0.10
+
+        return (e_base_engine + c_engine_bonus + c_pilot_bonus) * a_multiplier + s_cloak
+
+    def check_projectile_hits_player(self, projectile: Projectile):
         if getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0:
             self.show_message("AUSGEWICHEN (TARNUNG)!")
             return
-        # SRS 6.2 Evasion Formel: E = (E_Base_Engine + C_Engine_Bonus + C_Pilot_Bonus) * A_Multiplier + S_Cloak
-        e_base_engine = self.data.player.ship.rooms[2].current_power * 0.10 if len(self.data.player.ship.rooms) > 2 else 0.10
-        bridge_power = self.data.player.ship.rooms[2].current_power if len(self.data.player.ship.rooms) > 2 else 0
-        pilot_crew = next((c for c in self.data.player.crew if len(self.data.player.ship.rooms) > 2 and c.current_room == self.data.player.ship.rooms[2]), None)
-        pilot_present = pilot_crew is not None
-        if pilot_present:
-            a_multiplier = 1.0
-        elif bridge_power >= 3:
-            a_multiplier = 0.80
-        elif bridge_power == 2:
-            a_multiplier = 0.50
-        else:
-            a_multiplier = 0.0
-
-        c_pilot_bonus = (0.10 + getattr(pilot_crew, "skill_piloting", 0) * 0.05) if pilot_crew else 0.0
-        c_engine_bonus = 0.05 if any(c.current_room == self.data.player.ship.rooms[0] for c in self.data.player.crew) else 0.0
-        s_cloak = 0.0
-
-        player_evade = (e_base_engine + c_engine_bonus + c_pilot_bonus) * a_multiplier + s_cloak
+        
+        player_evade = self.get_player_evasion()
 
         if random.random() < player_evade:
             self.show_message("AUSGEWICHEN!")

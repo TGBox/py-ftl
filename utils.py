@@ -92,3 +92,33 @@ def calculate_event_layout(
         "choice_rects": choice_rects,
         "box_rect": pygame.Rect(box_x, box_y, box_width, box_height),
     }
+
+
+def get_room_manning_bonus(room_name: str, crew_count: int) -> dict:
+    """Returns manning bonus multipliers and description based on room name and stationed crew count (1 or 2+)."""
+    if crew_count <= 0:
+        return {"multiplier": 1.0, "evasion": 0.0, "desc": "Unbemannt"}
+
+    count = min(2, crew_count)
+
+    if room_name == "Waffen":
+        mult = 1.20 if count == 1 else 1.35
+        return {"multiplier": mult, "evasion": 0.0, "desc": f"+{int((mult-1)*100)}% Lade-Tempo"}
+    elif room_name == "Schild":
+        mult = 1.20 if count == 1 else 1.35
+        return {"multiplier": mult, "evasion": 0.0, "desc": f"+{int((mult-1)*100)}% Erholung"}
+    elif room_name == "Brücke":
+        ev = 0.10 if count == 1 else 0.15
+        desc = "+10% Ausweichen (Pilot)" if count == 1 else "+15% Ausweichen (Co-Pilot)"
+        return {"multiplier": 1.0, "evasion": ev, "desc": desc}
+    elif room_name == "Maschinen":
+        ev = 0.05 if count == 1 else 0.10
+        return {"multiplier": 1.0, "evasion": ev, "desc": f"+{int(ev*100)}% Ausweichen"}
+    elif room_name == "Medbay":
+        mult = 1.25 if count == 1 else 1.50
+        return {"multiplier": mult, "evasion": 0.0, "desc": f"+{int((mult-1)*100)}% Heilung"}
+    elif room_name == "Drohnen-Kontrolle":
+        mult = 1.15 if count == 1 else 1.30
+        return {"multiplier": mult, "evasion": 0.0, "desc": f"+{int((mult-1)*100)}% Drohnen-Tempo"}
+
+    return {"multiplier": 1.0, "evasion": 0.0, "desc": f"{count} Crew"}

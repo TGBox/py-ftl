@@ -654,7 +654,10 @@ class RenderManager:
         self.screen.blit(p_surf, (p_box.x, p_box.y))
         pygame.draw.rect(self.screen, (0, 200, 255), p_box, 1)
 
-        evade_val = int(self.data.player.ship.rooms[2].current_power * 0.20 * 100) if len(self.data.player.ship.rooms) > 2 else 10
+        if hasattr(self.data, "combat_manager") and hasattr(self.data.combat_manager, "get_player_evasion"):
+            evade_val = int(self.data.combat_manager.get_player_evasion() * 100)
+        else:
+            evade_val = int(self.data.player.ship.rooms[2].current_power * 0.20 * 100) if len(self.data.player.ship.rooms) > 2 else 10
         p_lbl = small_font.render(f"Spieler Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp} HP  |  Ausw: {evade_val}%", True, (130, 240, 170))
         self.screen.blit(p_lbl, (p_box.x + 8, p_box.y + 4))
 
@@ -677,8 +680,14 @@ class RenderManager:
             self.screen.blit(s_overlay, (50, 95))
 
         # 2. Räume & Türen zeichnen
+        manned_font = pygame.font.SysFont(None, 14, bold=True)
         for r in self.data.player.ship.rooms:
             r.draw(self.screen)
+            m_count = len([c for c in self.data.player.crew if c.current_room == r])
+            if m_count > 0 and r.name in ("Waffen", "Schild", "Brücke", "Maschinen", "Medbay", "Drohnen-Kontrolle"):
+                badge_str = "⭐" if m_count == 1 else "⭐⭐"
+                lbl_m = manned_font.render(badge_str, True, (255, 220, 100))
+                self.screen.blit(lbl_m, (r.rect.left + 3, r.rect.top + 3))
 
         # Sensor-Stufen Prüfung
         sens_room = next((r for r in self.data.player.ship.rooms if r.name == "Sensoren"), None)
