@@ -126,7 +126,9 @@ class MapManager:
 
     def trigger_event(self, event_type: str):
 
-        self.data.world.event_manager.trigger_event(event_type, self.data.player.crew)
+        self.data.world.event_manager.trigger_event(
+            event_type, self.data.player.crew, self.data.player.fuel
+        )
         self.data.current_state = STATE_EVENT
 
 

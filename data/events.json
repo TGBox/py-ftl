@@ -1,0 +1,459 @@
+{
+  "events": [
+    {
+      "id": "distress_pirate_attack",
+      "event_type": "DISTRESS",
+      "text": "Ein ziviles Frachtschiff sendet einen dringenden Notruf! Es wird von einem bewaffneten Piratenjäger bedrängt.",
+      "choices": [
+        {
+          "text": "[Engi-Spezial] Notfall-Signal stören und Piraten verscheuchen",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Engi",
+          "is_blue": true,
+          "scrap": 30,
+          "fuel": 2,
+          "result_text": "Die Engi-Frequenzen stören die Zielsysteme der Piraten! Sie fliehen und der Frachter belohnt dich reichlich."
+        },
+        {
+          "text": "1. Den Piraten angreifen und dem Frachter helfen",
+          "action": "START_COMBAT",
+          "result_text": "Du verriegelst die Waffensysteme und machst dich für das Gefecht bereit!"
+        },
+        {
+          "text": "2. Notruf ignorieren und Kurs halten",
+          "action": "CONTINUE",
+          "result_text": "Du setzt deine Reise fort und lässt das Frachtschiff zurück."
+        }
+      ]
+    },
+    {
+      "id": "distress_stranded_researchers",
+      "event_type": "DISTRESS",
+      "text": "Ein kleines Forschungsschiff treibt ohne Treibstoff im All und bittet um Hilfe.",
+      "choices": [
+        {
+          "text": "[Mantis-Spezial] Drohdurchsage senden und Vorräte fordern",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Mantis",
+          "is_blue": true,
+          "scrap": 35,
+          "missiles": 2,
+          "result_text": "Eingeschüchtert von der Mantis-Crew übergibt das Forschungsschiff wertvolle Ausrüstung!"
+        },
+        {
+          "text": "1. 2 Einheiten Treibstoff spenden (Belohnung erhalten)",
+          "action": "GIVE_RESOURCES",
+          "scrap": 40,
+          "fuel": -2,
+          "missiles": 2,
+          "result_text": "Die Forscher sind überglücklich und schenken dir hochentwickelte Schiffskomponenten!"
+        },
+        {
+          "text": "2. Weiterfliegen",
+          "action": "CONTINUE",
+          "result_text": "Du fliegst weiter ohne anzuhalten."
+        }
+      ]
+    },
+    {
+      "id": "distress_station_fire",
+      "event_type": "DISTRESS",
+      "text": "Eine Bergbau-Station sendet ein Notrufsignal: Auf den Unterdecks ist ein schweres Feuer ausgebrochen!",
+      "choices": [
+        {
+          "text": "[Engi-Spezial] Automatische Löschsequenz über Funk einspeisen",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Engi",
+          "is_blue": true,
+          "scrap": 45,
+          "fuel": 1,
+          "result_text": "Das Engi-Protokoll löscht den Brand rasch! Die Stationsleitung belohnt dich großzügig."
+        },
+        {
+          "text": "1. Rettungskapseln bergen",
+          "action": "CLAIM_RESOURCES",
+          "scrap": 25,
+          "fuel": 1,
+          "result_text": "Du rettest mehrere Überlebende aus den Kapseln."
+        },
+        {
+          "text": "2. Vorüberziehen",
+          "action": "CONTINUE",
+          "result_text": "Das Risiko ist zu hoch. Du fliegst weiter."
+        }
+      ]
+    },
+    {
+      "id": "distress_slug_trap",
+      "event_type": "DISTRESS",
+      "text": "Ein ziviles Signal ruft um Hilfe. Als du dich näherst, aktivieren sich Gefechtsschilder – ein Hinterhalt!",
+      "choices": [
+        {
+          "text": "[Rock-Spezial] Hüllenpanzerung vorschieben und Treffer abfedern",
+          "action": "START_COMBAT",
+          "requires_species": "Rock",
+          "is_blue": true,
+          "result_text": "Die Rock-Panzerung schützt das Schiff perfekt! Du startest den Kampf ohne Überraschungsschaden."
+        },
+        {
+          "text": "1. In Gefechtsformation gehen",
+          "action": "START_COMBAT",
+          "result_text": "Der Feind eröffnet das Feuer! Kampf gestartet!"
+        },
+        {
+          "text": "2. Sofortige Flucht einleiten",
+          "action": "TAKE_DAMAGE",
+          "damage": 5,
+          "result_text": "Beim Fluchtmanöver steckt die Hülle leichte Treffer ein!"
+        }
+      ]
+    },
+    {
+      "id": "distress_medical_emergency",
+      "event_type": "DISTRESS",
+      "text": "Ein Transporter meldet einen Ausbruch einer seltenen Weltraum-Grippe an Bord!",
+      "choices": [
+        {
+          "text": "[Zoltan-Spezial] Energiefeld zur Hüllen-Sterilisation einsetzen",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Zoltan",
+          "is_blue": true,
+          "scrap": 50,
+          "fuel": 2,
+          "result_text": "Das Hochfrequenz-Feld des Zoltan inaktiviert die Erreger spurlos! Die dankbare Frachter-Crew belohnt dich fürstlich."
+        },
+        {
+          "text": "1. Medizinische Vorräte spenden (-10 Scrap)",
+          "action": "CLAIM_RESOURCES",
+          "scrap": -10,
+          "missiles": 3,
+          "fuel": 2,
+          "result_text": "Zum Dank schenkt dir der Frachter Raketen und Treibstoff!"
+        },
+        {
+          "text": "2. Sicherheitsabstand wahren und weiterfliegen",
+          "action": "CONTINUE",
+          "result_text": "Du meidest den Infektionsherd."
+        }
+      ]
+    },
+    {
+      "id": "resource_abandoned_cruiser",
+      "event_type": "RESOURCE",
+      "text": "Ein schwer beschädigter Frachter treibt verlassen in einem dichten Trümmerfeld.",
+      "choices": [
+        {
+          "text": "[Engi-Spezial] Reaktor-Komponenten präzise demontieren",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Engi",
+          "is_blue": true,
+          "scrap": 50,
+          "fuel": 3,
+          "missiles": 2,
+          "result_text": "Eure Fachexpertise ermöglicht die maximale Ressourcenausbeute aus dem Wrack!"
+        },
+        {
+          "text": "1. Wrack nach brauchbaren Teilen durchsuchen",
+          "action": "CLAIM_RESOURCES",
+          "scrap": 30,
+          "fuel": 1,
+          "result_text": "Du findest funktionstüchtige Bauteile und etwas Treibstoff."
+        },
+        {
+          "text": "2. Sicherheitshalber weiterfliegen",
+          "action": "CONTINUE",
+          "result_text": "Du lässt das Trümmerfeld hinter dir."
+        }
+      ]
+    },
+    {
+      "id": "resource_gas_giant_station",
+      "event_type": "RESOURCE",
+      "text": "Du entdeckst eine verlassene Forschungsstation in der Orbitalschicht eines Gasgiganten.",
+      "choices": [
+        {
+          "text": "[Mantis-Spezial] Tresorraum-Schotts gewaltsam aufbrechen",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Mantis",
+          "is_blue": true,
+          "scrap": 55,
+          "missiles": 4,
+          "result_text": "Mit roher Mantis-Gewalt brecht ihr die Panzertür auf und erbeutet militärische Reserven!"
+        },
+        {
+          "text": "1. Die Hangars nach Ausrüstung durchsuchen",
+          "action": "CLAIM_RESOURCES",
+          "scrap": 25,
+          "fuel": 2,
+          "result_text": "In den Hangars lagen intakte Treibstoffkanister bereit."
+        },
+        {
+          "text": "2. Weiterreisen",
+          "action": "CONTINUE",
+          "result_text": "Du setzt deinen Kurs fort."
+        }
+      ]
+    },
+    {
+      "id": "resource_derelict_station",
+      "event_type": "RESOURCE",
+      "text": "Eine verlassene orbitalen Relaisstation treibt schweigend im All.",
+      "choices": [
+        {
+          "text": "[Zoltan-Spezial] Relais-Reaktor mit Energie überbrücken",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Zoltan",
+          "is_blue": true,
+          "scrap": 45,
+          "fuel": 3,
+          "result_text": "Die Zoltan-Energie aktiviert den Stations-Speicher und schüttet wertvollen Treibstoff aus!"
+        },
+        {
+          "text": "1. Außenhülle ausschlachten",
+          "action": "CLAIM_RESOURCES",
+          "scrap": 25,
+          "missiles": 1,
+          "result_text": "Du gewinnst wertvollen Schrott aus den Platten."
+        },
+        {
+          "text": "2. Station passieren",
+          "action": "CONTINUE",
+          "result_text": "Du reist ohne Zwischenhalt weiter."
+        }
+      ]
+    },
+    {
+      "id": "resource_smuggler_cache",
+      "event_type": "RESOURCE",
+      "text": "Auf Sensoren erscheint ein getarntes Schmuggler-Depot hinter einem kleinen Mond!",
+      "choices": [
+        {
+          "text": "[Rock-Spezial] Panzersafe mit Kinetik-Druck zertrümmern",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Rock",
+          "is_blue": true,
+          "scrap": 60,
+          "missiles": 3,
+          "fuel": 2,
+          "result_text": "Die enorme Körperkraft des Rock-Mitglieds knackt den Schmuggler-Safe problemlos!"
+        },
+        {
+          "text": "1. Depot knacken",
+          "action": "CLAIM_RESOURCES",
+          "scrap": 35,
+          "fuel": 1,
+          "result_text": "Ihr findet Schrott und Treibstoffkanister!"
+        },
+        {
+          "text": "2. Nicht anrühren",
+          "action": "CONTINUE",
+          "result_text": "Du lässt das Depot unangetastet."
+        }
+      ]
+    },
+    {
+      "id": "resource_floating_cargo",
+      "event_type": "RESOURCE",
+      "text": "Sensoren erfassen einen treibenden Frachtcontainer mit intakter Versiegelung.",
+      "choices": [
+        {
+          "text": "1. Frachtcontainer bergen",
+          "action": "CLAIM_RESOURCES",
+          "scrap": 35,
+          "fuel": 1,
+          "missiles": 2,
+          "result_text": "Die Bergung war erfolgreich! Der Container war voll nutzbarer Güter."
+        },
+        {
+          "text": "2. Container passieren lassen",
+          "action": "CONTINUE",
+          "result_text": "Du reist ohne Zwischenhalt weiter."
+        }
+      ]
+    },
+    {
+      "id": "nebula_plasma_cloud",
+      "event_type": "NEBULA",
+      "text": "Dichte Plasma-Wolken beeinträchtigen eure Sensoren. Plötzlich taucht ein Schatten im Nebel auf!",
+      "choices": [
+        {
+          "text": "[Engi-Spezial] Sensoren neu kalibrieren und Nebel durchdringen",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Engi",
+          "is_blue": true,
+          "scrap": 40,
+          "fuel": 2,
+          "result_text": "Die kalibrierten Sensoren decken ein verstecktes Vorratslager im Nebel auf!"
+        },
+        {
+          "text": "1. Gefechtsbereitschaft herstellen",
+          "action": "START_COMBAT",
+          "result_text": "Ein feindlicher Nebel-Pirat bricht aus den Gaswolken hervor!"
+        },
+        {
+          "text": "2. Vorsichtig vorbeimanövrieren",
+          "action": "CONTINUE",
+          "result_text": "Ihr schleicht euch lautlos durch die Nebelschleier davon."
+        }
+      ]
+    },
+    {
+      "id": "nebula_ghost_ship",
+      "event_type": "NEBULA",
+      "text": "Ein düsteres Schiffswrack treibt steuerlos im Nebel. Keine Biosignale an Bord...",
+      "choices": [
+        {
+          "text": "[Mantis-Spezial] Entermannschaft zur blitzschnellen Durchsuchung senden",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Mantis",
+          "is_blue": true,
+          "scrap": 45,
+          "missiles": 3,
+          "result_text": "Furchtlos durchkämmen die Mantis das Wrack und sichern wertvolle Waffenkomponenten!"
+        },
+        {
+          "text": "1. Erkundungsteam entsenden",
+          "action": "CLAIM_RESOURCES",
+          "scrap": 25,
+          "fuel": 1,
+          "result_text": "Das Team kehrt mit Schrott und Vorräten zurück."
+        },
+        {
+          "text": "2. Wrack meiden",
+          "action": "CONTINUE",
+          "result_text": "Du fliegst schweigend weiter."
+        }
+      ]
+    },
+    {
+      "id": "nebula_ancient_artifact",
+      "event_type": "NEBULA",
+      "text": "Im tiefen Nebel pulsiert ein uraltes Alien-Artefakt mit mysteriöser Energie.",
+      "choices": [
+        {
+          "text": "[Zoltan-Spezial] Harmonische Resonanz mit dem Artefakt herstellen",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Zoltan",
+          "is_blue": true,
+          "scrap": 50,
+          "fuel": 3,
+          "result_text": "Das Zoltan-Bewusstsein verbindet sich mit dem Artefakt und lädt alle Energiespeicher vollständig auf!"
+        },
+        {
+          "text": "1. Artefakt vorsichtig scannen",
+          "action": "CLAIM_RESOURCES",
+          "scrap": 30,
+          "fuel": 1,
+          "result_text": "Der Scan liefert nutzbare Daten und lädt die Energiezellen auf."
+        },
+        {
+          "text": "2. Abstand halten",
+          "action": "CONTINUE",
+          "result_text": "Ihr zieht weiter, ohne das Artefakt zu berühren."
+        }
+      ]
+    },
+    {
+      "id": "empty_trader",
+      "event_type": "EMPTY",
+      "text": "Ein wandernder Händler bietet überschüssige Reserven zum Verkauf an.",
+      "choices": [
+        {
+          "text": "1. 2 Treibstoff kaufen (-10 Scrap)",
+          "action": "BUY_FUEL",
+          "result_text": "Der Händler überträgt den Treibstoff auf euer Schiff."
+        },
+        {
+          "text": "2. Weiterfliegen",
+          "action": "CONTINUE",
+          "result_text": "Du lehnst das Angebot ab und fliegst weiter."
+        }
+      ]
+    },
+    {
+      "id": "empty_mercenary",
+      "event_type": "EMPTY",
+      "text": "Ein schwer bewaffneter Söldner kreuzt deinen Weg und bietet Vorräte zum Kauf an.",
+      "choices": [
+        {
+          "text": "[Rock-Spezial] Respekt einflößen und Rabatt aushandeln",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Rock",
+          "is_blue": true,
+          "scrap": -10,
+          "fuel": 3,
+          "missiles": 3,
+          "result_text": "Beeindruckt von der mächtigen Statur der Rock-Crew gibt der Söldner Vorräte zum Spottpreis ab!"
+        },
+        {
+          "text": "1. Munition & Treibstoff kaufen (-20 Scrap)",
+          "action": "CLAIM_RESOURCES",
+          "scrap": -20,
+          "fuel": 3,
+          "missiles": 3,
+          "result_text": "Der Handel verläuft reibungslos."
+        },
+        {
+          "text": "2. Weiterreisen",
+          "action": "CONTINUE",
+          "result_text": "Du lehnst ab und reist weiter."
+        }
+      ]
+    },
+    {
+      "id": "empty_quiet_sector",
+      "event_type": "EMPTY",
+      "text": "Dieser Sektor ist absolut ruhig. Keine feindlichen Signale in Reichweite.",
+      "choices": [
+        {
+          "text": "[Engi-Spezial] Notfall-Katalysator optimieren (+2 Treibstoff)",
+          "action": "CLAIM_RESOURCES",
+          "requires_species": "Engi",
+          "is_blue": true,
+          "fuel": 2,
+          "result_text": "Die Engi-Crew nutzt die Ruhe für eine Wartung und gewinnt 2 Einheiten Treibstoff!"
+        },
+        {
+          "text": "1. Routine-Flug fortsetzen",
+          "action": "CONTINUE",
+          "result_text": "Der Flug verläuft ohne Zwischenfälle."
+        }
+      ]
+    },
+    {
+      "id": "empty_satellite",
+      "event_type": "EMPTY",
+      "text": "Ein treibender Wettersatellit sendet automatisierte Telemetrie-Daten.",
+      "choices": [
+        {
+          "text": "1. Satellit anzapfen und Schrott bergen",
+          "action": "CLAIM_RESOURCES",
+          "scrap": 25,
+          "result_text": "Ihr konntet verwertbare Bauteile aus dem Satelliten gewinnen."
+        },
+        {
+          "text": "2. Signal ignorieren",
+          "action": "CONTINUE",
+          "result_text": "Du lässt den Satelliten hinter dir."
+        }
+      ]
+    },
+    {
+      "id": "combat_ambush",
+      "event_type": "COMBAT",
+      "text": "WARNUNG! Ein feindliches Piraten-Abfangschiff bricht aus dem Schatten eines Asteroiden hervor!",
+      "choices": [
+        {
+          "text": "1. Gefechtsstationen besetzen!",
+          "action": "START_COMBAT",
+          "result_text": "Du verriegelst die Waffensysteme und machst dich kampfbereit!"
+        },
+        {
+          "text": "2. Ausweichen",
+          "action": "FLEE",
+          "result_text": "Du versuchst dem Angreifer auszuweichen."
+        }
+      ]
+    }
+  ]
+}
