@@ -226,7 +226,7 @@ class MapManager:
         self.data.player.ship = copy.deepcopy(PLAYER_SHIP)
         self.data.player.reactor = Reactor(total_power=PLAYER_START_POWER)
         self.data.player.shield = ShieldSystem()
-        self.data.player.crew = [Crew(340, 245), Crew(115, 245)]
+        self.data.player.crew = [Crew(305, 290), Crew(205, 290)]
         self.data.player.weapons = [
             Weapon("Standard Laser", charge_time=3.0, w_type="LASER"),
             Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1),

@@ -1,11 +1,11 @@
+from collections import deque
 import math
 import pygame
+import random
 
+from classes.Door import Door
 from classes.Room import Room
 from settings import COLOR_CREW, COLOR_SELECTED, get_font
-
-
-import random
 
 SPECIES_NAMES = {
     "Mensch": ["Vance", "Sarah", "Jackson", "Elena", "Marcus", "David", "Lisa", "Alex"],
@@ -14,6 +14,50 @@ SPECIES_NAMES = {
 }
 
 CREW_TRAITS = ["Sprinter", "Sauerstoff-Sparer", "Feuerwehr", "Kampfveteran"]
+
+
+def find_room_path(
+    start_room: Room, target_room: Room, rooms: list[Room], doors: list[Door]
+) -> list[tuple[Room, Door]]:
+    """BFS shortest path of (next_room, door) from start_room to target_room."""
+    if start_room == target_room:
+        return []
+
+    adj: dict[Room, list[tuple[Room, Door]]] = {r: [] for r in rooms}
+    for d in doors:
+        if not d.is_airlock and d.room_a in adj and d.room_b in adj and d.room_b is not None:
+            adj[d.room_a].append((d.room_b, d))
+            adj[d.room_b].append((d.room_a, d))
+
+    queue = deque([start_room])
+    visited: dict[Room, tuple[Room, Door] | None] = {start_room: None}
+
+    found = False
+    while queue:
+        curr = queue.popleft()
+        if curr == target_room:
+            found = True
+            break
+        for neighbor, door in adj.get(curr, []):
+            if neighbor not in visited:
+                visited[neighbor] = (curr, door)
+                queue.append(neighbor)
+
+    if not found:
+        return []
+
+    path: list[tuple[Room, Door]] = []
+    curr = target_room
+    while curr != start_room:
+        prev = visited[curr]
+        if prev is None:
+            break
+        parent_room, door = prev
+        path.append((curr, door))
+        curr = parent_room
+
+    path.reverse()
+    return path
 
 
 class Crew:
@@ -31,6 +75,7 @@ class Crew:
         self.radius: int = 12
         self.selected: bool = False
         self.target_pos: tuple[int, int] | None = None
+        self.path_waypoints: list[tuple[float, float]] = []
         self.species: str = species
         self.name: str = name if name else random.choice(SPECIES_NAMES.get(species, ["Crew"]))
         self.is_enemy: bool = is_enemy
@@ -87,8 +132,48 @@ class Crew:
             return True
         return False
 
-    def update(self, dt: float, rooms: list[Room]) -> None:
+    def recalculate_path(self, rooms: list[Room], doors: list[Door]) -> None:
+        if not self.target_pos:
+            self.path_waypoints = []
+            return
+
+        tx, ty = float(self.target_pos[0]), float(self.target_pos[1])
+
+        start_room = self.current_room
+        if not start_room:
+            for room in rooms:
+                if room.rect.collidepoint(int(self.x), int(self.y)):
+                    start_room = room
+                    break
+
+        target_room = None
+        for room in rooms:
+            if room.rect.collidepoint(int(tx), int(ty)):
+                target_room = room
+                break
+
+        if not start_room or not target_room or start_room == target_room:
+            self.path_waypoints = [(tx, ty)]
+            return
+
+        room_path = find_room_path(start_room, target_room, rooms, doors)
+        if not room_path:
+            self.path_waypoints = [(tx, ty)]
+            return
+
+        waypoints: list[tuple[float, float]] = []
+        for next_r, door in room_path:
+            waypoints.append((float(door.rect.centerx), float(door.rect.centery)))
+        waypoints.append((tx, ty))
+
+        self.path_waypoints = waypoints
+
+    def update(
+        self, dt: float, rooms: list[Room], doors: list[Door] | None = None
+    ) -> None:
         self.anim_timer += dt
+
+        ship_doors = doors if doors is not None else getattr(self, "ship_doors", [])
 
         if self.stun_timer > 0.0:
             self.stun_timer = max(0.0, self.stun_timer - dt)
@@ -100,22 +185,34 @@ class Crew:
             return
 
         if self.target_pos:
-            tx, ty = self.target_pos
-            dx, dy = tx - self.x, ty - self.y
-            dist = math.hypot(dx, dy)
-            if dist < self.move_speed * dt:
-                self.x, self.y = float(tx), float(ty)
-                self.target_pos = None
-            else:
-                self.x += (dx / dist) * self.move_speed * dt
-                self.y += (dy / dist) * self.move_speed * dt
+            target_tuple = (float(self.target_pos[0]), float(self.target_pos[1]))
+            if (
+                not self.path_waypoints
+                or self.path_waypoints[-1] != target_tuple
+            ):
+                self.recalculate_path(rooms, ship_doors)
+
+            if self.path_waypoints:
+                wx, wy = self.path_waypoints[0]
+                dx, dy = wx - self.x, wy - self.y
+                dist = math.hypot(dx, dy)
+                step = self.move_speed * dt
+                if dist <= step:
+                    self.x, self.y = float(wx), float(wy)
+                    self.path_waypoints.pop(0)
+                    if not self.path_waypoints:
+                        self.target_pos = None
+                else:
+                    self.x += (dx / dist) * step
+                    self.y += (dy / dist) * step
 
             # Innentüren beim Durchlaufen automatisch öffnen
-            ship_doors = getattr(self, "ship_doors", [])
             if ship_doors:
                 for d in ship_doors:
-                    if not d.is_airlock and d.rect.inflate(24, 24).collidepoint(int(self.x), int(self.y)):
-                        d.is_open = True
+                    if not d.is_airlock and d.rect.inflate(30, 30).collidepoint(int(self.x), int(self.y)):
+                        if not d.is_open:
+                            d.is_open = True
+                            d.opened_by_crew = True
 
         self.current_room = None
         for room in rooms:

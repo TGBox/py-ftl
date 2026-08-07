@@ -19,7 +19,7 @@ class PlayerData:
         self.ship: ShipModel = copy.deepcopy(PLAYER_SHIP)
         self.reactor: Reactor = Reactor(total_power=PLAYER_START_POWER)
         self.shield: ShieldSystem = ShieldSystem()
-        self.crew: list[Crew] = [Crew(340, 245, species="Mensch"), Crew(115, 245, species="Engi")]
+        self.crew: list[Crew] = [Crew(305, 290, species="Mensch"), Crew(205, 290, species="Engi")]
         self.weapons: list[Weapon] = [
             Weapon("Standard Laser", charge_time=3.0, w_type="LASER"),
             Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1),

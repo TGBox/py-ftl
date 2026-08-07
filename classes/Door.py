@@ -16,9 +16,11 @@ class Door:
         self.rect: pygame.Rect = pygame.Rect(rect)
         self.is_open: bool = False
         self.is_airlock: bool = is_airlock
+        self.opened_by_crew: bool = False
 
     def toggle(self) -> None:
         self.is_open = not self.is_open
+        self.opened_by_crew = False
 
     def update(self, dt: float) -> None:
         if not self.is_open:

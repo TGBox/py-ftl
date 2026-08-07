@@ -8,6 +8,24 @@ from managers.state_manager import StateManager
 from settings import *
 
 
+def center_crew_in_rooms(crew_list: list[Crew], rooms: list):
+    for crew in crew_list:
+        room = crew.current_room
+        if not room:
+            for r in rooms:
+                if r.rect.collidepoint(int(crew.x), int(crew.y)):
+                    room = r
+                    break
+        if not room and rooms:
+            room = rooms[0]
+        if room:
+            crew.x = float(room.rect.centerx)
+            crew.y = float(room.rect.centery)
+            crew.target_pos = None
+            crew.path_waypoints = []
+            crew.current_room = room
+
+
 class CombatManager:
 
     def __init__(self, data: GameData, state_manager: StateManager):
@@ -23,8 +41,9 @@ class CombatManager:
             return
 
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
-            self.data.player.ship.update_doors(dt)
-            self.data.enemy.ship.update_doors(dt)
+            all_crew = self.data.player.crew + self.enemy_crew
+            self.data.player.ship.update_doors(dt, all_crew)
+            self.data.enemy.ship.update_doors(dt, all_crew)
             self.update_crew(dt)
 
             if len(self.data.player.crew) == 0:
@@ -38,6 +57,8 @@ class CombatManager:
 
         if not getattr(self, "was_in_combat", False):
             self.was_in_combat = True
+            center_crew_in_rooms(self.data.player.crew, self.data.player.ship.rooms)
+            center_crew_in_rooms(self.enemy_crew, self.data.enemy.ship.rooms)
             if "Waffen-Vorheizer" in getattr(self.data.player, "augments", []):
                 for w in self.data.player.weapons:
                     w.current_charge = w.charge_time
@@ -241,7 +262,8 @@ class CombatManager:
         dead_crew: list = []
         for crew in self.data.player.crew:
             target_rooms = self.data.enemy.ship.rooms if crew.is_boarding else self.data.player.ship.rooms
-            crew.update(dt, target_rooms)
+            target_doors = self.data.enemy.ship.doors if crew.is_boarding else self.data.player.ship.doors
+            crew.update(dt, target_rooms, target_doors)
             # Erstickungs- & Feuerschaden
             if crew.current_room:
                 if crew.current_room.oxygen < 20.0:
@@ -272,10 +294,11 @@ class CombatManager:
                 self.enemy_crew.append(Crew(r.rect.centerx, r.rect.centery, name="Pirate", is_enemy=True))
 
         enemy_rooms = self.data.enemy.ship.rooms
+        enemy_doors = self.data.enemy.ship.doors
         boarders = [c for c in self.data.player.crew if getattr(c, "is_boarding", False)]
         dead_enemy: list = []
         for e_crew in self.enemy_crew:
-            e_crew.update(dt, enemy_rooms)
+            e_crew.update(dt, enemy_rooms, enemy_doors)
             if e_crew.hp <= 0.0:
                 dead_enemy.append(e_crew)
                 continue

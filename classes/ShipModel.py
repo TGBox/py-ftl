@@ -100,9 +100,20 @@ class ShipModel:
             self.doors.append(Door(min_x_room, None, (min_x_room.rect.left - 4, min_x_room.rect.centery - 12, 6, 24), is_airlock=True))
             self.doors.append(Door(max_x_room, None, (max_x_room.rect.right - 2, max_x_room.rect.centery - 12, 6, 24), is_airlock=True))
 
-    def update_doors(self, dt: float) -> None:
+    def update_doors(self, dt: float, crew_list: list | None = None) -> None:
         for d in self.doors:
             d.update(dt)
+            if d.opened_by_crew and not d.is_airlock:
+                near = False
+                if crew_list:
+                    check_rect = d.rect.inflate(36, 36)
+                    for c in crew_list:
+                        if check_rect.collidepoint(int(c.x), int(c.y)):
+                            near = True
+                            break
+                if not near:
+                    d.is_open = False
+                    d.opened_by_crew = False
 
     def draw_doors(self, surface, door_level: int = 1) -> None:
         for d in self.doors:
@@ -112,15 +123,18 @@ class ShipModel:
         for d in self.doors:
             if not d.is_airlock:
                 d.is_open = True
+                d.opened_by_crew = False
 
     def close_all_doors(self) -> None:
         for d in self.doors:
             d.is_open = False
+            d.opened_by_crew = False
 
     def open_airlocks(self) -> None:
         for d in self.doors:
             if d.is_airlock:
                 d.is_open = not d.is_open
+                d.opened_by_crew = False
 
 
 PLAYER_SHIP = ShipModel("Kestrel", 15, [
