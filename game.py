@@ -64,6 +64,8 @@ class Game:
         self.input_manager.sound = self.sound
         self.combat_manager.sound = self.sound
         self.map_manager.sound = self.sound
+        if getattr(self.data, "achievements", None):
+            self.data.achievements.sound = self.sound
 
         # Give managers access to the Game for display changes and state reading
         self.input_manager.game = self
@@ -142,10 +144,26 @@ class Game:
         ly = int((my - offset_y) / scale)
         return lx, ly
 
+    def update_audio_state(self) -> None:
+        state = self.data.current_state
+        if state in (STATE_MAIN_MENU, STATE_OPTIONS, STATE_ACHIEVEMENTS):
+            self.sound.play_music("bgm_menu")
+        elif state in (STATE_MAP, STATE_SHOP, STATE_EVENT, STATE_TRAINING):
+            self.sound.play_music("bgm_explore")
+        elif state == STATE_COMBAT:
+            is_boss = getattr(self.data.enemy.ship, "is_boss", False) or getattr(self.data.enemy.ship, "is_miniboss", False)
+            if is_boss:
+                self.sound.play_music("bgm_boss")
+            else:
+                self.sound.play_music("bgm_combat")
+        elif state in (STATE_GAME_OVER, STATE_VICTORY):
+            self.sound.stop_music()
+
     def run(self) -> None:
         while self.data.running:
             dt = self.clock.tick(60) / 1000.0
 
+            self.update_audio_state()
             self.input_manager.update()
             self.combat_manager.update(dt)
             self.render_manager.draw()

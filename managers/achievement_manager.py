@@ -104,6 +104,9 @@ class AchievementManager:
                     "timer": 4.0,  # 4 seconds display
                 }
             )
+            snd = getattr(self, "sound", None)
+            if snd:
+                snd.play("achievement")
             return True
         return False
 
