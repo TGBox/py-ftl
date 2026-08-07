@@ -86,10 +86,16 @@ class InputManager:
                 if combat_mgr: combat_mgr.recall_boarding_crew()
             elif event.key == pygame.K_c:
                 if combat_mgr: combat_mgr.activate_cloaking()
-            elif event.key == pygame.K_k:
+            elif event.key in (pygame.K_k, pygame.K_1):
                 if combat_mgr: combat_mgr.toggle_combat_drone()
-            elif event.key == pygame.K_d:
+            elif event.key in (pygame.K_d, pygame.K_2):
                 if combat_mgr: combat_mgr.toggle_repair_drone()
+            elif event.key in (pygame.K_f, pygame.K_3):
+                if combat_mgr: combat_mgr.toggle_defense_drone()
+            elif event.key in (pygame.K_e, pygame.K_4):
+                if combat_mgr: combat_mgr.toggle_shield_charger()
+            elif event.key in (pygame.K_p, pygame.K_5):
+                if combat_mgr: combat_mgr.toggle_anti_personnel()
 
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
             if event.key == pygame.K_o:

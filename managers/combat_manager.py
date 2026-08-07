@@ -1,3 +1,4 @@
+import math
 import random
 
 from classes.Crew import Crew
@@ -63,6 +64,8 @@ class CombatManager:
         if self.data.current_state != STATE_COMBAT:
             self.was_in_combat = False
             return
+
+        self.update_drones(dt)
 
         if not getattr(self, "was_in_combat", False):
             self.was_in_combat = True
@@ -893,6 +896,209 @@ class CombatManager:
             self.data.current_state = STATE_MAP
 
 
+
+    def get_drone_room_power(self) -> int:
+        drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
+        return drone_room.current_power if drone_room else 0
+
+    def get_active_drone_power_used(self) -> int:
+        power = 0
+        if getattr(self.data.combat, "combat_drone_active", False): power += 1
+        if getattr(self.data.combat, "repair_drone_active", False): power += 1
+        if getattr(self.data.combat, "defense_drone_active", False): power += 2
+        if getattr(self.data.combat, "shield_charger_active", False): power += 2
+        if getattr(self.data.combat, "anti_personnel_active", False): power += 2
+        return power
+
+    def update_drones(self, dt: float):
+        drone_power = self.get_drone_room_power()
+        if drone_power <= 0:
+            return
+
+        # 1. Kampfdrohne MK1 (Orbits enemy ship & fires laser)
+        if getattr(self.data.combat, "combat_drone_active", False):
+            ang = getattr(self.data.combat, "drone_orbit_angle", 0.0) + dt * 1.2
+            self.data.combat.drone_orbit_angle = ang
+            fire_t = getattr(self.data.combat, "drone_fire_timer", 0.0) + dt
+            if fire_t >= 3.5:
+                self.data.combat.drone_fire_timer = 0.0
+                d_x = int(670 + math.cos(ang) * 160)
+                d_y = int(240 + math.sin(ang) * 110)
+                target_room = random.choice(self.data.enemy.ship.rooms)
+                self.data.player.projectiles.append(
+                    Projectile((d_x, d_y), target_room.rect.center, target_room=target_room, is_player_shot=True, w_type="LASER", damage=1)
+                )
+                if self.sound: self.sound.play("laser_fire")
+            else:
+                self.data.combat.drone_fire_timer = fire_t
+
+        # 2. Reparatur-Drohne (System Repair & Breach Fix)
+        if getattr(self.data.combat, "repair_drone_active", False):
+            damaged_rooms = [r for r in self.data.player.ship.rooms if r.health < r.max_health or getattr(r, "fire_level", 0) > 0 or getattr(r, "has_breach", False)]
+            if damaged_rooms:
+                target_r = damaged_rooms[0]
+                tx, ty = float(target_r.rect.centerx), float(target_r.rect.centery)
+                rx, ry = getattr(self.data.combat, "repair_drone_pos", (160.0, 245.0))
+                dx, dy = tx - rx, ty - ry
+                dist = math.hypot(dx, dy)
+                if dist > 4.0:
+                    rx += (dx / dist) * 120.0 * dt
+                    ry += (dy / dist) * 120.0 * dt
+                else:
+                    target_r.health = min(target_r.max_health, target_r.health + 25.0 * dt)
+                    target_r.fire_level = max(0.0, getattr(target_r, "fire_level", 0.0) - 40.0 * dt)
+                    if getattr(target_r, "has_breach", False):
+                        target_r.has_breach = False
+                        self.show_message(f"REP-DROHNE HAT HÜLLENBRUCH IN {target_r.name.upper()} REPARIERT!")
+                self.data.combat.repair_drone_pos = (rx, ry)
+
+        # 3. Verteidigungs-Drohne MK1 (Point-Defense shoots down incoming missiles/asteroids)
+        if getattr(self.data.combat, "defense_drone_active", False):
+            # Clear expired defense laser beam
+            d_beam = getattr(self.data.combat, "defense_laser_beam", None)
+            if d_beam:
+                if d_beam[2] - dt <= 0.0:
+                    self.data.combat.defense_laser_beam = None
+                else:
+                    self.data.combat.defense_laser_beam = (d_beam[0], d_beam[1], d_beam[2] - dt)
+
+            # Check for incoming enemy missiles
+            for proj in self.data.player.projectiles[:]:
+                if not proj.is_player_shot and proj.w_type == "MISSILE" and proj.alive:
+                    dist_to_player = math.hypot(proj.x - 220, proj.y - 245)
+                    if dist_to_player < 260.0:
+                        # Shoot down missile
+                        proj.alive = False
+                        d_start = (int(220 + math.cos(self.data.combat.drone_orbit_angle) * 130), int(245 + math.sin(self.data.combat.drone_orbit_angle) * 100))
+                        self.data.combat.defense_laser_beam = (d_start, (int(proj.x), int(proj.y)), 0.25)
+                        if hasattr(self.data, "particle_manager"):
+                            self.data.particle_manager.emit_explosion(proj.x, proj.y, count=15)
+                        if self.sound: self.sound.play("laser_fire")
+                        self.show_message("VERTEIDIGUNGS-DROHNE HAT RAKETE ABGESCHOSSEN!")
+                        break
+
+        # 4. Schild-Lade-Drohne (Faster shield recharge & overshield)
+        if getattr(self.data.combat, "shield_charger_active", False):
+            self.data.player.shield.recharge_timer -= dt * 0.8
+            if self.data.player.shield.current_layers == self.data.player.shield.max_layers:
+                self.data.combat.overshield_hp = min(1, getattr(self.data.combat, "overshield_hp", 0) + 1)
+
+        # 5. Anti-Personen-Drohne (Fights enemy boarders on player ship)
+        if getattr(self.data.combat, "anti_personnel_active", False):
+            boarders = [c for c in self.enemy_crew if any(r.rect.collidepoint(int(c.x), int(c.y)) for r in self.data.player.ship.rooms)]
+            if boarders:
+                target_b = boarders[0]
+                ap_x, ap_y = getattr(self.data.combat, "anti_personnel_pos", (220.0, 245.0))
+                dx, dy = target_b.x - ap_x, target_b.y - ap_y
+                dist = math.hypot(dx, dy)
+                if dist > 4.0:
+                    ap_x += (dx / dist) * 110.0 * dt
+                    ap_y += (dy / dist) * 110.0 * dt
+                else:
+                    target_b.hp = max(0.0, target_b.hp - 22.0 * dt)
+                    if hasattr(self.data, "particle_manager"):
+                        self.data.particle_manager.emit_sparks(target_b.x, target_b.y, count=3)
+                self.data.combat.anti_personnel_pos = (ap_x, ap_y)
+
+    def toggle_combat_drone(self):
+        drone_power = self.get_drone_room_power()
+        if getattr(self.data.combat, "combat_drone_active", False):
+            self.data.combat.combat_drone_active = False
+            self.show_message("KAMPFDROHNE DEAKTIVIERT")
+            return
+
+        if self.data.player.drones < 1:
+            self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
+            return
+
+        if self.get_active_drone_power_used() + 1 > drone_power:
+            self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 1, Max: {drone_power})!")
+            return
+
+        self.data.player.drones -= 1
+        self.data.combat.combat_drone_active = True
+        if self.sound: self.sound.play("click")
+        self.show_message("KAMPFDROHNE AKTIVIERT [1E]!")
+
+    def toggle_repair_drone(self):
+        drone_power = self.get_drone_room_power()
+        if getattr(self.data.combat, "repair_drone_active", False):
+            self.data.combat.repair_drone_active = False
+            self.show_message("REPARATUR-DROHNE DEAKTIVIERT")
+            return
+
+        if self.data.player.drones < 1:
+            self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
+            return
+
+        if self.get_active_drone_power_used() + 1 > drone_power:
+            self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 1, Max: {drone_power})!")
+            return
+
+        self.data.player.drones -= 1
+        self.data.combat.repair_drone_active = True
+        if self.sound: self.sound.play("click")
+        self.show_message("REPARATUR-DROHNE AKTIVIERT [1E]!")
+
+    def toggle_defense_drone(self):
+        drone_power = self.get_drone_room_power()
+        if getattr(self.data.combat, "defense_drone_active", False):
+            self.data.combat.defense_drone_active = False
+            self.show_message("VERTEIDIGUNGS-DROHNE DEAKTIVIERT")
+            return
+
+        if self.data.player.drones < 1:
+            self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
+            return
+
+        if self.get_active_drone_power_used() + 2 > drone_power:
+            self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 2, Max: {drone_power})!")
+            return
+
+        self.data.player.drones -= 1
+        self.data.combat.defense_drone_active = True
+        if self.sound: self.sound.play("click")
+        self.show_message("VERTEIDIGUNGS-DROHNE AKTIVIERT [2E]!")
+
+    def toggle_shield_charger(self):
+        drone_power = self.get_drone_room_power()
+        if getattr(self.data.combat, "shield_charger_active", False):
+            self.data.combat.shield_charger_active = False
+            self.show_message("SCHILD-LADE-DROHNE DEAKTIVIERT")
+            return
+
+        if self.data.player.drones < 1:
+            self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
+            return
+
+        if self.get_active_drone_power_used() + 2 > drone_power:
+            self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 2, Max: {drone_power})!")
+            return
+
+        self.data.player.drones -= 1
+        self.data.combat.shield_charger_active = True
+        if self.sound: self.sound.play("click")
+        self.show_message("SCHILD-LADE-DROHNE AKTIVIERT [2E]!")
+
+    def toggle_anti_personnel(self):
+        drone_power = self.get_drone_room_power()
+        if getattr(self.data.combat, "anti_personnel_active", False):
+            self.data.combat.anti_personnel_active = False
+            self.show_message("ANTI-PERSONEN-DROHNE DEAKTIVIERT")
+            return
+
+        if self.data.player.drones < 1:
+            self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
+            return
+
+        if self.get_active_drone_power_used() + 2 > drone_power:
+            self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 2, Max: {drone_power})!")
+            return
+
+        self.data.player.drones -= 1
+        self.data.combat.anti_personnel_active = True
+        if self.sound: self.sound.play("click")
+        self.show_message("ANTI-PERSONEN-DROHNE AKTIVIERT [2E]!")
 
     def player_lost(self):
 

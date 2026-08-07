@@ -50,6 +50,9 @@ class EnemyData:
         self.weapon: Weapon = Weapon("Laser", charge_time=4.5, w_type="LASER")
 
 
+from classes.Drone import Drone, DRONE_CATALOG
+
+
 class CombatData:
 
     def __init__(self) -> None:
@@ -69,9 +72,15 @@ class CombatData:
         self.asteroid_timer: float = 2.5
         self.combat_drone_active: bool = False
         self.repair_drone_active: bool = False
+        self.defense_drone_active: bool = False
+        self.shield_charger_active: bool = False
+        self.anti_personnel_active: bool = False
         self.drone_orbit_angle: float = 0.0
         self.drone_fire_timer: float = 0.0
         self.repair_drone_pos: tuple[float, float] = (160.0, 245.0)
+        self.anti_personnel_pos: tuple[float, float] = (220.0, 245.0)
+        self.defense_laser_beam: tuple[tuple[int, int], tuple[int, int], float] | None = None  # (start, end, timer)
+        self.overshield_hp: int = 0
         self.boss_phase: int = 1
         self.zoltan_shield_hp: int = 0
         self.drone_surge_timer: float = 18.0

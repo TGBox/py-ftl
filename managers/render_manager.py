@@ -731,6 +731,36 @@ class RenderManager:
             r_lbl = small_font.render("REP-DROHNE", True, (100, 255, 100))
             self.screen.blit(r_lbl, (int(rx) - r_lbl.get_width() // 2, int(ry) + 12))
 
+        if getattr(self.data.combat, "defense_drone_active", False):
+            ang = getattr(self.data.combat, "drone_orbit_angle", 0.0)
+            d_x = int(220 + math.cos(ang) * 130)
+            d_y = int(245 + math.sin(ang) * 100)
+            pygame.draw.circle(self.screen, (0, 220, 255), (d_x, d_y), 8)
+            pygame.draw.circle(self.screen, (255, 255, 255), (d_x, d_y), 8, 2)
+            def_lbl = small_font.render("VERT-DROHNE", True, (100, 230, 255))
+            self.screen.blit(def_lbl, (d_x - def_lbl.get_width() // 2, d_y - 17))
+
+            # Point defense laser beam
+            d_beam = getattr(self.data.combat, "defense_laser_beam", None)
+            if d_beam:
+                pygame.draw.line(self.screen, (0, 255, 255), d_beam[0], d_beam[1], 3)
+                pygame.draw.circle(self.screen, (255, 255, 255), d_beam[1], 6)
+
+        if getattr(self.data.combat, "shield_charger_active", False):
+            s_room = self.data.player.ship.rooms[0]
+            cx, cy = s_room.rect.centerx - 25, s_room.rect.centery - 25
+            pygame.draw.circle(self.screen, (255, 215, 0), (cx, cy), 8)
+            pygame.draw.circle(self.screen, (255, 255, 255), (cx, cy), 8, 2)
+            sc_lbl = small_font.render("SCHILD-DROHNE", True, (255, 230, 100))
+            self.screen.blit(sc_lbl, (cx - sc_lbl.get_width() // 2, cy - 16))
+
+        if getattr(self.data.combat, "anti_personnel_active", False):
+            ap_x, ap_y = getattr(self.data.combat, "anti_personnel_pos", (220.0, 245.0))
+            pygame.draw.rect(self.screen, (180, 50, 50), (int(ap_x) - 9, int(ap_y) - 9, 18, 18))
+            pygame.draw.rect(self.screen, (255, 200, 50), (int(ap_x) - 9, int(ap_y) - 9, 18, 18), 2)
+            ap_lbl = small_font.render("ANTI-PERS", True, (255, 140, 100))
+            self.screen.blit(ap_lbl, (int(ap_x) - ap_lbl.get_width() // 2, int(ap_y) + 11))
+
         # Zoltan Super-Schild Aura (Phase 3 Boss)
         zoltan_hp = getattr(self.data.combat, "zoltan_shield_hp", 0)
         if zoltan_hp > 0:
