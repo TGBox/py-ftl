@@ -825,7 +825,16 @@ class CombatManager:
         new_ship = None
         if is_final_boss or is_mini_boss:
             from managers.save_manager import SaveManager
-            ship_sequence = ["Kestrel", "Kreuzer", "Tarnschiff", "Zoltan-Fregatte", "Federations-Kreuzer"]
+            ship_sequence = [
+                "Kestrel",
+                "Kreuzer",
+                "Tarnschiff",
+                "Zoltan-Fregatte",
+                "Federations-Kreuzer",
+                "Mantis-Kaperer",
+                "Rock-Schlachtschiff",
+                "Kristall-Kreuzer",
+            ]
             unlocked = SaveManager.load_unlocks()
             for s in ship_sequence:
                 if s not in unlocked:

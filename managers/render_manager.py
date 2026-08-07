@@ -949,26 +949,24 @@ class RenderManager:
             title_txt, (banner_rect.x + (banner_rect.width - title_txt.get_width()) // 2, banner_rect.y + 12)
         )
 
-        # 5 Schiffskarten
-        self.btn_ship_kestrel = pygame.Rect(45, 95, 155, 275)
-        self.btn_ship_kreuzer = pygame.Rect(210, 95, 155, 275)
-        self.btn_ship_tarnschiff = pygame.Rect(375, 95, 155, 275)
-        self.btn_ship_zoltan = pygame.Rect(540, 95, 155, 275)
-        self.btn_ship_fed = pygame.Rect(705, 95, 155, 275)
+        # 8 Schiffskarten in 2x4 Raster
+        from classes.ShipModel import SHIP_BLUEPRINTS
+        from managers.save_manager import SaveManager
 
         selected_name = getattr(self.data.player.ship, "name", "Kestrel")
-
-        ships_info = [
-            (self.btn_ship_kestrel, "Kestrel", 15, 3, 4, 3),
-            (self.btn_ship_kreuzer, "Kreuzer", 18, 4, 6, 4),
-            (self.btn_ship_tarnschiff, "Tarnschiff", 12, 3, 3, 3),
-            (self.btn_ship_zoltan, "Zoltan-Fregatte", 14, 4, 4, 4),
-            (self.btn_ship_fed, "Federations-Kreuzer", 20, 4, 5, 4),
-        ]
-
         unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
 
-        for btn, name, hp, weapons, crew, rooms_count in ships_info:
+        col_x = [40, 250, 460, 670]
+        row_y = [85, 240]
+        ship_list = list(SHIP_BLUEPRINTS.items())
+
+        for idx, (name, ship_obj) in enumerate(ship_list):
+            r_idx = idx // 4
+            c_idx = idx % 4
+            if r_idx >= 2:
+                break
+
+            btn = pygame.Rect(col_x[c_idx], row_y[r_idx], 195, 145)
             is_sel = (name == selected_name)
             is_unlocked = (name in unlocked)
             is_hov = btn.collidepoint(mx, my)
@@ -987,37 +985,28 @@ class RenderManager:
             self.screen.blit(c_surf, (btn.x, btn.y))
             pygame.draw.rect(self.screen, border_col, btn, 3 if is_sel else (2 if is_hov else 1))
 
-            name_disp = name if len(name) <= 12 else name[:11] + "."
+            name_disp = name if len(name) <= 15 else name[:14] + "."
             name_txt = self.font.render(name_disp, True, (255, 255, 255) if is_sel else (210, 220, 240))
-            self.screen.blit(name_txt, (btn.x + 12, btn.y + 12))
+            self.screen.blit(name_txt, (btn.x + 10, btn.y + 8))
 
             pygame.draw.line(
-                self.screen, border_col, (btn.x + 10, btn.y + 38), (btn.x + btn.width - 10, btn.y + 38), 1
+                self.screen, border_col, (btn.x + 8, btn.y + 32), (btn.x + btn.width - 8, btn.y + 32), 1
             )
 
-            hp_txt = self.font.render(f"Hülle: {hp} HP", True, (140, 230, 160))
-            w_txt = self.font.render(f"Waffen: {weapons}", True, (240, 220, 130))
-            c_txt = self.font.render(f"Crew: {crew}", True, (130, 210, 255))
+            stat_font = pygame.font.SysFont(None, 18)
+            stats_str = f"HP: {ship_obj.hp}  |  Waffen: {ship_obj.max_weapons}  |  Crew: {ship_obj.max_crew}"
+            stats_txt = stat_font.render(stats_str, True, (140, 220, 240))
+            self.screen.blit(stats_txt, (btn.x + 10, btn.y + 38))
 
-            self.screen.blit(hp_txt, (btn.x + 12, btn.y + 48))
-            self.screen.blit(w_txt, (btn.x + 12, btn.y + 72))
-            self.screen.blit(c_txt, (btn.x + 12, btn.y + 96))
+            # Raum-Vorschau
+            rooms_count = len(ship_obj.rooms)
+            for r in range(min(rooms_count, 6)):
+                rx = btn.x + 10 + r * 28
+                ry = btn.y + 60
+                pygame.draw.rect(self.screen, (35, 60, 90), (rx, ry, 22, 22))
+                pygame.draw.rect(self.screen, (0, 200, 255) if is_sel else (100, 130, 160), (rx, ry, 22, 22), 1)
 
-            lbl_rooms = pygame.font.SysFont(None, 14).render("RAUM-LAYOUT:", True, (160, 180, 210))
-            self.screen.blit(lbl_rooms, (btn.x + 12, btn.y + 124))
-            for r in range(rooms_count):
-                rx = btn.x + 12 + r * 32
-                ry = btn.y + 142
-                pygame.draw.rect(self.screen, (35, 60, 90), (rx, ry, 26, 26))
-                pygame.draw.rect(self.screen, (0, 200, 255) if is_sel else (100, 130, 160), (rx, ry, 26, 26), 1)
-
-            for c in range(min(crew, 4)):
-                cx = btn.x + 20 + c * 30
-                cy = btn.y + 185
-                c_color = (0, 230, 140) if is_sel else (80, 160, 120)
-                pygame.draw.circle(self.screen, c_color, (cx, cy), 8)
-
-            sel_btn_rect = pygame.Rect(btn.x + 10, btn.y + 225, btn.width - 20, 36)
+            sel_btn_rect = pygame.Rect(btn.x + 10, btn.y + 95, btn.width - 20, 36)
             if is_sel:
                 self.draw_scifi_button(sel_btn_rect, "GEWÄHLT", is_active=True, primary_color=(0, 230, 140))
             elif is_unlocked:
@@ -1026,10 +1015,10 @@ class RenderManager:
                 self.draw_scifi_button(sel_btn_rect, "GESPERRT", enabled=False)
 
         # Action Buttons Leiste unten
-        self.btn_start = pygame.Rect(45, 395, 185, 44)
-        self.btn_continue_game = pygame.Rect(250, 395, 185, 44)
-        self.btn_options = pygame.Rect(455, 395, 185, 44)
-        self.btn_quit = pygame.Rect(660, 395, 185, 44)
+        self.btn_start = pygame.Rect(40, 395, 195, 44)
+        self.btn_continue_game = pygame.Rect(250, 395, 195, 44)
+        self.btn_options = pygame.Rect(460, 395, 195, 44)
+        self.btn_quit = pygame.Rect(670, 395, 195, 44)
 
         from managers.save_manager import SaveManager
 

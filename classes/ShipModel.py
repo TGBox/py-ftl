@@ -202,12 +202,57 @@ FEDERATION_SHIP = ShipModel("Federations-Kreuzer", 20, [
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
 ])
 
+MANTIS_SHIP = ShipModel("Mantis-Kaperer", 16, [
+    Room("Teleporter", (50, 235, 85, 85), max_power=2),
+    Room("Schild", (145, 235, 85, 85)),
+    Room("Waffen", (240, 235, 85, 85)),
+    Room("Brücke", (335, 235, 85, 85), max_power=2),
+    Room("Medbay", (145, 140, 85, 85), max_power=2),
+    Room("Sensoren", (240, 140, 85, 85), max_power=2),
+], max_weapons=3, max_crew=5, weapon_slots=[
+    {"slot_id": 1, "pos": (282, 220), "allowed_types": ["LASER", "MISSILE"]},
+    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM"]},
+    {"slot_id": 3, "pos": (187, 220), "allowed_types": ["MISSILE", "BEAM"]},
+])
+
+ROCK_SHIP = ShipModel("Rock-Schlachtschiff", 22, [
+    Room("Schild", (50, 235, 85, 85)),
+    Room("Waffen", (145, 235, 85, 85)),
+    Room("Maschinen", (240, 235, 85, 85)),
+    Room("Brücke", (335, 235, 85, 85), max_power=2),
+    Room("Medbay", (145, 140, 85, 85), max_power=2),
+    Room("Teleporter", (240, 140, 85, 85), max_power=1),
+], max_weapons=4, max_crew=6, weapon_slots=[
+    {"slot_id": 1, "pos": (187, 220), "allowed_types": ["MISSILE", "FLAK", "LASER"]},
+    {"slot_id": 2, "pos": (187, 335), "allowed_types": ["MISSILE", "LASER"]},
+    {"slot_id": 3, "pos": (282, 220), "allowed_types": ["FLAK", "BEAM"]},
+    {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
+])
+
+CRYSTAL_SHIP = ShipModel("Kristall-Kreuzer", 17, [
+    Room("Schild", (50, 235, 85, 85)),
+    Room("Super-Schild", (145, 235, 85, 85)),
+    Room("Waffen", (240, 235, 85, 85)),
+    Room("Brücke", (335, 235, 85, 85), max_power=2),
+    Room("Medbay", (145, 140, 85, 85), max_power=2),
+    Room("Tarnung", (240, 140, 85, 85), max_power=2),
+    Room("Teleporter", (335, 140, 85, 85), max_power=1),
+], max_weapons=4, max_crew=4, weapon_slots=[
+    {"slot_id": 1, "pos": (282, 220), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
+    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM"]},
+    {"slot_id": 3, "pos": (187, 220), "allowed_types": ["BEAM", "ION"]},
+    {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
+])
+
 SHIP_BLUEPRINTS = {
     "Kestrel": PLAYER_SHIP,
     "Kreuzer": CRUISER_SHIP,
     "Tarnschiff": STEALTH_SHIP,
     "Zoltan-Fregatte": ZOLTAN_SHIP,
     "Federations-Kreuzer": FEDERATION_SHIP,
+    "Mantis-Kaperer": MANTIS_SHIP,
+    "Rock-Schlachtschiff": ROCK_SHIP,
+    "Kristall-Kreuzer": CRYSTAL_SHIP,
 }
 
 

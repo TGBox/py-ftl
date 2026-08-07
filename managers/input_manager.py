@@ -236,50 +236,48 @@ class InputManager:
             return
 
         if self.data.current_state == STATE_MAIN_MENU:
-            btn_kestrel = pygame.Rect(45, 95, 155, 275)
-            btn_kreuzer = pygame.Rect(210, 95, 155, 275)
-            btn_tarnschiff = pygame.Rect(375, 95, 155, 275)
-            btn_zoltan = pygame.Rect(540, 95, 155, 275)
-            btn_fed = pygame.Rect(705, 95, 155, 275)
-
-            btn_start = pygame.Rect(45, 395, 185, 44)
-            btn_continue_game = pygame.Rect(250, 395, 185, 44)
-            btn_options = pygame.Rect(455, 395, 185, 44)
-            btn_quit = pygame.Rect(660, 395, 185, 44)
-
             import copy
             from classes.ShipModel import SHIP_BLUEPRINTS
             from managers.save_manager import SaveManager
 
             unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
 
-            if btn_kestrel.collidepoint(mx, my) and "Kestrel" in unlocked:
-                self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Kestrel"])
-                if self.sound: self.sound.play("click")
-            elif btn_kreuzer.collidepoint(mx, my) and "Kreuzer" in unlocked:
-                self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Kreuzer"])
-                if self.sound: self.sound.play("click")
-            elif btn_tarnschiff.collidepoint(mx, my) and "Tarnschiff" in unlocked:
-                self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Tarnschiff"])
-                if self.sound: self.sound.play("click")
-            elif btn_zoltan.collidepoint(mx, my) and "Zoltan-Fregatte" in unlocked:
-                self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Zoltan-Fregatte"])
-                if self.sound: self.sound.play("click")
-            elif btn_fed.collidepoint(mx, my) and "Federations-Kreuzer" in unlocked:
-                self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS["Federations-Kreuzer"])
-                if self.sound: self.sound.play("click")
-            elif btn_options.collidepoint(mx, my):
+            col_x = [40, 250, 460, 670]
+            row_y = [85, 240]
+            ship_list = list(SHIP_BLUEPRINTS.keys())
+
+            for idx, name in enumerate(ship_list):
+                r_idx = idx // 4
+                c_idx = idx % 4
+                if r_idx < 2:
+                    card_btn = pygame.Rect(col_x[c_idx], row_y[r_idx], 195, 145)
+                    if card_btn.collidepoint(mx, my) and name in unlocked:
+                        self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS[name])
+                        if self.sound:
+                            self.sound.play("click")
+                        return
+
+            btn_start = pygame.Rect(40, 395, 195, 44)
+            btn_continue_game = pygame.Rect(250, 395, 195, 44)
+            btn_options = pygame.Rect(460, 395, 195, 44)
+            btn_quit = pygame.Rect(670, 395, 195, 44)
+
+            if btn_options.collidepoint(mx, my):
                 self.data.current_state = STATE_OPTIONS
-                if self.sound: self.sound.play("click")
+                if self.sound:
+                    self.sound.play("click")
             elif btn_start.collidepoint(mx, my):
                 self.data.current_state = STATE_MAP
-                if self.sound: self.sound.play("jump")
+                if self.sound:
+                    self.sound.play("jump")
             elif SaveManager.has_savegame() and btn_continue_game.collidepoint(mx, my):
                 if SaveManager.load_game(self.data):
-                    if self.sound: self.sound.play("jump")
+                    if self.sound:
+                        self.sound.play("jump")
             elif btn_quit.collidepoint(mx, my):
                 self.data.running = False
-                if self.sound: self.sound.play("click")
+                if self.sound:
+                    self.sound.play("click")
             return
 
 

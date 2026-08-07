@@ -51,6 +51,25 @@ class TestShipAndDoors(unittest.TestCase):
         self.assertEqual(r1.name, name2)
         self.assertEqual(r2.name, name1)
 
+    def test_all_ship_blueprints(self):
+        from classes.ShipModel import SHIP_BLUEPRINTS
+
+        self.assertEqual(len(SHIP_BLUEPRINTS), 8, "There should be exactly 8 ship blueprints.")
+        expected_ships = [
+            "Kestrel", "Kreuzer", "Tarnschiff", "Zoltan-Fregatte",
+            "Federations-Kreuzer", "Mantis-Kaperer", "Rock-Schlachtschiff", "Kristall-Kreuzer"
+        ]
+        for ship_name in expected_ships:
+            self.assertIn(ship_name, SHIP_BLUEPRINTS)
+            blueprint = SHIP_BLUEPRINTS[ship_name]
+            copied_ship = copy.deepcopy(blueprint)
+
+            self.assertEqual(copied_ship.name, ship_name)
+            self.assertGreater(copied_ship.hp, 0)
+            self.assertGreater(len(copied_ship.rooms), 0)
+            self.assertGreater(len(copied_ship.doors), 0)
+            self.assertGreater(len(copied_ship.weapon_slots), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
