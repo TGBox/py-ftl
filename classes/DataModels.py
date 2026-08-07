@@ -79,6 +79,7 @@ class RoomSaveSchema(BaseModel):
     max_power: int
     oxygen: float
     has_breach: bool = False
+    was_destroyed: bool = False
 
 
 class WeaponSaveSchema(BaseModel):

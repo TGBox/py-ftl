@@ -95,6 +95,7 @@ class SaveManager:
                     max_power=r.max_power,
                     oxygen=r.oxygen,
                     has_breach=getattr(r, "has_breach", False),
+                    was_destroyed=getattr(r, "was_destroyed", False),
                 )
                 for r in data.player.ship.rooms
             ]
@@ -257,6 +258,7 @@ class SaveManager:
                     r.max_power = r_schema.max_power
                     r.oxygen = r_schema.oxygen
                     r.has_breach = r_schema.has_breach
+                    r.was_destroyed = getattr(r_schema, "was_destroyed", False)
 
             # 4. Reaktor & Schild wiederherstellen
             data.player.reactor = Reactor(total_power=schema.reactor_total_power)
