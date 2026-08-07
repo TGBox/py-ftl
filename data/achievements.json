@@ -68,15 +68,15 @@
     "title": "Waffenschmied",
     "desc": "Führe eine erfolgreiche Waffen-Fusion im Shop durch.",
     "icon": "⚡",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "2026-08-07 10:18"
   },
   "event_explorer": {
     "id": "event_explorer",
     "title": "Weltraum-Erkunder",
     "desc": "Erfülle 10 zufällige Sektor-Events.",
     "icon": "🌌",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "2026-08-07 10:17"
   }
 }

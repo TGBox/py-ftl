@@ -9,6 +9,7 @@ class RenderManager:
         self.screen = screen
         self.data = data
         self.load_assets()
+        self.small_font = pygame.font.SysFont(None, 18)
         self.font = pygame.font.SysFont(None, 24)
         self.title_font = pygame.font.SysFont(None, 36, bold=True)
         # Top-Right Buttons
@@ -485,7 +486,7 @@ class RenderManager:
             subtitle_txt = f"1. Raum: {first_r.name.upper()} | Klicke auf den 2. Raum zum Tauschen!" if first_r else "KLICKE AUF ZWEI RÄUME, UM DEREN SYSTEME ZU TAUSCHEN:"
 
             t_lbl = self.font.render(title_txt, True, (255, 220, 100))
-            st_lbl = small_font.render(subtitle_txt, True, (100, 220, 255))
+            st_lbl = self.small_font.render(subtitle_txt, True, (100, 220, 255))
             self.screen.blit(t_lbl, (240, 30))
             self.screen.blit(st_lbl, (220, 58))
 
@@ -498,7 +499,7 @@ class RenderManager:
                 pygame.draw.rect(self.screen, fill_color, r.rect)
                 pygame.draw.rect(self.screen, border_color, r.rect, 3 if is_first else 2)
 
-                lbl_r = small_font.render(r.name, True, (255, 255, 255))
+                lbl_r = self.small_font.render(r.name, True, (255, 255, 255))
                 self.screen.blit(lbl_r, (r.rect.x + 6, r.rect.y + 6))
 
             cancel_btn = pygame.Rect(320, 490, 260, 40)
@@ -929,6 +930,13 @@ class RenderManager:
         elif hazard == "ASTEROID_FIELD":
             h_lbl = self.font.render("UMWELTGEFAHR: ASTEROIDENFELD", True, (180, 200, 240))
             self.screen.blit(h_lbl, (SCREEN_WIDTH // 2 - h_lbl.get_width() // 2, 75))
+        elif hazard == "NEBULA_ION_STORM":
+            h_lbl = self.font.render("UMWELTGEFAHR: NEBEL-ION-STURM (-50% REAKTOR-ENERGIE)", True, (0, 220, 255))
+            self.screen.blit(h_lbl, (SCREEN_WIDTH // 2 - h_lbl.get_width() // 2, 75))
+        elif hazard == "PULSAR":
+            pulsar_t = getattr(self.data.combat, "pulsar_timer", 15.0)
+            h_lbl = self.font.render(f"PULSAR-STRAHLUNG IN: {int(pulsar_t)}s", True, (255, 230, 80))
+            self.screen.blit(h_lbl, (SCREEN_WIDTH // 2 - h_lbl.get_width() // 2, 75))
 
         # Temporäre Kampfnachrichten (Unten über der Waffenleiste)
         if self.data.combat.msg_timer > 0.0:
@@ -1354,4 +1362,4 @@ class RenderManager:
                 (200, 220, 255),
             ),
             (260, 310),
-        )
+        )

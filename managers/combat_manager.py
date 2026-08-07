@@ -108,6 +108,26 @@ class CombatManager:
             else:
                 self.data.combat.solar_flare_timer = sf_timer
 
+        elif hazard == "NEBULA_ION_STORM":
+            # Halves available reactor power in Ion Storm
+            self.data.player.reactor.max_power = max(1, self.data.player.reactor.total_power // 2)
+            self.data.enemy.reactor.max_power = max(1, self.data.enemy.reactor.total_power // 2)
+
+        elif hazard == "PULSAR":
+            pulsar_t = getattr(self.data.combat, "pulsar_timer", 15.0) - dt
+            if pulsar_t <= 0.0:
+                self.data.combat.pulsar_timer = 15.0
+                p_rooms = random.sample(self.data.player.ship.rooms, min(2, len(self.data.player.ship.rooms)))
+                e_rooms = random.sample(self.data.enemy.ship.rooms, min(2, len(self.data.enemy.ship.rooms)))
+                for r in p_rooms + e_rooms:
+                    r.ion_timer = 8.0
+                    if hasattr(self.data, "particle_manager"):
+                        self.data.particle_manager.emit_shield_ripple(r.rect.centerx, r.rect.centery, (255, 230, 80))
+                if self.sound: self.sound.play("ion_hit")
+                self.show_message("PULSAR-STRAHLUNG! RÄUME BEIDER SCHIFFE IONISIERT!")
+            else:
+                self.data.combat.pulsar_timer = pulsar_t
+
         elif hazard == "ASTEROID_FIELD":
             ast_timer = getattr(self.data.combat, "asteroid_timer", 2.5) - dt
             if ast_timer <= 0.0:
