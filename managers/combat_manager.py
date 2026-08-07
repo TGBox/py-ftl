@@ -935,6 +935,15 @@ class CombatManager:
         if drone_power <= 0:
             return
 
+        # Dynamic ship centers
+        p_rooms = self.data.player.ship.rooms
+        p_cx = (min(r.rect.left for r in p_rooms) + max(r.rect.right for r in p_rooms)) // 2 if p_rooms else 220
+        p_cy = (min(r.rect.top for r in p_rooms) + max(r.rect.bottom for r in p_rooms)) // 2 if p_rooms else 245
+
+        e_rooms = self.data.enemy.ship.rooms
+        e_cx = (min(r.rect.left for r in e_rooms) + max(r.rect.right for r in e_rooms)) // 2 if e_rooms else 710
+        e_cy = (min(r.rect.top for r in e_rooms) + max(r.rect.bottom for r in e_rooms)) // 2 if e_rooms else 245
+
         # 1. Kampfdrohne MK1 (Orbits enemy ship & fires laser)
         if getattr(self.data.combat, "combat_drone_active", False):
             ang = getattr(self.data.combat, "drone_orbit_angle", 0.0) + dt * 1.2
@@ -942,8 +951,8 @@ class CombatManager:
             fire_t = getattr(self.data.combat, "drone_fire_timer", 0.0) + dt
             if fire_t >= 3.5:
                 self.data.combat.drone_fire_timer = 0.0
-                d_x = int(670 + math.cos(ang) * 160)
-                d_y = int(240 + math.sin(ang) * 110)
+                d_x = int(e_cx + math.cos(ang) * 160)
+                d_y = int(e_cy + math.sin(ang) * 110)
                 target_room = random.choice(self.data.enemy.ship.rooms)
                 self.data.player.projectiles.append(
                     Projectile((d_x, d_y), target_room.rect.center, target_room=target_room, is_player_shot=True, w_type="LASER", damage=1)
@@ -958,7 +967,7 @@ class CombatManager:
             if damaged_rooms:
                 target_r = damaged_rooms[0]
                 tx, ty = float(target_r.rect.centerx), float(target_r.rect.centery)
-                rx, ry = getattr(self.data.combat, "repair_drone_pos", (160.0, 245.0))
+                rx, ry = getattr(self.data.combat, "repair_drone_pos", (float(p_cx), float(p_cy)))
                 dx, dy = tx - rx, ty - ry
                 dist = math.hypot(dx, dy)
                 if dist > 4.0:
@@ -985,11 +994,11 @@ class CombatManager:
             # Check for incoming enemy missiles
             for proj in self.data.player.projectiles[:]:
                 if not proj.is_player_shot and proj.w_type == "MISSILE" and proj.alive:
-                    dist_to_player = math.hypot(proj.x - 220, proj.y - 245)
+                    dist_to_player = math.hypot(proj.x - p_cx, proj.y - p_cy)
                     if dist_to_player < 260.0:
                         # Shoot down missile
                         proj.alive = False
-                        d_start = (int(220 + math.cos(self.data.combat.drone_orbit_angle) * 130), int(245 + math.sin(self.data.combat.drone_orbit_angle) * 100))
+                        d_start = (int(p_cx + math.cos(self.data.combat.drone_orbit_angle) * 130), int(p_cy + math.sin(self.data.combat.drone_orbit_angle) * 100))
                         self.data.combat.defense_laser_beam = (d_start, (int(proj.x), int(proj.y)), 0.25)
                         if hasattr(self.data, "particle_manager"):
                             self.data.particle_manager.emit_explosion(proj.x, proj.y, count=15)

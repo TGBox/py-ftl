@@ -108,9 +108,9 @@ class ParticleManager:
             life = random.uniform(0.2, 0.4)
             self.particles.append(Particle(x, y, vx, vy, col, rad, life, p_type="spark"))
 
-    def emit_thruster(self, x: float, y: float, direction_x: float = -1.0):
-        vx = direction_x * random.uniform(40.0, 90.0)
-        vy = random.uniform(-12.0, 12.0)
+    def emit_thruster(self, x: float, y: float, direction_x: float = 0.0, direction_y: float = 1.0):
+        vx = direction_x * random.uniform(30.0, 70.0) + random.uniform(-10.0, 10.0)
+        vy = direction_y * random.uniform(40.0, 90.0) + random.uniform(-5.0, 5.0)
         col = random.choice([(0, 200, 255), (100, 230, 255), (0, 140, 255)])
         rad = random.uniform(3.0, 7.0)
         life = random.uniform(0.15, 0.35)

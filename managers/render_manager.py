@@ -313,12 +313,23 @@ class RenderManager:
             
     def draw_combat(self):
 
-        # Triebwerks-Partikel emittieren
+        # Triebwerks-Partikel dynamisch am Heck (Unterseite) der Schiffe emittieren (nach unten)
         if hasattr(self.data, "particle_manager"):
-            self.data.particle_manager.emit_thruster(90, 240, direction_x=-1.0)
-            self.data.particle_manager.emit_thruster(90, 260, direction_x=-1.0)
-            self.data.particle_manager.emit_thruster(810, 240, direction_x=1.0)
-            self.data.particle_manager.emit_thruster(810, 260, direction_x=1.0)
+            if self.data.player.ship.rooms:
+                p_left = min(r.rect.left for r in self.data.player.ship.rooms)
+                p_right = max(r.rect.right for r in self.data.player.ship.rooms)
+                p_bottom = max(r.rect.bottom for r in self.data.player.ship.rooms)
+                p_w = p_right - p_left
+                self.data.particle_manager.emit_thruster(p_left + int(p_w * 0.35), p_bottom + 6, direction_x=0.0, direction_y=1.0)
+                self.data.particle_manager.emit_thruster(p_left + int(p_w * 0.65), p_bottom + 6, direction_x=0.0, direction_y=1.0)
+
+            if self.data.enemy.ship.rooms:
+                e_left = min(r.rect.left for r in self.data.enemy.ship.rooms)
+                e_right = max(r.rect.right for r in self.data.enemy.ship.rooms)
+                e_bottom = max(r.rect.bottom for r in self.data.enemy.ship.rooms)
+                e_w = e_right - e_left
+                self.data.particle_manager.emit_thruster(e_left + int(e_w * 0.35), e_bottom + 6, direction_x=0.0, direction_y=1.0)
+                self.data.particle_manager.emit_thruster(e_left + int(e_w * 0.65), e_bottom + 6, direction_x=0.0, direction_y=1.0)
 
         self.draw_rooms()
 
@@ -715,18 +726,25 @@ class RenderManager:
 
         # 4. Drohnen im Raum & Orbit zeichnen
         import math
+        p_rooms = self.data.player.ship.rooms
+        p_cx = (min(r.rect.left for r in p_rooms) + max(r.rect.right for r in p_rooms)) // 2 if p_rooms else 220
+        p_cy = (min(r.rect.top for r in p_rooms) + max(r.rect.bottom for r in p_rooms)) // 2 if p_rooms else 245
+
+        e_rooms = self.data.enemy.ship.rooms
+        e_cx = (min(r.rect.left for r in e_rooms) + max(r.rect.right for r in e_rooms)) // 2 if e_rooms else 710
+        e_cy = (min(r.rect.top for r in e_rooms) + max(r.rect.bottom for r in e_rooms)) // 2 if e_rooms else 245
 
         if getattr(self.data.combat, "combat_drone_active", False):
             ang = getattr(self.data.combat, "drone_orbit_angle", 0.0)
-            d_x = int(670 + math.cos(ang) * 160)
-            d_y = int(240 + math.sin(ang) * 110)
+            d_x = int(e_cx + math.cos(ang) * 160)
+            d_y = int(e_cy + math.sin(ang) * 110)
             pygame.draw.circle(self.screen, (255, 100, 50), (d_x, d_y), 9)
             pygame.draw.circle(self.screen, (255, 255, 255), (d_x, d_y), 9, 2)
             d_lbl = small_font.render("KAMPFDROHNE", True, (255, 160, 100))
             self.screen.blit(d_lbl, (d_x - d_lbl.get_width() // 2, d_y - 18))
 
         if getattr(self.data.combat, "repair_drone_active", False):
-            rx, ry = getattr(self.data.combat, "repair_drone_pos", (160.0, 245.0))
+            rx, ry = getattr(self.data.combat, "repair_drone_pos", (float(p_cx), float(p_cy)))
             pygame.draw.rect(self.screen, (160, 190, 220), (int(rx) - 10, int(ry) - 10, 20, 20))
             pygame.draw.rect(self.screen, (50, 220, 100), (int(rx) - 10, int(ry) - 10, 20, 20), 2)
             r_lbl = small_font.render("REP-DROHNE", True, (100, 255, 100))
@@ -734,8 +752,8 @@ class RenderManager:
 
         if getattr(self.data.combat, "defense_drone_active", False):
             ang = getattr(self.data.combat, "drone_orbit_angle", 0.0)
-            d_x = int(220 + math.cos(ang) * 130)
-            d_y = int(245 + math.sin(ang) * 100)
+            d_x = int(p_cx + math.cos(ang) * 130)
+            d_y = int(p_cy + math.sin(ang) * 100)
             pygame.draw.circle(self.screen, (0, 220, 255), (d_x, d_y), 8)
             pygame.draw.circle(self.screen, (255, 255, 255), (d_x, d_y), 8, 2)
             def_lbl = small_font.render("VERT-DROHNE", True, (100, 230, 255))
@@ -781,9 +799,16 @@ class RenderManager:
             self.screen.blit(w_lbl, (550, 166))
 
     def draw_shields(self):
-        # Schilde zeichnen (mit den festen Koordinaten aus deinem alten Code)
-        self.data.player.shield.draw_bubble(self.screen, (220, 245), 170)
-        self.data.enemy.shield.draw_bubble(self.screen, (710, 245), 150)
+        p_rooms = self.data.player.ship.rooms
+        p_cx = (min(r.rect.left for r in p_rooms) + max(r.rect.right for r in p_rooms)) // 2 if p_rooms else 220
+        p_cy = (min(r.rect.top for r in p_rooms) + max(r.rect.bottom for r in p_rooms)) // 2 if p_rooms else 245
+
+        e_rooms = self.data.enemy.ship.rooms
+        e_cx = (min(r.rect.left for r in e_rooms) + max(r.rect.right for r in e_rooms)) // 2 if e_rooms else 710
+        e_cy = (min(r.rect.top for r in e_rooms) + max(r.rect.bottom for r in e_rooms)) // 2 if e_rooms else 245
+
+        self.data.player.shield.draw_bubble(self.screen, (p_cx, p_cy), 170)
+        self.data.enemy.shield.draw_bubble(self.screen, (e_cx, e_cy), 150)
 
     def draw_projectiles(self):
         for p in self.data.player.projectiles:
