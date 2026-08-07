@@ -211,6 +211,7 @@ class InputManager:
             btn_toggle_fullscreen = pygame.Rect(210, 140, 480, 44)
             btn_res_toggle = pygame.Rect(210, 195, 480, 44)
             btn_audio_toggle = pygame.Rect(220, 250, 460, 44)
+            btn_achievements_menu = pygame.Rect(220, 305, 460, 44)
             btn_close_options = pygame.Rect(350, 440, 200, 45)
             if btn_toggle_fullscreen.collidepoint(mx, my):
                 if self.game:
@@ -226,6 +227,10 @@ class InputManager:
                 if self.sound:
                     self.sound.toggle()
                     self.sound.play("click")
+            elif btn_achievements_menu.collidepoint(mx, my):
+                self.data.current_state = STATE_ACHIEVEMENTS
+                if self.sound:
+                    self.sound.play("click")
             elif btn_close_options.collidepoint(mx, my):
                 if self.sound:
                     self.sound.play("click")
@@ -233,6 +238,14 @@ class InputManager:
                     self.data.current_state = STATE_MAP
                 else:
                     self.data.current_state = STATE_MAIN_MENU
+            return
+
+        if self.data.current_state == STATE_ACHIEVEMENTS:
+            btn_close = pygame.Rect(320, 510, 260, 42)
+            if btn_close.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.play("click")
+                self.data.current_state = STATE_OPTIONS
             return
 
         if self.data.current_state == STATE_MAIN_MENU:

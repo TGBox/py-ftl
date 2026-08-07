@@ -125,6 +125,8 @@ class MapManager:
         self.data.current_state = STATE_TRAINING
 
     def trigger_event(self, event_type: str):
+        if self.data.player.fuel <= 0 and event_type == "DISTRESS" and hasattr(self.data, "achievements"):
+            self.data.achievements.unlock("survivor")
 
         self.data.world.event_manager.trigger_event(
             event_type, self.data.player.crew, self.data.player.fuel
@@ -133,6 +135,12 @@ class MapManager:
 
 
     def handle_choice(self, action: str, choice_data: dict):
+        if hasattr(self.data, "achievements"):
+            evt_count = getattr(self.data, "events_completed_count", 0) + 1
+            self.data.events_completed_count = evt_count
+            if evt_count >= 10:
+                self.data.achievements.unlock("event_explorer")
+
         has_result = bool(choice_data.get("result_text"))
         if has_result:
             self.data.world.event_manager.result_text = choice_data["result_text"]

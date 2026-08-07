@@ -39,6 +39,7 @@ STATE_GAME_OVER = "GAME_OVER"
 STATE_VICTORY = "VICTORY"
 STATE_MAIN_MENU = "MAIN_MENU"
 STATE_OPTIONS = "OPTIONS"
+STATE_ACHIEVEMENTS = "ACHIEVEMENTS"
 current_state: str = STATE_MAP
 
 # Logische Spielauflösung (intern immer 900x600 gerendert, dann skaliert).

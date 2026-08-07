@@ -182,6 +182,8 @@ class ShopManager:
                 if cur_w.level < 5:
                     self.data.player.scrap -= price
                     cur_w.upgrade()
+                    if hasattr(self.data, "achievements"):
+                        self.data.achievements.unlock("weapon_fuser")
                     self.data.combat.msg = f"FUSION AN SLOT {slot_idx+1}! {cur_w.name} ist nun Stufe {cur_w.level} (MK {cur_w.level})!"
                     self.data.combat.msg_timer = 2.8
                     self.selecting_slot_item = None
@@ -284,6 +286,8 @@ class ShopManager:
                 species=species,
             )
         )
+        if len(self.data.player.crew) >= 6 and hasattr(self.data, "achievements"):
+            self.data.achievements.unlock("full_house")
 
     def buy_augment(self, item: dict):
         name = item["name"]

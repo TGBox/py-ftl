@@ -131,8 +131,16 @@ class RenderManager:
         elif self.data.current_state == STATE_VICTORY:
             self.draw_victory()
 
+        elif self.data.current_state == STATE_ACHIEVEMENTS:
+            self.draw_achievements_screen()
+
         if getattr(self.data.player, "show_crew_menu", False):
             self.draw_crew_menu()
+
+        # Toast Notifications
+        if hasattr(self.data, "achievements"):
+            self.data.achievements.update_toasts(0.016)
+            self.data.achievements.draw_toasts(self.screen, self.font)
 
         # Taktische Pause Banner (SPACE)
         if self.data.paused and not getattr(self.data, "show_pause_menu", False):
@@ -1102,12 +1110,12 @@ class RenderManager:
         audio_txt = self.font.render(aud_label, True, aud_color)
         self.screen.blit(audio_txt, (self.btn_audio_toggle.x + 130, self.btn_audio_toggle.y + 12))
 
-        # 4. Verschlüsselter Spielstand
-        self.btn_autosave_toggle = pygame.Rect(220, 305, 460, 44)
-        pygame.draw.rect(self.screen, (40, 60, 90), self.btn_autosave_toggle)
-        pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_autosave_toggle, 2)
-        save_txt = self.font.render("Verschlüsselter Spielstand: Aktiviert (AES-256)", True, (200, 220, 255))
-        self.screen.blit(save_txt, (self.btn_autosave_toggle.x + 30, self.btn_autosave_toggle.y + 12))
+        # 4. Errungenschaften Button
+        self.btn_achievements_menu = pygame.Rect(220, 305, 460, 44)
+        pygame.draw.rect(self.screen, (35, 65, 95), self.btn_achievements_menu)
+        pygame.draw.rect(self.screen, (255, 215, 0), self.btn_achievements_menu, 2)
+        ach_btn_txt = self.font.render("🏆 ERRUNGENSCHAFTEN ANSEHEN", True, (255, 230, 100))
+        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + 90, self.btn_achievements_menu.y + 12))
 
         # Steuerungshinweis
         ctrl_font = pygame.font.SysFont(None, 18)
@@ -1119,6 +1127,76 @@ class RenderManager:
         pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, self.btn_close_options, 2)
         close_txt = "Zurück zur Pause" if self.data.paused else "Zurück zum Menü"
         self.screen.blit(self.font.render(close_txt, True, (255, 200, 200)), (self.btn_close_options.x + 25, self.btn_close_options.y + 12))
+
+    def draw_achievements_screen(self):
+        bg_surf = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
+        bg_surf.fill((12, 18, 30, 240))
+        self.screen.blit(bg_surf, (0, 0))
+
+        banner_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 270, 15, 540, 48)
+        b_surf = pygame.Surface((banner_rect.width, banner_rect.height), pygame.SRCALPHA)
+        b_surf.fill((15, 30, 50, 220))
+        self.screen.blit(b_surf, (banner_rect.x, banner_rect.y))
+        pygame.draw.rect(self.screen, (255, 215, 0), banner_rect, 2)
+
+        title_font = pygame.font.SysFont(None, 32, bold=True)
+        title_txt = title_font.render("🏆 GALAKTISCHE ERRUNGENSCHAFTEN", True, (255, 230, 100))
+        self.screen.blit(title_txt, (banner_rect.x + (banner_rect.width - title_txt.get_width()) // 2, banner_rect.y + 10))
+
+        ach_mgr = getattr(self.data, "achievements", None)
+        ach_list = list(ach_mgr.achievements.values()) if ach_mgr else []
+        unlocked_count = sum(1 for a in ach_list if a.get("unlocked", False))
+
+        stats_txt = self.font.render(f"Freigeschaltet: {unlocked_count} / {len(ach_list)}", True, (140, 220, 240))
+        self.screen.blit(stats_txt, (40, 72))
+
+        col_x = [40, 460]
+        row_y = [102, 180, 258, 336, 414]
+
+        raw_mx, raw_my = pygame.mouse.get_pos()
+        mx, my = raw_mx, raw_my
+
+        for idx, a_data in enumerate(ach_list):
+            if idx >= 10:
+                break
+            c_idx = idx % 2
+            r_idx = idx // 2
+
+            card_rect = pygame.Rect(col_x[c_idx], row_y[r_idx], 400, 68)
+            is_unlocked = a_data.get("unlocked", False)
+            is_hov = card_rect.collidepoint(mx, my)
+
+            c_surf = pygame.Surface((card_rect.width, card_rect.height), pygame.SRCALPHA)
+            if is_unlocked:
+                c_surf.fill((25, 50, 40, 210) if is_hov else (18, 38, 30, 190))
+                border_col = (0, 230, 140)
+            else:
+                c_surf.fill((25, 30, 45, 190) if is_hov else (14, 20, 32, 170))
+                border_col = (60, 80, 110)
+
+            self.screen.blit(c_surf, (card_rect.x, card_rect.y))
+            pygame.draw.rect(self.screen, border_col, card_rect, 2 if is_hov else 1)
+
+            t_col = (255, 230, 120) if is_unlocked else (170, 185, 205)
+            t_txt = self.font.render(f"{a_data.get('icon', '⭐')} {a_data.get('title', '')}", True, t_col)
+            self.screen.blit(t_txt, (card_rect.x + 10, card_rect.y + 8))
+
+            desc_font = pygame.font.SysFont(None, 16)
+            d_txt = desc_font.render(a_data.get("desc", ""), True, (200, 215, 235) if is_unlocked else (130, 145, 165))
+            self.screen.blit(d_txt, (card_rect.x + 10, card_rect.y + 30))
+
+            status_str = f"✔ Freigeschaltet am {a_data.get('unlock_time', '')}" if is_unlocked else "🔒 GESPERRT"
+            status_col = (0, 230, 140) if is_unlocked else (140, 150, 170)
+            s_txt = desc_font.render(status_str, True, status_col)
+            self.screen.blit(s_txt, (card_rect.x + 10, card_rect.y + 48))
+
+        self.btn_close_achievements = pygame.Rect(320, 510, 260, 42)
+        self.draw_scifi_button(
+            self.btn_close_achievements,
+            "ZURÜCK ZUM MENÜ",
+            is_hovered=self.btn_close_achievements.collidepoint(mx, my),
+            primary_color=(0, 200, 255),
+        )
 
 
 

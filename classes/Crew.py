@@ -113,14 +113,18 @@ class Crew:
 
         self.move_speed: float = 160.0 if self.trait == "Sprinter" else 120.0
 
-    def train_skill(self, skill_name: str) -> bool:
+    def train_skill(self, skill_name: str, achievement_manager=None) -> bool:
         if skill_name == "repair" and self.skill_repair < 3:
             self.skill_repair += 1
             self.repair_multiplier *= 1.25
+            if self.skill_repair == 3 and achievement_manager:
+                achievement_manager.unlock("master_mechanic")
             return True
         elif skill_name == "combat" and self.skill_combat < 3:
             self.skill_combat += 1
             self.melee_multiplier *= 1.30
+            if self.skill_combat == 3 and achievement_manager:
+                achievement_manager.unlock("master_warrior")
             return True
         elif skill_name == "piloting" and self.skill_piloting < 3:
             self.skill_piloting += 1

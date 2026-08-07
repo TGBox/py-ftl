@@ -846,6 +846,18 @@ class CombatManager:
             if new_ship:
                 self.data.player.newly_unlocked_ship = new_ship
 
+        # Achievements prüfen
+        if hasattr(self.data, "achievements"):
+            self.data.achievements.unlock("first_victory")
+            if is_mini_boss:
+                self.data.achievements.unlock("boss_slayer")
+            if is_final_boss and self.data.combat.boss_phase >= 3:
+                self.data.achievements.unlock("flagship_down")
+
+            unlocked_list = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
+            if len(unlocked_list) >= 4:
+                self.data.achievements.unlock("collector")
+
         if is_final_boss:
             self.data.current_state = STATE_VICTORY
         elif is_mini_boss:

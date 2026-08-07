@@ -34,7 +34,7 @@ class SaveManager:
         return PBKDF2(PASSPHRASE, KEY_SALT, dkLen=32, count=1000)
 
     @classmethod
-    def load_unlocks(cls, filepath: str = "unlocks.json") -> list[str]:
+    def load_unlocks(cls, filepath: str = "data/unlocks.json") -> list[str]:
         if os.path.exists(filepath):
             try:
                 with open(filepath, "r", encoding="utf-8") as f:
@@ -48,7 +48,7 @@ class SaveManager:
         return ["Kestrel"]
 
     @classmethod
-    def save_unlocks(cls, unlocked_ships: list[str], filepath: str = "unlocks.json") -> bool:
+    def save_unlocks(cls, unlocked_ships: list[str], filepath: str = "data/unlocks.json") -> bool:
         try:
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump({"unlocked_ships": unlocked_ships}, f, indent=2)
@@ -58,11 +58,11 @@ class SaveManager:
             return False
 
     @classmethod
-    def has_savegame(cls, filepath: str = "savegame.dat") -> bool:
+    def has_savegame(cls, filepath: str = "data/savegame.dat") -> bool:
         return os.path.exists(filepath) and os.path.getsize(filepath) > 0
 
     @classmethod
-    def save_game(cls, data: GameData, filepath: str = "savegame.dat") -> bool:
+    def save_game(cls, data: GameData, filepath: str = "data/savegame.dat") -> bool:
         try:
             # Map-Knoten serialisieren
             node_schemas = []
@@ -180,7 +180,7 @@ class SaveManager:
             return False
 
     @classmethod
-    def load_game(cls, data: GameData, filepath: str = "savegame.dat") -> bool:
+    def load_game(cls, data: GameData, filepath: str = "data/savegame.dat") -> bool:
         if not os.path.exists(filepath):
             print(f"Kein Speicherstand unter {filepath} gefunden!")
             return False

@@ -85,6 +85,9 @@ class WorldData:
         self.event_manager: EventManager = EventManager()
 
 
+from managers.achievement_manager import AchievementManager
+
+
 class GameData:
 
     def __init__(self) -> None:
@@ -98,3 +101,4 @@ class GameData:
         self.enemy: EnemyData = EnemyData()
         self.combat: CombatData = CombatData()
         self.world: WorldData = WorldData()
+        self.achievements: AchievementManager = AchievementManager()

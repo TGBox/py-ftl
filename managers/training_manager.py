@@ -45,7 +45,8 @@ class TrainingManager:
             self.data.combat.msg_timer = 1.8
             return
 
-        if crew.train_skill(skill_name):
+        ach_mgr = getattr(self.data, "achievements", None)
+        if crew.train_skill(skill_name, ach_mgr):
             self.data.player.scrap -= self.training_cost
             new_lvl = getattr(crew, f"skill_{skill_name}", 0)
             self.data.combat.msg = f"{crew.name.upper()} HAT {display_name.upper()} AUF STUFE {new_lvl} TRAINIERT!"
