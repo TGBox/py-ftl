@@ -43,13 +43,13 @@ class ShopManager:
         self.refresh_catalog()
 
         # Navigation & Basis-Buttons
-        self.btn_repair = pygame.Rect(100, 120, 340, 32)
-        self.btn_fuel = pygame.Rect(100, 154, 340, 32)
-        self.btn_missiles = pygame.Rect(100, 188, 340, 32)
-        self.btn_upgrade_reactor = pygame.Rect(100, 222, 340, 32)
-        self.btn_buy_crew = pygame.Rect(100, 256, 340, 32)
-        self.btn_edit_layout = pygame.Rect(100, 290, 340, 32)
-        self.btn_leave_shop = pygame.Rect(320, 490, 260, 40)
+        self.btn_repair = pygame.Rect(80, 130, 350, 30)
+        self.btn_fuel = pygame.Rect(80, 165, 350, 30)
+        self.btn_missiles = pygame.Rect(80, 200, 350, 30)
+        self.btn_upgrade_reactor = pygame.Rect(80, 235, 350, 30)
+        self.btn_buy_crew = pygame.Rect(80, 270, 350, 30)
+        self.btn_edit_layout = pygame.Rect(80, 305, 350, 30)
+        self.btn_leave_shop = pygame.Rect(340, 495, 220, 40)
 
     def refresh_catalog(self):
         w_sample = random.sample(WEAPON_CATALOG_MASTER, min(2, len(WEAPON_CATALOG_MASTER)))
@@ -87,7 +87,7 @@ class ShopManager:
 
         # Klick auf Waffenkatalog zum Kaufen
         for idx, item in enumerate(self.catalog_stock):
-            item_btn = pygame.Rect(460, 120 + idx * 58, 340, 52)
+            item_btn = pygame.Rect(470, 130 + idx * 62, 350, 56)
             if item_btn.collidepoint(mx, my):
                 if item.get("type") == "AUGMENT":
                     self.buy_augment(item)
@@ -96,9 +96,11 @@ class ShopManager:
                 return
 
         # Klick auf "Verkaufen" bei eigenen Waffen
+        max_slots = getattr(self.data.player.ship, "max_weapons", 3)
+        card_w = (740 - (max_slots - 1) * 12) // max_slots
         for idx, w in enumerate(self.data.player.weapons):
-            card_x = 100 + idx * 245
-            sell_btn = pygame.Rect(card_x + 10, 407, 210, 22)
+            card_x = 80 + idx * (card_w + 12)
+            sell_btn = pygame.Rect(card_x + 6, 412, card_w - 12, 22)
             if sell_btn.collidepoint(mx, my):
                 self.sell_weapon_at_slot(idx)
                 return
