@@ -1230,12 +1230,12 @@ class RenderManager:
             self.draw_options_menu()
 
     def draw_options_menu(self):
-        pygame.draw.rect(self.screen, (20, 28, 42), (180, 70, 540, 440))
-        pygame.draw.rect(self.screen, (100, 200, 255), (180, 70, 540, 440), 3)
+        pygame.draw.rect(self.screen, (20, 28, 42), (180, 50, 540, 480))
+        pygame.draw.rect(self.screen, (100, 200, 255), (180, 50, 540, 480), 3)
 
         self.screen.blit(
             self.font.render("--- OPTIONEN & EINSTELLUNGEN ---", True, (100, 220, 255)),
-            (290, 95),
+            (290, 68),
         )
 
         game_ref = getattr(self, "game", None)
@@ -1243,8 +1243,12 @@ class RenderManager:
         res_idx = getattr(game_ref, "resolution_idx", 0) if game_ref else 0
         res_list = getattr(game_ref, "resolutions", RESOLUTIONS) if game_ref else RESOLUTIONS
         cur_res = res_list[res_idx] if res_idx < len(res_list) else (1920, 1080)
-        sound_ref = getattr(game_ref, "sound", None) if game_ref else None
+        sound_ref = getattr(game_ref, "sound", None) if game_ref else (getattr(self, "sound", None))
         audio_on = sound_ref.enabled if sound_ref else True
+
+        master_v = sound_ref.master_volume if sound_ref else 1.0
+        music_v = sound_ref.music_volume if sound_ref else 0.8
+        sfx_v = sound_ref.sfx_volume if sound_ref else 0.7
 
         mode_labels = {
             "FULLSCREEN_WINDOWED": "Fullscreen Fenstermodus [STANDARD]",
@@ -1254,47 +1258,80 @@ class RenderManager:
         disp_mode_label = mode_labels.get(mode_str, mode_str)
 
         # 1. Anzeigemodus Button
-        self.btn_toggle_fullscreen = pygame.Rect(210, 140, 480, 44)
+        self.btn_toggle_fullscreen = pygame.Rect(210, 105, 480, 36)
         m_col = (30, 80, 100) if mode_str == "FULLSCREEN_WINDOWED" else ((40, 60, 90) if mode_str == "WINDOWED" else (70, 50, 90))
         pygame.draw.rect(self.screen, m_col, self.btn_toggle_fullscreen)
         pygame.draw.rect(self.screen, (0, 200, 255), self.btn_toggle_fullscreen, 2)
         fs_txt = pygame.font.SysFont(None, 17, bold=True).render(f"Anzeigemodus: {disp_mode_label}", True, (100, 255, 220))
-        self.screen.blit(fs_txt, (self.btn_toggle_fullscreen.x + 18, self.btn_toggle_fullscreen.y + 14))
+        self.screen.blit(fs_txt, (self.btn_toggle_fullscreen.x + 18, self.btn_toggle_fullscreen.y + 10))
 
         # 2. Fensterauflösung
-        self.btn_res_toggle = pygame.Rect(210, 195, 480, 44)
+        self.btn_res_toggle = pygame.Rect(210, 148, 480, 36)
         pygame.draw.rect(self.screen, (40, 60, 90), self.btn_res_toggle)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_res_toggle, 2)
         res_txt = self.font.render(f"Auflösung: {cur_res[0]} x {cur_res[1]} (Klick = Wechseln)", True, (220, 240, 255))
-        self.screen.blit(res_txt, (self.btn_res_toggle.x + 55, self.btn_res_toggle.y + 12))
+        self.screen.blit(res_txt, (self.btn_res_toggle.x + 55, self.btn_res_toggle.y + 8))
 
-        # 3. Audio & Soundeffekte
-        self.btn_audio_toggle = pygame.Rect(220, 250, 460, 44)
+        # 3. Audio Stummschalten Toggle
+        self.btn_audio_toggle = pygame.Rect(210, 191, 480, 36)
         aud_col = (40, 80, 40) if audio_on else (80, 40, 40)
         pygame.draw.rect(self.screen, aud_col, self.btn_audio_toggle)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_audio_toggle, 2)
-        aud_label = "Audio & SFX: AN" if audio_on else "Audio & SFX: AUS (Stumm)"
+        aud_label = "Audio Hauptschalter: AN" if audio_on else "Audio Hauptschalter: STUMM"
         aud_color = (150, 240, 150) if audio_on else (255, 120, 120)
         audio_txt = self.font.render(aud_label, True, aud_color)
-        self.screen.blit(audio_txt, (self.btn_audio_toggle.x + 130, self.btn_audio_toggle.y + 12))
+        self.screen.blit(audio_txt, (self.btn_audio_toggle.x + 140, self.btn_audio_toggle.y + 8))
+
+        # --- LAUTSTÄRKE EINSTELLUNGEN ---
+        # Helper to draw a volume row with [-] [ Bar ] [+]
+        def draw_vol_row(y: int, label: str, val: float, btn_down_attr: str, btn_up_attr: str):
+            lbl_surf = self.font.render(f"{label}: {int(val * 100)}%", True, (200, 235, 255))
+            self.screen.blit(lbl_surf, (220, y + 6))
+
+            btn_down = pygame.Rect(470, y, 34, 30)
+            btn_up = pygame.Rect(646, y, 34, 30)
+            setattr(self, btn_down_attr, btn_down)
+            setattr(self, btn_up_attr, btn_up)
+
+            pygame.draw.rect(self.screen, (50, 70, 100), btn_down)
+            pygame.draw.rect(self.screen, (0, 200, 255), btn_down, 1)
+            self.screen.blit(self.font.render("-", True, (255, 255, 255)), (btn_down.x + 12, btn_down.y + 5))
+
+            pygame.draw.rect(self.screen, (50, 70, 100), btn_up)
+            pygame.draw.rect(self.screen, (0, 200, 255), btn_up, 1)
+            self.screen.blit(self.font.render("+", True, (255, 255, 255)), (btn_up.x + 10, btn_up.y + 5))
+
+            # Progress Bar Background & Fill
+            bar_rect = pygame.Rect(512, y + 4, 126, 22)
+            pygame.draw.rect(self.screen, (15, 25, 40), bar_rect)
+            pygame.draw.rect(self.screen, (80, 120, 160), bar_rect, 1)
+
+            fill_width = int(122 * val)
+            if fill_width > 0:
+                fill_rect = pygame.Rect(514, y + 6, fill_width, 18)
+                pygame.draw.rect(self.screen, (0, 220, 180), fill_rect)
+
+        draw_vol_row(235, "Gesamtlautstärke (Master)", master_v, "btn_master_down", "btn_master_up")
+        draw_vol_row(273, "Musik-Lautstärke (BGM)", music_v, "btn_music_down", "btn_music_up")
+        draw_vol_row(311, "Effekte-Lautstärke (SFX)", sfx_v, "btn_sfx_down", "btn_sfx_up")
 
         # 4. Errungenschaften Button
-        self.btn_achievements_menu = pygame.Rect(220, 305, 460, 44)
+        self.btn_achievements_menu = pygame.Rect(210, 355, 480, 36)
         pygame.draw.rect(self.screen, (35, 65, 95), self.btn_achievements_menu)
         pygame.draw.rect(self.screen, (255, 215, 0), self.btn_achievements_menu, 2)
         ach_btn_txt = self.font.render("🏆 ERRUNGENSCHAFTEN ANSEHEN", True, (255, 230, 100))
-        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + 90, self.btn_achievements_menu.y + 12))
+        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + 100, self.btn_achievements_menu.y + 8))
 
         # Steuerungshinweis
-        ctrl_font = pygame.font.SysFont(None, 18)
-        self.screen.blit(ctrl_font.render("Steuerung: S = Speichern | L = Laden | Pausieren = Leertaste", True, (160, 180, 210)), (230, 365))
+        ctrl_font = pygame.font.SysFont(None, 17)
+        self.screen.blit(ctrl_font.render("Steuerung: S = Speichern | L = Laden | Pausieren = Leertaste | +/- = Lautstärke", True, (160, 180, 210)), (210, 402))
 
         # 5. Zurück Button
-        self.btn_close_options = pygame.Rect(350, 440, 200, 45)
+        self.btn_close_options = pygame.Rect(350, 435, 200, 42)
         pygame.draw.rect(self.screen, (70, 40, 40), self.btn_close_options)
         pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, self.btn_close_options, 2)
         close_txt = "Zurück zur Pause" if self.data.paused else "Zurück zum Menü"
-        self.screen.blit(self.font.render(close_txt, True, (255, 200, 200)), (self.btn_close_options.x + 25, self.btn_close_options.y + 12))
+        self.screen.blit(self.font.render(close_txt, True, (255, 200, 200)), (self.btn_close_options.x + 25, self.btn_close_options.y + 10))
 
     def draw_achievements_screen(self):
         bg_surf = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)

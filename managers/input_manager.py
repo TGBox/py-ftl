@@ -124,6 +124,19 @@ class InputManager:
             elif self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
                 self.data.show_pause_menu = not getattr(self.data, "show_pause_menu", False)
                 if self.sound: self.sound.play("click")
+        elif event.key in (pygame.K_PLUS, pygame.K_KP_PLUS, pygame.K_EQUALS):
+            if self.sound:
+                self.sound.master_volume = min(1.0, round(self.sound.master_volume + 0.1, 2))
+                self.show_message(f"LAUTSTÄRKE: {int(self.sound.master_volume * 100)}%")
+        elif event.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
+            if self.sound:
+                self.sound.master_volume = max(0.0, round(self.sound.master_volume - 0.1, 2))
+                self.show_message(f"LAUTSTÄRKE: {int(self.sound.master_volume * 100)}%")
+        elif event.key == pygame.K_m and self.data.player.active_rename_idx is None:
+            if self.sound:
+                muted = not self.sound.music_enabled
+                self.sound.toggle_music()
+                self.show_message("MUSIK STUMM" if not muted else "MUSIK AN")
         elif event.key == pygame.K_s and (self.data.paused or getattr(self.data, "show_pause_menu", False) or self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY)):
             from managers.save_manager import SaveManager
             if SaveManager.save_game(self.data):
@@ -225,11 +238,22 @@ class InputManager:
             return
 
         if self.data.current_state == STATE_OPTIONS:
-            btn_toggle_fullscreen = pygame.Rect(210, 140, 480, 44)
-            btn_res_toggle = pygame.Rect(210, 195, 480, 44)
-            btn_audio_toggle = pygame.Rect(220, 250, 460, 44)
-            btn_achievements_menu = pygame.Rect(220, 305, 460, 44)
-            btn_close_options = pygame.Rect(350, 440, 200, 45)
+            btn_toggle_fullscreen = pygame.Rect(210, 105, 480, 36)
+            btn_res_toggle = pygame.Rect(210, 148, 480, 36)
+            btn_audio_toggle = pygame.Rect(210, 191, 480, 36)
+
+            btn_master_down = pygame.Rect(470, 235, 34, 30)
+            btn_master_up = pygame.Rect(646, 235, 34, 30)
+
+            btn_music_down = pygame.Rect(470, 273, 34, 30)
+            btn_music_up = pygame.Rect(646, 273, 34, 30)
+
+            btn_sfx_down = pygame.Rect(470, 311, 34, 30)
+            btn_sfx_up = pygame.Rect(646, 311, 34, 30)
+
+            btn_achievements_menu = pygame.Rect(210, 355, 480, 36)
+            btn_close_options = pygame.Rect(350, 435, 200, 42)
+
             if btn_toggle_fullscreen.collidepoint(mx, my):
                 if self.game:
                     self.game.cycle_display_mode()
@@ -243,6 +267,30 @@ class InputManager:
             elif btn_audio_toggle.collidepoint(mx, my):
                 if self.sound:
                     self.sound.toggle()
+                    self.sound.play("click")
+            elif btn_master_down.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.master_volume = max(0.0, round(self.sound.master_volume - 0.1, 2))
+                    self.sound.play("click")
+            elif btn_master_up.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.master_volume = min(2.0, round(self.sound.master_volume + 0.1, 2))
+                    self.sound.play("click")
+            elif btn_music_down.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.music_volume = max(0.0, round(self.sound.music_volume - 0.1, 2))
+                    self.sound.play("click")
+            elif btn_music_up.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.music_volume = min(2.0, round(self.sound.music_volume + 0.1, 2))
+                    self.sound.play("click")
+            elif btn_sfx_down.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.sfx_volume = max(0.0, round(self.sound.sfx_volume - 0.1, 2))
+                    self.sound.play("click")
+            elif btn_sfx_up.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.sfx_volume = min(1.0, round(self.sound.sfx_volume + 0.1, 2))
                     self.sound.play("click")
             elif btn_achievements_menu.collidepoint(mx, my):
                 self.data.current_state = STATE_ACHIEVEMENTS
