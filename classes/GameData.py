@@ -86,6 +86,7 @@ class WorldData:
 
 
 from managers.achievement_manager import AchievementManager
+from managers.particle_manager import ParticleManager
 
 
 class GameData:
@@ -102,3 +103,4 @@ class GameData:
         self.combat: CombatData = CombatData()
         self.world: WorldData = WorldData()
         self.achievements: AchievementManager = AchievementManager()
+        self.particle_manager: ParticleManager = ParticleManager()

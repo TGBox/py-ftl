@@ -37,6 +37,9 @@ class CombatManager:
     def update(self, dt: float):
         """Wird einmal pro Frame aufgerufen."""
 
+        if hasattr(self.data, "particle_manager"):
+            self.data.particle_manager.update(dt)
+
         if self.data.paused or getattr(self.data, "show_pause_menu", False):
             return
 
@@ -45,6 +48,12 @@ class CombatManager:
             self.data.player.ship.update_doors(dt, all_crew)
             self.data.enemy.ship.update_doors(dt, all_crew)
             self.update_crew(dt)
+
+            # Rauch für beschädigte oder brennende Räume
+            if random.random() < 0.15:
+                for r in self.data.player.ship.rooms + self.data.enemy.ship.rooms:
+                    if getattr(r, "fire_level", 0) > 0 or getattr(r, "has_breach", False) or r.health < r.max_health:
+                        self.data.particle_manager.emit_smoke(r.rect.centerx + random.uniform(-10, 10), r.rect.centery + random.uniform(-10, 10))
 
             if len(self.data.player.crew) == 0:
                 if self.sound: self.sound.play("game_over")
@@ -613,14 +622,18 @@ class CombatManager:
                 else:
                     self.data.enemy.shield.attempt_block()
                     if self.sound: self.sound.play("shield_hit")
+                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
             else:
                 if not self.data.enemy.shield.attempt_block():
                     hit_successful = True
                 else:
                     if self.sound: self.sound.play("shield_hit")
+                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
 
             if hit_successful:
                 if self.sound: self.sound.play("hull_hit")
+                self.data.particle_manager.emit_sparks(projectile.x, projectile.y, count=15)
+                self.data.particle_manager.emit_explosion(projectile.x, projectile.y, count=12)
                 target_rooms = projectile.get_intersected_rooms(self.data.enemy.ship.rooms) if projectile.w_type == "BEAM" else [projectile.target_room]
 
                 for room in target_rooms:
@@ -697,14 +710,18 @@ class CombatManager:
                 else:
                     self.data.player.shield.attempt_block()
                     if self.sound: self.sound.play("shield_hit")
+                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (100, 255, 180))
             else:
                 if not self.data.player.shield.attempt_block():
                     hit_successful = True
                 else:
                     if self.sound: self.sound.play("shield_hit")
+                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (100, 255, 180))
 
             if hit_successful:
                 if self.sound: self.sound.play("hull_hit")
+                self.data.particle_manager.emit_sparks(projectile.x, projectile.y, count=15)
+                self.data.particle_manager.emit_explosion(projectile.x, projectile.y, count=12)
                 target_rooms = projectile.get_intersected_rooms(self.data.player.ship.rooms) if projectile.w_type == "BEAM" else [projectile.target_room]
 
                 for room in target_rooms:

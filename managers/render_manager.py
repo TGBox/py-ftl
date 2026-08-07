@@ -312,9 +312,19 @@ class RenderManager:
             
     def draw_combat(self):
 
+        # Triebwerks-Partikel emittieren
+        if hasattr(self.data, "particle_manager"):
+            self.data.particle_manager.emit_thruster(90, 240, direction_x=-1.0)
+            self.data.particle_manager.emit_thruster(90, 260, direction_x=-1.0)
+            self.data.particle_manager.emit_thruster(810, 240, direction_x=1.0)
+            self.data.particle_manager.emit_thruster(810, 260, direction_x=1.0)
+
         self.draw_rooms()
 
         self.draw_projectiles()
+
+        if hasattr(self.data, "particle_manager"):
+            self.data.particle_manager.draw(self.screen)
 
         self.draw_shields()
 
