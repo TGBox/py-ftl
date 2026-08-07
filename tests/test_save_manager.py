@@ -1,0 +1,62 @@
+import os
+import sys
+import unittest
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from classes.GameData import GameData
+from managers.save_manager import SaveManager
+
+
+class TestSaveManager(unittest.TestCase):
+
+    def setUp(self):
+        self.test_save_file = "test_savegame_tmp.dat"
+        self.test_unlock_file = "test_unlocks_tmp.json"
+
+    def tearDown(self):
+        if os.path.exists(self.test_save_file):
+            os.remove(self.test_save_file)
+        if os.path.exists(self.test_unlock_file):
+            os.remove(self.test_unlock_file)
+
+    def test_save_and_load_unlocks(self):
+        ships = ["Kestrel", "Kreuzer", "Tarnschiff"]
+        self.assertTrue(SaveManager.save_unlocks(ships, self.test_unlock_file))
+
+        loaded = SaveManager.load_unlocks(self.test_unlock_file)
+        self.assertEqual(loaded, ships)
+
+    def test_save_and_load_game_roundtrip(self):
+        data = GameData()
+        data.player.scrap = 350
+        data.player.fuel = 18
+        data.world.star_map.sector = 3
+
+        # Save game
+        self.assertTrue(SaveManager.save_game(data, self.test_save_file))
+        self.assertTrue(SaveManager.has_savegame(self.test_save_file))
+
+        # Load into new GameData instance
+        loaded_data = GameData()
+        self.assertTrue(SaveManager.load_game(loaded_data, self.test_save_file))
+
+        self.assertEqual(loaded_data.player.scrap, 350)
+        self.assertEqual(loaded_data.player.fuel, 18)
+        self.assertEqual(loaded_data.world.star_map.sector, 3)
+
+    def test_tampered_save_rejection(self):
+        data = GameData()
+        SaveManager.save_game(data, self.test_save_file)
+
+        # Corrupt bytes in save file
+        with open(self.test_save_file, "r+b") as f:
+            f.seek(20)
+            f.write(b"CORRUPTED_BYTES_HERE")
+
+        loaded_data = GameData()
+        self.assertFalse(SaveManager.load_game(loaded_data, self.test_save_file))
+
+
+if __name__ == "__main__":
+    unittest.main()
