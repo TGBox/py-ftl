@@ -7,6 +7,7 @@ from managers.map_manager import MapManager
 from managers.shop_manager import ShopManager
 from managers.weapon_manager import WeaponManager
 from settings import *
+from utils import calculate_event_layout
 
 
 class InputManager:
@@ -370,28 +371,29 @@ class InputManager:
         mx, my = self._logical_mouse_pos()
         ev_mgr = self.data.world.event_manager
 
-        box_rect = pygame.Rect(120, 100, 660, 380)
-
-        # Wenn result_text angezeigt wird: Klick im Fenster schließt Event ab
-        if ev_mgr.result_text:
-            if box_rect.collidepoint(mx, my):
-                self.map_manager.continue_event()
-            return
-
+        ev_text = ev_mgr.current_event_text
+        res_text = getattr(ev_mgr, "result_text", "")
         choices = ev_mgr.choices
-        if not choices:
-            if box_rect.collidepoint(mx, my):
+
+        font = pygame.font.SysFont(None, 24)
+        layout = calculate_event_layout(ev_text, res_text, choices, font)
+        box_rect = layout["box_rect"]
+
+        # Wenn result_text angezeigt wird oder keine Choices da sind: Klick im Fenster schließt Event ab
+        if ev_mgr.result_text or not choices:
+            cont_btn = layout.get("cont_btn")
+            if (cont_btn and cont_btn.collidepoint(mx, my)) or box_rect.collidepoint(mx, my):
                 self.map_manager.continue_event()
             return
 
         for idx, choice in enumerate(choices):
-            btn_y = 200 + idx * 44
-            btn_rect = pygame.Rect(150, btn_y, 600, 38)
-            if btn_rect.collidepoint(mx, my):
-                action = choice.get("action", "")
-                if self.sound: self.sound.play("click")
-                self.map_manager.handle_choice(action, choice)
-                return
+            if idx < len(layout["choice_rects"]):
+                btn_rect = layout["choice_rects"][idx]
+                if btn_rect.collidepoint(mx, my):
+                    action = choice.get("action", "")
+                    if self.sound: self.sound.play("click")
+                    self.map_manager.handle_choice(action, choice)
+                    return
 
 
 

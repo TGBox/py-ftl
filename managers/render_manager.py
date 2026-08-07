@@ -2,6 +2,7 @@ import pygame
 
 from classes.GameData import GameData
 from settings import *
+from utils import calculate_event_layout, wrap_text
 
 class RenderManager:
 
@@ -1304,39 +1305,47 @@ class RenderManager:
 
 
     def draw_event(self):
-        pygame.draw.rect(self.screen, (30, 40, 55), (120, 100, 660, 380))
-        pygame.draw.rect(self.screen, COLOR_BORDER, (120, 100, 660, 380), 3)
-
         ev_text = self.data.world.event_manager.current_event_text
-        self.screen.blit(
-            self.font.render(ev_text, True, (240, 240, 240)),
-            (150, 130),
-        )
-
         res_text = getattr(self.data.world.event_manager, "result_text", "")
+        choices = self.data.world.event_manager.choices
+
+        layout = calculate_event_layout(ev_text, res_text, choices, self.font)
+        box_rect = layout["box_rect"]
+
+        pygame.draw.rect(self.screen, (30, 40, 55), box_rect)
+        pygame.draw.rect(self.screen, COLOR_BORDER, box_rect, 3)
+
+        # Event-Text zeilenweise rendern
+        curr_y = box_rect.y + 25
+        for line in layout["ev_lines"]:
+            lbl = self.font.render(line, True, (240, 240, 240))
+            self.screen.blit(lbl, (box_rect.x + 30, curr_y))
+            curr_y += 24
+
+        # Result-Text (falls vorhanden)
         if res_text:
-            self.screen.blit(
-                self.font.render(res_text, True, (100, 255, 180)),
-                (150, 175),
-            )
-            cont_btn = pygame.Rect(280, 400, 340, 42)
+            curr_y = layout["res_start_y"]
+            for line in layout["res_lines"]:
+                lbl = self.font.render(line, True, (100, 255, 180))
+                self.screen.blit(lbl, (box_rect.x + 30, curr_y))
+                curr_y += 24
+
+            cont_btn = layout["cont_btn"]
             pygame.draw.rect(self.screen, (40, 70, 100), cont_btn)
             pygame.draw.rect(self.screen, (100, 200, 255), cont_btn, 2)
             lbl = self.font.render("Weiter (Fortfahren)", True, (255, 255, 255))
             self.screen.blit(lbl, (cont_btn.x + (cont_btn.width - lbl.get_width()) // 2, cont_btn.y + 11))
             return
 
-        choices = self.data.world.event_manager.choices
         if not choices:
-            cont_btn = pygame.Rect(280, 400, 340, 42)
+            cont_btn = layout["cont_btn"]
             pygame.draw.rect(self.screen, (40, 70, 100), cont_btn)
             pygame.draw.rect(self.screen, (100, 200, 255), cont_btn, 2)
             lbl = self.font.render("Weiter (Fortfahren)", True, (255, 255, 255))
             self.screen.blit(lbl, (cont_btn.x + (cont_btn.width - lbl.get_width()) // 2, cont_btn.y + 11))
         else:
             for idx, choice in enumerate(choices):
-                btn_y = 200 + idx * 44
-                btn = pygame.Rect(150, btn_y, 600, 38)
+                btn = layout["choice_rects"][idx]
                 is_blue = choice.get("is_blue", False)
                 bg_color = (30, 90, 190) if is_blue else (45, 60, 85)
                 border_color = (100, 200, 255) if is_blue else COLOR_BORDER
@@ -1344,8 +1353,12 @@ class RenderManager:
 
                 pygame.draw.rect(self.screen, bg_color, btn)
                 pygame.draw.rect(self.screen, border_color, btn, 2)
+
                 lbl = self.font.render(choice["text"], True, text_color)
-                self.screen.blit(lbl, (btn.x + 15, btn.y + 10))
+                # Falls Choice-Text zu lang ist, mit small_font rendern
+                if lbl.get_width() > 570:
+                    lbl = self.small_font.render(choice["text"], True, text_color)
+                self.screen.blit(lbl, (btn.x + 15, btn.y + (btn.height - lbl.get_height()) // 2))
 
 
 
