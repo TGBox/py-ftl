@@ -242,14 +242,14 @@ class InputManager:
             btn_res_toggle = pygame.Rect(210, 148, 480, 36)
             btn_audio_toggle = pygame.Rect(210, 191, 480, 36)
 
-            btn_master_down = pygame.Rect(470, 235, 34, 30)
-            btn_master_up = pygame.Rect(646, 235, 34, 30)
+            btn_master_down = pygame.Rect(452, 235, 34, 30)
+            btn_master_up = pygame.Rect(648, 235, 34, 30)
 
-            btn_music_down = pygame.Rect(470, 273, 34, 30)
-            btn_music_up = pygame.Rect(646, 273, 34, 30)
+            btn_music_down = pygame.Rect(452, 273, 34, 30)
+            btn_music_up = pygame.Rect(648, 273, 34, 30)
 
-            btn_sfx_down = pygame.Rect(470, 311, 34, 30)
-            btn_sfx_up = pygame.Rect(646, 311, 34, 30)
+            btn_sfx_down = pygame.Rect(452, 311, 34, 30)
+            btn_sfx_up = pygame.Rect(648, 311, 34, 30)
 
             btn_achievements_menu = pygame.Rect(210, 355, 480, 36)
             btn_close_options = pygame.Rect(350, 435, 200, 42)

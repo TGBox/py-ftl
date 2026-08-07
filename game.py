@@ -160,13 +160,32 @@ class Game:
             self.sound.stop_music()
 
     def run(self) -> None:
+        from managers.save_manager import SaveManager
+
         while self.data.running:
             dt = self.clock.tick(60) / 1000.0
 
-            self.update_audio_state()
-            self.input_manager.update()
-            self.combat_manager.update(dt)
-            self.render_manager.draw()
+            try:
+                self.update_audio_state()
+                self.input_manager.update()
+                self.combat_manager.update(dt)
+                self.render_manager.draw()
+            except Exception as e:
+                import traceback
+                print(f"!!! CHIP/GAME CRASH PREVENTED: {e} !!!")
+                traceback.print_exc()
+
+                # Emergency Autosave on unexpected error
+                try:
+                    SaveManager.save_game(self.data)
+                    print("Notfall-Spielstand erfolgreich gesichert!")
+                except Exception as save_err:
+                    print(f"Notfall-Speichern fehlgeschlagen: {save_err}")
+
+                self.data.show_message(f"FEHLER VERMIEDEN: {e}")
+                # Recover safely: return to MAP or MAIN_MENU if critical
+                if self.data.current_state not in (STATE_MAIN_MENU, STATE_MAP):
+                    self.data.current_state = STATE_MAP
 
             self._scale_and_blit()
             pygame.display.flip()

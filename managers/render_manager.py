@@ -1286,10 +1286,10 @@ class RenderManager:
         # Helper to draw a volume row with [-] [ Bar ] [+]
         def draw_vol_row(y: int, label: str, val: float, btn_down_attr: str, btn_up_attr: str):
             lbl_surf = self.font.render(f"{label}: {int(val * 100)}%", True, (200, 235, 255))
-            self.screen.blit(lbl_surf, (220, y + 6))
+            self.screen.blit(lbl_surf, (215, y + 6))
 
-            btn_down = pygame.Rect(470, y, 34, 30)
-            btn_up = pygame.Rect(646, y, 34, 30)
+            btn_down = pygame.Rect(452, y, 34, 30)
+            btn_up = pygame.Rect(648, y, 34, 30)
             setattr(self, btn_down_attr, btn_down)
             setattr(self, btn_up_attr, btn_up)
 
@@ -1301,26 +1301,27 @@ class RenderManager:
             pygame.draw.rect(self.screen, (0, 200, 255), btn_up, 1)
             self.screen.blit(self.font.render("+", True, (255, 255, 255)), (btn_up.x + 10, btn_up.y + 5))
 
-            # Progress Bar Background & Fill
-            bar_rect = pygame.Rect(512, y + 4, 126, 22)
+            # Progress Bar Background & Fill (capped strictly inside container)
+            bar_rect = pygame.Rect(492, y + 4, 150, 22)
             pygame.draw.rect(self.screen, (15, 25, 40), bar_rect)
             pygame.draw.rect(self.screen, (80, 120, 160), bar_rect, 1)
 
-            fill_width = int(122 * val)
+            # Map 0.0 - 2.0 to 0 - 146 px width
+            fill_width = int(min(146, max(0, 146 * (val / 2.0))))
             if fill_width > 0:
-                fill_rect = pygame.Rect(514, y + 6, fill_width, 18)
+                fill_rect = pygame.Rect(494, y + 6, fill_width, 18)
                 pygame.draw.rect(self.screen, (0, 220, 180), fill_rect)
 
-        draw_vol_row(235, "Gesamtlautstärke (Master)", master_v, "btn_master_down", "btn_master_up")
-        draw_vol_row(273, "Musik-Lautstärke (BGM)", music_v, "btn_music_down", "btn_music_up")
-        draw_vol_row(311, "Effekte-Lautstärke (SFX)", sfx_v, "btn_sfx_down", "btn_sfx_up")
+        draw_vol_row(235, "Master (Gesamt)", master_v, "btn_master_down", "btn_master_up")
+        draw_vol_row(273, "Musik (BGM)", music_v, "btn_music_down", "btn_music_up")
+        draw_vol_row(311, "Effekte (SFX)", sfx_v, "btn_sfx_down", "btn_sfx_up")
 
         # 4. Errungenschaften Button
         self.btn_achievements_menu = pygame.Rect(210, 355, 480, 36)
         pygame.draw.rect(self.screen, (35, 65, 95), self.btn_achievements_menu)
         pygame.draw.rect(self.screen, (255, 215, 0), self.btn_achievements_menu, 2)
-        ach_btn_txt = self.font.render("🏆 ERRUNGENSCHAFTEN ANSEHEN", True, (255, 230, 100))
-        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + 100, self.btn_achievements_menu.y + 8))
+        ach_btn_txt = self.font.render("ERRUNGENSCHAFTEN ANSEHEN", True, (255, 230, 100))
+        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + 110, self.btn_achievements_menu.y + 8))
 
         # Steuerungshinweis
         ctrl_font = pygame.font.SysFont(None, 17)

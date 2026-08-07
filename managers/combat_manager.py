@@ -582,7 +582,7 @@ class CombatManager:
             if projectile.is_player_shot:
                 self.handle_player_hit(projectile)
             else:
-                self.handle_enemy_hit(projectile)
+                self.check_projectile_hits_player(projectile)
 
             self.data.player.projectiles.remove(projectile)
 

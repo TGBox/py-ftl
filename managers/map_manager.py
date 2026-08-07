@@ -27,6 +27,13 @@ class MapManager:
         self.data.world.star_map.current_node = node
         node.visited = True
 
+        # Auto-Save progress on every node jump
+        from managers.save_manager import SaveManager
+        try:
+            SaveManager.save_game(self.data)
+        except Exception as e:
+            print(f"Auto-Save Fehler: {e}")
+
         if self.data.world.star_map.rebel_fleet_x >= node.x:
             if self.sound: self.sound.play("alarm")
             self.start_rebel_pursuit_combat()
