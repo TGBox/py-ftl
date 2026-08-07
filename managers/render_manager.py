@@ -98,8 +98,7 @@ class RenderManager:
             self.screen.blit(lbl, (b_rect.x + 10, b_rect.y + 4))
 
             # Buttons oben rechts (Sci-Fi Glassmorphism Style)
-            raw_mx, raw_my = pygame.mouse.get_pos()
-            mx, my = raw_mx, raw_my
+            mx, my = self._logical_mouse_pos()
 
             self.draw_scifi_button(self.btn_crew_toggle, "Crew-Menü", is_hovered=self.btn_crew_toggle.collidepoint(mx, my), primary_color=(0, 180, 255))
             self.draw_scifi_button(self.btn_doors_open_all, "Türen auf [O]", is_hovered=self.btn_doors_open_all.collidepoint(mx, my), primary_color=(0, 220, 130))
@@ -359,8 +358,7 @@ class RenderManager:
             (pygame.Rect(80, 305, 350, 30), f"Schiff-Layout umbauen - 15 Scrap"),
         ]
 
-        raw_mx, raw_my = pygame.mouse.get_pos()
-        mx, my = raw_mx, raw_my
+        mx, my = self._logical_mouse_pos()
 
         for btn, text in items_left:
             is_hov = btn.collidepoint(mx, my)
@@ -796,8 +794,7 @@ class RenderManager:
             self.screen.blit(lbl, (bar_x, bar_y - 18))
 
         # 4. Untere Aktions-Buttons (Sci-Fi Glassmorphism Style)
-        raw_mx, raw_my = pygame.mouse.get_pos()
-        mx, my = raw_mx, raw_my
+        mx, my = self._logical_mouse_pos()
 
         tp_cd = getattr(self.data.combat, "teleport_cooldown", 0.0)
         is_tp_target = getattr(self.data.combat, "is_teleport_targeting", False)
@@ -975,8 +972,7 @@ class RenderManager:
         else:
             self.screen.fill((10, 15, 25))
 
-        raw_mx, raw_my = pygame.mouse.get_pos()
-        mx, my = raw_mx, raw_my
+        mx, my = self._logical_mouse_pos()
 
         # Header Title Banner
         banner_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 270, 20, 540, 52)
@@ -1187,8 +1183,7 @@ class RenderManager:
         col_x = [40, 460]
         row_y = [102, 180, 258, 336, 414]
 
-        raw_mx, raw_my = pygame.mouse.get_pos()
-        mx, my = raw_mx, raw_my
+        mx, my = self._logical_mouse_pos()
 
         for idx, a_data in enumerate(ach_list):
             if idx >= 10:

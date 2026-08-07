@@ -25,9 +25,12 @@ class InputManager:
         self.sound = None   # Set by Game after construction
         self.game = None    # Set by Game after construction
 
-    def _logical_mouse_pos(self) -> tuple[int, int]:
+    def _logical_mouse_pos(self, pos: tuple[int, int] | None = None) -> tuple[int, int]:
         """Convert raw screen mouse position to logical 900x600 coordinates."""
-        raw_mx, raw_my = pygame.mouse.get_pos()
+        if pos is not None:
+            raw_mx, raw_my = pos
+        else:
+            raw_mx, raw_my = pygame.mouse.get_pos()
         if self.game and hasattr(self.game, "screen_to_logical"):
             return self.game.screen_to_logical(raw_mx, raw_my)
         return raw_mx, raw_my
@@ -114,7 +117,7 @@ class InputManager:
 
     def handle_left_click(self, event: pygame.event.Event):
 
-        mx, my = self._logical_mouse_pos()
+        mx, my = self._logical_mouse_pos(getattr(event, "pos", None))
 
         # [?] HILFE Toggle Button Klick
         btn_help_toggle = pygame.Rect(750, 135, 130, 26)
@@ -321,7 +324,7 @@ class InputManager:
     def handle_right_click(self, event: pygame.event.Event):
         if self.data.current_state != STATE_COMBAT:
             return
-        mx, my = self._logical_mouse_pos()
+        mx, my = self._logical_mouse_pos(getattr(event, "pos", None))
         if self.remove_weapon_target(mx, my):
             return
         if self.deselect_crew(event):
