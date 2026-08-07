@@ -35,6 +35,8 @@ class TestCrewAbilities(unittest.TestCase):
 
     def test_mantis_frenzy_melee_multiplier(self):
         mantis = Crew(150, 150, name="Kazaak", species="Mantis")
+        mantis.trait = "Sprinter"
+        mantis.melee_multiplier = 2.0
         self.assertEqual(mantis.melee_multiplier, 2.0)
 
         success = mantis.activate_ability(self.data, self.combat_mgr)

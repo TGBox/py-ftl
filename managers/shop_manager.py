@@ -51,8 +51,51 @@ class ShopManager:
         self.btn_edit_layout = pygame.Rect(80, 305, 350, 30)
         self.btn_leave_shop = pygame.Rect(340, 495, 220, 40)
 
+    def is_weapon_compatible(self, weapon: dict) -> bool:
+        """Prüft, ob eine Waffe in mindestens einen Waffenslot des aktuellen Spielerschiffs passt."""
+        ship = getattr(self.data.player, "ship", None)
+        if not ship:
+            return True
+        slots = getattr(ship, "weapon_slots", [])
+        if not slots:
+            return True
+        w_type = weapon.get("w_type")
+        for slot in slots:
+            allowed = slot.get("allowed_types")
+            if not allowed or w_type in allowed:
+                return True
+        return False
+
     def refresh_catalog(self):
-        w_sample = random.sample(WEAPON_CATALOG_MASTER, min(2, len(WEAPON_CATALOG_MASTER)))
+        compatible = [w for w in WEAPON_CATALOG_MASTER if self.is_weapon_compatible(w)]
+        incompatible = [w for w in WEAPON_CATALOG_MASTER if not self.is_weapon_compatible(w)]
+
+        w_sample = []
+        avail_comp = list(compatible)
+        avail_incomp = list(incompatible)
+        avail_all = list(WEAPON_CATALOG_MASTER)
+
+        target_weapon_count = min(2, len(WEAPON_CATALOG_MASTER))
+
+        for _ in range(target_weapon_count):
+            # Zu 90% eine kompatible Waffe wählen (sofern verfügbar)
+            use_compatible = (random.random() < 0.90) and len(avail_comp) > 0
+            if use_compatible:
+                w = random.choice(avail_comp)
+            else:
+                pool = avail_incomp if len(avail_incomp) > 0 else avail_all
+                if not pool:
+                    break
+                w = random.choice(pool)
+
+            w_sample.append(w)
+            if w in avail_comp:
+                avail_comp.remove(w)
+            if w in avail_incomp:
+                avail_incomp.remove(w)
+            if w in avail_all:
+                avail_all.remove(w)
+
         a_sample = random.sample(AUGMENT_CATALOG_MASTER, min(1, len(AUGMENT_CATALOG_MASTER)))
         self.catalog_stock = w_sample + a_sample
         self.selecting_slot_item = None

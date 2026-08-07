@@ -21,6 +21,27 @@ class TestShopAndTraining(unittest.TestCase):
         self.shop_manager.refresh_catalog()
         self.assertGreater(len(self.shop_manager.catalog_stock), 0)
 
+    def test_shop_compatible_weapons_weighting(self):
+        # Set player ship to a ship with specific slot restrictions (e.g. only ION and BEAM)
+        self.data.player.ship.weapon_slots = [
+            {"slot_id": 1, "allowed_types": ["ION"]},
+            {"slot_id": 2, "allowed_types": ["BEAM"]},
+        ]
+        compatible_count = 0
+        total_weapons_checked = 0
+
+        for _ in range(100):
+            self.shop_manager.refresh_catalog()
+            weapons = [item for item in self.shop_manager.catalog_stock if item.get("type") != "AUGMENT"]
+            for w in weapons:
+                total_weapons_checked += 1
+                if self.shop_manager.is_weapon_compatible(w):
+                    compatible_count += 1
+
+        ratio = compatible_count / total_weapons_checked
+        # Around 90% should be compatible
+        self.assertGreaterEqual(ratio, 0.75, f"Expected ~90% compatible weapons, got {ratio*100:.1f}%")
+
     def test_shop_buy_fuel_and_missiles(self):
         self.data.player.scrap = 100
         init_fuel = self.data.player.fuel
