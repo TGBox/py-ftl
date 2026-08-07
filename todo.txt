@@ -4,16 +4,16 @@ x 2026-08-05 (A) 2026-08-04 Es sollte möglich sein (je nach Schiffmodell) mehr 
 x 2026-08-05 (A) 2026-08-04 Es sollte Dauerkampfmodus geben, bei dem ich eine Checkbox in der GUI anhake und dann feuern die Waffen automatisch auf das aktuelle Ziel sobald sie fertig geladen haben. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Die Schusspfade sollen wie in FTL nach dem ziehen sichtbar sein. Alle Waffen sollten distinktive Zielstriche haben. Schaden sollte je nach Waffentyp über die ganze Linie hinweg angewendet werden, oder beim ersten getroffenen Raum. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Aktuell haben alle Schiffe (auch das des Spielers) immer das gleiche Layout. Ändern. +Refactoring @code
-(A) 2026-08-04 Es sollte (in eingeschränktem Maße) möglich sein, das Layout seines eigenen Schifftypens zu ändern. +Refactoring @code
+x 2026-08-06 (A) 2026-08-04 Es sollte (in eingeschränktem Maße) möglich sein, das Layout seines eigenen Schifftypens zu ändern. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Auf der Karte platzierte Schusslinien sollten individuell rückgängig gemacht werden können. und auch individuell ausgewählt werden können um sie abzufeuern. +Refactoring @code
-(A) 2026-08-04 Es sollte manche Stationen geben bei denen man seine Crew trainieren kann, um deren individuelle Werte zu verbessern. +Refactoring @code
+x 2026-08-06 (A) 2026-08-04 Es sollte manche Stationen geben bei denen man seine Crew trainieren kann, um deren individuelle Werte zu verbessern. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Crew Mitglieder sollten eigene Namen, Gesundheitsanzeigen, Fähigkeiten und Boni/Handicaps haben. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Kampfsystem besser implementieren. Gesundheitshandling korrigieren. Aktuell gibt es keine Siegbedingungen für den Kampf. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Pause Modus im Kampf.  +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Aufladestatus der Waffen anzeigen damit man weiss wann man schießen muss.  +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Automatisches Schießen implementieren. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Verschiedene Waffentypen und Munition hinzufügen. Neben Laserwaffen auch noch Raketen (die Munition/Raketen verbrauchen) und Strahlenwaffen (die Schilde durchdringen). +Refactoring @code
-(A) 2026-08-04 Waffentypen sollen auch noch Untertypen haben. Zum Beispiel soll es Laser geben, die besonders effektiv biologisches Material verbrennen lassen können. +Refactoring @code
+x 2026-08-06 (A) 2026-08-04 Waffentypen sollen auch noch Untertypen haben. Zum Beispiel soll es Laser geben, die besonders effektiv biologisches Material verbrennen lassen können. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Ausweichen und Schiffsstatistiken. Der Zustand vom Antrieb (Brücke/Maschinenraum) sollte direkt mit dem prozentualen Ausweichwert des Schiffes im Kampf zusammenhängen. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Es soll vordefinierte Schiffpläne geben für Schiffe die man freispielen/während des Spiels kaufen kann. +Refactoring @code
 x 2026-08-05 (A) 2026-08-04 Gegner KI und Taktik. Gegner brauchen simple KI, die die Waffen abwechselnd feuert und die Crewmitglieder zur Reparatur in die einzelnen Räume schickt. +Refactoring @code

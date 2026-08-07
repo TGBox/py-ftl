@@ -16,6 +16,7 @@ COLOR_MAP_NODE = (150, 180, 220)
 COLOR_MAP_VISITED = (75, 95, 115)
 COLOR_MAP_LINE = (50, 70, 100)
 COLOR_SHOP_NODE = (220, 180, 60)
+COLOR_TRAINING_NODE = (180, 100, 220)
 COLOR_HP_GREEN = (50, 220, 100)
 COLOR_HP_RED = (220, 60, 60)
 
@@ -33,10 +34,12 @@ STATE_MAP = "MAP"
 STATE_EVENT = "EVENT"
 STATE_COMBAT = "COMBAT"
 STATE_SHOP = "SHOP"
+STATE_TRAINING = "TRAINING"
 STATE_GAME_OVER = "GAME_OVER"
 STATE_VICTORY = "VICTORY"
 STATE_MAIN_MENU = "MAIN_MENU"
 STATE_OPTIONS = "OPTIONS"
+STATE_ACHIEVEMENTS = "ACHIEVEMENTS"
 current_state: str = STATE_MAP
 
 # Logische Spielauflösung (intern immer 900x600 gerendert, dann skaliert).
@@ -66,4 +69,16 @@ PLAYER_START_FUEL = 6
 PLAYER_START_SCRAP = 20
 PLAYER_START_MISSILES = 6
 PLAYER_START_POWER = 6
-ENEMY_START_POWER = 6
+ENEMY_START_POWER = 6
+
+# Font-Caching System (eliminiert CPU-Overhead durch SysFont Lookups)
+import pygame
+_FONT_CACHE: dict[tuple[int, bool], pygame.font.Font] = {}
+
+def get_font(size: int = 18, bold: bool = False) -> pygame.font.Font:
+    key = (size, bold)
+    if key not in _FONT_CACHE:
+        if not pygame.font.get_init():
+            pygame.font.init()
+        _FONT_CACHE[key] = pygame.font.SysFont(None, size, bold=bold)
+    return _FONT_CACHE[key]

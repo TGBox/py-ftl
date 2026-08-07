@@ -122,8 +122,7 @@ class Room:
             ix = cx + random.randint(-self.rect.width // 4, self.rect.width // 4)
             iy = cy + random.randint(-self.rect.height // 4, self.rect.height // 4)
             pygame.draw.circle(surface, (100, 220, 255), (ix, iy), random.randint(3, 6))
-        b_font = pygame.font.SysFont(None, 13, bold=True)
-        ion_lbl = b_font.render(f"ION ({int(self.ion_timer)}s)", True, (100, 220, 255))
+        ion_lbl = get_font(13, bold=True).render(f"ION ({int(self.ion_timer)}s)", True, (100, 220, 255))
         surface.blit(ion_lbl, (self.rect.x + 6, self.rect.y + 36))
 
     # Feuer-Animation & Overlay
@@ -138,19 +137,16 @@ class Room:
             f_col = random.choice([(255, 60, 0), (255, 140, 0), (255, 220, 0)])
             pygame.draw.circle(surface, f_col, (fx, fy), fr)
 
-        b_font = pygame.font.SysFont(None, 14, bold=True)
-        fire_lbl = b_font.render("FEUER", True, (255, 100, 0))
+        fire_lbl = get_font(14, bold=True).render("FEUER", True, (255, 100, 0))
         surface.blit(fire_lbl, (self.rect.x + 6, self.rect.bottom - 16))
 
-    font = pygame.font.SysFont(None, 18)
     surface.blit(
-        font.render(self.name, True, (220, 220, 220)),
-        (self.rect.x + 6, self.rect.y + 5),
+        get_font(14, bold=True).render(self.name, True, (230, 240, 255)),
+        (self.rect.x + 6, self.rect.y + 4),
     )
 
     if self.name == "Medbay" and self.current_power > 0:
-        med_font = pygame.font.SysFont(None, 14, bold=True)
-        heal_lbl = med_font.render("+HEILEN", True, (100, 255, 100))
+        heal_lbl = get_font(13, bold=True).render("+HEILEN", True, (100, 255, 100))
         surface.blit(heal_lbl, (self.rect.x + 6, self.rect.y + 28))
 
     # System-Gesundheitsbalken
@@ -159,31 +155,30 @@ class Room:
     pygame.draw.rect(
         surface,
         (30, 30, 30),
-        (self.rect.x + 6, self.rect.y + 22, self.rect.width - 12, 4),
+        (self.rect.x + 6, self.rect.y + 20, self.rect.width - 12, 3),
     )
     pygame.draw.rect(
         surface,
         hp_color,
         (
             self.rect.x + 6,
-            self.rect.y + 22,
+            self.rect.y + 20,
             int((self.rect.width - 12) * hp_ratio),
-            4,
+            3,
         ),
     )
 
     # Sauerstoffanzeige (O2: 100%)
-    o2_color = (100, 200, 255) if self.oxygen > 40.0 else (255, 100, 100)
-    o2_txt = font.render(f"O2:{int(self.oxygen)}%", True, o2_color)
-    surface.blit(o2_txt, (self.rect.right - 44, self.rect.y + 5))
+    o2_color = (100, 220, 255) if self.oxygen > 40.0 else (255, 100, 100)
+    o2_txt = get_font(12, bold=True).render(f"O2:{int(self.oxygen)}%", True, o2_color)
+    surface.blit(o2_txt, (self.rect.right - 36, self.rect.y + 5))
 
     # Hüllenleck Icon zeichnen (falls vorhanden)
     if self.has_breach:
         cx, cy = self.rect.centerx, self.rect.centery
         pygame.draw.circle(surface, (15, 15, 15), (cx, cy), 12)
         pygame.draw.circle(surface, (255, 50, 50), (cx, cy), 13, 2)
-        b_font = pygame.font.SysFont(None, 14, bold=True)
-        lbl = b_font.render("LECK", True, (255, 80, 80))
+        lbl = get_font(14, bold=True).render("LECK", True, (255, 80, 80))
         surface.blit(lbl, (cx - lbl.get_width() // 2, cy - lbl.get_height() // 2))
 
     if not self.is_enemy:

@@ -34,7 +34,7 @@ class SaveManager:
         return PBKDF2(PASSPHRASE, KEY_SALT, dkLen=32, count=1000)
 
     @classmethod
-    def load_unlocks(cls, filepath: str = "unlocks.json") -> list[str]:
+    def load_unlocks(cls, filepath: str = "data/unlocks.json") -> list[str]:
         if os.path.exists(filepath):
             try:
                 with open(filepath, "r", encoding="utf-8") as f:
@@ -48,7 +48,7 @@ class SaveManager:
         return ["Kestrel"]
 
     @classmethod
-    def save_unlocks(cls, unlocked_ships: list[str], filepath: str = "unlocks.json") -> bool:
+    def save_unlocks(cls, unlocked_ships: list[str], filepath: str = "data/unlocks.json") -> bool:
         try:
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump({"unlocked_ships": unlocked_ships}, f, indent=2)
@@ -58,11 +58,11 @@ class SaveManager:
             return False
 
     @classmethod
-    def has_savegame(cls, filepath: str = "savegame.dat") -> bool:
+    def has_savegame(cls, filepath: str = "data/savegame.dat") -> bool:
         return os.path.exists(filepath) and os.path.getsize(filepath) > 0
 
     @classmethod
-    def save_game(cls, data: GameData, filepath: str = "savegame.dat") -> bool:
+    def save_game(cls, data: GameData, filepath: str = "data/savegame.dat") -> bool:
         try:
             # Map-Knoten serialisieren
             node_schemas = []
@@ -109,6 +109,11 @@ class SaveManager:
                     damage=w.damage,
                     ammo_cost=w.ammo_cost,
                     level=getattr(w, "level", 1),
+                    subtype=getattr(w, "subtype", "STANDARD"),
+                    fire_chance=getattr(w, "fire_chance", 0.0),
+                    breach_chance=getattr(w, "breach_chance", 0.0),
+                    stun_duration=getattr(w, "stun_duration", 0.0),
+                    crew_damage=getattr(w, "crew_damage", 0.0),
                 )
                 for w in data.player.weapons
             ]
@@ -123,6 +128,10 @@ class SaveManager:
                     trait=getattr(c, "trait", "Sprinter"),
                     x=c.x,
                     y=c.y,
+                    skill_repair=getattr(c, "skill_repair", 0),
+                    skill_combat=getattr(c, "skill_combat", 0),
+                    skill_piloting=getattr(c, "skill_piloting", 0),
+                    skill_fitness=getattr(c, "skill_fitness", 0),
                 )
                 for c in data.player.crew
             ]
@@ -171,7 +180,7 @@ class SaveManager:
             return False
 
     @classmethod
-    def load_game(cls, data: GameData, filepath: str = "savegame.dat") -> bool:
+    def load_game(cls, data: GameData, filepath: str = "data/savegame.dat") -> bool:
         if not os.path.exists(filepath):
             print(f"Kein Speicherstand unter {filepath} gefunden!")
             return False
@@ -263,6 +272,11 @@ class SaveManager:
                         ammo_cost=ws.ammo_cost,
                         shield_pierce=ws.shield_pierce,
                         level=getattr(ws, "level", 1),
+                        subtype=getattr(ws, "subtype", "STANDARD"),
+                        fire_chance=getattr(ws, "fire_chance", 0.0),
+                        breach_chance=getattr(ws, "breach_chance", 0.0),
+                        stun_duration=getattr(ws, "stun_duration", 0.0),
+                        crew_damage=getattr(ws, "crew_damage", 0.0),
                     )
                     for ws in schema.weapons
                 ]
@@ -275,6 +289,13 @@ class SaveManager:
                     c.hp = cs.hp
                     c.max_hp = cs.max_hp
                     c.trait = cs.trait
+                    c.skill_repair = getattr(cs, "skill_repair", 0)
+                    c.skill_combat = getattr(cs, "skill_combat", 0)
+                    c.skill_piloting = getattr(cs, "skill_piloting", 0)
+                    c.skill_fitness = getattr(cs, "skill_fitness", 0)
+                    # Skill-Boni neu anwenden
+                    c.repair_multiplier *= (1.25 ** c.skill_repair)
+                    c.melee_multiplier *= (1.30 ** c.skill_combat)
                     data.player.crew.append(c)
 
             # Transient states zurücksetzen

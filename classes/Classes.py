@@ -175,9 +175,8 @@ class Room:
     pygame.draw.rect(surface, fill_col, self.rect)
     pygame.draw.rect(surface, border_col, self.rect, 2)
 
-    font = pygame.font.SysFont(None, 20)
     surface.blit(
-        font.render(self.name, True, (220, 220, 220)),
+        get_font(20).render(self.name, True, (220, 220, 220)),
         (self.rect.x + 6, self.rect.y + 6),
     )
 
@@ -415,9 +414,8 @@ class Reactor:
     self.available_power: int = total_power
 
   def draw(self, surface: pygame.Surface, x: int, y: int) -> None:
-    font = pygame.font.SysFont(None, 22)
     surface.blit(
-        font.render(
+        get_font(22).render(
             f"Reaktor: {self.available_power}/{self.total_power}",
             True,
             (200, 220, 255),

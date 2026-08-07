@@ -21,7 +21,10 @@ class StarMap:
   def generate_map(self) -> None:
     self.nodes.clear()
     self.rebel_fleet_x = 30.0
-    self.sector_type = random.choice(["Zivil", "Rebellen", "Nebel"])
+
+    sector_choices = ["Zivil-Sektor", "Rebellen-Sektor", "Nebel-Sektor", "Mantis-Jagdgebiet", "Kristall-Sektor"]
+    self.sector_type = sector_choices[(self.sector - 1) % len(sector_choices)]
+
     node_id = 0
     num_layers = 7  
     layer_distance = 110
@@ -43,7 +46,7 @@ class StarMap:
       )
 
       for y in y_positions:
-        event_type = random.choice(["COMBAT", "RESOURCE", "DISTRESS", "NEBULA", "SHOP", "EMPTY"])
+        event_type = random.choice(["COMBAT", "RESOURCE", "DISTRESS", "NEBULA", "SHOP", "TRAINING", "EMPTY"])
         node = Node(node_id, x, y, event_type)
         self.nodes.append(node)
         layer_nodes.append(node)
@@ -55,7 +58,7 @@ class StarMap:
     self.nodes.append(exit_node)
     created_layers.append([exit_node])
 
-    # Saubere Verbindung der Ebenen (Garantiert lückenlose Erreichbarkeit vor und zurück)
+    # Saubere Verbindung der Ebenen
     for i in range(len(created_layers) - 1):
       for n1 in created_layers[i]:
         next_layer = created_layers[i + 1]
@@ -66,7 +69,6 @@ class StarMap:
           if n1 not in t.connections:
             t.connections.append(n1)
 
-    # Absicherung: Falls ein Knoten der Folgeschicht isoliert wurde
     for i in range(len(created_layers) - 1):
       for n2 in created_layers[i + 1]:
         has_incoming = any(n2 in n1.connections for n1 in created_layers[i])
@@ -78,10 +80,11 @@ class StarMap:
     self.current_node = start_node
     self.current_node.visited = True
 
-    # Umweltgefahren zufällig auf ~25% der Kampf/Ressourcen-Knoten verteilen
+    # Umweltgefahren auf 30% der Knoten verteilen
+    hazard_types = ["SOLAR_FLARE", "ASTEROID_FIELD", "NEBULA_ION_STORM", "PULSAR"]
     for node in self.nodes:
-      if node.event_type in ("COMBAT", "EMPTY", "RESOURCE") and random.random() < 0.25:
-        node.hazard_type = random.choice(["SOLAR_FLARE", "ASTEROID_FIELD"])
+      if node.event_type in ("COMBAT", "EMPTY", "RESOURCE", "NEBULA") and random.random() < 0.30:
+        node.hazard_type = random.choice(hazard_types)
 
 
   def draw(self, surface: pygame.Surface) -> None:
@@ -96,9 +99,13 @@ class StarMap:
     fleet_x = int(self.rebel_fleet_x)
     if fleet_x > 0:
       pygame.draw.line(surface, (220, 50, 50), (fleet_x, 60), (fleet_x, 520), 3)
-      font = pygame.font.SysFont(None, 18)
-      lbl = font.render("REBELLENFLOTTE", True, (255, 80, 80))
+      lbl = get_font(18).render("REBELLENFLOTTE", True, (255, 80, 80))
       surface.blit(lbl, (fleet_x + 5, 70))
+
+    # Header Banner für Sektortyp
+    hdr_font = pygame.font.SysFont(None, 20, bold=True)
+    hdr_lbl = hdr_font.render(f"SEKTOR {self.sector}: {self.sector_type.upper()}", True, (100, 220, 255))
+    surface.blit(hdr_lbl, (450 - hdr_lbl.get_width() // 2, 20))
 
     # Knoten zeichnen
     for node in self.nodes:
@@ -110,16 +117,23 @@ class StarMap:
         color = (255, 100, 255)
       elif node.event_type == "SHOP":
         color = COLOR_SHOP_NODE
+      elif node.event_type == "TRAINING":
+        color = COLOR_TRAINING_NODE
       else:
         color = COLOR_MAP_NODE
 
       pygame.draw.circle(surface, color, (node.x, node.y), 14)
 
       # Umweltgefahr-Ring um Knoten zeichnen
-      if getattr(node, "hazard_type", "NONE") == "SOLAR_FLARE":
+      h_type = getattr(node, "hazard_type", "NONE")
+      if h_type == "SOLAR_FLARE":
         pygame.draw.circle(surface, (255, 140, 0), (node.x, node.y), 17, 2)
-      elif getattr(node, "hazard_type", "NONE") == "ASTEROID_FIELD":
+      elif h_type == "ASTEROID_FIELD":
         pygame.draw.circle(surface, (160, 160, 180), (node.x, node.y), 17, 2)
+      elif h_type == "NEBULA_ION_STORM":
+        pygame.draw.circle(surface, (0, 220, 255), (node.x, node.y), 17, 2)
+      elif h_type == "PULSAR":
+        pygame.draw.circle(surface, (255, 230, 80), (node.x, node.y), 17, 2)
 
       # Subtiler innerer Indikator für besuchte Knoten
       if node.visited and node != self.current_node:

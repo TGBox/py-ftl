@@ -19,7 +19,7 @@ class PlayerData:
         self.ship: ShipModel = copy.deepcopy(PLAYER_SHIP)
         self.reactor: Reactor = Reactor(total_power=PLAYER_START_POWER)
         self.shield: ShieldSystem = ShieldSystem()
-        self.crew: list[Crew] = [Crew(340, 245, species="Mensch"), Crew(115, 245, species="Engi")]
+        self.crew: list[Crew] = [Crew(305, 290, species="Mensch"), Crew(205, 290, species="Engi")]
         self.weapons: list[Weapon] = [
             Weapon("Standard Laser", charge_time=3.0, w_type="LASER"),
             Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1),
@@ -50,6 +50,9 @@ class EnemyData:
         self.weapon: Weapon = Weapon("Laser", charge_time=4.5, w_type="LASER")
 
 
+from classes.Drone import Drone, DRONE_CATALOG
+
+
 class CombatData:
 
     def __init__(self) -> None:
@@ -69,9 +72,15 @@ class CombatData:
         self.asteroid_timer: float = 2.5
         self.combat_drone_active: bool = False
         self.repair_drone_active: bool = False
+        self.defense_drone_active: bool = False
+        self.shield_charger_active: bool = False
+        self.anti_personnel_active: bool = False
         self.drone_orbit_angle: float = 0.0
         self.drone_fire_timer: float = 0.0
         self.repair_drone_pos: tuple[float, float] = (160.0, 245.0)
+        self.anti_personnel_pos: tuple[float, float] = (220.0, 245.0)
+        self.defense_laser_beam: tuple[tuple[int, int], tuple[int, int], float] | None = None  # (start, end, timer)
+        self.overshield_hp: int = 0
         self.boss_phase: int = 1
         self.zoltan_shield_hp: int = 0
         self.drone_surge_timer: float = 18.0
@@ -83,6 +92,10 @@ class WorldData:
     def __init__(self) -> None:
         self.star_map: StarMap = StarMap()
         self.event_manager: EventManager = EventManager()
+
+
+from managers.achievement_manager import AchievementManager
+from managers.particle_manager import ParticleManager
 
 
 class GameData:
@@ -98,3 +111,5 @@ class GameData:
         self.enemy: EnemyData = EnemyData()
         self.combat: CombatData = CombatData()
         self.world: WorldData = WorldData()
+        self.achievements: AchievementManager = AchievementManager()
+        self.particle_manager: ParticleManager = ParticleManager()

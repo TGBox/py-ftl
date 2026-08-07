@@ -1,0 +1,82 @@
+{
+  "first_victory": {
+    "id": "first_victory",
+    "title": "Erster Sieg",
+    "desc": "Besiege ein feindliches Raumschiff im Gefecht.",
+    "icon": "⚔️",
+    "unlocked": true,
+    "unlock_time": "2026-08-07 09:13"
+  },
+  "boss_slayer": {
+    "id": "boss_slayer",
+    "title": "Rebellen-Schreck",
+    "desc": "Besiege einen Sektor Mini-Boss.",
+    "icon": "💥",
+    "unlocked": true,
+    "unlock_time": "2026-08-07 09:13"
+  },
+  "flagship_down": {
+    "id": "flagship_down",
+    "title": "Galaktischer Retter",
+    "desc": "Zerstöre das Endboss-Flaggschiff der Rebellen!",
+    "icon": "🏆",
+    "unlocked": false,
+    "unlock_time": null
+  },
+  "master_mechanic": {
+    "id": "master_mechanic",
+    "title": "Meister-Ingenieur",
+    "desc": "Bringe den Reparatur-Skill eines Crew-Mitglieds auf Stufe 3.",
+    "icon": "🔧",
+    "unlocked": true,
+    "unlock_time": "2026-08-07 09:13"
+  },
+  "master_warrior": {
+    "id": "master_warrior",
+    "title": "Kriegsfürst",
+    "desc": "Bringe den Nahkampf-Skill eines Crew-Mitglieds auf Stufe 3.",
+    "icon": "⚔️",
+    "unlocked": false,
+    "unlock_time": null
+  },
+  "collector": {
+    "id": "collector",
+    "title": "Schiffs-Sammler",
+    "desc": "Schalte mindestens 4 verschiedene Raumschiffe frei.",
+    "icon": "🚀",
+    "unlocked": false,
+    "unlock_time": null
+  },
+  "survivor": {
+    "id": "survivor",
+    "title": "Überlebenskünstler",
+    "desc": "Triggere ein Event mit 0 Treibstoff und überlebe.",
+    "icon": "⚓",
+    "unlocked": true,
+    "unlock_time": "2026-08-07 09:13"
+  },
+  "full_house": {
+    "id": "full_house",
+    "title": "Volles Haus",
+    "desc": "Rekrutiere eine vollwertige Besatzung von 6 Crewmitgliedern.",
+    "icon": "👥",
+    "unlocked": false,
+    "unlock_time": null
+  },
+  "weapon_fuser": {
+    "id": "weapon_fuser",
+    "title": "Waffenschmied",
+    "desc": "Führe eine erfolgreiche Waffen-Fusion im Shop durch.",
+    "icon": "⚡",
+    "unlocked": true,
+    "unlock_time": "2026-08-07 10:18"
+  },
+  "event_explorer": {
+    "id": "event_explorer",
+    "title": "Weltraum-Erkunder",
+    "desc": "Erfülle 10 zufällige Sektor-Events.",
+    "icon": "🌌",
+    "unlocked": true,
+    "unlock_time": "2026-08-07 10:17"
+  }
+}

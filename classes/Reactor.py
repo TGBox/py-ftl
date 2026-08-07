@@ -10,9 +10,8 @@ class Reactor:
     self.available_power: int = total_power
 
   def draw(self, surface: pygame.Surface, x: int, y: int) -> None:
-    font = pygame.font.SysFont(None, 22)
     surface.blit(
-        font.render(
+        get_font(22).render(
             f"Reaktor: {self.available_power}/{self.total_power}",
             True,
             (200, 220, 255),

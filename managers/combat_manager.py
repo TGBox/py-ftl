@@ -1,10 +1,30 @@
+import math
 import random
 
 from classes.Crew import Crew
 from classes.GameData import GameData
 from classes.Projectile import Projectile
+from classes.Weapon import Weapon
 from managers.state_manager import StateManager
 from settings import *
+
+
+def center_crew_in_rooms(crew_list: list[Crew], rooms: list):
+    for crew in crew_list:
+        room = crew.current_room
+        if not room:
+            for r in rooms:
+                if r.rect.collidepoint(int(crew.x), int(crew.y)):
+                    room = r
+                    break
+        if not room and rooms:
+            room = rooms[0]
+        if room:
+            crew.x = float(room.rect.centerx)
+            crew.y = float(room.rect.centery)
+            crew.target_pos = None
+            crew.path_waypoints = []
+            crew.current_room = room
 
 
 class CombatManager:
@@ -18,13 +38,23 @@ class CombatManager:
     def update(self, dt: float):
         """Wird einmal pro Frame aufgerufen."""
 
+        if hasattr(self.data, "particle_manager"):
+            self.data.particle_manager.update(dt)
+
         if self.data.paused or getattr(self.data, "show_pause_menu", False):
             return
 
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
-            self.data.player.ship.update_doors(dt)
-            self.data.enemy.ship.update_doors(dt)
+            all_crew = self.data.player.crew + self.enemy_crew
+            self.data.player.ship.update_doors(dt, all_crew)
+            self.data.enemy.ship.update_doors(dt, all_crew)
             self.update_crew(dt)
+
+            # Rauch für beschädigte oder brennende Räume
+            if random.random() < 0.15:
+                for r in self.data.player.ship.rooms + self.data.enemy.ship.rooms:
+                    if getattr(r, "fire_level", 0) > 0 or getattr(r, "has_breach", False) or r.health < r.max_health:
+                        self.data.particle_manager.emit_smoke(r.rect.centerx + random.uniform(-10, 10), r.rect.centery + random.uniform(-10, 10))
 
             if len(self.data.player.crew) == 0:
                 if self.sound: self.sound.play("game_over")
@@ -35,8 +65,12 @@ class CombatManager:
             self.was_in_combat = False
             return
 
+        self.update_drones(dt)
+
         if not getattr(self, "was_in_combat", False):
             self.was_in_combat = True
+            center_crew_in_rooms(self.data.player.crew, self.data.player.ship.rooms)
+            center_crew_in_rooms(self.enemy_crew, self.data.enemy.ship.rooms)
             if "Waffen-Vorheizer" in getattr(self.data.player, "augments", []):
                 for w in self.data.player.weapons:
                     w.current_charge = w.charge_time
@@ -73,6 +107,26 @@ class CombatManager:
                 self.show_message("SONNEN-ERUPTION! BRÄNDE AUF BEIDEN SCHIFFEN ENTFACHT!")
             else:
                 self.data.combat.solar_flare_timer = sf_timer
+
+        elif hazard == "NEBULA_ION_STORM":
+            # Halves available reactor power in Ion Storm
+            self.data.player.reactor.max_power = max(1, self.data.player.reactor.total_power // 2)
+            self.data.enemy.reactor.max_power = max(1, self.data.enemy.reactor.total_power // 2)
+
+        elif hazard == "PULSAR":
+            pulsar_t = getattr(self.data.combat, "pulsar_timer", 15.0) - dt
+            if pulsar_t <= 0.0:
+                self.data.combat.pulsar_timer = 15.0
+                p_rooms = random.sample(self.data.player.ship.rooms, min(2, len(self.data.player.ship.rooms)))
+                e_rooms = random.sample(self.data.enemy.ship.rooms, min(2, len(self.data.enemy.ship.rooms)))
+                for r in p_rooms + e_rooms:
+                    r.ion_timer = 8.0
+                    if hasattr(self.data, "particle_manager"):
+                        self.data.particle_manager.emit_shield_ripple(r.rect.centerx, r.rect.centery, (255, 230, 80))
+                if self.sound: self.sound.play("ion_hit")
+                self.show_message("PULSAR-STRAHLUNG! RÄUME BEIDER SCHIFFE IONISIERT!")
+            else:
+                self.data.combat.pulsar_timer = pulsar_t
 
         elif hazard == "ASTEROID_FIELD":
             ast_timer = getattr(self.data.combat, "asteroid_timer", 2.5) - dt
@@ -240,7 +294,8 @@ class CombatManager:
         dead_crew: list = []
         for crew in self.data.player.crew:
             target_rooms = self.data.enemy.ship.rooms if crew.is_boarding else self.data.player.ship.rooms
-            crew.update(dt, target_rooms)
+            target_doors = self.data.enemy.ship.doors if crew.is_boarding else self.data.player.ship.doors
+            crew.update(dt, target_rooms, target_doors)
             # Erstickungs- & Feuerschaden
             if crew.current_room:
                 if crew.current_room.oxygen < 20.0:
@@ -271,10 +326,11 @@ class CombatManager:
                 self.enemy_crew.append(Crew(r.rect.centerx, r.rect.centery, name="Pirate", is_enemy=True))
 
         enemy_rooms = self.data.enemy.ship.rooms
+        enemy_doors = self.data.enemy.ship.doors
         boarders = [c for c in self.data.player.crew if getattr(c, "is_boarding", False)]
         dead_enemy: list = []
         for e_crew in self.enemy_crew:
-            e_crew.update(dt, enemy_rooms)
+            e_crew.update(dt, enemy_rooms, enemy_doors)
             if e_crew.hp <= 0.0:
                 dead_enemy.append(e_crew)
                 continue
@@ -461,6 +517,11 @@ class CombatManager:
                     w_type=weapon.w_type,
                     shield_pierce=weapon.shield_pierce,
                     damage=weapon.damage,
+                    subtype=getattr(weapon, "subtype", "STANDARD"),
+                    fire_chance=getattr(weapon, "fire_chance", 0.0),
+                    breach_chance=getattr(weapon, "breach_chance", 0.0),
+                    stun_duration=getattr(weapon, "stun_duration", 0.0),
+                    crew_damage=getattr(weapon, "crew_damage", 0.0),
                 )
             )
 
@@ -527,6 +588,11 @@ class CombatManager:
                 w_type=weapon.w_type,
                 shield_pierce=weapon.shield_pierce,
                 damage=weapon.damage,
+                subtype=getattr(weapon, "subtype", "STANDARD"),
+                fire_chance=getattr(weapon, "fire_chance", 0.0),
+                breach_chance=getattr(weapon, "breach_chance", 0.0),
+                stun_duration=getattr(weapon, "stun_duration", 0.0),
+                crew_damage=getattr(weapon, "crew_damage", 0.0),
             )
         )
 
@@ -579,33 +645,49 @@ class CombatManager:
                 else:
                     self.data.enemy.shield.attempt_block()
                     if self.sound: self.sound.play("shield_hit")
+                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
             else:
                 if not self.data.enemy.shield.attempt_block():
                     hit_successful = True
                 else:
                     if self.sound: self.sound.play("shield_hit")
+                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
 
             if hit_successful:
                 if self.sound: self.sound.play("hull_hit")
-                if projectile.w_type == "BOMB":
-                    self.show_message(f"BOMBE DETONIERT IN {projectile.target_room.name.upper()}!")
-                    if "Feuer" in getattr(projectile, "name", "") or projectile.damage == 0:
-                        projectile.target_room.fire_level = min(100.0, projectile.target_room.fire_level + 65.0)
-                    elif "Hüllenbruch" in getattr(projectile, "name", "") or projectile.damage == 15:
-                        projectile.target_room.has_breach = True
-                        projectile.target_room.apply_damage(40.0, self.data.enemy.reactor)
-                        self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
-                    else:
-                        projectile.target_room.apply_damage(30.0, self.data.enemy.reactor)
-                        self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
-                elif projectile.w_type == "BEAM":
-                    intersected_rooms = projectile.get_intersected_rooms(self.data.enemy.ship.rooms)
-                    for room in intersected_rooms:
+                self.data.particle_manager.emit_sparks(projectile.x, projectile.y, count=15)
+                self.data.particle_manager.emit_explosion(projectile.x, projectile.y, count=12)
+                target_rooms = projectile.get_intersected_rooms(self.data.enemy.ship.rooms) if projectile.w_type == "BEAM" else [projectile.target_room]
+
+                for room in target_rooms:
+                    if projectile.damage > 0:
                         self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
                         room.apply_damage(projectile.damage, self.data.enemy.reactor)
-                else:
-                    self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
-                    projectile.target_room.apply_damage(projectile.damage, self.data.enemy.reactor)
+
+                    # Subtyp & Statuseffekte anwenden
+                    if projectile.fire_chance > 0 and random.random() < projectile.fire_chance:
+                        room.fire_level = min(100.0, room.fire_level + 60.0)
+                        self.show_message(f"FEUER ENTFACHT IN {room.name.upper()}!")
+
+                    if projectile.breach_chance > 0 and random.random() < projectile.breach_chance:
+                        room.has_breach = True
+                        self.show_message(f"HÜLLENBRUCH IN {room.name.upper()}!")
+
+                    # Effekte auf gegnerische Crew in diesem Raum
+                    affected_crew = [c for c in self.enemy_crew if c.current_room == room]
+                    for e_c in affected_crew:
+                        if projectile.crew_damage > 0:
+                            e_c.hp = max(0.0, e_c.hp - projectile.crew_damage)
+                        elif projectile.subtype == "BIO":
+                            e_c.hp = max(0.0, e_c.hp - 65.0)
+
+                        if projectile.stun_duration > 0:
+                            e_c.stun_timer = max(e_c.stun_timer, projectile.stun_duration)
+
+                    if projectile.subtype == "BIO" and affected_crew:
+                        self.show_message(f"BIO-SCHADEN AN CREW IN {room.name.upper()}!")
+                    elif projectile.stun_duration > 0 and affected_crew:
+                        self.show_message(f"CREW IN {room.name.upper()} GELÄHMT!")
 
     def handle_enemy_hit(self, projectile: Projectile):
         if getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0:
@@ -614,7 +696,8 @@ class CombatManager:
         # SRS 6.2 Evasion Formel: E = (E_Base_Engine + C_Engine_Bonus + C_Pilot_Bonus) * A_Multiplier + S_Cloak
         e_base_engine = self.data.player.ship.rooms[2].current_power * 0.10 if len(self.data.player.ship.rooms) > 2 else 0.10
         bridge_power = self.data.player.ship.rooms[2].current_power if len(self.data.player.ship.rooms) > 2 else 0
-        pilot_present = any(c.current_room == self.data.player.ship.rooms[2] for c in self.data.player.crew)
+        pilot_crew = next((c for c in self.data.player.crew if len(self.data.player.ship.rooms) > 2 and c.current_room == self.data.player.ship.rooms[2]), None)
+        pilot_present = pilot_crew is not None
         if pilot_present:
             a_multiplier = 1.0
         elif bridge_power >= 3:
@@ -624,7 +707,7 @@ class CombatManager:
         else:
             a_multiplier = 0.0
 
-        c_pilot_bonus = 0.10 if pilot_present else 0.0
+        c_pilot_bonus = (0.10 + getattr(pilot_crew, "skill_piloting", 0) * 0.05) if pilot_crew else 0.0
         c_engine_bonus = 0.05 if any(c.current_room == self.data.player.ship.rooms[0] for c in self.data.player.crew) else 0.0
         s_cloak = 0.0
 
@@ -650,33 +733,47 @@ class CombatManager:
                 else:
                     self.data.player.shield.attempt_block()
                     if self.sound: self.sound.play("shield_hit")
+                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (100, 255, 180))
             else:
                 if not self.data.player.shield.attempt_block():
                     hit_successful = True
                 else:
                     if self.sound: self.sound.play("shield_hit")
+                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (100, 255, 180))
 
             if hit_successful:
                 if self.sound: self.sound.play("hull_hit")
-                if projectile.w_type == "BOMB":
-                    self.show_message(f"BOMBE DETONIERT IN DEINEM {projectile.target_room.name.upper()}!")
-                    projectile.target_room.fire_level = min(100.0, projectile.target_room.fire_level + 50.0)
-                    projectile.target_room.apply_damage(25.0, self.data.player.reactor)
-                    self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
-                elif projectile.w_type == "BEAM":
-                    intersected_rooms = projectile.get_intersected_rooms(self.data.player.ship.rooms)
-                    for room in intersected_rooms:
+                self.data.particle_manager.emit_sparks(projectile.x, projectile.y, count=15)
+                self.data.particle_manager.emit_explosion(projectile.x, projectile.y, count=12)
+                target_rooms = projectile.get_intersected_rooms(self.data.player.ship.rooms) if projectile.w_type == "BEAM" else [projectile.target_room]
+
+                for room in target_rooms:
+                    if projectile.damage > 0:
                         self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
                         room.apply_damage(projectile.damage, self.data.player.reactor)
-                        for crew in self.data.player.crew:
-                            if crew.current_room == room:
-                                crew.hp = max(0.0, crew.hp - 15.0)
-                else:
-                    self.data.player.ship.hp = max(0, self.data.player.ship.hp - 1)
-                    projectile.target_room.apply_damage(projectile.damage, self.data.player.reactor)
-                    for crew in self.data.player.crew:
-                        if crew.current_room == projectile.target_room:
-                            crew.hp = max(0.0, crew.hp - 20.0)
+
+                    if projectile.fire_chance > 0 and random.random() < projectile.fire_chance:
+                        room.fire_level = min(100.0, room.fire_level + 60.0)
+                        self.show_message(f"FEUER IN DEINEM {room.name.upper()}!")
+
+                    if projectile.breach_chance > 0 and random.random() < projectile.breach_chance:
+                        room.has_breach = True
+                        self.show_message(f"HÜLLENBRUCH IN DEINEM {room.name.upper()}!")
+
+                    affected_crew = [c for c in self.data.player.crew if c.current_room == room]
+                    for p_c in affected_crew:
+                        if projectile.crew_damage > 0:
+                            p_c.hp = max(0.0, p_c.hp - projectile.crew_damage)
+                        elif projectile.subtype == "BIO":
+                            p_c.hp = max(0.0, p_c.hp - 60.0)
+                        else:
+                            p_c.hp = max(0.0, p_c.hp - 15.0)
+
+                        if projectile.stun_duration > 0:
+                            p_c.stun_timer = max(p_c.stun_timer, projectile.stun_duration)
+
+                    if projectile.stun_duration > 0 and affected_crew:
+                        self.show_message(f"DEINE CREW IN {room.name.upper()} GELÄHMT!")
 
 
     def check_end_of_battle(self):
@@ -765,19 +862,41 @@ class CombatManager:
         self.data.player.projectiles.clear()
         self.data.combat.weapon_targets.clear()
 
-        from managers.save_manager import SaveManager
-        ship_sequence = ["Kestrel", "Kreuzer", "Tarnschiff", "Zoltan-Fregatte", "Federations-Kreuzer"]
-        unlocked = SaveManager.load_unlocks()
         new_ship = None
-        for s in ship_sequence:
-            if s not in unlocked:
-                unlocked.append(s)
-                new_ship = s
-                SaveManager.save_unlocks(unlocked)
-                break
-        self.data.player.unlocked_ships = unlocked
-        if new_ship:
-            self.data.player.newly_unlocked_ship = new_ship
+        if is_final_boss or is_mini_boss:
+            from managers.save_manager import SaveManager
+            ship_sequence = [
+                "Kestrel",
+                "Kreuzer",
+                "Tarnschiff",
+                "Zoltan-Fregatte",
+                "Federations-Kreuzer",
+                "Mantis-Kaperer",
+                "Rock-Schlachtschiff",
+                "Kristall-Kreuzer",
+            ]
+            unlocked = SaveManager.load_unlocks()
+            for s in ship_sequence:
+                if s not in unlocked:
+                    unlocked.append(s)
+                    new_ship = s
+                    SaveManager.save_unlocks(unlocked)
+                    break
+            self.data.player.unlocked_ships = unlocked
+            if new_ship:
+                self.data.player.newly_unlocked_ship = new_ship
+
+        # Achievements prüfen
+        if hasattr(self.data, "achievements"):
+            self.data.achievements.unlock("first_victory")
+            if is_mini_boss:
+                self.data.achievements.unlock("boss_slayer")
+            if is_final_boss and self.data.combat.boss_phase >= 3:
+                self.data.achievements.unlock("flagship_down")
+
+            unlocked_list = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
+            if len(unlocked_list) >= 4:
+                self.data.achievements.unlock("collector")
 
         if is_final_boss:
             self.data.current_state = STATE_VICTORY
@@ -798,6 +917,218 @@ class CombatManager:
 
 
 
+    def get_drone_room_power(self) -> int:
+        drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
+        return drone_room.current_power if drone_room else 0
+
+    def get_active_drone_power_used(self) -> int:
+        power = 0
+        if getattr(self.data.combat, "combat_drone_active", False): power += 1
+        if getattr(self.data.combat, "repair_drone_active", False): power += 1
+        if getattr(self.data.combat, "defense_drone_active", False): power += 2
+        if getattr(self.data.combat, "shield_charger_active", False): power += 2
+        if getattr(self.data.combat, "anti_personnel_active", False): power += 2
+        return power
+
+    def update_drones(self, dt: float):
+        drone_power = self.get_drone_room_power()
+        if drone_power <= 0:
+            return
+
+        # Dynamic ship centers
+        p_rooms = self.data.player.ship.rooms
+        p_cx = (min(r.rect.left for r in p_rooms) + max(r.rect.right for r in p_rooms)) // 2 if p_rooms else 220
+        p_cy = (min(r.rect.top for r in p_rooms) + max(r.rect.bottom for r in p_rooms)) // 2 if p_rooms else 245
+
+        e_rooms = self.data.enemy.ship.rooms
+        e_cx = (min(r.rect.left for r in e_rooms) + max(r.rect.right for r in e_rooms)) // 2 if e_rooms else 710
+        e_cy = (min(r.rect.top for r in e_rooms) + max(r.rect.bottom for r in e_rooms)) // 2 if e_rooms else 245
+
+        # 1. Kampfdrohne MK1 (Orbits enemy ship & fires laser)
+        if getattr(self.data.combat, "combat_drone_active", False):
+            ang = getattr(self.data.combat, "drone_orbit_angle", 0.0) + dt * 1.2
+            self.data.combat.drone_orbit_angle = ang
+            fire_t = getattr(self.data.combat, "drone_fire_timer", 0.0) + dt
+            if fire_t >= 3.5:
+                self.data.combat.drone_fire_timer = 0.0
+                d_x = int(e_cx + math.cos(ang) * 160)
+                d_y = int(e_cy + math.sin(ang) * 110)
+                target_room = random.choice(self.data.enemy.ship.rooms)
+                self.data.player.projectiles.append(
+                    Projectile((d_x, d_y), target_room.rect.center, target_room=target_room, is_player_shot=True, w_type="LASER", damage=1)
+                )
+                if self.sound: self.sound.play("laser_fire")
+            else:
+                self.data.combat.drone_fire_timer = fire_t
+
+        # 2. Reparatur-Drohne (System Repair & Breach Fix)
+        if getattr(self.data.combat, "repair_drone_active", False):
+            damaged_rooms = [r for r in self.data.player.ship.rooms if r.health < r.max_health or getattr(r, "fire_level", 0) > 0 or getattr(r, "has_breach", False)]
+            if damaged_rooms:
+                target_r = damaged_rooms[0]
+                tx, ty = float(target_r.rect.centerx), float(target_r.rect.centery)
+                rx, ry = getattr(self.data.combat, "repair_drone_pos", (float(p_cx), float(p_cy)))
+                dx, dy = tx - rx, ty - ry
+                dist = math.hypot(dx, dy)
+                if dist > 4.0:
+                    rx += (dx / dist) * 120.0 * dt
+                    ry += (dy / dist) * 120.0 * dt
+                else:
+                    target_r.health = min(target_r.max_health, target_r.health + 25.0 * dt)
+                    target_r.fire_level = max(0.0, getattr(target_r, "fire_level", 0.0) - 40.0 * dt)
+                    if getattr(target_r, "has_breach", False):
+                        target_r.has_breach = False
+                        self.show_message(f"REP-DROHNE HAT HÜLLENBRUCH IN {target_r.name.upper()} REPARIERT!")
+                self.data.combat.repair_drone_pos = (rx, ry)
+
+        # 3. Verteidigungs-Drohne MK1 (Point-Defense shoots down incoming missiles/asteroids)
+        if getattr(self.data.combat, "defense_drone_active", False):
+            # Clear expired defense laser beam
+            d_beam = getattr(self.data.combat, "defense_laser_beam", None)
+            if d_beam:
+                if d_beam[2] - dt <= 0.0:
+                    self.data.combat.defense_laser_beam = None
+                else:
+                    self.data.combat.defense_laser_beam = (d_beam[0], d_beam[1], d_beam[2] - dt)
+
+            # Check for incoming enemy missiles
+            for proj in self.data.player.projectiles[:]:
+                if not proj.is_player_shot and proj.w_type == "MISSILE" and proj.alive:
+                    dist_to_player = math.hypot(proj.x - p_cx, proj.y - p_cy)
+                    if dist_to_player < 260.0:
+                        # Shoot down missile
+                        proj.alive = False
+                        d_start = (int(p_cx + math.cos(self.data.combat.drone_orbit_angle) * 130), int(p_cy + math.sin(self.data.combat.drone_orbit_angle) * 100))
+                        self.data.combat.defense_laser_beam = (d_start, (int(proj.x), int(proj.y)), 0.25)
+                        if hasattr(self.data, "particle_manager"):
+                            self.data.particle_manager.emit_explosion(proj.x, proj.y, count=15)
+                        if self.sound: self.sound.play("laser_fire")
+                        self.show_message("VERTEIDIGUNGS-DROHNE HAT RAKETE ABGESCHOSSEN!")
+                        break
+
+        # 4. Schild-Lade-Drohne (Faster shield recharge & overshield)
+        if getattr(self.data.combat, "shield_charger_active", False):
+            self.data.player.shield.recharge_timer -= dt * 0.8
+            if self.data.player.shield.current_layers == self.data.player.shield.max_layers:
+                self.data.combat.overshield_hp = min(1, getattr(self.data.combat, "overshield_hp", 0) + 1)
+
+        # 5. Anti-Personen-Drohne (Fights enemy boarders on player ship)
+        if getattr(self.data.combat, "anti_personnel_active", False):
+            boarders = [c for c in self.enemy_crew if any(r.rect.collidepoint(int(c.x), int(c.y)) for r in self.data.player.ship.rooms)]
+            if boarders:
+                target_b = boarders[0]
+                ap_x, ap_y = getattr(self.data.combat, "anti_personnel_pos", (220.0, 245.0))
+                dx, dy = target_b.x - ap_x, target_b.y - ap_y
+                dist = math.hypot(dx, dy)
+                if dist > 4.0:
+                    ap_x += (dx / dist) * 110.0 * dt
+                    ap_y += (dy / dist) * 110.0 * dt
+                else:
+                    target_b.hp = max(0.0, target_b.hp - 22.0 * dt)
+                    if hasattr(self.data, "particle_manager"):
+                        self.data.particle_manager.emit_sparks(target_b.x, target_b.y, count=3)
+                self.data.combat.anti_personnel_pos = (ap_x, ap_y)
+
+    def toggle_combat_drone(self):
+        drone_power = self.get_drone_room_power()
+        if getattr(self.data.combat, "combat_drone_active", False):
+            self.data.combat.combat_drone_active = False
+            self.show_message("KAMPFDROHNE DEAKTIVIERT")
+            return
+
+        if self.data.player.drones < 1:
+            self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
+            return
+
+        if self.get_active_drone_power_used() + 1 > drone_power:
+            self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 1, Max: {drone_power})!")
+            return
+
+        self.data.player.drones -= 1
+        self.data.combat.combat_drone_active = True
+        if self.sound: self.sound.play("click")
+        self.show_message("KAMPFDROHNE AKTIVIERT [1E]!")
+
+    def toggle_repair_drone(self):
+        drone_power = self.get_drone_room_power()
+        if getattr(self.data.combat, "repair_drone_active", False):
+            self.data.combat.repair_drone_active = False
+            self.show_message("REPARATUR-DROHNE DEAKTIVIERT")
+            return
+
+        if self.data.player.drones < 1:
+            self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
+            return
+
+        if self.get_active_drone_power_used() + 1 > drone_power:
+            self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 1, Max: {drone_power})!")
+            return
+
+        self.data.player.drones -= 1
+        self.data.combat.repair_drone_active = True
+        if self.sound: self.sound.play("click")
+        self.show_message("REPARATUR-DROHNE AKTIVIERT [1E]!")
+
+    def toggle_defense_drone(self):
+        drone_power = self.get_drone_room_power()
+        if getattr(self.data.combat, "defense_drone_active", False):
+            self.data.combat.defense_drone_active = False
+            self.show_message("VERTEIDIGUNGS-DROHNE DEAKTIVIERT")
+            return
+
+        if self.data.player.drones < 1:
+            self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
+            return
+
+        if self.get_active_drone_power_used() + 2 > drone_power:
+            self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 2, Max: {drone_power})!")
+            return
+
+        self.data.player.drones -= 1
+        self.data.combat.defense_drone_active = True
+        if self.sound: self.sound.play("click")
+        self.show_message("VERTEIDIGUNGS-DROHNE AKTIVIERT [2E]!")
+
+    def toggle_shield_charger(self):
+        drone_power = self.get_drone_room_power()
+        if getattr(self.data.combat, "shield_charger_active", False):
+            self.data.combat.shield_charger_active = False
+            self.show_message("SCHILD-LADE-DROHNE DEAKTIVIERT")
+            return
+
+        if self.data.player.drones < 1:
+            self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
+            return
+
+        if self.get_active_drone_power_used() + 2 > drone_power:
+            self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 2, Max: {drone_power})!")
+            return
+
+        self.data.player.drones -= 1
+        self.data.combat.shield_charger_active = True
+        if self.sound: self.sound.play("click")
+        self.show_message("SCHILD-LADE-DROHNE AKTIVIERT [2E]!")
+
+    def toggle_anti_personnel(self):
+        drone_power = self.get_drone_room_power()
+        if getattr(self.data.combat, "anti_personnel_active", False):
+            self.data.combat.anti_personnel_active = False
+            self.show_message("ANTI-PERSONEN-DROHNE DEAKTIVIERT")
+            return
+
+        if self.data.player.drones < 1:
+            self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
+            return
+
+        if self.get_active_drone_power_used() + 2 > drone_power:
+            self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 2, Max: {drone_power})!")
+            return
+
+        self.data.player.drones -= 1
+        self.data.combat.anti_personnel_active = True
+        if self.sound: self.sound.play("click")
+        self.show_message("ANTI-PERSONEN-DROHNE AKTIVIERT [2E]!")
+
     def player_lost(self):
 
         self.data.player.projectiles.clear()
@@ -811,4 +1142,4 @@ class CombatManager:
         self.data.combat.msg = text
         self.data.combat.msg_timer = 1.5
 
-
+

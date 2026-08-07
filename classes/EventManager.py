@@ -14,19 +14,40 @@ class EventManager:
         self.load_events_json(json_path)
 
     def load_events_json(self, json_path: str) -> None:
-        if os.path.exists(json_path):
-            try:
-                with open(json_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self.events_db = data.get("events", [])
-            except Exception as e:
-                print(f"Fehler beim Laden von {json_path}: {e}")
+        paths_to_check = [json_path, "events.json", "data/events.json"]
+        for p in paths_to_check:
+            if os.path.exists(p):
+                try:
+                    with open(p, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        self.events_db = data.get("events", [])
+                        return
+                except Exception as e:
+                    print(f"Fehler beim Laden von {p}: {e}")
 
-    def trigger_event(self, event_type: str, player_crew: list = None) -> tuple[int, int]:
+    def trigger_event(
+        self, event_type: str, player_crew: list = None, player_fuel: int = 1
+    ) -> tuple[int, int]:
         self.current_event_type = event_type
         self.choices.clear()
         self.result_text = ""
         crew_species = [getattr(c, "species", "") for c in (player_crew or [])]
+
+        # Wenn Treibstoff leer (<=0) und DISTRESS-Event -> Echte Treibstoff-Notfallbake!
+        if event_type == "DISTRESS" and player_fuel <= 0:
+            self.current_event_text = "KEIN TREIBSTOFF MEHR! Die Notfall-Bake sendet ein Signal..."
+            if "Engi" in crew_species:
+                self.choices.append({
+                    "text": "[Engi-Spezial] Notfall-Reaktor modifizieren (+2 Treibstoff)",
+                    "action": "SCAVENGE_FUEL",
+                    "fuel": 2,
+                    "is_blue": True
+                })
+            self.choices.extend([
+                {"text": "1. Händler rufen (-10 Scrap für 2 Treibstoff)", "action": "BUY_FUEL"},
+                {"text": "2. Wrack scavengen (+1 Treibstoff)", "action": "SCAVENGE_FUEL", "fuel": 1},
+            ])
+            return 0, 0
 
         # Finde passende Events aus events.json
         matching = [e for e in self.events_db if e.get("event_type") == event_type]

@@ -46,6 +46,9 @@ class MapManager:
             case "SHOP":
                 self.enter_shop()
 
+            case "TRAINING":
+                self.enter_training()
+
             case _:
                 self.trigger_event(node.event_type)
 
@@ -118,13 +121,26 @@ class MapManager:
             shop_mgr.refresh_catalog()
         self.data.current_state = STATE_SHOP
 
-    def trigger_event(self, event_type: str):
+    def enter_training(self):
+        self.data.current_state = STATE_TRAINING
 
-        self.data.world.event_manager.trigger_event(event_type, self.data.player.crew)
+    def trigger_event(self, event_type: str):
+        if self.data.player.fuel <= 0 and event_type == "DISTRESS" and hasattr(self.data, "achievements"):
+            self.data.achievements.unlock("survivor")
+
+        self.data.world.event_manager.trigger_event(
+            event_type, self.data.player.crew, self.data.player.fuel
+        )
         self.data.current_state = STATE_EVENT
 
 
     def handle_choice(self, action: str, choice_data: dict):
+        if hasattr(self.data, "achievements"):
+            evt_count = getattr(self.data, "events_completed_count", 0) + 1
+            self.data.events_completed_count = evt_count
+            if evt_count >= 10:
+                self.data.achievements.unlock("event_explorer")
+
         has_result = bool(choice_data.get("result_text"))
         if has_result:
             self.data.world.event_manager.result_text = choice_data["result_text"]
@@ -220,7 +236,7 @@ class MapManager:
         self.data.player.ship = copy.deepcopy(PLAYER_SHIP)
         self.data.player.reactor = Reactor(total_power=PLAYER_START_POWER)
         self.data.player.shield = ShieldSystem()
-        self.data.player.crew = [Crew(340, 245), Crew(115, 245)]
+        self.data.player.crew = [Crew(305, 290), Crew(205, 290)]
         self.data.player.weapons = [
             Weapon("Standard Laser", charge_time=3.0, w_type="LASER"),
             Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1),
