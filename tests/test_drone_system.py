@@ -23,7 +23,13 @@ class TestDroneSystem(unittest.TestCase):
         if drone_room:
             drone_room.current_power = 4
 
-        self.data.player.drones = 10  # 10 drone parts
+        self.data.player.drone_parts = 10  # 10 drone parts
+
+    def test_drones_property_alias(self):
+        self.assertEqual(self.data.player.drone_parts, 10)
+        self.assertEqual(self.data.player.drones, 10)
+        self.data.player.drones = 5
+        self.assertEqual(self.data.player.drone_parts, 5)
 
     def test_drone_catalog_master(self):
         self.assertEqual(len(DRONE_CATALOG), 5, "Catalog should have 5 drone types.")
@@ -36,15 +42,15 @@ class TestDroneSystem(unittest.TestCase):
 
     def test_toggle_drones_resource_consumption(self):
         # Toggle combat drone (1 Power, 1 Drone part)
-        initial_drones = self.data.player.drones
+        initial_drones = self.data.player.drone_parts
         self.combat_mgr.toggle_combat_drone()
         self.assertTrue(self.data.combat.combat_drone_active)
-        self.assertEqual(self.data.player.drones, initial_drones - 1)
+        self.assertEqual(self.data.player.drone_parts, initial_drones - 1)
 
         # Toggle defense drone (2 Power, 1 Drone part)
         self.combat_mgr.toggle_defense_drone()
         self.assertTrue(self.data.combat.defense_drone_active)
-        self.assertEqual(self.data.player.drones, initial_drones - 2)
+        self.assertEqual(self.data.player.drone_parts, initial_drones - 2)
 
     def test_drone_power_limit_enforcement(self):
         # Set Drone Control power to 1

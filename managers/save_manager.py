@@ -147,6 +147,7 @@ class SaveManager:
                 player_scrap=data.player.scrap,
                 player_fuel=data.player.fuel,
                 player_missiles=data.player.missiles,
+                player_drone_parts=getattr(data.player, "drone_parts", 5),
                 ship_name=data.player.ship.name,
                 ship_hp=int(data.player.ship.hp),
                 max_hp=int(data.player.ship.max_hp),
@@ -236,6 +237,7 @@ class SaveManager:
             data.player.scrap = schema.player_scrap
             data.player.fuel = schema.player_fuel
             data.player.missiles = schema.player_missiles
+            data.player.drone_parts = getattr(schema, "player_drone_parts", 5)
             data.player.unlocked_ships = schema.unlocked_ships
 
             # 3. Raumschiff & Räume wiederherstellen

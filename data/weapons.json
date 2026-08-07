@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Standard Laser",
+    "charge_time": 3.0,
+    "w_type": "LASER",
+    "shield_pierce": 0,
+    "damage": 35.0,
+    "ammo_cost": 0
+  },
+  {
+    "name": "Artemis Rakete",
+    "charge_time": 4.0,
+    "w_type": "MISSILE",
+    "shield_pierce": 1,
+    "damage": 40.0,
+    "ammo_cost": 1
+  },
+  {
+    "name": "Pike Strahl",
+    "charge_time": 5.0,
+    "w_type": "BEAM",
+    "shield_pierce": 1,
+    "damage": 25.0,
+    "ammo_cost": 0
+  },
+  {
+    "name": "Flak Geschütz",
+    "charge_time": 3.2,
+    "w_type": "FLAK",
+    "shield_pierce": 0,
+    "damage": 40.0,
+    "ammo_cost": 0
+  },
+  {
+    "name": "Ionen Blaster",
+    "charge_time": 3.0,
+    "w_type": "ION",
+    "shield_pierce": 0,
+    "damage": 0.0,
+    "ammo_cost": 0
+  },
+  {
+    "name": "Bio-Strahl",
+    "charge_time": 4.5,
+    "w_type": "BIO_BEAM",
+    "shield_pierce": 1,
+    "damage": 0.0,
+    "ammo_cost": 0
+  },
+  {
+    "name": "Schwerer Laser",
+    "charge_time": 4.0,
+    "w_type": "HEAVY_LASER",
+    "shield_pierce": 0,
+    "damage": 50.0,
+    "ammo_cost": 0
+  }
+]

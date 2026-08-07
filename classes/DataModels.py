@@ -108,6 +108,7 @@ class SavegameSchema(BaseModel):
     player_scrap: int = 20
     player_fuel: int = 6
     player_missiles: int = 6
+    player_drone_parts: int = 5
     ship_name: str = "Kestrel"
     ship_hp: int = 15
     max_hp: int = 15

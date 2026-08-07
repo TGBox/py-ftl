@@ -230,49 +230,6 @@ class CombatManager:
         self.update_projectiles(dt)
         self.check_end_of_battle()
 
-    def toggle_combat_drone(self):
-        if getattr(self.data.combat, "combat_drone_active", False):
-            self.data.combat.combat_drone_active = False
-            self.show_message("KAMPFDROHNE DEAKTIVIERT!")
-            return
-
-        drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
-        power = drone_room.current_power if drone_room else 0
-        if power < 1:
-            self.show_message("DROHNEN-SYSTEM BRAUCHT MINDESTENS 1 ENERGIE!")
-            return
-
-        if self.data.player.drone_parts < 1:
-            self.show_message("KEINE DROHNEN-TEILE MEHR!")
-            return
-
-        self.data.player.drone_parts -= 1
-        self.data.combat.combat_drone_active = True
-        self.data.combat.drone_fire_timer = 2.0
-        if self.sound: self.sound.play("click")
-        self.show_message("KAMPFDROHNE GESTARTET! (-1 Drohnen-Teil)")
-
-    def toggle_repair_drone(self):
-        if getattr(self.data.combat, "repair_drone_active", False):
-            self.data.combat.repair_drone_active = False
-            self.show_message("REPARATURDROHNE DEAKTIVIERT!")
-            return
-
-        drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
-        power = drone_room.current_power if drone_room else 0
-        if power < 2:
-            self.show_message("REPARATURDROHNE BRAUCHT MINDESTENS 2 ENERGIE!")
-            return
-
-        if self.data.player.drone_parts < 1:
-            self.show_message("KEINE DROHNEN-TEILE MEHR!")
-            return
-
-        self.data.player.drone_parts -= 1
-        self.data.combat.repair_drone_active = True
-        if self.sound: self.sound.play("click")
-        self.show_message("REPARATURDROHNE GESTARTET! (-1 Drohnen-Teil)")
-
     def update_crew(self, dt: float):
         # Automatisierte Relais & Sauerstoff-Konverter Augmentations
         augments = getattr(self.data.player, "augments", [])
@@ -1036,7 +993,7 @@ class CombatManager:
             self.show_message("KAMPFDROHNE DEAKTIVIERT")
             return
 
-        if self.data.player.drones < 1:
+        if self.data.player.drone_parts < 1:
             self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
             return
 
@@ -1044,7 +1001,7 @@ class CombatManager:
             self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 1, Max: {drone_power})!")
             return
 
-        self.data.player.drones -= 1
+        self.data.player.drone_parts -= 1
         self.data.combat.combat_drone_active = True
         if self.sound: self.sound.play("click")
         self.show_message("KAMPFDROHNE AKTIVIERT [1E]!")
@@ -1056,7 +1013,7 @@ class CombatManager:
             self.show_message("REPARATUR-DROHNE DEAKTIVIERT")
             return
 
-        if self.data.player.drones < 1:
+        if self.data.player.drone_parts < 1:
             self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
             return
 
@@ -1064,7 +1021,7 @@ class CombatManager:
             self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 1, Max: {drone_power})!")
             return
 
-        self.data.player.drones -= 1
+        self.data.player.drone_parts -= 1
         self.data.combat.repair_drone_active = True
         if self.sound: self.sound.play("click")
         self.show_message("REPARATUR-DROHNE AKTIVIERT [1E]!")
@@ -1076,7 +1033,7 @@ class CombatManager:
             self.show_message("VERTEIDIGUNGS-DROHNE DEAKTIVIERT")
             return
 
-        if self.data.player.drones < 1:
+        if self.data.player.drone_parts < 1:
             self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
             return
 
@@ -1084,7 +1041,7 @@ class CombatManager:
             self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 2, Max: {drone_power})!")
             return
 
-        self.data.player.drones -= 1
+        self.data.player.drone_parts -= 1
         self.data.combat.defense_drone_active = True
         if self.sound: self.sound.play("click")
         self.show_message("VERTEIDIGUNGS-DROHNE AKTIVIERT [2E]!")
@@ -1096,7 +1053,7 @@ class CombatManager:
             self.show_message("SCHILD-LADE-DROHNE DEAKTIVIERT")
             return
 
-        if self.data.player.drones < 1:
+        if self.data.player.drone_parts < 1:
             self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
             return
 
@@ -1104,7 +1061,7 @@ class CombatManager:
             self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 2, Max: {drone_power})!")
             return
 
-        self.data.player.drones -= 1
+        self.data.player.drone_parts -= 1
         self.data.combat.shield_charger_active = True
         if self.sound: self.sound.play("click")
         self.show_message("SCHILD-LADE-DROHNE AKTIVIERT [2E]!")
@@ -1116,7 +1073,7 @@ class CombatManager:
             self.show_message("ANTI-PERSONEN-DROHNE DEAKTIVIERT")
             return
 
-        if self.data.player.drones < 1:
+        if self.data.player.drone_parts < 1:
             self.show_message("KEINE DROHNENTEILE MEHR (0 Drohnen)!")
             return
 
@@ -1124,7 +1081,7 @@ class CombatManager:
             self.show_message(f"NICHT GENUG DROHNEN-ENERGIE (Benötigt 2, Max: {drone_power})!")
             return
 
-        self.data.player.drones -= 1
+        self.data.player.drone_parts -= 1
         self.data.combat.anti_personnel_active = True
         if self.sound: self.sound.play("click")
         self.show_message("ANTI-PERSONEN-DROHNE AKTIVIERT [2E]!")
