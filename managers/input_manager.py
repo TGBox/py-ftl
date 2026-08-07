@@ -96,6 +96,13 @@ class InputManager:
                 if combat_mgr: combat_mgr.toggle_shield_charger()
             elif event.key in (pygame.K_p, pygame.K_5):
                 if combat_mgr: combat_mgr.toggle_anti_personnel()
+            elif event.key == pygame.K_g:
+                selected = [c for c in self.data.player.crew if c.selected]
+                if selected:
+                    for c in selected:
+                        c.activate_ability(self.data, combat_mgr)
+                elif self.data.player.crew:
+                    self.data.player.crew[0].activate_ability(self.data, combat_mgr)
 
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
             if event.key == pygame.K_o:

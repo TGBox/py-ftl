@@ -95,16 +95,35 @@ class Crew:
         self.skill_piloting: int = 0
         self.skill_fitness: int = 0
 
-        # Spezies-Eigenschaften (Reparatur & Nahkampf)
+        # Spezies-Eigenschaften & Aktive Fähigkeiten
+        self.ability_cooldown: float = 0.0
+        self.ability_active_timer: float = 0.0
+
         if self.species == "Engi":
             self.repair_multiplier: float = 2.0
             self.melee_multiplier: float = 0.5
+            self.ability_name: str = "Schnell-Reparatur"
+            self.max_ability_cooldown: float = 15.0
         elif self.species == "Mantis":
             self.repair_multiplier: float = 0.6
             self.melee_multiplier: float = 2.0
+            self.ability_name: str = "Kampfrausch"
+            self.max_ability_cooldown: float = 20.0
+        elif self.species == "Rock":
+            self.repair_multiplier: float = 1.0
+            self.melee_multiplier: float = 1.2
+            self.ability_name: str = "Erderschütterung"
+            self.max_ability_cooldown: float = 25.0
+        elif self.species == "Zoltan":
+            self.repair_multiplier: float = 1.0
+            self.melee_multiplier: float = 0.8
+            self.ability_name: str = "Schild-Burst"
+            self.max_ability_cooldown: float = 20.0
         else:  # Mensch / standard
             self.repair_multiplier: float = 1.0
             self.melee_multiplier: float = 1.0
+            self.ability_name: str = "Taktischer Fokus"
+            self.max_ability_cooldown: float = 15.0
 
         if self.trait == "Feuerwehr":
             self.repair_multiplier *= 1.4
@@ -112,6 +131,56 @@ class Crew:
             self.melee_multiplier += 0.3
 
         self.move_speed: float = 160.0 if self.trait == "Sprinter" else 120.0
+
+    def activate_ability(self, data, combat_mgr=None) -> bool:
+        if self.ability_cooldown > 0.0:
+            if combat_mgr:
+                combat_mgr.show_message(f"{self.name.upper()} FÄHIGKEIT LÄDT NOCH ({int(self.ability_cooldown)}s)!")
+            return False
+
+        self.ability_cooldown = self.max_ability_cooldown
+        sound = getattr(combat_mgr, "sound", None)
+
+        if self.species == "Engi":
+            if self.current_room:
+                self.current_room.health = min(self.current_room.max_health, self.current_room.health + 35.0)
+                self.current_room.fire_level = 0.0
+                self.current_room.has_breach = False
+                if sound: sound.play("repair")
+                if combat_mgr: combat_mgr.show_message(f"{self.name.upper()} HAT {self.current_room.name.upper()} SOFORT REPARIERT!")
+
+        elif self.species == "Mantis":
+            self.ability_active_timer = 8.0
+            if sound: sound.play("click")
+            if combat_mgr: combat_mgr.show_message(f"{self.name.upper()} GEHT IN KAMPFRAUSCH (+100% Schaden)!")
+
+        elif self.species == "Rock":
+            if self.current_room:
+                enemies_in_room = [e for e in getattr(combat_mgr, "enemy_crew", []) if e.current_room == self.current_room]
+                for e in enemies_in_room:
+                    e.stun_timer = 4.0
+                if hasattr(data, "particle_manager"):
+                    data.particle_manager.emit_explosion(self.x, self.y, count=15)
+                if sound: sound.play("explosion")
+                if combat_mgr: combat_mgr.show_message(f"{self.name.upper()} ERDERSCHÜTTERUNG! Gegner stunnt (4s)!")
+
+        elif self.species == "Zoltan":
+            shield_max = max(1, getattr(data.player.shield, "max_layers", 1))
+            data.player.shield.current_layers = min(shield_max, data.player.shield.current_layers + 1)
+            if hasattr(data, "particle_manager"):
+                data.particle_manager.emit_shield_ripple(self.x, self.y, (100, 255, 140))
+            if sound: sound.play("shield_recharge")
+            if combat_mgr: combat_mgr.show_message(f"{self.name.upper()} SCHILD-BURST! +1 Schildschicht wiederhergestellt!")
+
+        else:  # Mensch
+            if self.current_room:
+                allies_in_room = [c for c in data.player.crew if c.current_room == self.current_room]
+                for c in allies_in_room:
+                    c.hp = min(c.max_hp, c.hp + 25.0)
+                if sound: sound.play("click")
+                if combat_mgr: combat_mgr.show_message(f"{self.name.upper()} TAKTISCHER FOKUS! Crew geheilt (+25 HP)!")
+
+        return True
 
     def train_skill(self, skill_name: str, achievement_manager=None) -> bool:
         if skill_name == "repair" and self.skill_repair < 3:
@@ -176,6 +245,11 @@ class Crew:
         self, dt: float, rooms: list[Room], doors: list[Door] | None = None
     ) -> None:
         self.anim_timer += dt
+        self.ability_cooldown = max(0.0, self.ability_cooldown - dt)
+        self.ability_active_timer = max(0.0, self.ability_active_timer - dt)
+
+        if self.species == "Mantis":
+            self.melee_multiplier = 4.0 if self.ability_active_timer > 0.0 else 2.0
 
         ship_doors = doors if doors is not None else getattr(self, "ship_doors", [])
 
