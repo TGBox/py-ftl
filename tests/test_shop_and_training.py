@@ -79,5 +79,62 @@ class TestShopAndTraining(unittest.TestCase):
         self.assertEqual(self.data.player.scrap, 80)
 
 
+    def test_shop_buy_drone_parts(self):
+        self.data.player.scrap = 50
+        init_drones = getattr(self.data.player, "drone_parts", 5)
+        self.shop_manager.buy_drone_parts()
+        self.assertEqual(getattr(self.data.player, "drone_parts", 0), init_drones + 2)
+        self.assertEqual(self.data.player.scrap, 44)
+
+    def test_shop_reactor_upgrade_capping(self):
+        self.data.player.scrap = 500
+        max_needed = sum(r.max_power for r in self.data.player.ship.rooms)
+        self.data.player.reactor.total_power = max_needed
+
+        # Trying to upgrade reactor beyond max room power sum must be blocked
+        self.shop_manager.upgrade_reactor()
+        self.assertEqual(self.data.player.reactor.total_power, max_needed)
+
+    def test_shop_crew_candidate_preview_and_purchase(self):
+        self.data.player.scrap = 100
+        cand = self.shop_manager.next_crew_candidate
+        self.assertIsNotNone(cand)
+        self.assertIn("species", cand)
+
+        initial_crew_count = len(self.data.player.crew)
+        self.shop_manager.buy_crew()
+        self.assertEqual(len(self.data.player.crew), initial_crew_count + 1)
+        self.assertIsNotNone(self.shop_manager.next_crew_candidate)
+
+    def test_shop_room_trading(self):
+        from classes.Room import Room
+        self.data.player.scrap = 200
+
+        # Add a free room slot
+        free_slot = Room("[Freier Raum-Slot]", (100, 100, 80, 80), max_power=0)
+        self.data.player.ship.rooms.append(free_slot)
+
+        # Buy system for free slot
+        sys_item = {"name": "Tarnung", "desc": "Tarnung", "price": 80, "max_power": 3}
+        self.shop_manager.buy_room_system(sys_item)
+        self.assertEqual(free_room_installed := next(r for r in self.data.player.ship.rooms if r.name == "Tarnung").name, "Tarnung")
+
+        # Sell optional system
+        self.shop_manager.sell_room_system(free_slot)
+        self.assertEqual(free_slot.name, "[Freier Raum-Slot]")
+
+    def test_shop_weapon_overwrite_prevention(self):
+        from classes.Weapon import Weapon
+        self.data.player.scrap = 100
+        w_laser = Weapon("Laser I", charge_time=3.0, w_type="LASER")
+        self.data.player.weapons = [w_laser]
+
+        # Trying to buy a Missile into slot 0 occupied by a Laser without explicit sale must be blocked
+        missile_item = {"name": "Artemis Rakete", "charge_time": 4.0, "w_type": "MISSILE", "shield_pierce": 1, "damage": 40, "ammo_cost": 1, "price": 40}
+        self.shop_manager.buy_weapon_to_slot(missile_item, 0)
+        self.assertEqual(self.data.player.weapons[0].w_type, "LASER")
+
+
 if __name__ == "__main__":
     unittest.main()
+
