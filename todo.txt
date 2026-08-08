@@ -25,7 +25,7 @@ x 2026-08-05 (A) 2026-08-05 Crew Management und Rollen. Crew System so erweitern
 x 2026-08-05 (A) 2026-08-05 Crew System so erweitern dass es generell unterschiedliche Lebewesen gibt, die man als Crew haben kann und die ihre eigenen Perks und Debuffs haben.  +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Die Scraps des Spielers können durch events ins negative wechseln. Das darf nicht passieren. Events sollten Optionen sperren, wenn nicht genug Ressourcen da sind. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Der Sektor typ wird im moment zusammen mit der sektor nummer in einem eigenen label ausserhalb der top bar in der map ansicht angezeigt. obwohl in der top bar bereits die sektor nummer steht. Das sollte richtig integriert werden. +Refactoring @code
-(A) 2026-08-08 Es soll eine Vorschau geben, wie weit die Rebellenflotte beim nächsten Sprung fliegen wird. So kann man gerade nicht planen wie viel zeit man noch hat bevor ein kampf entsteht. +Refactoring @code
+x 2026-08-08 (A) 2026-08-08 Es soll eine Vorschau geben, wie weit die Rebellenflotte beim nächsten Sprung fliegen wird. So kann man gerade nicht planen wie viel zeit man noch hat bevor ein kampf entsteht. +Refactoring @code
 (A) 2026-08-08 Beim fliehen aus events scheint es eine 100% erfolgschance zu geben. Hier sollte aber auch manchmal etwas schiefgehen. +Refactoring @code
 (A) 2026-08-08 Die anzeigen der sauerstofflevels in den räumen ist immernoch zu groß und überlappt manchmal die wand oder andere labels. +Refactoring @code
 (A) 2026-08-08 Räume haben jetzt zwar einen Crewbonus wenn sie besetzt sind, aber es scheint oft egal zu sein, wie viel strom sie noch haben. Ich möchte, dass beide Faktoren mit einberechnet werden. +Refactoring @code

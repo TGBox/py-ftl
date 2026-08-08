@@ -103,9 +103,18 @@ class StarMap:
     # Rebellenflotte Linie zeichnen
     fleet_x = int(self.rebel_fleet_x)
     if fleet_x > 0:
+      # Aktuelle Flottenlinie
       pygame.draw.line(surface, (220, 50, 50), (fleet_x, 60), (fleet_x, 520), 3)
       lbl = get_font(18).render("REBELLENFLOTTE", True, (255, 80, 80))
       surface.blit(lbl, (fleet_x + 5, 70))
+
+      # Vorschau-Linie für nächsten Sprung
+      next_fleet_x = int(self.rebel_fleet_x + REBEL_FLEET_SPEED)
+      if next_fleet_x < 900:
+        for y_dash in range(60, 520, 15):
+          pygame.draw.line(surface, (255, 140, 40), (next_fleet_x, y_dash), (next_fleet_x, min(520, y_dash + 8)), 2)
+        next_lbl = get_font(14).render("FLOTTE (NÄCHSTER SPRUNG)", True, (255, 160, 60))
+        surface.blit(next_lbl, (next_fleet_x + 5, 90))
 
     # Knoten zeichnen
     for node in self.nodes:
