@@ -80,11 +80,16 @@ class StarMap:
     self.current_node = start_node
     self.current_node.visited = True
 
-    # Umweltgefahren auf 30% der Knoten verteilen
+    # Umweltgefahren auf 30% der Knoten verteilen (mindestens 2 Knoten garantiert)
     hazard_types = ["SOLAR_FLARE", "ASTEROID_FIELD", "NEBULA_ION_STORM", "PULSAR"]
-    for node in self.nodes:
-      if node.event_type in ("COMBAT", "EMPTY", "RESOURCE", "NEBULA") and random.random() < 0.30:
-        node.hazard_type = random.choice(hazard_types)
+    eligible = [n for n in self.nodes if n.event_type in ("COMBAT", "EMPTY", "RESOURCE", "NEBULA")]
+    if eligible:
+        guaranteed = random.sample(eligible, k=min(2, len(eligible)))
+        for n in guaranteed:
+            n.hazard_type = random.choice(hazard_types)
+        for node in eligible:
+            if node not in guaranteed and random.random() < 0.30:
+                node.hazard_type = random.choice(hazard_types)
 
 
   def draw(self, surface: pygame.Surface) -> None:

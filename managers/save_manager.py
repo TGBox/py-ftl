@@ -324,7 +324,12 @@ class SaveManager:
             data.player.fuel = schema.player_fuel
             data.player.missiles = schema.player_missiles
             data.player.drone_parts = getattr(schema, "player_drone_parts", 5)
-            data.player.unlocked_ships = schema.unlocked_ships
+
+            persistent_unlocks = cls.load_unlocks()
+            saved_unlocks = getattr(schema, "unlocked_ships", ["Kestrel"])
+            combined_unlocks = list(dict.fromkeys(persistent_unlocks + saved_unlocks))
+            data.player.unlocked_ships = combined_unlocks
+            cls.save_unlocks(combined_unlocks)
 
             # 3. Raumschiff & Räume wiederherstellen
             import copy
