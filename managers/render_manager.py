@@ -1452,7 +1452,7 @@ class RenderManager:
 
         # 3. Kategorie-Filter Tabs
         categories = ["ALLE", "KAMPF", "CREW", "SCHIFF", "ERKUNDUNG"]
-        cur_cat = getattr(self, "achievement_category_filter", "ALLE")
+        cur_cat = getattr(self.data, "achievement_category_filter", "ALLE")
         mx, my = self._logical_mouse_pos()
 
         for idx, cat in enumerate(categories):
@@ -1477,8 +1477,8 @@ class RenderManager:
 
         cards_per_page = 6
         total_pages = max(1, (len(filtered) + cards_per_page - 1) // cards_per_page)
-        cur_page = min(getattr(self, "achievement_page", 0), total_pages - 1)
-        self.achievement_page = cur_page
+        cur_page = min(getattr(self.data, "achievement_page", 0), total_pages - 1)
+        self.data.achievement_page = cur_page
 
         start_idx = cur_page * cards_per_page
         page_items = filtered[start_idx : start_idx + cards_per_page]
@@ -1492,7 +1492,9 @@ class RenderManager:
             card_rect = pygame.Rect(card_x, card_y, 386, 114)
 
             unlocked = a_data.get("unlocked", False)
-            u_time = a_data.get("unlock_time", "")
+            raw_time = a_data.get("unlock_time", "")
+            from managers.achievement_manager import format_german_datetime
+            u_time = format_german_datetime(raw_time)
 
             if unlocked:
                 bg_col = (20, 45, 68)

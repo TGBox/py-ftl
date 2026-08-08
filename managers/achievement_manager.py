@@ -148,6 +148,32 @@ ACHIEVEMENTS_MASTER = [
 ]
 
 
+def format_german_datetime(ts_str: str | None) -> str:
+    """Wandelt ein Datum/Zeit-String in das deutsche Format 'DD.MM.YYYY, HH:MM Uhr' um."""
+    if not ts_str:
+        return ""
+    if "Uhr" in ts_str:
+        return ts_str
+    try:
+        # ISO-Format YYYY-MM-DD HH:MM
+        if "-" in ts_str and len(ts_str.split("-")[0]) == 4:
+            clean = ts_str.replace("T", " ").strip()
+            parts = clean.split(" ")
+            ymd = parts[0].split("-")
+            time_part = parts[1] if len(parts) > 1 else "00:00"
+            return f"{ymd[2]}.{ymd[1]}.{ymd[0]}, {time_part[:5]} Uhr"
+        # Punkt-Format DD.MM.YYYY HH:MM
+        if "." in ts_str:
+            clean = ts_str.strip()
+            parts = clean.split(" ")
+            dmy = parts[0]
+            time_part = parts[1] if len(parts) > 1 else "00:00"
+            return f"{dmy}, {time_part[:5]} Uhr"
+    except Exception:
+        pass
+    return f"{ts_str} Uhr"
+
+
 class AchievementManager:
 
     def __init__(self, filepath: str = ACHIEVEMENT_FILE):
@@ -172,7 +198,7 @@ class AchievementManager:
     def unlock(self, a_id: str) -> bool:
         if a_id in self.achievements and not self.achievements[a_id]["unlocked"]:
             self.achievements[a_id]["unlocked"] = True
-            self.achievements[a_id]["unlock_time"] = time.strftime("%Y-%m-%d %H:%M")
+            self.achievements[a_id]["unlock_time"] = time.strftime("%d.%m.%Y, %H:%M Uhr")
             self.save_achievements()
 
             # Push toast notification
