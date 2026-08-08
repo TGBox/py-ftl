@@ -129,12 +129,29 @@ class TestShopAndTraining(unittest.TestCase):
         w_laser = Weapon("Laser I", charge_time=3.0, w_type="LASER")
         self.data.player.weapons = [w_laser]
 
-        # Trying to buy a Missile into slot 0 occupied by a Laser without explicit sale must be blocked
         missile_item = {"name": "Artemis Rakete", "charge_time": 4.0, "w_type": "MISSILE", "shield_pierce": 1, "damage": 40, "ammo_cost": 1, "price": 40}
         self.shop_manager.buy_weapon_to_slot(missile_item, 0)
         self.assertEqual(self.data.player.weapons[0].w_type, "LASER")
 
+    def test_empty_weapon_slot_rendering_and_save_handling(self):
+        from managers.save_manager import SaveManager
+        from managers.render_manager import RenderManager
+        import pygame
+
+        self.data.player.weapons = [None, None]
+        self.shop_manager.selecting_slot_item = {"name": "Laser I", "w_type": "LASER"}
+
+        screen = pygame.Surface((960, 540))
+        render_mgr = RenderManager(screen, self.data)
+
+        # Must render slot selection without throwing AttributeError on NoneType
+        render_mgr.draw_shop()
+
+        # Must save game without throwing AttributeError on NoneType
+        SaveManager.save_game(self.data, slot=1)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

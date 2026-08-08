@@ -12,8 +12,8 @@
     "title": "Rebellen-Schreck",
     "desc": "Besiege einen Sektor Mini-Boss.",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "08.08.2026, 16:36 Uhr"
   },
   "flagship_down": {
     "id": "flagship_down",

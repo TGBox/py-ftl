@@ -186,6 +186,7 @@ class SaveManager:
                     max_range=getattr(w, "max_range", None),
                 )
                 for w in data.player.weapons
+                if w is not None
             ]
 
             # Crew serialisieren

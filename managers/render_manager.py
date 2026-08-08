@@ -10,6 +10,7 @@ class RenderManager:
     def __init__(self, screen: pygame.Surface, data: GameData):
         self.screen = screen
         self.data = data
+        self.game = None
         self.load_assets()
         self.small_font = pygame.font.SysFont(None, 18)
         self.font = pygame.font.SysFont(None, 24)
@@ -153,7 +154,7 @@ class RenderManager:
             badge_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 165, 34, 330, 24)
             pygame.draw.rect(self.screen, (10, 45, 30), badge_rect)
             pygame.draw.rect(self.screen, (0, 255, 180), badge_rect, 2)
-            save_lbl = pygame.font.SysFont(None, 16, bold=True).render(f"💾  {msg}", True, (150, 255, 200))
+            save_lbl = pygame.font.SysFont(None, 16, bold=True).render(f"[SAVE]  {msg}", True, (150, 255, 200))
             self.screen.blit(save_lbl, (badge_rect.x + (badge_rect.width - save_lbl.get_width()) // 2, badge_rect.y + 4))
 
         # Taktische Pause Banner (SPACE)
@@ -437,30 +438,30 @@ class RenderManager:
         pygame.draw.rect(self.screen, (16, 24, 38), (60, 45, 780, 510))
         pygame.draw.rect(self.screen, COLOR_SHOP_NODE, (60, 45, 780, 510), 2)
 
-        # 1. Titel & Statusleiste oben
+        # 1. Titel & Statusleiste oben (sauber getrennt ohne Überlappungen)
         title_font = pygame.font.SysFont(None, 24, bold=True)
         sub_font = pygame.font.SysFont(None, 16)
         tiny_font = pygame.font.SysFont(None, 14)
 
         t_lbl = title_font.render("--- HÄNDLER-STATION ---", True, COLOR_SHOP_NODE)
-        self.screen.blit(t_lbl, (LOGICAL_WIDTH // 2 - t_lbl.get_width() // 2, 52))
+        self.screen.blit(t_lbl, (LOGICAL_WIDTH // 2 - t_lbl.get_width() // 2, 50))
 
         p_hp = self.data.player.ship.hp
         p_max_hp = self.data.player.ship.max_hp
         p_drones = getattr(self.data.player, "drone_parts", 5)
         status_txt = f"Dein Scrap: {self.data.player.scrap} Scrap  |  Hülle: {p_hp}/{p_max_hp} HP  |  Fuel: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  Drohnen: {p_drones}"
         st_lbl = sub_font.render(status_txt, True, (255, 220, 100))
-        self.screen.blit(st_lbl, (LOGICAL_WIDTH // 2 - st_lbl.get_width() // 2, 75))
+        self.screen.blit(st_lbl, (LOGICAL_WIDTH // 2 - st_lbl.get_width() // 2, 72))
 
         mx, my = self._logical_mouse_pos()
         active_tab = getattr(shop_mgr, "active_tab", "RESOURCES") if shop_mgr else "RESOURCES"
 
-        # 2. Tab-Leiste (4 Kategoriereiter)
+        # 2. Tab-Leiste (4 Kategoriereiter bei y=96)
         tabs = [
-            ("RESOURCES", getattr(shop_mgr, "tab_resources", pygame.Rect(75, 95, 170, 28)), "1. RESSOURCEN"),
-            ("WEAPONS", getattr(shop_mgr, "tab_weapons", pygame.Rect(255, 95, 170, 28)), "2. WAFFEN"),
-            ("CREW", getattr(shop_mgr, "tab_crew", pygame.Rect(435, 95, 170, 28)), "3. CREW & ANHEUERN"),
-            ("ROOMS", getattr(shop_mgr, "tab_rooms", pygame.Rect(615, 95, 170, 28)), "4. RAUM-HANDEL"),
+            ("RESOURCES", getattr(shop_mgr, "tab_resources", pygame.Rect(75, 96, 170, 28)), "1. RESSOURCEN"),
+            ("WEAPONS", getattr(shop_mgr, "tab_weapons", pygame.Rect(255, 96, 170, 28)), "2. WAFFEN"),
+            ("CREW", getattr(shop_mgr, "tab_crew", pygame.Rect(435, 96, 170, 28)), "3. CREW & ANHEUERN"),
+            ("ROOMS", getattr(shop_mgr, "tab_rooms", pygame.Rect(615, 96, 170, 28)), "4. RAUM-HANDEL"),
         ]
 
         for tab_key, tab_rect, tab_label in tabs:
@@ -884,6 +885,8 @@ class RenderManager:
         self.screen.blit(l_lbl, (btn_leave.x + (btn_leave.width - l_lbl.get_width()) // 2, btn_leave.y + 10))
 
     def draw_rooms(self):
+        is_enemy_destroyed = (self.data.enemy.ship.hp <= 0) or getattr(self.data.combat, "combat_won", False)
+
         # 0. Schiffshüllen (Player & Enemy Hull Sprites)
         if "kestrel_hull" in self.assets and self.data.player.ship.rooms:
             p_rooms = self.data.player.ship.rooms
@@ -891,7 +894,7 @@ class RenderManager:
             min_y = min(r.rect.top for r in p_rooms) - 25
             self.screen.blit(self.assets["kestrel_hull"], (min_x, min_y))
 
-        if "enemy_scout" in self.assets and self.data.enemy.ship.rooms:
+        if not is_enemy_destroyed and "enemy_scout" in self.assets and self.data.enemy.ship.rooms:
             e_rooms = self.data.enemy.ship.rooms
             min_x = min(r.rect.left for r in e_rooms) - 25
             min_y = min(r.rect.top for r in e_rooms) - 25
@@ -900,7 +903,7 @@ class RenderManager:
         # 1. Reaktor zeichnen (links am Rand)
         self.data.player.reactor.draw(self.screen, 15, 45)
 
-        # Kompakte Infoboxen OBERHALB der Schiffe (Absolut KEINE Überlappungen!)
+        # Kompakte Infoboxen OBERHALB der Schiffe
         small_font = pygame.font.SysFont(None, 17, bold=True)
 
         p_box = pygame.Rect(10, 34, 225, 22)
@@ -916,16 +919,17 @@ class RenderManager:
         p_lbl = small_font.render(f"Spieler Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp} HP  |  Ausw: {evade_val}%", True, (130, 240, 170))
         self.screen.blit(p_lbl, (p_box.x + 8, p_box.y + 4))
 
-        e_box = pygame.Rect(520, 34, 225, 22)
-        e_surf = pygame.Surface((e_box.width, e_box.height), pygame.SRCALPHA)
-        e_surf.fill((35, 18, 25, 210))
-        self.screen.blit(e_surf, (e_box.x, e_box.y))
-        pygame.draw.rect(self.screen, (255, 90, 90), e_box, 1)
+        if not is_enemy_destroyed:
+            e_box = pygame.Rect(520, 34, 225, 22)
+            e_surf = pygame.Surface((e_box.width, e_box.height), pygame.SRCALPHA)
+            e_surf.fill((35, 18, 25, 210))
+            self.screen.blit(e_surf, (e_box.x, e_box.y))
+            pygame.draw.rect(self.screen, (255, 90, 90), e_box, 1)
 
-        e_name = getattr(self.data.enemy.ship, "name", "Gegner")
-        e_disp = e_name if len(e_name) <= 12 else e_name[:11] + "."
-        e_lbl = small_font.render(f"{e_disp}: {self.data.enemy.ship.hp}/{self.data.enemy.ship.max_hp} HP", True, (255, 140, 140))
-        self.screen.blit(e_lbl, (e_box.x + 8, e_box.y + 4))
+            e_name = getattr(self.data.enemy.ship, "name", "Gegner")
+            e_disp = e_name if len(e_name) <= 12 else e_name[:11] + "."
+            e_lbl = small_font.render(f"{e_disp}: {self.data.enemy.ship.hp}/{self.data.enemy.ship.max_hp} HP", True, (255, 140, 140))
+            self.screen.blit(e_lbl, (e_box.x + 8, e_box.y + 4))
 
         # Tarnungs-Effekt (Stealth Shimmer) auf eigenem Schiff
         cloak_active = getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0
@@ -940,7 +944,7 @@ class RenderManager:
             r.draw(self.screen)
             m_count = len([c for c in self.data.player.crew if c.current_room == r])
             if m_count > 0 and r.name in ("Waffen", "Schild", "Brücke", "Maschinen", "Medbay", "Drohnen-Kontrolle"):
-                badge_str = "⭐" if m_count == 1 else "⭐⭐"
+                badge_str = "[M]" if m_count == 1 else "[MM]"
                 lbl_m = manned_font.render(badge_str, True, (255, 220, 100))
                 self.screen.blit(lbl_m, (r.rect.left + 3, r.rect.top + 3))
 
@@ -948,20 +952,22 @@ class RenderManager:
         sens_room = next((r for r in self.data.player.ship.rooms if r.name == "Sensoren"), None)
         sensor_power = sens_room.current_power if sens_room else 1
 
-        for r in self.data.enemy.ship.rooms:
-            r.draw(self.screen)
-            if sensor_power == 0:
-                # Fog of War Overlay über dem Gegnerschiff
-                pygame.draw.rect(self.screen, (20, 25, 35), r.rect)
-                pygame.draw.rect(self.screen, (40, 50, 70), r.rect, 2)
-                f_font = pygame.font.SysFont(None, 13)
-                lbl = f_font.render("NEBEL", True, (100, 120, 150))
-                self.screen.blit(lbl, (r.rect.centerx - lbl.get_width() // 2, r.rect.centery - lbl.get_height() // 2))
+        if not is_enemy_destroyed:
+            for r in self.data.enemy.ship.rooms:
+                r.draw(self.screen)
+                if sensor_power == 0:
+                    # Fog of War Overlay über dem Gegnerschiff
+                    pygame.draw.rect(self.screen, (20, 25, 35), r.rect)
+                    pygame.draw.rect(self.screen, (40, 50, 70), r.rect, 2)
+                    f_font = pygame.font.SysFont(None, 13)
+                    lbl = f_font.render("NEBEL", True, (100, 120, 150))
+                    self.screen.blit(lbl, (r.rect.centerx - lbl.get_width() // 2, r.rect.centery - lbl.get_height() // 2))
 
         door_room = next((r for r in self.data.player.ship.rooms if r.name == "Türen"), None)
         door_level = door_room.current_power if door_room else 1
         self.data.player.ship.draw_doors(self.screen, door_level=door_level)
-        self.data.enemy.ship.draw_doors(self.screen)
+        if not is_enemy_destroyed:
+            self.data.enemy.ship.draw_doors(self.screen)
 
         # Hardpoint Waffenslots auf den Schiffen zeichnen
         small_font = pygame.font.SysFont(None, 14)
@@ -973,11 +979,12 @@ class RenderManager:
             lbl = small_font.render(f"H{s_idx+1}", True, (180, 230, 255))
             self.screen.blit(lbl, (hx - 6, hy - 16))
 
-        for s_idx, slot in enumerate(getattr(self.data.enemy.ship, "weapon_slots", [])):
-            hx, hy = slot["pos"]
-            pygame.draw.circle(self.screen, (45, 20, 20), (hx, hy), 7)
-            pygame.draw.circle(self.screen, (255, 100, 100), (hx, hy), 7, 2)
-            pygame.draw.circle(self.screen, (255, 200, 100), (hx, hy), 2)
+        if not is_enemy_destroyed:
+            for s_idx, slot in enumerate(getattr(self.data.enemy.ship, "weapon_slots", [])):
+                hx, hy = slot["pos"]
+                pygame.draw.circle(self.screen, (45, 20, 20), (hx, hy), 7)
+                pygame.draw.circle(self.screen, (255, 100, 100), (hx, hy), 7, 2)
+                pygame.draw.circle(self.screen, (255, 200, 100), (hx, hy), 2)
 
         # 3. Crew zeichnen (wenn Sensor-Stufe >= 1 für Gegnerschiff)
         for c in self.data.player.crew:

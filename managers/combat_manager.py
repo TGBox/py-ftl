@@ -74,7 +74,8 @@ class CombatManager:
             center_crew_in_rooms(self.enemy_crew, self.data.enemy.ship.rooms)
             if "Waffen-Vorheizer" in getattr(self.data.player, "augments", []):
                 for w in self.data.player.weapons:
-                    w.current_charge = w.charge_time
+                    if w is not None:
+                        w.current_charge = w.charge_time
                 self.show_message("WAFFEN-VORHEIZER AKTIV! Waffen voll geladen!")
 
         self.data.combat.msg_timer = max(

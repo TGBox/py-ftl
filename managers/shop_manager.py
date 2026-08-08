@@ -60,11 +60,11 @@ class ShopManager:
         self.active_tab: str = "RESOURCES"  # "RESOURCES", "WEAPONS", "CREW", "ROOMS"
         self.next_crew_candidate: dict | None = None
 
-        # Tab-Buttons oben
-        self.tab_resources = pygame.Rect(75, 70, 170, 30)
-        self.tab_weapons = pygame.Rect(255, 70, 170, 30)
-        self.tab_crew = pygame.Rect(435, 70, 170, 30)
-        self.tab_rooms = pygame.Rect(615, 70, 170, 30)
+        # Tab-Buttons oben (überlappungsfrei unter dem Ressourcen-Header)
+        self.tab_resources = pygame.Rect(75, 96, 170, 28)
+        self.tab_weapons = pygame.Rect(255, 96, 170, 28)
+        self.tab_crew = pygame.Rect(435, 96, 170, 28)
+        self.tab_rooms = pygame.Rect(615, 96, 170, 28)
 
         # Tab 1: Ressourcen-Buttons
         self.btn_repair = pygame.Rect(100, 130, 340, 36)
