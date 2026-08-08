@@ -137,6 +137,18 @@ class StateManager:
         """
         pass
 
+    def reset_combat_systems(self):
+        """Reset active drones, cloaking timers, and cooldowns between battles (TODO 41)."""
+        self.data.combat.combat_drone_active = False
+        self.data.combat.repair_drone_active = False
+        self.data.combat.defense_drone_active = False
+        self.data.combat.shield_charger_active = False
+        self.data.combat.anti_personnel_active = False
+        self.data.combat.cloak_active_timer = 0.0
+        self.data.combat.cloak_cooldown = 0.0
+        self.data.combat.teleport_cooldown = 0.0
+        self.data.combat.is_teleport_targeting = False
+
     def enter_combat_state(self):
         """
         Initialisierung eines Kampfes.
@@ -147,6 +159,7 @@ class StateManager:
         self.data.combat.ftl_charge_timer = 0.0
         self.data.combat.ftl_ready = False
         self.data.paused = False
+        self.reset_combat_systems()
 
     def enter_game_over_state(self):
         """
@@ -154,6 +167,7 @@ class StateManager:
         """
         self.data.player.projectiles.clear()
         self.data.combat.weapon_targets.clear()
+        self.reset_combat_systems()
 
     def enter_victory_state(self):
         """
@@ -161,13 +175,14 @@ class StateManager:
         """
         self.data.player.projectiles.clear()
         self.data.combat.weapon_targets.clear()
+        self.reset_combat_systems()
 
     # --------------------------------------------------
     # Leave-Methoden
     # --------------------------------------------------
 
     def leave_combat(self):
-        pass
+        self.reset_combat_systems()
 
     def leave_event(self):
         pass

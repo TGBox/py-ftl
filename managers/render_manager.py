@@ -179,6 +179,11 @@ class RenderManager:
         if getattr(self.data, "show_slot_modal", False):
             self.draw_save_load_slot_modal()
 
+        # Ingame Developer Console Overlay (TODO 43)
+        console_mgr = getattr(self, "console_manager", None) or getattr(self.data, "console_manager", None)
+        if console_mgr:
+            console_mgr.render(self.screen)
+
     def draw_save_load_slot_modal(self):
         overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
         overlay.fill((10, 15, 25, 230))

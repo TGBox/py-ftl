@@ -169,7 +169,21 @@ class TestCombatManager(unittest.TestCase):
         self.assertEqual(self.data.player.scrap, scrap_after_win, "Scrap must not increase continuously during post-combat loop!")
         self.assertEqual(self.data.world.star_map.sector, initial_sector, "Sector must not increment repeatedly on every frame!")
 
+    def test_combat_system_reset_between_battles(self):
+        # Set active drones and cloaking
+        self.data.combat.combat_drone_active = True
+        self.data.combat.repair_drone_active = True
+        self.data.combat.cloak_active_timer = 5.0
+
+        # Reset combat systems via state manager
+        self.state_manager.reset_combat_systems()
+
+        self.assertFalse(self.data.combat.combat_drone_active)
+        self.assertFalse(self.data.combat.repair_drone_active)
+        self.assertEqual(self.data.combat.cloak_active_timer, 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

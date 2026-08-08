@@ -3,6 +3,7 @@ import pygame
 
 from classes.GameData import GameData
 from managers.combat_manager import CombatManager
+from managers.console_manager import ConsoleManager
 from managers.input_manager import InputManager
 from managers.map_manager import MapManager
 from managers.render_manager import RenderManager
@@ -53,12 +54,16 @@ class Game:
         self.map_manager = MapManager(self.data)
         self.state_manager = StateManager(self.data)
         self.weapon_manager = WeaponManager(self.data)
+        self.console_manager = ConsoleManager(self.data)
+        self.data.console_manager = self.console_manager
         self.input_manager = InputManager(
             self.data, self.shop_manager, self.map_manager, self.weapon_manager
         )
+        self.input_manager.console_manager = self.console_manager
         self.combat_manager = CombatManager(self.data, self.state_manager)
         self.data.combat_manager = self.combat_manager
         self.render_manager = RenderManager(self.logical_surface, self.data)
+        self.render_manager.console_manager = self.console_manager
 
         # Give managers access to sound
         self.input_manager.sound = self.sound
@@ -174,6 +179,8 @@ class Game:
                 or self.data.current_state in (STATE_OPTIONS, STATE_ACHIEVEMENTS)
             )
             effective_dt = 0.0 if (self.data.paused or is_menu_open) else dt
+            if getattr(self.data, "turbo_mode", False):
+                effective_dt *= 2.5
 
             try:
                 self.update_audio_state()

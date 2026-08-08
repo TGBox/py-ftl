@@ -55,6 +55,10 @@ class InputManager:
                     self.handle_right_click(event)
 
     def handle_keydown(self, event: pygame.event.Event):
+        console_mgr = getattr(self, "console_manager", None) or getattr(self.data, "console_manager", None)
+        if console_mgr and console_mgr.handle_keydown(event):
+            return
+
         if self.data.player.active_rename_idx is not None:
             if event.key == pygame.K_RETURN:
                 idx = self.data.player.active_rename_idx

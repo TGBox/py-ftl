@@ -108,16 +108,16 @@
     "title": "Schiffs-Sammler",
     "desc": "Schalte mindestens 4 verschiedene Raumschiffe frei.",
     "category": "SCHIFF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "08.08.2026, 16:23 Uhr"
   },
   "armada": {
     "id": "armada",
     "title": "Sternen-Armada",
     "desc": "Schalte alle 8 Raumschiffe im Spiel frei!",
     "category": "SCHIFF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "08.08.2026, 16:23 Uhr"
   },
   "max_power": {
     "id": "max_power",
