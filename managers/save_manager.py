@@ -58,11 +58,79 @@ class SaveManager:
             return False
 
     @classmethod
-    def has_savegame(cls, filepath: str = "data/savegame.dat") -> bool:
-        return os.path.exists(filepath) and os.path.getsize(filepath) > 0
+    def get_slot_filepath(cls, slot: int | str = 1) -> str:
+        if isinstance(slot, str) and ("/" in slot or "\\" in slot or slot.endswith(".dat")):
+            return slot
+        os.makedirs("data", exist_ok=True)
+        # Migrate legacy save file to slot 1 if needed
+        legacy_path = "data/savegame.dat"
+        target_path = f"data/savegame_slot_{slot}.dat"
+        if slot == 1 and not os.path.exists(target_path) and os.path.exists(legacy_path):
+            try:
+                os.replace(legacy_path, target_path)
+            except Exception:
+                pass
+        return target_path
 
     @classmethod
-    def save_game(cls, data: GameData, filepath: str = "data/savegame.dat") -> bool:
+    def has_savegame(cls, slot: int | str = 1, filepath: str | None = None) -> bool:
+        if isinstance(slot, str) and ("/" in slot or "\\" in slot or slot.endswith(".dat")):
+            path = slot
+        else:
+            path = filepath or cls.get_slot_filepath(slot)
+        return os.path.exists(path) and os.path.getsize(path) > 0
+
+    @classmethod
+    def has_any_savegame(cls) -> bool:
+        return any(cls.has_savegame(s) for s in (1, 2, 3))
+
+    @classmethod
+    def get_slot_info(cls, slot: int = 1) -> dict | None:
+        path = cls.get_slot_filepath(slot)
+        if not cls.has_savegame(slot, path):
+            return None
+        try:
+            with open(path, "rb") as f:
+                file_bytes = f.read()
+
+            iv = file_bytes[:16]
+            ciphertext = file_bytes[16:]
+            key = cls.get_key()
+            cipher = AES.new(key, AES.MODE_CFB, iv=iv)
+            decrypted_text = cipher.decrypt(ciphertext).decode("utf-8")
+
+            payload = json.loads(decrypted_text)
+            json_str = payload["data"]
+            schema = SavegameSchema.model_validate_json(json_str)
+
+            import datetime
+            mtime_sec = os.path.getmtime(path)
+            time_str = datetime.datetime.fromtimestamp(mtime_sec).strftime("%d.%m.%Y %H:%M")
+
+            return {
+                "slot": slot,
+                "ship_name": schema.ship_name,
+                "sector": schema.current_sector,
+                "sector_type": schema.sector_type,
+                "scrap": schema.player_scrap,
+                "hp": f"{schema.ship_hp}/{schema.max_hp}",
+                "time_str": time_str,
+            }
+        except Exception:
+            return None
+
+    @classmethod
+    def save_game(cls, data: GameData, slot: int | str = 1, filepath: str | None = None) -> bool:
+        if isinstance(slot, str) and ("/" in slot or "\\" in slot or slot.endswith(".dat")):
+            path = slot
+            slot_num = 1
+        elif filepath is not None:
+            path = filepath
+            slot_num = slot if isinstance(slot, int) else 1
+        else:
+            path = cls.get_slot_filepath(slot)
+            slot_num = slot if isinstance(slot, int) else 1
+
         try:
             # Map-Knoten serialisieren
             node_schemas = []
@@ -173,23 +241,39 @@ class SaveManager:
             iv = cipher.iv
             ciphertext = cipher.encrypt(payload.encode("utf-8"))
 
-            with open(filepath, "wb") as f:
+            with open(path, "wb") as f:
                 f.write(iv + ciphertext)
 
-            print(f"Spielstand erfolgreich gespeichert in {filepath}!")
+            data.save_notification_msg = f"SPIELSTAND GESPEICHERT (SLOT {slot})"
+            data.save_notification_timer = 3.0
+            data.combat.msg = f"💾 SPIELSTAND ERFOLGREICH GESPEICHERT (SLOT {slot})!"
+            data.combat.msg_timer = 3.0
+            data.active_save_slot = slot
+
+            print(f"Spielstand erfolgreich gespeichert in {path} (Slot {slot})!")
             return True
         except Exception as e:
             print(f"Fehler beim Speichern des Spielstands: {e}")
             return False
 
     @classmethod
-    def load_game(cls, data: GameData, filepath: str = "data/savegame.dat") -> bool:
-        if not os.path.exists(filepath):
-            print(f"Kein Speicherstand unter {filepath} gefunden!")
+    def load_game(cls, data: GameData, slot: int | str = 1, filepath: str | None = None) -> bool:
+        if isinstance(slot, str) and ("/" in slot or "\\" in slot or slot.endswith(".dat")):
+            path = slot
+            slot_num = 1
+        elif filepath is not None:
+            path = filepath
+            slot_num = slot if isinstance(slot, int) else 1
+        else:
+            path = cls.get_slot_filepath(slot)
+            slot_num = slot if isinstance(slot, int) else 1
+
+        if not os.path.exists(path):
+            print(f"Kein Speicherstand unter {path} gefunden!")
             return False
 
         try:
-            with open(filepath, "rb") as f:
+            with open(path, "rb") as f:
                 file_bytes = f.read()
 
             iv = file_bytes[:16]
@@ -311,10 +395,11 @@ class SaveManager:
             data.combat.target_weapon_idx = None
             data.paused = False
 
+            data.active_save_slot = slot
             target_state = schema.current_state if schema.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY) else STATE_MAP
             data.current_state = target_state
 
-            print(f"Spielstand erfolgreich geladen aus {filepath}!")
+            print(f"Spielstand erfolgreich geladen aus {path} (Slot {slot})!")
             return True
 
         except Exception as e:

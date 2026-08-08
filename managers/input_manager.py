@@ -138,13 +138,50 @@ class InputManager:
                 self.sound.toggle_music()
                 self.show_message("MUSIK STUMM" if not muted else "MUSIK AN")
         elif event.key == pygame.K_s and (self.data.paused or getattr(self.data, "show_pause_menu", False) or self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY)):
+            self.data.show_slot_modal = True
+            self.data.slot_modal_mode = "SAVE"
+            if self.sound: self.sound.play("click")
+        elif event.key == pygame.K_l:
             from managers.save_manager import SaveManager
-            if SaveManager.save_game(self.data):
-                self.show_message("SPIELSTAND ERFOLGREICH GESPEICHERT!")
+            if SaveManager.has_any_savegame():
+                self.data.show_slot_modal = True
+                self.data.slot_modal_mode = "LOAD"
+                if self.sound: self.sound.play("click")
 
     def handle_left_click(self, event: pygame.event.Event):
 
         mx, my = self._logical_mouse_pos(getattr(event, "pos", None))
+
+        # 3 Save Slots Modal Interaction
+        if getattr(self.data, "show_slot_modal", False):
+            from managers.save_manager import SaveManager
+            mode = getattr(self.data, "slot_modal_mode", "SAVE")
+
+            btn_slot_1 = pygame.Rect(505, 150, 180, 42)
+            btn_slot_2 = pygame.Rect(505, 268, 180, 42)
+            btn_slot_3 = pygame.Rect(505, 386, 180, 42)
+            btn_close = pygame.Rect(350, 475, 200, 42)
+
+            if btn_close.collidepoint(mx, my):
+                self.data.show_slot_modal = False
+                if self.sound: self.sound.play("click")
+                return
+
+            slots = [(1, btn_slot_1), (2, btn_slot_2), (3, btn_slot_3)]
+            for slot_num, btn in slots:
+                if btn.collidepoint(mx, my):
+                    if mode == "SAVE":
+                        if SaveManager.save_game(self.data, slot=slot_num):
+                            self.sound.play("click") if self.sound else None
+                        self.data.show_slot_modal = False
+                    elif mode == "LOAD":
+                        if SaveManager.has_savegame(slot_num):
+                            if SaveManager.load_game(self.data, slot=slot_num):
+                                self.sound.play("jump") if self.sound else None
+                                self.data.show_pause_menu = False
+                                self.data.show_slot_modal = False
+                    return
+            return
 
         # [?] HILFE Toggle Button Klick
         btn_help_toggle = pygame.Rect(750, 135, 130, 26)
@@ -161,18 +198,16 @@ class InputManager:
             btn_pause_options = pygame.Rect(300, 325, 300, 42)
             btn_pause_main_menu = pygame.Rect(300, 380, 300, 42)
 
-            from managers.save_manager import SaveManager
-
             if btn_pause_resume.collidepoint(mx, my):
                 self.data.show_pause_menu = False
                 if self.sound: self.sound.play("click")
             elif btn_pause_save.collidepoint(mx, my):
-                if SaveManager.save_game(self.data):
-                    self.show_message("SPIELSTAND ERFOLGREICH GESPEICHERT!")
+                self.data.show_slot_modal = True
+                self.data.slot_modal_mode = "SAVE"
                 if self.sound: self.sound.play("click")
             elif btn_pause_load.collidepoint(mx, my):
-                if SaveManager.load_game(self.data):
-                    self.show_message("SPIELSTAND ERFOLGREICH GELADEN!")
+                self.data.show_slot_modal = True
+                self.data.slot_modal_mode = "LOAD"
                 if self.sound: self.sound.play("click")
             elif btn_pause_options.collidepoint(mx, my):
                 self.data.current_state = STATE_OPTIONS
@@ -348,10 +383,11 @@ class InputManager:
                 self.data.current_state = STATE_MAP
                 if self.sound:
                     self.sound.play("jump")
-            elif SaveManager.has_savegame() and btn_continue_game.collidepoint(mx, my):
-                if SaveManager.load_game(self.data):
-                    if self.sound:
-                        self.sound.play("jump")
+            elif SaveManager.has_any_savegame() and btn_continue_game.collidepoint(mx, my):
+                self.data.show_slot_modal = True
+                self.data.slot_modal_mode = "LOAD"
+                if self.sound:
+                    self.sound.play("click")
             elif btn_quit.collidepoint(mx, my):
                 self.data.running = False
                 if self.sound:

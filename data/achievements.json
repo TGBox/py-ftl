@@ -20,8 +20,8 @@
     "title": "Galaktischer Retter",
     "desc": "Zerstöre das Endboss-Flaggschiff der Rebellen!",
     "icon": "🏆",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "2026-08-08 11:11"
   },
   "master_mechanic": {
     "id": "master_mechanic",
@@ -44,8 +44,8 @@
     "title": "Schiffs-Sammler",
     "desc": "Schalte mindestens 4 verschiedene Raumschiffe frei.",
     "icon": "🚀",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "2026-08-08 11:05"
   },
   "survivor": {
     "id": "survivor",

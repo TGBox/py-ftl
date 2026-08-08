@@ -143,6 +143,17 @@ class RenderManager:
             self.data.achievements.update_toasts(0.016)
             self.data.achievements.draw_toasts(self.screen, self.font)
 
+        # In-Game Speichern-Benachrichtigung (HUD Toast)
+        save_timer = getattr(self.data, "save_notification_timer", 0.0)
+        if save_timer > 0.0:
+            self.data.save_notification_timer = max(0.0, save_timer - 0.016)
+            msg = getattr(self.data, "save_notification_msg", "SPIELSTAND GESPEICHERT")
+            badge_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 165, 34, 330, 24)
+            pygame.draw.rect(self.screen, (10, 45, 30), badge_rect)
+            pygame.draw.rect(self.screen, (0, 255, 180), badge_rect, 2)
+            save_lbl = pygame.font.SysFont(None, 16, bold=True).render(f"💾  {msg}", True, (150, 255, 200))
+            self.screen.blit(save_lbl, (badge_rect.x + (badge_rect.width - save_lbl.get_width()) // 2, badge_rect.y + 4))
+
         # Taktische Pause Banner (SPACE)
         if self.data.paused and not getattr(self.data, "show_pause_menu", False):
             banner_rect = pygame.Rect(245, 34, 265, 22)
@@ -161,6 +172,73 @@ class RenderManager:
         # Hilfe-Overlay Modal (H / F1)
         if getattr(self.data, "show_help_overlay", False):
             self.draw_help_overlay()
+
+        # 3 Save Slots Selector Modal
+        if getattr(self.data, "show_slot_modal", False):
+            self.draw_save_load_slot_modal()
+
+    def draw_save_load_slot_modal(self):
+        overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((10, 15, 25, 230))
+        self.screen.blit(overlay, (0, 0))
+
+        modal_rect = pygame.Rect(160, 50, 580, 490)
+        pygame.draw.rect(self.screen, (20, 30, 45), modal_rect)
+        pygame.draw.rect(self.screen, (0, 200, 255), modal_rect, 3)
+
+        mode = getattr(self.data, "slot_modal_mode", "SAVE")
+        title = "--- SPIELSTAND SPEICHERN (SLOT 1 - 3) ---" if mode == "SAVE" else "--- SPIELSTAND LADEN (SLOT 1 - 3) ---"
+        title_txt = self.font.render(title, True, (100, 220, 255))
+        self.screen.blit(title_txt, (modal_rect.x + (modal_rect.width - title_txt.get_width()) // 2, modal_rect.y + 16))
+
+        from managers.save_manager import SaveManager
+        mx, my = self._logical_mouse_pos()
+
+        for slot in (1, 2, 3):
+            card_y = modal_rect.y + 52 + (slot - 1) * 118
+            card_rect = pygame.Rect(modal_rect.x + 20, card_y, 540, 106)
+            info = SaveManager.get_slot_info(slot)
+            is_active_slot = getattr(self.data, "active_save_slot", 1) == slot
+
+            bg_col = (30, 55, 80) if is_active_slot else (25, 35, 50)
+            border_col = (0, 230, 180) if is_active_slot else (80, 120, 160)
+            pygame.draw.rect(self.screen, bg_col, card_rect)
+            pygame.draw.rect(self.screen, border_col, card_rect, 2)
+
+            slot_head = f"SLOT {slot}" + ("  [AKTIV]" if is_active_slot else "")
+            self.screen.blit(self.font.render(slot_head, True, (255, 220, 100) if is_active_slot else (180, 210, 240)), (card_rect.x + 15, card_rect.y + 10))
+
+            if info:
+                line1 = f"Schiff: {info['ship_name']}  |  Sektor {info['sector']} ({info['sector_type']})"
+                line2 = f"Hülle: {info['hp']}  |  Scrap: {info['scrap']}  |  Zeit: {info['time_str']}"
+                self.screen.blit(self.small_font.render(line1, True, (200, 235, 255)), (card_rect.x + 15, card_rect.y + 38))
+                self.screen.blit(self.small_font.render(line2, True, (160, 200, 230)), (card_rect.x + 15, card_rect.y + 60))
+            else:
+                self.screen.blit(self.small_font.render("[ LEERER SPEICHERSLOT ]", True, (140, 155, 175)), (card_rect.x + 15, card_rect.y + 48))
+
+            # Action Button inside slot card
+            btn_rect = pygame.Rect(card_rect.x + 345, card_rect.y + 48, 180, 42)
+            btn_attr = f"btn_slot_{slot}"
+            setattr(self, btn_attr, btn_rect)
+
+            btn_label = f"In Slot {slot} sichern" if mode == "SAVE" else f"Slot {slot} laden"
+            btn_color = (0, 220, 130) if mode == "SAVE" else (0, 180, 255)
+            self.draw_scifi_button(
+                btn_rect,
+                btn_label,
+                is_hovered=btn_rect.collidepoint(mx, my),
+                primary_color=btn_color,
+                enabled=(mode == "SAVE" or info is not None)
+            )
+
+        # Close Modal Button
+        self.btn_close_slot_modal = pygame.Rect(modal_rect.x + 190, modal_rect.y + 425, 200, 42)
+        self.draw_scifi_button(
+            self.btn_close_slot_modal,
+            "ABBRECHEN",
+            is_hovered=self.btn_close_slot_modal.collidepoint(mx, my),
+            primary_color=(230, 80, 80)
+        )
 
     def draw_help_overlay(self):
         overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
