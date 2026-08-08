@@ -4,8 +4,8 @@
     "title": "Erster Sieg",
     "desc": "Besiege ein feindliches Raumschiff im Gefecht.",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "08.08.2026, 16:16 Uhr"
   },
   "boss_slayer": {
     "id": "boss_slayer",
@@ -44,8 +44,8 @@
     "title": "Bio-Extinktion",
     "desc": "Eliminiere die gesamte gegnerische Crew ohne das Schiff zu zerstören.",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "08.08.2026, 16:16 Uhr"
   },
   "bare_hull": {
     "id": "bare_hull",
@@ -68,8 +68,8 @@
     "title": "Meister-Ingenieur",
     "desc": "Bringe den Reparatur-Skill eines Crew-Mitglieds auf Stufe 3.",
     "category": "CREW",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "08.08.2026, 16:16 Uhr"
   },
   "master_warrior": {
     "id": "master_warrior",
@@ -148,16 +148,16 @@
     "title": "Überlebenskünstler",
     "desc": "Triggere ein Event mit 0 Treibstoff und überlebe.",
     "category": "ERKUNDUNG",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "08.08.2026, 16:16 Uhr"
   },
   "event_explorer": {
     "id": "event_explorer",
     "title": "Weltraum-Erkunder",
     "desc": "Erfülle 10 zufällige Sektor-Events.",
     "category": "ERKUNDUNG",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "08.08.2026, 16:16 Uhr"
   },
   "scrap_hoarder": {
     "id": "scrap_hoarder",

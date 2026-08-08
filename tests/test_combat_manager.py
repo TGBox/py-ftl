@@ -149,6 +149,27 @@ class TestCombatManager(unittest.TestCase):
         self.assertEqual(self.data.current_state, STATE_MAP)
         self.assertFalse(self.data.combat.combat_won)
 
+    def test_post_victory_update_loop_does_not_repeat_rewards(self):
+        from settings import STATE_COMBAT
+        self.data.current_state = STATE_COMBAT
+        self.data.enemy.ship.hp = 0
+        initial_scrap = self.data.player.scrap
+        initial_sector = self.data.world.star_map.sector
+
+        # First update triggers victory and gives rewards once
+        self.combat_manager.update(0.1)
+        scrap_after_win = self.data.player.scrap
+        self.assertTrue(self.data.combat.combat_won)
+        self.assertGreater(scrap_after_win, initial_scrap)
+
+        # Subsequent updates (post-combat loop) must NOT award scrap or increment sector again
+        for _ in range(10):
+            self.combat_manager.update(0.1)
+
+        self.assertEqual(self.data.player.scrap, scrap_after_win, "Scrap must not increase continuously during post-combat loop!")
+        self.assertEqual(self.data.world.star_map.sector, initial_sector, "Sector must not increment repeatedly on every frame!")
+
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -798,6 +798,9 @@ class CombatManager:
 
 
     def check_end_of_battle(self):
+        if getattr(self.data.combat, "combat_won", False):
+            return
+
         if self.data.enemy.ship.hp <= 0:
             if "Flaggschiff" in getattr(self.data.enemy.ship, "name", ""):
                 b_phase = getattr(self.data.combat, "boss_phase", 1)
@@ -871,6 +874,10 @@ class CombatManager:
         return scrap, missiles, drone_parts
 
     def player_won(self):
+        if getattr(self.data.combat, "combat_won", False):
+            return
+        self.data.combat.combat_won = True
+        self.data.combat.ftl_ready = True
 
         is_mini_boss = "Mini-Boss" in self.data.enemy.ship.name
         is_final_boss = "Flaggschiff" in self.data.enemy.ship.name or (self.data.world.star_map.sector >= 5 and not is_mini_boss)
