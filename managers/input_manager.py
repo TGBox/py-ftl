@@ -150,9 +150,7 @@ class InputManager:
 
     def handle_left_click(self, event: pygame.event.Event):
 
-        mx, my = self._logical_mouse_pos(getattr(event, "pos", None))
-
-        # 3 Save Slots Modal Interaction
+        mx, my = self._logical_mouse_pos(getattr(event, "pos", None))        # 1. 3 Save Slots Modal Interaction
         if getattr(self.data, "show_slot_modal", False):
             from managers.save_manager import SaveManager
             mode = getattr(self.data, "slot_modal_mode", "SAVE")
@@ -183,14 +181,15 @@ class InputManager:
                     return
             return
 
-        # [?] HILFE Toggle Button Klick
-        btn_help_toggle = pygame.Rect(750, 135, 130, 26)
-        if btn_help_toggle.collidepoint(mx, my):
-            self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
-            if self.sound: self.sound.play("click")
+        # 2. Hilfe Overlay Modal Interaktion
+        if getattr(self.data, "show_help_overlay", False):
+            btn_close = pygame.Rect(320, 440, 220, 38)
+            if btn_close.collidepoint(mx, my) or not pygame.Rect(120, 50, 660, 440).collidepoint(mx, my):
+                self.data.show_help_overlay = False
+                if self.sound: self.sound.play("click")
             return
 
-        # Pause-Menü Modal Interaktion (wenn ESC-Pausemenü geöffnet ist)
+        # 3. Pause-Menü Modal Interaktion
         if getattr(self.data, "show_pause_menu", False) and self.data.current_state != STATE_OPTIONS:
             btn_pause_resume = pygame.Rect(300, 160, 300, 42)
             btn_pause_save = pygame.Rect(300, 215, 300, 42)
@@ -219,43 +218,7 @@ class InputManager:
                 if self.sound: self.sound.play("click")
             return
 
-        # Crew-Menü Toggle & Interaction
-        btn_crew_toggle = pygame.Rect(750, 8, 130, 26)
-        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY) and btn_crew_toggle.collidepoint(mx, my):
-            self.data.player.show_crew_menu = not getattr(self.data.player, "show_crew_menu", False)
-            return
-
-        # Tür-Steuerung UI Buttons & Tür-Direktklicks
-        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
-            btn_open_all = pygame.Rect(750, 38, 130, 26)
-            btn_close_all = pygame.Rect(750, 68, 130, 26)
-            btn_vent = pygame.Rect(750, 98, 130, 26)
-            btn_help_toggle = pygame.Rect(750, 128, 130, 26)
-
-            if btn_help_toggle.collidepoint(mx, my):
-                self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
-                if self.sound: self.sound.play("click")
-                return
-
-            if btn_open_all.collidepoint(mx, my):
-                self.data.player.ship.open_all_doors()
-                if self.sound: self.sound.play("click")
-                return
-            elif btn_close_all.collidepoint(mx, my):
-                self.data.player.ship.close_all_doors()
-                if self.sound: self.sound.play("click")
-                return
-            elif btn_vent.collidepoint(mx, my):
-                self.data.player.ship.open_airlocks()
-                if self.sound: self.sound.play("click")
-                return
-
-            for d in self.data.player.ship.doors:
-                if d.rect.collidepoint(mx, my):
-                    d.toggle()
-                    if self.sound: self.sound.play("click")
-                    return
-
+        # 4. Crew-Menü Modal Interaktion
         if getattr(self.data.player, "show_crew_menu", False):
             close_btn = pygame.Rect(370, 465, 160, 38)
             if close_btn.collidepoint(mx, my):
@@ -272,6 +235,7 @@ class InputManager:
                     return
             return
 
+        # 5. Optionen Bildschirm
         if self.data.current_state == STATE_OPTIONS:
             btn_toggle_fullscreen = pygame.Rect(210, 105, 480, 36)
             btn_res_toggle = pygame.Rect(210, 148, 480, 36)
@@ -340,6 +304,7 @@ class InputManager:
                     self.data.current_state = STATE_MAIN_MENU
             return
 
+        # 6. Achievements Bildschirm
         if self.data.current_state == STATE_ACHIEVEMENTS:
             btn_close = pygame.Rect(320, 510, 260, 42)
             if btn_close.collidepoint(mx, my):
@@ -348,6 +313,12 @@ class InputManager:
                 self.data.current_state = STATE_OPTIONS
             return
 
+        # 7. Shop Modal State
+        if self.data.current_state == STATE_SHOP:
+            self.shop_manager.handle_click(mx, my)
+            return
+
+        # 8. Main Menu State
         if self.data.current_state == STATE_MAIN_MENU:
             import copy
             from classes.ShipModel import SHIP_BLUEPRINTS
@@ -394,14 +365,43 @@ class InputManager:
                     self.sound.play("click")
             return
 
+        # 9. Top Action Bar & Door Controls (ONLY evaluated when NO modal/menu/shop is open)
+        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
+            btn_crew_toggle = pygame.Rect(750, 8, 130, 26)
+            btn_open_all = pygame.Rect(750, 38, 130, 26)
+            btn_close_all = pygame.Rect(750, 68, 130, 26)
+            btn_vent = pygame.Rect(750, 98, 130, 26)
+            btn_help_toggle = pygame.Rect(750, 128, 130, 26)
 
+            if btn_help_toggle.collidepoint(mx, my):
+                self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
+                if self.sound: self.sound.play("click")
+                return
+            elif btn_crew_toggle.collidepoint(mx, my):
+                self.data.player.show_crew_menu = not getattr(self.data.player, "show_crew_menu", False)
+                return
+            elif btn_open_all.collidepoint(mx, my):
+                self.data.player.ship.open_all_doors()
+                if self.sound: self.sound.play("click")
+                return
+            elif btn_close_all.collidepoint(mx, my):
+                self.data.player.ship.close_all_doors()
+                if self.sound: self.sound.play("click")
+                return
+            elif btn_vent.collidepoint(mx, my):
+                self.data.player.ship.open_airlocks()
+                if self.sound: self.sound.play("click")
+                return
 
+            for d in self.data.player.ship.doors:
+                if d.rect.collidepoint(mx, my):
+                    d.toggle()
+                    if self.sound: self.sound.play("click")
+                    return
 
-        elif self.data.current_state == STATE_MAP:
+        # 10. State-specific clicks (Map, Event, Combat, Training)
+        if self.data.current_state == STATE_MAP:
             self.handle_map_click(mx, my)
-
-        elif self.data.current_state == STATE_SHOP:
-            self.shop_manager.handle_click(mx, my)
 
         elif self.data.current_state == STATE_TRAINING:
             training_mgr = getattr(self.data, "training_manager", None)
