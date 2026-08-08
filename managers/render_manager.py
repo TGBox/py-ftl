@@ -1455,23 +1455,34 @@ class RenderManager:
         draw_vol_row(273, "Musik (BGM)", music_v, "btn_music_down", "btn_music_up")
         draw_vol_row(311, "Effekte (SFX)", sfx_v, "btn_sfx_down", "btn_sfx_up")
 
-        # 4. Errungenschaften Button
-        self.btn_achievements_menu = pygame.Rect(210, 355, 480, 36)
+        # 4. Auto-Speichern Toggle
+        auto_save_on = getattr(self.data, "auto_save_enabled", False)
+        self.btn_autosave_toggle = pygame.Rect(210, 350, 480, 34)
+        as_col = (40, 80, 40) if auto_save_on else (80, 40, 40)
+        pygame.draw.rect(self.screen, as_col, self.btn_autosave_toggle)
+        pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_autosave_toggle, 2)
+        as_label = "Auto-Speichern bei Sprung: AN" if auto_save_on else "Auto-Speichern bei Sprung: AUS [MANUELL]"
+        as_color = (150, 240, 150) if auto_save_on else (255, 200, 150)
+        as_txt = self.font.render(as_label, True, as_color)
+        self.screen.blit(as_txt, (self.btn_autosave_toggle.x + 60, self.btn_autosave_toggle.y + 7))
+
+        # 5. Errungenschaften Button
+        self.btn_achievements_menu = pygame.Rect(210, 390, 480, 34)
         pygame.draw.rect(self.screen, (35, 65, 95), self.btn_achievements_menu)
         pygame.draw.rect(self.screen, (255, 215, 0), self.btn_achievements_menu, 2)
         ach_btn_txt = self.font.render("ERRUNGENSCHAFTEN ANSEHEN", True, (255, 230, 100))
-        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + 110, self.btn_achievements_menu.y + 8))
+        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + 110, self.btn_achievements_menu.y + 7))
 
         # Steuerungshinweis
         ctrl_font = pygame.font.SysFont(None, 17)
-        self.screen.blit(ctrl_font.render("Steuerung: S = Speichern | L = Laden | Pausieren = Leertaste | +/- = Lautstärke", True, (160, 180, 210)), (210, 402))
+        self.screen.blit(ctrl_font.render("Steuerung: S = Speichern | L = Laden | Pausieren = Leertaste | +/- = Lautstärke", True, (160, 180, 210)), (210, 432))
 
-        # 5. Zurück Button
-        self.btn_close_options = pygame.Rect(350, 435, 200, 42)
+        # 6. Zurück Button
+        self.btn_close_options = pygame.Rect(350, 460, 200, 40)
         pygame.draw.rect(self.screen, (70, 40, 40), self.btn_close_options)
         pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, self.btn_close_options, 2)
         close_txt = "Zurück zur Pause" if self.data.paused else "Zurück zum Menü"
-        self.screen.blit(self.font.render(close_txt, True, (255, 200, 200)), (self.btn_close_options.x + 25, self.btn_close_options.y + 10))
+        self.screen.blit(self.font.render(close_txt, True, (255, 200, 200)), (self.btn_close_options.x + 25, self.btn_close_options.y + 9))
 
     def draw_achievements_screen(self):
         bg_surf = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)

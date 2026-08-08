@@ -91,6 +91,19 @@ class TestCombatManager(unittest.TestCase):
         self.assertEqual(self.data.combat.boss_phase, 2)
         self.assertGreater(self.data.enemy.ship.hp, 0)
 
+    def test_repair_drone_update_zero_dt_no_crash(self):
+        self.data.combat.repair_drone_active = True
+        drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
+        if drone_room:
+            drone_room.current_power = 2
+        target_room = self.data.player.ship.rooms[0]
+        # Position repair drone exactly at target room center (dist = 0.0)
+        self.data.combat.repair_drone_pos = (float(target_room.rect.centerx), float(target_room.rect.centery))
+
+        # Call update with dt = 0.0 (simulating pause or zero dt)
+        self.combat_manager.update(0.0)
+        self.assertEqual(self.data.combat.repair_drone_pos, (float(target_room.rect.centerx), float(target_room.rect.centery)))
+
 
 if __name__ == "__main__":
     unittest.main()

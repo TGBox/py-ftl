@@ -100,6 +100,7 @@ class WeaponSaveSchema(BaseModel):
 
 class SavegameSchema(BaseModel):
     schema_version: int = 2
+    auto_save_enabled: bool = False
     current_sector: int = 1
     rebel_fleet_x: float = 30.0
     sector_type: str = "Zivil"

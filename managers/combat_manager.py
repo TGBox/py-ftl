@@ -184,11 +184,10 @@ class CombatManager:
                 rx, ry = getattr(self.data.combat, "repair_drone_pos", (160.0, 245.0))
                 damaged_rooms = [r for r in self.data.player.ship.rooms if r.health < r.max_health or r.fire_level > 0 or r.has_breach]
                 target_room = damaged_rooms[0] if damaged_rooms else self.data.player.ship.rooms[0]
-
                 tx, ty = float(target_room.rect.centerx), float(target_room.rect.centery)
                 dx, dy = tx - rx, ty - ry
                 dist = math.hypot(dx, dy)
-                if dist < 140.0 * dt:
+                if dist <= 140.0 * dt or dist < 1e-5:
                     rx, ry = tx, ty
                     if damaged_rooms:
                         target_room.repair(30.0 * dt)

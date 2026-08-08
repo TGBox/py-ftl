@@ -208,6 +208,7 @@ class SaveManager:
 
             schema = SavegameSchema(
                 schema_version=2,
+                auto_save_enabled=getattr(data, "auto_save_enabled", False),
                 current_sector=data.world.star_map.sector,
                 rebel_fleet_x=data.world.star_map.rebel_fleet_x,
                 sector_type=data.world.star_map.sector_type,
@@ -320,6 +321,7 @@ class SaveManager:
             data.world.star_map.sector = schema.current_sector
 
             # 2. Ressourcen & Spieler-Basiswerte
+            data.auto_save_enabled = getattr(schema, "auto_save_enabled", False)
             data.player.scrap = schema.player_scrap
             data.player.fuel = schema.player_fuel
             data.player.missiles = schema.player_missiles

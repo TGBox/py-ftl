@@ -45,6 +45,17 @@ class TestSaveManager(unittest.TestCase):
         self.assertEqual(loaded_data.player.fuel, 18)
         self.assertEqual(loaded_data.world.star_map.sector, 3)
 
+    def test_auto_save_setting_roundtrip(self):
+        data = GameData()
+        self.assertFalse(data.auto_save_enabled)
+
+        data.auto_save_enabled = True
+        self.assertTrue(SaveManager.save_game(data, self.test_save_file))
+
+        loaded_data = GameData()
+        self.assertTrue(SaveManager.load_game(loaded_data, self.test_save_file))
+        self.assertTrue(loaded_data.auto_save_enabled)
+
     def test_tampered_save_rejection(self):
         data = GameData()
         SaveManager.save_game(data, self.test_save_file)

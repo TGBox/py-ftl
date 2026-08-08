@@ -275,7 +275,7 @@ class Crew:
                 dx, dy = wx - self.x, wy - self.y
                 dist = math.hypot(dx, dy)
                 step = self.move_speed * dt
-                if dist <= step:
+                if dist <= step or dist < 1e-5:
                     self.x, self.y = float(wx), float(wy)
                     self.path_waypoints.pop(0)
                     if not self.path_waypoints:

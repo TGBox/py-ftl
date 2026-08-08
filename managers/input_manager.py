@@ -250,8 +250,9 @@ class InputManager:
             btn_sfx_down = pygame.Rect(452, 311, 34, 30)
             btn_sfx_up = pygame.Rect(648, 311, 34, 30)
 
-            btn_achievements_menu = pygame.Rect(210, 355, 480, 36)
-            btn_close_options = pygame.Rect(350, 435, 200, 42)
+            btn_autosave_toggle = pygame.Rect(210, 350, 480, 34)
+            btn_achievements_menu = pygame.Rect(210, 390, 480, 34)
+            btn_close_options = pygame.Rect(350, 460, 200, 40)
 
             if btn_toggle_fullscreen.collidepoint(mx, my):
                 if self.game:
@@ -290,6 +291,10 @@ class InputManager:
             elif btn_sfx_up.collidepoint(mx, my):
                 if self.sound:
                     self.sound.sfx_volume = min(1.0, round(self.sound.sfx_volume + 0.1, 2))
+                    self.sound.play("click")
+            elif btn_autosave_toggle.collidepoint(mx, my):
+                self.data.auto_save_enabled = not getattr(self.data, "auto_save_enabled", False)
+                if self.sound:
                     self.sound.play("click")
             elif btn_achievements_menu.collidepoint(mx, my):
                 self.data.current_state = STATE_ACHIEVEMENTS

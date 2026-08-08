@@ -1,4 +1,5 @@
 import copy
+import random
 
 from classes.GameData import GameData
 from classes.Node import Node
@@ -27,12 +28,13 @@ class MapManager:
         self.data.world.star_map.current_node = node
         node.visited = True
 
-        # Auto-Save progress on every node jump
-        from managers.save_manager import SaveManager
-        try:
-            SaveManager.save_game(self.data)
-        except Exception as e:
-            print(f"Auto-Save Fehler: {e}")
+        # Auto-Save progress on node jump (if enabled in settings)
+        if getattr(self.data, "auto_save_enabled", False):
+            from managers.save_manager import SaveManager
+            try:
+                SaveManager.save_game(self.data)
+            except Exception as e:
+                print(f"Auto-Save Fehler: {e}")
 
         if self.data.world.star_map.rebel_fleet_x >= node.x:
             if self.sound: self.sound.play("alarm")
@@ -302,4 +304,4 @@ class MapManager:
         self.data.world.star_map.sector = 1
         self.data.world.star_map.generate_map()
 
-        self.data.current_state = STATE_MAP
+        self.data.current_state = STATE_MAP
