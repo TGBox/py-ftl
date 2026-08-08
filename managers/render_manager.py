@@ -1305,6 +1305,20 @@ class RenderManager:
             txt_surf = self.font.render(text, True, (240, 240, 240))
             self.screen.blit(txt_surf, (btn.x + (btn.width - txt_surf.get_width()) // 2, btn.y + 11))
             
+    def is_any_modal_open(self) -> bool:
+        shop_mgr = getattr(self.game, "shop_manager", None) or getattr(self.data, "shop_manager", None)
+        is_shop_modal = (
+            self.data.current_state == STATE_SHOP
+            and shop_mgr is not None
+            and (getattr(shop_mgr, "layout_swap_mode", False) or getattr(shop_mgr, "selecting_slot_item", None) is not None)
+        )
+        return (
+            getattr(self.data, "show_pause_menu", False)
+            or getattr(self.data, "show_slot_modal", False)
+            or getattr(self.data, "show_help_overlay", False)
+            or is_shop_modal
+        )
+
     def draw_scifi_button(
         self,
         rect: pygame.Rect,
@@ -1314,6 +1328,9 @@ class RenderManager:
         primary_color: tuple[int, int, int] = (0, 200, 255),
         enabled: bool = True,
     ):
+        if self.is_any_modal_open():
+            is_hovered = False
+
         s = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
         if not enabled:
             bg_col = (20, 25, 35, 180)

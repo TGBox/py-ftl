@@ -115,6 +115,12 @@ class InputManager:
             # Taktische Pause umschalten (Spiel-Interaktionen bleiben möglich)
             self.data.paused = not self.data.paused
         elif event.key == pygame.K_ESCAPE:
+            # TODO 40: Target-Modus mit ESC abbrechen ohne Schussverlust
+            if self.data.current_state == STATE_COMBAT and getattr(self.data.combat, "is_targeting", False):
+                self.data.combat.is_targeting = False
+                self.data.combat.target_weapon_idx = None
+                self.show_message("ZIELEN ABGEBROCHEN.")
+                return
             # Pause-Menü Modal (ESC)
             if self.data.current_state == STATE_OPTIONS:
                 if getattr(self.data, "show_pause_menu", False):
@@ -451,6 +457,12 @@ class InputManager:
         if self.data.current_state != STATE_COMBAT:
             return
         mx, my = self._logical_mouse_pos(getattr(event, "pos", None))
+        # TODO 40: Target-Modus mit Rechtsklick abbrechen ohne Schussverlust
+        if getattr(self.data.combat, "is_targeting", False):
+            self.data.combat.is_targeting = False
+            self.data.combat.target_weapon_idx = None
+            self.show_message("ZIELEN ABGEBROCHEN.")
+            return
         if self.remove_weapon_target(mx, my):
             return
         if self.deselect_crew(event):
@@ -663,12 +675,17 @@ class InputManager:
                                 c.target_pos = (int(mx), int(my))
                         return
 
-                # Klick auf eigenes Schiff für Bewegung von normaler Crew
+                # Klick auf eigenes Schiff für Bewegung von normaler Crew (TODO 45: Eck-Offsets)
                 for room in self.data.player.ship.rooms:
                     if room.rect.collidepoint(mx, my):
-                        for c in self.data.player.crew:
-                            if c.selected and not c.is_boarding:
-                                c.target_pos = (int(mx), int(my))
+                        selected = [c for c in self.data.player.crew if c.selected and not c.is_boarding]
+                        if selected:
+                            existing = [c for c in self.data.player.crew if c.current_room == room and c not in selected]
+                            all_target_crew = existing + selected
+                            offsets = [(-16, -16), (16, 16), (16, -16), (-16, 16)]
+                            for idx, c in enumerate(all_target_crew):
+                                ox, oy = offsets[idx % len(offsets)]
+                                c.target_pos = (room.rect.centerx + ox, room.rect.centery + oy)
                         return
             else:
                 for room in self.data.player.ship.rooms:

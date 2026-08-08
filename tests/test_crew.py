@@ -99,5 +99,64 @@ class TestCrew(unittest.TestCase):
         self.assertGreater(crew.hp, 50.0, "Crew inside powered Medbay should heal over time during combat updates.")
 
 
+    def test_crew_corner_offsets_in_same_room(self):
+        from classes.GameData import GameData
+        from managers.input_manager import InputManager
+        from managers.shop_manager import ShopManager
+        from managers.map_manager import MapManager
+
+        data = GameData()
+        from settings import STATE_COMBAT
+        data.current_state = STATE_COMBAT
+        shop_mgr = ShopManager(data)
+        map_mgr = MapManager(data)
+        input_mgr = InputManager(data, shop_mgr, map_mgr)
+
+        room = data.player.ship.rooms[0]
+        c1 = Crew(100, 100)
+        c2 = Crew(100, 100)
+        c1.selected = True
+        c2.selected = True
+        data.player.crew = [c1, c2]
+
+        # Simulate clicking on room to move selected crew
+        input_mgr._logical_mouse_pos = lambda pos=None: (room.rect.centerx, room.rect.centery)
+        input_mgr.handle_left_click(type("Event", (), {"pos": (room.rect.centerx, room.rect.centery), "button": 1})())
+
+        # Verify c1 and c2 have different target_pos (opposing corner offsets)
+        self.assertIsNotNone(c1.target_pos)
+        self.assertIsNotNone(c2.target_pos)
+        self.assertNotEqual(c1.target_pos, c2.target_pos, "Crew in same room must be assigned opposing corner offsets!")
+
+    def test_targeting_cancel_esc_and_right_click(self):
+        from classes.GameData import GameData
+        from managers.input_manager import InputManager
+        from managers.shop_manager import ShopManager
+        from managers.map_manager import MapManager
+        from settings import STATE_COMBAT
+        import pygame
+
+        data = GameData()
+        data.current_state = STATE_COMBAT
+        data.combat.is_targeting = True
+        data.combat.target_weapon_idx = 0
+
+        shop_mgr = ShopManager(data)
+        map_mgr = MapManager(data)
+        input_mgr = InputManager(data, shop_mgr, map_mgr)
+
+        # Simulate ESC key
+        esc_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)
+        input_mgr.handle_keydown(esc_event)
+        self.assertFalse(data.combat.is_targeting, "ESC must cancel weapon targeting mode.")
+
+        # Simulate Right-Click
+        data.combat.is_targeting = True
+        rc_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=3, pos=(100, 100))
+        input_mgr.handle_right_click(rc_event)
+        self.assertFalse(data.combat.is_targeting, "Right-Click must cancel weapon targeting mode.")
+
+
 if __name__ == "__main__":
     unittest.main()
+
