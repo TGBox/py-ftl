@@ -1053,10 +1053,16 @@ class RenderManager:
             enabled=(cloak_ready or cloak_active > 0),
         )
 
+        combat_won = getattr(self.data.combat, "combat_won", False)
         ftl_timer = getattr(self.data.combat, "ftl_charge_timer", 0.0)
-        ftl_ready = getattr(self.data.combat, "ftl_ready", False)
+        ftl_ready = getattr(self.data.combat, "ftl_ready", False) or combat_won
         ftl_pct = int((ftl_timer / 30.0) * 100)
-        ftl_lbl = "FLIEHEN [FTL BEREIT]" if ftl_ready else f"FTL LÄDT ({ftl_pct}%)"
+        if combat_won:
+            ftl_lbl = "KARTENANSICHT"
+        elif ftl_ready:
+            ftl_lbl = "FLIEHEN [FTL BEREIT]"
+        else:
+            ftl_lbl = f"FTL LÄDT ({ftl_pct}%)"
 
         self.draw_scifi_button(
             self.btn_ftl,

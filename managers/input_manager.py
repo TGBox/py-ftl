@@ -529,7 +529,10 @@ class InputManager:
 
         if btn_ftl.collidepoint(mx, my):
             if combat_mgr:
-                combat_mgr.flee_combat()
+                if getattr(self.data.combat, "combat_won", False):
+                    combat_mgr.leave_post_combat()
+                else:
+                    combat_mgr.flee_combat()
             return
 
         if btn_autofire.collidepoint(mx, my):

@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 from classes.Crew import Crew
 from classes.GameData import GameData
@@ -37,7 +38,8 @@ class TestWeaponMechanics(unittest.TestCase):
         self.assertFalse(proj.alive)
         self.assertTrue(proj.out_of_range)
 
-    def test_beam_weapon_line_hits_all_rooms_and_crew(self):
+    @patch("random.random", return_value=0.99)
+    def test_beam_weapon_line_hits_all_rooms_and_crew(self, mock_random):
         r1 = Room("Waffen", (100, 100, 80, 80), is_enemy=True)
         r2 = Room("Schild", (190, 100, 80, 80), is_enemy=True)
         self.data.enemy.ship.rooms = [r1, r2]

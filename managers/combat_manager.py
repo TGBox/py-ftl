@@ -530,6 +530,8 @@ class CombatManager:
         self.show_message(f"TARNUNG AKTIVIERT ({int(duration)}s)! (+100% Ausweichen)")
 
     def update_enemy_weapon(self, dt: float):
+        if getattr(self.data.combat, "combat_won", False) or self.data.enemy.ship.hp <= 0:
+            return
 
         weapon = self.data.enemy.weapon
 
@@ -929,13 +931,24 @@ class CombatManager:
             self.data.player.scrap += 25
 
             if new_ship:
-                self.show_message(f"NEUES SCHIFF FREIGESCHALTET: {new_ship}!")
+                self.show_message(f"NEUES SCHIFF FREIGESCHALTET: {new_ship}! [KARTENANSICHT DRÜCKEN]")
             else:
-                self.show_message(f"MINI-BOSS BESIEGT! WEITER ZU SEKTOR {self.data.world.star_map.sector}")
+                self.show_message(f"MINI-BOSS BESIEGT! WEITER ZU SEKTOR {self.data.world.star_map.sector} [KARTENANSICHT DRÜCKEN]")
 
-            self.data.current_state = STATE_MAP
+            self.data.combat.combat_won = True
+            self.data.combat.ftl_ready = True
         else:
-            self.data.current_state = STATE_MAP
+            self.data.combat.combat_won = True
+            self.data.combat.ftl_ready = True
+            self.show_message("KAMPF GEWONNEN! [KARTENANSICHT DRÜCKEN UM WEITERZUFLIEGEN]")
+
+    def leave_post_combat(self):
+        """Transitions back to map view after post-combat repair/cleanup phase."""
+        self.show_message("RÜCKKEHR ZUR KARTENANSICHT...")
+        self.data.current_state = STATE_MAP
+        self.data.combat.combat_won = False
+        self.data.combat.ftl_charge_timer = 0.0
+        self.data.combat.ftl_ready = False
 
 
 

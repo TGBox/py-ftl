@@ -96,6 +96,7 @@ class CombatData:
         self.boss_teleport_timer: float = 20.0
         self.ftl_charge_timer: float = 0.0
         self.ftl_ready: bool = False
+        self.combat_won: bool = False
 
 
 class WorldData:

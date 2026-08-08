@@ -133,6 +133,22 @@ class TestCombatManager(unittest.TestCase):
         self.combat_manager.flee_combat()
         self.assertEqual(self.data.current_state, STATE_MAP)
 
+    def test_post_combat_phase(self):
+        from settings import STATE_COMBAT, STATE_MAP
+        self.data.current_state = STATE_COMBAT
+        self.data.enemy.ship.hp = 0
+
+        self.combat_manager.check_end_of_battle()
+
+        # Should stay in COMBAT state during post-combat phase
+        self.assertEqual(self.data.current_state, STATE_COMBAT)
+        self.assertTrue(self.data.combat.combat_won)
+
+        # Leaving post-combat should transition to MAP
+        self.combat_manager.leave_post_combat()
+        self.assertEqual(self.data.current_state, STATE_MAP)
+        self.assertFalse(self.data.combat.combat_won)
+
 
 if __name__ == "__main__":
     unittest.main()

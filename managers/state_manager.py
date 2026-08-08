@@ -143,6 +143,9 @@ class StateManager:
         """
         self.data.combat.msg = ""
         self.data.combat.msg_timer = 0.0
+        self.data.combat.combat_won = False
+        self.data.combat.ftl_charge_timer = 0.0
+        self.data.combat.ftl_ready = False
         self.data.paused = False
 
     def enter_game_over_state(self):
