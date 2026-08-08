@@ -237,10 +237,20 @@ class CombatManager:
             for r in self.data.player.ship.rooms:
                 if r.health < r.max_health and r.fire_level == 0.0 and not r.has_breach:
                     r.repair(4.5 * dt)
-        if "Sauerstoff-Konverter" in augments:
-            for r in self.data.player.ship.rooms:
-                if r.current_power > 0:
-                    r.oxygen = min(100.0, r.oxygen + 2.5 * dt)
+        # ------------------------------------------------------
+        # FTL-ANTRIEB LADETIMER (30 Sek., Brücke besetzt & voll versorgt)
+        # ------------------------------------------------------
+        b_room = next((r for r in self.data.player.ship.rooms if r.name == "Brücke"), None)
+        pilot_count = len([c for c in self.data.player.crew if b_room and c.current_room == b_room])
+        b_powered = (
+            b_room is not None
+            and b_room.max_power > 0
+            and b_room.current_power >= b_room.max_power
+            and b_room.health > 0
+        )
+        if pilot_count >= 1 and b_powered:
+            self.data.combat.ftl_charge_timer = min(30.0, getattr(self.data.combat, "ftl_charge_timer", 0.0) + dt)
+        self.data.combat.ftl_ready = (getattr(self.data.combat, "ftl_charge_timer", 0.0) >= 30.0)
 
         # Sauerstoff & Erstickungs-Schaden (SRS Kap. 5.1)
         for room in self.data.player.ship.rooms:
@@ -1148,6 +1158,18 @@ class CombatManager:
         self.enemy_crew.clear()
 
         self.data.current_state = STATE_GAME_OVER
+
+    def flee_combat(self):
+        """Allows fleeing combat when FTL engine is 100% charged (30s manned & powered bridge)."""
+        if not getattr(self.data.combat, "ftl_ready", False):
+            self.show_message("FTL-ANTRIEB NICHT BEREIT!")
+            return
+        if self.sound:
+            self.sound.play("jump")
+        self.show_message("ERFOLGREICH AUS DEM KAMPF GEFLOHEN!")
+        self.data.current_state = STATE_MAP
+        self.data.combat.ftl_charge_timer = 0.0
+        self.data.combat.ftl_ready = False
 
     def show_message(self, text: str):
 

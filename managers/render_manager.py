@@ -21,6 +21,7 @@ class RenderManager:
         self.btn_help_toggle = pygame.Rect(750, 128, 130, 26)
 
         # Bottom Action Buttons
+        self.btn_ftl = pygame.Rect(265, 512, 140, 34)
         self.btn_repair_drone = pygame.Rect(415, 470, 140, 34)
         self.btn_combat_drone = pygame.Rect(565, 470, 140, 34)
         self.btn_cloak = pygame.Rect(715, 470, 140, 34)
@@ -1050,6 +1051,20 @@ class RenderManager:
             is_hovered=self.btn_cloak.collidepoint(mx, my),
             primary_color=(180, 120, 255),
             enabled=(cloak_ready or cloak_active > 0),
+        )
+
+        ftl_timer = getattr(self.data.combat, "ftl_charge_timer", 0.0)
+        ftl_ready = getattr(self.data.combat, "ftl_ready", False)
+        ftl_pct = int((ftl_timer / 30.0) * 100)
+        ftl_lbl = "FLIEHEN [FTL BEREIT]" if ftl_ready else f"FTL LÄDT ({ftl_pct}%)"
+
+        self.draw_scifi_button(
+            self.btn_ftl,
+            ftl_lbl,
+            is_active=ftl_ready,
+            is_hovered=self.btn_ftl.collidepoint(mx, my),
+            primary_color=(50, 220, 100) if ftl_ready else (140, 160, 180),
+            enabled=ftl_ready,
         )
 
         self.draw_scifi_button(

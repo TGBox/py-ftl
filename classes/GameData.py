@@ -94,6 +94,8 @@ class CombatData:
         self.zoltan_shield_hp: int = 0
         self.drone_surge_timer: float = 18.0
         self.boss_teleport_timer: float = 20.0
+        self.ftl_charge_timer: float = 0.0
+        self.ftl_ready: bool = False
 
 
 class WorldData:

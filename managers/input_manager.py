@@ -516,6 +516,7 @@ class InputManager:
         mx, my = self._logical_mouse_pos()
         self.data.world.event_manager.current_event_type = None
 
+        btn_ftl = pygame.Rect(265, 512, 140, 34)
         btn_repair_drone = pygame.Rect(415, 470, 140, 34)
         btn_combat_drone = pygame.Rect(565, 470, 140, 34)
         btn_cloak = pygame.Rect(715, 470, 140, 34)
@@ -525,6 +526,11 @@ class InputManager:
 
         tp_cd = getattr(self.data.combat, "teleport_cooldown", 0.0)
         combat_mgr = getattr(self.data, "combat_manager", None)
+
+        if btn_ftl.collidepoint(mx, my):
+            if combat_mgr:
+                combat_mgr.flee_combat()
+            return
 
         if btn_autofire.collidepoint(mx, my):
             self.data.combat.autofire_enabled = not self.data.combat.autofire_enabled

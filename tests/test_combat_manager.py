@@ -104,6 +104,35 @@ class TestCombatManager(unittest.TestCase):
         self.combat_manager.update(0.0)
         self.assertEqual(self.data.combat.repair_drone_pos, (float(target_room.rect.centerx), float(target_room.rect.centery)))
 
+    def test_ftl_charging_and_fleeing(self):
+        from settings import STATE_COMBAT, STATE_MAP
+        self.data.current_state = STATE_COMBAT
+        b_room = next((r for r in self.data.player.ship.rooms if r.name == "Brücke"), None)
+        self.assertIsNotNone(b_room)
+        b_room.max_power = 1
+        b_room.current_power = 1
+        b_room.health = 100.0
+
+        self.data.player.crew.clear()
+        pilot = Crew(float(b_room.rect.centerx), float(b_room.rect.centery), species="Mensch")
+        pilot.current_room = b_room
+        self.data.player.crew.append(pilot)
+
+        # FTL should charge 10s
+        self.combat_manager.update(10.0)
+        self.assertAlmostEqual(self.data.combat.ftl_charge_timer, 10.0)
+        self.assertFalse(self.data.combat.ftl_ready)
+
+        # Charge remaining 20s => 30s total => ready
+        self.combat_manager.update(20.0)
+        self.assertEqual(self.data.combat.ftl_charge_timer, 30.0)
+        self.assertTrue(self.data.combat.ftl_ready)
+
+        # Fleeing combat should switch state to MAP
+        from settings import STATE_MAP
+        self.combat_manager.flee_combat()
+        self.assertEqual(self.data.current_state, STATE_MAP)
+
 
 if __name__ == "__main__":
     unittest.main()
