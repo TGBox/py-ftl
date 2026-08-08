@@ -148,7 +148,13 @@ class TestShopAndTraining(unittest.TestCase):
         render_mgr.draw_shop()
 
         # Must save game without throwing AttributeError on NoneType
-        SaveManager.save_game(self.data, slot=1)
+        tmp_file = "test_save_tmp.dat"
+        try:
+            SaveManager.save_game(self.data, filepath=tmp_file)
+        finally:
+            import os
+            if os.path.exists(tmp_file):
+                os.remove(tmp_file)
 
 
 if __name__ == "__main__":

@@ -905,7 +905,9 @@ class CombatManager:
                     c.path_waypoints = []
 
         new_ship = None
-        if is_final_boss or is_mini_boss:
+        # Schiff-Freischaltung NUR nach dem Sieg über den Endboss im Sektor 5 (strikte Reihenfolge, einzeln)
+        is_sector_5_final_boss = (self.data.world.star_map.sector >= 5 and ("Flaggschiff" in self.data.enemy.ship.name or is_final_boss))
+        if is_sector_5_final_boss:
             from managers.save_manager import SaveManager
             ship_sequence = [
                 "Kestrel",

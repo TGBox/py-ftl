@@ -55,28 +55,34 @@ class TestCombatManager(unittest.TestCase):
         self.assertLess(room.health, room_init_hp)
 
     def test_ship_unlock_rules(self):
+        from unittest.mock import patch
         tmp_file = "test_unlocks_tmp.json"
         try:
             SaveManager.save_unlocks(["Kestrel"], filepath=tmp_file)
 
-            # 1. Normal battle victory -> should NOT unlock any ship
-            self.data.enemy.ship = ENEMY_SCOUT
-            self.combat_manager.player_won()
-            unlocked = SaveManager.load_unlocks(filepath=tmp_file)
-            self.assertIn("Kestrel", unlocked)
+            with patch("managers.save_manager.SaveManager.load_unlocks", return_value=["Kestrel"]), \
+                 patch("managers.save_manager.SaveManager.save_unlocks") as mock_save:
 
-            # 2. Mini-boss victory -> SHOULD unlock the next ship ("Kreuzer")
-            self.data.enemy.ship = MINI_BOSS_SECTOR_1
-            # Mock load_unlocks / save_unlocks inside player_won test context
-            unlocked_before = SaveManager.load_unlocks(filepath=tmp_file)
-            ship_sequence = ["Kestrel", "Kreuzer", "Tarnschiff", "Zoltan-Fregatte", "Federations-Kreuzer", "Mantis-Kaperer", "Rock-Schlachtschiff", "Kristall-Kreuzer"]
-            for s in ship_sequence:
-                if s not in unlocked_before:
-                    unlocked_before.append(s)
-                    break
-            SaveManager.save_unlocks(unlocked_before, filepath=tmp_file)
-            unlocked_after_boss = SaveManager.load_unlocks(filepath=tmp_file)
-            self.assertEqual(unlocked_after_boss, ["Kestrel", "Kreuzer"], "Mini-boss victory MUST unlock the next ship.")
+                # 1. Normal battle victory -> should NOT unlock any ship
+                self.data.combat.combat_won = False
+                self.data.world.star_map.sector = 2
+                self.data.enemy.ship = ENEMY_SCOUT
+                self.combat_manager.player_won()
+                mock_save.assert_not_called()
+
+                # 2. Mini-boss victory in Sector 2 -> should NOT unlock any ship
+                self.data.combat.combat_won = False
+                self.data.enemy.ship = MINI_BOSS_SECTOR_1
+                self.combat_manager.player_won()
+                mock_save.assert_not_called()
+
+                # 3. Final boss victory in Sector 5 -> MUST unlock the next ship ("Kreuzer")
+                self.data.combat.combat_won = False
+                self.data.world.star_map.sector = 5
+                self.data.enemy.ship = ENEMY_BOSS
+                self.data.enemy.ship.name = "Flaggschiff"
+                self.combat_manager.player_won()
+                mock_save.assert_called_once_with(["Kestrel", "Kreuzer"])
         finally:
             if os.path.exists(tmp_file):
                 os.remove(tmp_file)

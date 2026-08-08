@@ -59,8 +59,10 @@ class TestConsoleManager(unittest.TestCase):
         self.assertEqual(self.data.player.ship.hp, self.data.player.ship.max_hp)
 
     def test_cheat_unlock_all(self):
-        self.console.execute_command("unlock_all")
-        self.assertEqual(len(self.data.player.unlocked_ships), 8)
+        from unittest.mock import patch
+        with patch("managers.save_manager.SaveManager.save_unlocks"):
+            self.console.execute_command("unlock_all")
+            self.assertEqual(len(self.data.player.unlocked_ships), 8)
 
     def test_fun_cheats(self):
         self.console.execute_command("party")
