@@ -107,11 +107,6 @@ class StarMap:
       lbl = get_font(18).render("REBELLENFLOTTE", True, (255, 80, 80))
       surface.blit(lbl, (fleet_x + 5, 70))
 
-    # Header Banner für Sektortyp
-    hdr_font = pygame.font.SysFont(None, 20, bold=True)
-    hdr_lbl = hdr_font.render(f"SEKTOR {self.sector}: {self.sector_type.upper()}", True, (100, 220, 255))
-    surface.blit(hdr_lbl, (450 - hdr_lbl.get_width() // 2, 20))
-
     # Knoten zeichnen
     for node in self.nodes:
       if node == self.current_node:

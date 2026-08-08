@@ -94,7 +94,7 @@ class RenderManager:
             status_str = (
                 f"Treibstoff: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  "
                 f"Drohnen: {getattr(self.data.player, 'drone_parts', 5)}  |  Scrap: {self.data.player.scrap}  |  "
-                f"Sektor: {self.data.world.star_map.sector}"
+                f"Sektor: {self.data.world.star_map.sector} ({self.data.world.star_map.sector_type})"
             )
             lbl = pygame.font.SysFont(None, 20).render(status_str, True, (240, 245, 255))
             self.screen.blit(lbl, (b_rect.x + 10, b_rect.y + 4))
