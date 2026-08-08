@@ -25,6 +25,10 @@ class TestConsoleManager(unittest.TestCase):
         self.console.execute_command("scrap 200")
         self.assertEqual(self.data.player.scrap, init_scrap + 200)
 
+        # Test alias 'geld'
+        self.console.execute_command("geld 300")
+        self.assertEqual(self.data.player.scrap, init_scrap + 500)
+
         init_fuel = self.data.player.fuel
         self.console.execute_command("fuel 15")
         self.assertEqual(self.data.player.fuel, init_fuel + 15)
@@ -36,6 +40,15 @@ class TestConsoleManager(unittest.TestCase):
         init_drones = self.data.player.drone_parts
         self.console.execute_command("drones 5")
         self.assertEqual(self.data.player.drone_parts, init_drones + 5)
+
+    def test_cheat_weapon_upgrade_level5(self):
+        from classes.Weapon import Weapon
+        w = Weapon("Laser I", charge_time=4.0, w_type="LASER", level=1)
+        self.data.player.weapons = [w]
+
+        self.console.execute_command("waffen5")
+        self.assertEqual(self.data.player.weapons[0].level, 5)
+        self.assertIn("MK V", self.data.player.weapons[0].name)
 
     def test_cheat_godmode_and_heal(self):
         self.console.execute_command("godmode")

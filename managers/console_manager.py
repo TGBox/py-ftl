@@ -66,22 +66,31 @@ class ConsoleManager:
         if cmd == "help":
             self.history.extend([
                 "VERFÜGBARE CHEATS:",
-                "  scrap [n]    - Scrap hinzufügen (+500)",
-                "  fuel [n]     - Treibstoff hinzufügen (+20)",
-                "  missiles [n] - Raketen hinzufügen (+20)",
-                "  drones [n]   - Drohnenteile hinzufügen (+20)",
-                "  godmode      - Unverwundbarkeit Umschalten",
-                "  heal         - Schiff & Crew komplett heilen",
-                "  win          - Gefecht sofort gewinnen",
-                "  unlock_all   - Alle 8 Schiffe freischalten",
-                "  party        - Fun: Disko-Farben für Crew",
-                "  turbo        - Fun: 2.5x Spielgeschwindigkeit",
+                "  scrap / geld [n]     - Scrap hinzufügen (+500)",
+                "  waffen5 / mk5        - Waffen auf Level 5 (MK V) aufrüsten",
+                "  fuel / treibstoff    - Treibstoff hinzufügen (+20)",
+                "  missiles / raketen   - Raketen hinzufügen (+20)",
+                "  drones / drohnen     - Drohnenteile hinzufügen (+20)",
+                "  godmode / god        - Unverwundbarkeit umschalten",
+                "  heal                 - Schiff & Crew komplett heilen",
+                "  win                  - Gefecht sofort gewinnen",
+                "  unlock_all           - Alle 8 Schiffe freischalten",
+                "  party / turbo        - Fun-Cheats",
             ])
 
-        elif cmd in ("scrap", "scraps"):
-            val = int(arg) if arg and arg.isdigit() else 500
+        elif cmd in ("scrap", "scraps", "money", "geld", "add_scrap", "add_scraps", "add_money"):
+            val = int(arg) if arg and (arg.isdigit() or (arg.startswith("-") and arg[1:].isdigit())) else 500
             self.data.player.scrap += val
             self.history.append(f"[CHEAT] +{val} Scrap hinzugefügt! (Aktuell: {self.data.player.scrap})")
+
+        elif cmd in ("upgrade_weapons", "max_weapons", "waffen5", "mk5", "level5", "waffen", "upgrade_all_weapons"):
+            upgraded_count = 0
+            for w in self.data.player.weapons:
+                if w is not None:
+                    while w.level < 5:
+                        w.upgrade()
+                    upgraded_count += 1
+            self.history.append(f"[CHEAT] Alle {upgraded_count} aktiven Waffen auf Level 5 (MK V) aufgerüstet!")
 
         elif cmd in ("fuel", "treibstoff"):
             val = int(arg) if arg and arg.isdigit() else 20
