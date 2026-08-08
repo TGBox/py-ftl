@@ -169,6 +169,7 @@ class MapManager:
             self.data.player.scrap += choice_data.get("scrap", 0)
             self.data.player.fuel += choice_data.get("fuel", 0)
             self.data.player.missiles += choice_data.get("missiles", 0)
+            self.data.player.drone_parts += choice_data.get("drones", choice_data.get("drone_parts", 0))
             if not has_result:
                 self.data.current_state = STATE_MAP
 

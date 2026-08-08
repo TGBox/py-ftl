@@ -440,7 +440,8 @@ class RenderManager:
 
         p_hp = self.data.player.ship.hp
         p_max_hp = self.data.player.ship.max_hp
-        status_txt = f"Dein Scrap: {self.data.player.scrap} Scrap  |  Hülle: {p_hp}/{p_max_hp} HP  |  Fuel: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}"
+        p_drones = getattr(self.data.player, "drone_parts", 5)
+        status_txt = f"Dein Scrap: {self.data.player.scrap} Scrap  |  Hülle: {p_hp}/{p_max_hp} HP  |  Fuel: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  Drohnen: {p_drones}"
         st_lbl = sub_font.render(status_txt, True, (255, 220, 100))
         self.screen.blit(st_lbl, (LOGICAL_WIDTH // 2 - st_lbl.get_width() // 2, 80))
 
@@ -450,13 +451,15 @@ class RenderManager:
         hdr_left = sub_font.render("SCHIFFS-SERVICE & VORRÄTE:", True, (100, 220, 255))
         self.screen.blit(hdr_left, (80, 108))
 
+        shop_ref = getattr(self.data, "shop_manager", None)
         items_left = [
-            (self.data.shop_manager.btn_repair if hasattr(self.data, "shop_manager") else pygame.Rect(80, 130, 350, 30), f"Hülle reparieren (+1 HP) - 2 Scrap (Aktuell: {p_hp}/{p_max_hp})"),
-            (pygame.Rect(80, 165, 350, 30), f"Treibstoff kaufen (+1 Fuel) - 3 Scrap"),
-            (pygame.Rect(80, 200, 350, 30), f"Raketen kaufen (+3 Raketen) - 6 Scrap"),
-            (pygame.Rect(80, 235, 350, 30), f"Reaktor aufrüsten (+1 Power) - 15 Scrap"),
-            (pygame.Rect(80, 270, 350, 30), f"Crew-Mitglied anheuern - 25 Scrap"),
-            (pygame.Rect(80, 305, 350, 30), f"Schiff-Layout umbauen - 15 Scrap"),
+            (shop_ref.btn_repair if shop_ref else pygame.Rect(80, 115, 350, 28), f"Hülle reparieren (+1 HP) - 2 Scrap (Aktuell: {p_hp}/{p_max_hp})"),
+            (shop_ref.btn_fuel if shop_ref else pygame.Rect(80, 148, 350, 28), f"Treibstoff kaufen (+1 Fuel) - 3 Scrap"),
+            (shop_ref.btn_missiles if shop_ref else pygame.Rect(80, 181, 350, 28), f"Raketen kaufen (+3 Raketen) - 6 Scrap"),
+            (shop_ref.btn_drone_parts if shop_ref else pygame.Rect(80, 214, 350, 28), f"Drohnenteile kaufen (+2 Drohnen) - 6 Scrap"),
+            (shop_ref.btn_upgrade_reactor if shop_ref else pygame.Rect(80, 247, 350, 28), f"Reaktor aufrüsten (+1 Power) - 15 Scrap"),
+            (shop_ref.btn_buy_crew if shop_ref else pygame.Rect(80, 280, 350, 28), f"Crew-Mitglied anheuern - 25 Scrap"),
+            (shop_ref.btn_edit_layout if shop_ref else pygame.Rect(80, 313, 350, 28), f"Schiff-Layout umbauen - 15 Scrap"),
         ]
 
         mx, my = self._logical_mouse_pos()

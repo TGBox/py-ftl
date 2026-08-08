@@ -827,8 +827,8 @@ class CombatManager:
             if self.sound: self.sound.play("game_over")
             self.player_lost()
 
-    def calculate_stochastic_rewards(self, reward_tier: str = "Medium") -> tuple[int, int]:
-        """SRS 6.3 Stochastische Belohnungsberechnung: Scrap = floor(B_Sector * V_Tier)."""
+    def calculate_stochastic_rewards(self, reward_tier: str = "Medium") -> tuple[int, int, int]:
+        """SRS 6.3 Stochastische Belohnungsberechnung: Scrap, Raketen & Drohnenteile."""
         sector = self.data.world.star_map.sector
         b_sector = 15 + sector * 10
         if reward_tier == "Low":
@@ -842,24 +842,26 @@ class CombatManager:
         if "Schrott-Arm" in getattr(self.data.player, "augments", []):
             scrap = int(scrap * 1.30)
         missiles = random.randint(1, 3)
+        drone_parts = random.choice([0, 1, 1, 2])
 
         # 3% bis 6% Chance auf Bonus-Drop (SRS Kap. 6.3)
         drop_chance = 0.06 if reward_tier == "High" else 0.03
         if random.random() < drop_chance:
-            self.data.player.missiles += 2
-            self.show_message("BONUS-BEUTE GEFUNDEN! (+2 Raketen)")
+            self.data.player.drone_parts += 2
+            self.show_message("BONUS-BEUTE GEFUNDEN! (+2 Drohnenteile)")
 
-        return scrap, missiles
+        return scrap, missiles, drone_parts
 
     def player_won(self):
 
         is_mini_boss = "Mini-Boss" in self.data.enemy.ship.name
         is_final_boss = "Flaggschiff" in self.data.enemy.ship.name or (self.data.world.star_map.sector >= 5 and not is_mini_boss)
         tier = "High" if (is_final_boss or is_mini_boss) else "Medium"
-        scrap_reward, missile_reward = self.calculate_stochastic_rewards(tier)
+        scrap_reward, missile_reward, drone_reward = self.calculate_stochastic_rewards(tier)
 
         self.data.player.scrap += scrap_reward
         self.data.player.missiles += missile_reward
+        self.data.player.drone_parts += drone_reward
         self.enemy_crew.clear()
 
         self.data.player.projectiles.clear()

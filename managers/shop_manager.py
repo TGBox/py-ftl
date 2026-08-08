@@ -46,14 +46,15 @@ class ShopManager:
         self.layout_swap_type: str = "ROOMS"  # "ROOMS" oder "WEAPONS"
         self.layout_swap_first_selection = None
         self.refresh_catalog()
-
+        
         # Navigation & Basis-Buttons
-        self.btn_repair = pygame.Rect(80, 130, 350, 30)
-        self.btn_fuel = pygame.Rect(80, 165, 350, 30)
-        self.btn_missiles = pygame.Rect(80, 200, 350, 30)
-        self.btn_upgrade_reactor = pygame.Rect(80, 235, 350, 30)
-        self.btn_buy_crew = pygame.Rect(80, 270, 350, 30)
-        self.btn_edit_layout = pygame.Rect(80, 305, 350, 30)
+        self.btn_repair = pygame.Rect(80, 115, 350, 28)
+        self.btn_fuel = pygame.Rect(80, 148, 350, 28)
+        self.btn_missiles = pygame.Rect(80, 181, 350, 28)
+        self.btn_drone_parts = pygame.Rect(80, 214, 350, 28)
+        self.btn_upgrade_reactor = pygame.Rect(80, 247, 350, 28)
+        self.btn_buy_crew = pygame.Rect(80, 280, 350, 28)
+        self.btn_edit_layout = pygame.Rect(80, 313, 350, 28)
         self.btn_leave_shop = pygame.Rect(340, 495, 220, 40)
 
     def is_weapon_compatible(self, weapon: dict) -> bool:
@@ -348,6 +349,16 @@ class ShopManager:
             return
         self.data.player.scrap -= 6
         self.data.player.missiles += 3
+
+    def buy_drone_parts(self):
+        if self.data.player.scrap < 6:
+            self.data.combat.msg = "NICHT GENUG SCRAP FÜR DROHNENTEILE!"
+            self.data.combat.msg_timer = 1.8
+            return
+        self.data.player.scrap -= 6
+        self.data.player.drone_parts += 2
+        self.data.combat.msg = "2 DROHNENTEILE GEKAUFT! (+2 Drohnenteile)"
+        self.data.combat.msg_timer = 2.0
 
     def upgrade_reactor(self):
         if self.data.player.scrap < 15:
