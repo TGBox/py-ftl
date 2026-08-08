@@ -215,6 +215,27 @@ class MapManager:
             if not has_result:
                 self.data.current_state = STATE_MAP
 
+        elif action in ("FLEE", "TRY_ESCAPE", "ESCAPE") or choice_data.get("is_escape", False):
+            if random.random() < 0.30:
+                if random.random() < 0.50:
+                    dmg = random.randint(2, 5)
+                    self.data.player.ship.hp = max(0, self.data.player.ship.hp - dmg)
+                    self.data.world.event_manager.result_text = (
+                        f"FLUCHTVERSUCH MISSLUNGEN! Dein Schiff wird beim Abbiegen unter Beschuss genommen (-{dmg} Hüllenschaden)!"
+                    )
+                    self.data.world.event_manager.pending_action = None
+                else:
+                    self.data.world.event_manager.result_text = (
+                        "FLUCHTVERSUCH MISSLUNGEN! Das gegnerische Schiff blockiert den Sprungpfad und erzwingt das Gefecht!"
+                    )
+                    self.data.world.event_manager.pending_action = "START_COMBAT"
+            else:
+                if not has_result:
+                    self.data.world.event_manager.result_text = "FLUCHT ERFOLGREICH! Du entkommst der Gefahr ohne weiteren Schaden."
+                    self.data.world.event_manager.pending_action = None
+                elif not getattr(self.data.world.event_manager, "result_text", ""):
+                    self.data.world.event_manager.result_text = choice_data.get("result_text", "Flucht erfolgreich.")
+
         elif action == "TAKE_DAMAGE":
             dmg = choice_data.get("damage", 0)
             self.data.player.ship.hp = max(0, self.data.player.ship.hp - dmg)

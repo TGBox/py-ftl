@@ -93,6 +93,13 @@ class TestMapAndChoices(unittest.TestCase):
 
         self.assertEqual(self.data.current_state, STATE_COMBAT)
 
+    def test_handle_choice_flee_outcomes(self):
+        choice_data = {"is_escape": True}
+        # Run 20 flee choices to ensure both successful escapes and failures occur without error
+        for _ in range(20):
+            self.map_manager.handle_choice("FLEE", choice_data)
+            self.assertIsNotNone(self.data.world.event_manager.result_text)
+
 
 if __name__ == "__main__":
     unittest.main()
