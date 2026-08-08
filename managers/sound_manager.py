@@ -15,7 +15,7 @@ class SoundManager:
         self._music_enabled: bool = True
         self._master_volume: float = 1.0
         self._music_volume: float = 1.0
-        self._sfx_volume: float = 0.45
+        self._sfx_volume: float = 0.25
         self._current_track_name: str | None = None
         self._music_channel: pygame.mixer.Channel | None = None
 
@@ -53,10 +53,10 @@ class SoundManager:
         snd = self._music_tracks.get(track_name)
         if snd:
             if self._music_channel is None:
-                self._music_channel = pygame.mixer.Channel(7)
+                self._music_channel = pygame.mixer.Channel(0)
             self._music_channel.stop()
             eff_vol = min(1.0, self._master_volume * self._music_volume)
-            snd.set_volume(1.0)
+            snd.set_volume(eff_vol)
             self._music_channel.set_volume(eff_vol)
             self._music_channel.play(snd, loops=-1)
             self._current_track_name = track_name

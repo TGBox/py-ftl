@@ -154,7 +154,15 @@ class Game:
         if state in (STATE_MAIN_MENU, STATE_OPTIONS, STATE_ACHIEVEMENTS):
             self.sound.play_music("bgm_menu")
         elif state in (STATE_MAP, STATE_SHOP, STATE_EVENT, STATE_TRAINING):
-            self.sound.play_music("bgm_explore")
+            s_type = getattr(self.data.world.star_map, "sector_type", "Zivil")
+            if "Nebel" in s_type:
+                self.sound.play_music("bgm_nebula")
+            elif "Piraten" in s_type or "Rebellen" in s_type:
+                self.sound.play_music("bgm_pirate")
+            elif "Zivil" in s_type:
+                self.sound.play_music("bgm_civilian")
+            else:
+                self.sound.play_music("bgm_explore")
         elif state == STATE_COMBAT:
             is_boss = getattr(self.data.enemy.ship, "is_boss", False) or getattr(self.data.enemy.ship, "is_miniboss", False)
             if is_boss:

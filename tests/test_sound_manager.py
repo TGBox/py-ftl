@@ -58,7 +58,7 @@ class TestSoundManager(unittest.TestCase):
         # Default volume checks
         self.assertEqual(self.sound.master_volume, 1.0)
         self.assertEqual(self.sound.music_volume, 1.0)
-        self.assertEqual(self.sound.sfx_volume, 0.45)
+        self.assertEqual(self.sound.sfx_volume, 0.25)
 
         # Set master volume
         self.sound.master_volume = 0.5
