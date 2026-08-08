@@ -189,8 +189,8 @@ class Room:
 
     # Sauerstoffanzeige (O2: 100%)
     o2_color = (100, 220, 255) if self.oxygen > 40.0 else (255, 100, 100)
-    o2_txt = get_font(12, bold=True).render(f"O2:{int(self.oxygen)}%", True, o2_color)
-    surface.blit(o2_txt, (self.rect.right - 36, self.rect.y + 5))
+    o2_txt = get_font(10).render(f"O2:{int(self.oxygen)}%", True, o2_color)
+    surface.blit(o2_txt, (self.rect.right - o2_txt.get_width() - 4, self.rect.y + 4))
 
     # Hüllenleck Icon zeichnen (falls vorhanden)
     if self.has_breach:
