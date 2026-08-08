@@ -80,7 +80,7 @@ x 2026-08-08 (A) 2026-08-08 Ich möchte eine Reihe von Cheatcodes, die mir beim 
 x 2026-08-08 (A) 2026-08-08 Buttons auf einer niedrigeren Z-Achse können zwar nicht geklickt werden, werden aber visuell noch als Ziel/Hover dargestellt. Hover-Z-State korrigieren. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Wenn zwei Crewmitglieder im selben Raum sind, sollten sie mit einem Offset von der Mitte in Richtung gegenüberliegender Ecken platziert werden für bessere Auswählbarkeit. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Lautstärke und Liste der alten 8-Bit-Sounds überarbeiten zum Ersetzen. Verschiedene Soundtracks für mehere Sektorentypen einbauen. +Refactoring @code
-(A) 2026-08-08 Mehr Abwechslung bei gegnerischen Schiffstypen im Kampf hinzufügen. +Refactoring @code
+x 2026-08-08 (A) 2026-08-08 Mehr Abwechslung bei gegnerischen Schiffstypen im Kampf hinzufügen. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Fusion auf MK6 im Shop verhindern/korrigieren. Ersetzen von besseren Waffen ohne vorherigen expliziten Verkauf blockieren. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Schiff-Freischaltlogik korrigieren: Nach einem Sieg soll strikt nur das direkt nächste Schiff in der Reihenfolge freigeschaltet werden. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Shop-System erweitern: Verkauf von Räumen und Kauf/Einbau neuer Räume auf offenen Slots ermöglichen. +Refactoring @code

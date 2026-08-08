@@ -182,8 +182,23 @@ class TestCombatManager(unittest.TestCase):
         self.assertFalse(self.data.combat.repair_drone_active)
         self.assertEqual(self.data.combat.cloak_active_timer, 0.0)
 
+    def test_faction_enemy_ship_variety(self):
+        from managers.map_manager import MapManager
+        map_mgr = MapManager(self.data)
+
+        # Test Nebel sector spawns Zoltan or Drone Carrier or Scout
+        self.data.world.star_map.sector_type = "Nebel-Sektor"
+        map_mgr.start_normal_combat()
+        self.assertIn(self.data.enemy.ship.name, ["Scout", "Zoltan-Fregatte", "Drohnen-Träger"])
+
+        # Test Piraten sector spawns Mantis, Rock, or Bomber
+        self.data.world.star_map.sector_type = "Piraten-Sektor"
+        map_mgr.start_normal_combat()
+        self.assertIn(self.data.enemy.ship.name, ["Mantis-Kaperer", "Rock-Kriegsschiff", "Kaper-Bomber"])
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
 

@@ -270,16 +270,29 @@ class MapManager:
 
     def start_normal_combat(self):
         import random
-        from classes.ShipModel import ENEMY_SCOUT, ENEMY_FIGHTER, ENEMY_BOMBER, ENEMY_CRUISER
+        from classes.ShipModel import (
+            ENEMY_SCOUT, ENEMY_FIGHTER, ENEMY_BOMBER, ENEMY_CRUISER,
+            ENEMY_MANTIS_BOARDER, ENEMY_ZOLTAN_FRIGATE, ENEMY_ROCK_WARSHIP, ENEMY_DRONE_CARRIER
+        )
 
         sector = self.data.world.star_map.sector
-        if sector == 1:
-            template = random.choice([ENEMY_SCOUT, ENEMY_FIGHTER])
-        elif sector == 2:
-            template = random.choice([ENEMY_FIGHTER, ENEMY_BOMBER])
-        else:
-            template = random.choice([ENEMY_BOMBER, ENEMY_CRUISER])
+        sector_type = getattr(self.data.world.star_map, "sector_type", "Zivil")
 
+        if "Nebel" in sector_type:
+            pool = [ENEMY_SCOUT, ENEMY_ZOLTAN_FRIGATE, ENEMY_DRONE_CARRIER]
+        elif "Piraten" in sector_type:
+            pool = [ENEMY_MANTIS_BOARDER, ENEMY_ROCK_WARSHIP, ENEMY_BOMBER]
+        elif "Rebellen" in sector_type:
+            pool = [ENEMY_FIGHTER, ENEMY_CRUISER, ENEMY_DRONE_CARRIER]
+        else:
+            if sector == 1:
+                pool = [ENEMY_SCOUT, ENEMY_FIGHTER]
+            elif sector == 2:
+                pool = [ENEMY_FIGHTER, ENEMY_BOMBER, ENEMY_ZOLTAN_FRIGATE]
+            else:
+                pool = [ENEMY_BOMBER, ENEMY_CRUISER, ENEMY_ROCK_WARSHIP, ENEMY_MANTIS_BOARDER]
+
+        template = random.choice(pool)
         self.data.enemy.ship = copy.deepcopy(template)
 
         for room in self.data.enemy.ship.rooms:

@@ -409,6 +409,30 @@ ENEMY_CRUISER = ShipModel("Schwerer Kreuzer", 18, [
     Room("Maschinen", (760, 160, 95, 95), is_enemy=True)
 ], is_enemy=True)
 
+ENEMY_MANTIS_BOARDER = ShipModel("Mantis-Kaperer", 16, [
+    Room("Schild", (550, 170, 85, 85), is_enemy=True),
+    Room("Teleporter", (645, 170, 85, 85), is_enemy=True),
+    Room("Waffen", (740, 170, 85, 85), is_enemy=True)
+], is_enemy=True)
+
+ENEMY_ZOLTAN_FRIGATE = ShipModel("Zoltan-Fregatte", 14, [
+    Room("Schild", (560, 180, 80, 80), max_power=3, is_enemy=True),
+    Room("Waffen", (650, 180, 80, 80), is_enemy=True),
+    Room("Brücke", (740, 180, 80, 80), is_enemy=True)
+], is_enemy=True)
+
+ENEMY_ROCK_WARSHIP = ShipModel("Rock-Kriegsschiff", 22, [
+    Room("Schild", (540, 150, 95, 95), is_enemy=True),
+    Room("Waffen", (645, 150, 95, 95), is_enemy=True),
+    Room("Maschinen", (750, 150, 95, 95), is_enemy=True)
+], is_enemy=True)
+
+ENEMY_DRONE_CARRIER = ShipModel("Drohnen-Träger", 16, [
+    Room("Schild", (550, 170, 85, 85), is_enemy=True),
+    Room("Drohnen-Kontrolle", (645, 170, 85, 85), is_enemy=True),
+    Room("Brücke", (740, 170, 85, 85), is_enemy=True)
+], is_enemy=True)
+
 MINI_BOSS_SECTOR_1 = ShipModel("Elite-Kaperer (Mini-Boss)", 16, [
     Room("Schild", (560, 170, 90, 90), is_enemy=True),
     Room("Waffen", (660, 170, 90, 90), is_enemy=True),
@@ -428,5 +452,14 @@ ENEMY_BOSS = ShipModel("Flaggschiff", 25, [
     Room("Brücke", (770, 150, 100, 100), is_enemy=True)
 ], is_enemy=True)
 
-ENEMY_TEMPLATES = [ENEMY_SCOUT, ENEMY_FIGHTER, ENEMY_BOMBER, ENEMY_CRUISER]
+ENEMY_TEMPLATES = [
+    ENEMY_SCOUT,
+    ENEMY_FIGHTER,
+    ENEMY_BOMBER,
+    ENEMY_CRUISER,
+    ENEMY_MANTIS_BOARDER,
+    ENEMY_ZOLTAN_FRIGATE,
+    ENEMY_ROCK_WARSHIP,
+    ENEMY_DRONE_CARRIER,
+]
 
