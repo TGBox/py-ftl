@@ -192,7 +192,9 @@ class Game:
                 except Exception as save_err:
                     print(f"Notfall-Speichern fehlgeschlagen: {save_err}")
 
-                self.data.show_message(f"FEHLER VERMIEDEN: {e}")
+                if hasattr(self.data, "combat"):
+                    self.data.combat.msg = f"FEHLER VERMIEDEN: {e}"
+                    self.data.combat.msg_timer = 4.0
                 # Recover safely: return to MAP or MAIN_MENU if critical
                 if self.data.current_state not in (STATE_MAIN_MENU, STATE_MAP):
                     self.data.current_state = STATE_MAP

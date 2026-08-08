@@ -273,6 +273,117 @@ SHIP_BLUEPRINTS = {
     "Kristall-Kreuzer": CRYSTAL_SHIP,
 }
 
+SHIP_STARTING_SPECS = {
+    "Kestrel": {
+        "crew_summary": "1x Mensch, 1x Engi",
+        "crew_species": ["Mensch", "Engi"],
+        "weapons_summary": "Standard Laser (3.0s), Artemis Rakete (4.0s)",
+        "desc": "Ausgewogener Allrounder der Föderation mit solider Hülle und Raketen-Unterstützung.",
+    },
+    "Kreuzer": {
+        "crew_summary": "2x Mensch, 1x Rock",
+        "crew_species": ["Mensch", "Mensch", "Rock"],
+        "weapons_summary": "Schwerer Laser (3.5s), Burst Laser MK II (4.0s)",
+        "desc": "Schwer gepanzertes Kampfschiff mit erstklassigen Waffenbänken.",
+    },
+    "Tarnschiff": {
+        "crew_summary": "1x Mensch, 1x Zoltan, 1x Engi",
+        "crew_species": ["Mensch", "Zoltan", "Engi"],
+        "weapons_summary": "Impuls-Laser (Kurz, 2.5s), Pike Strahl (5.0s)",
+        "desc": "Spezialisiert auf Tarntechnologie und präzise Laserstrahl-Angriffe.",
+    },
+    "Zoltan-Fregatte": {
+        "crew_summary": "3x Zoltan, 1x Mensch",
+        "crew_species": ["Zoltan", "Zoltan", "Zoltan", "Mensch"],
+        "weapons_summary": "Halberd Strahl (5.5s), Ion Blast MK I (3.0s)",
+        "desc": "Ausgestattet mit Zoltan-Energieschilden und hohem Energie-Output.",
+    },
+    "Federations-Kreuzer": {
+        "crew_summary": "1x Mensch, 1x Engi, 1x Mantis, 1x Rock",
+        "crew_species": ["Mensch", "Engi", "Mantis", "Rock"],
+        "weapons_summary": "Standard Laser (3.0s), Burst Laser MK II (4.0s)",
+        "desc": "Multikulturelle Flotte mit Artillerie-Vortrieb und mächtigen Zusatzsystemen.",
+    },
+    "Mantis-Kaperer": {
+        "crew_summary": "3x Mantis, 1x Engi, 1x Mensch",
+        "crew_species": ["Mantis", "Mantis", "Mantis", "Engi", "Mensch"],
+        "weapons_summary": "Kurzstrecken-Flak (3.2s), Brand-Laser MK I (3.8s)",
+        "desc": "Agiles Enterschiff mit Teleporter und hoher Nahkampfstärke.",
+    },
+    "Rock-Schlachtschiff": {
+        "crew_summary": "3x Rock, 1x Mensch",
+        "crew_species": ["Rock", "Rock", "Rock", "Mensch"],
+        "weapons_summary": "Hermes Rakete (4.5s), Hüllenbruch-Bombe (5.0s)",
+        "desc": "Massive Panzerung und zerstörerische Raketenkanonen.",
+    },
+    "Kristall-Kreuzer": {
+        "crew_summary": "2x Kristall, 1x Mensch, 1x Zoltan",
+        "crew_species": ["Kristall", "Kristall", "Mensch", "Zoltan"],
+        "weapons_summary": "Schwerer Laser (3.5s), Impuls-Laser (Kurz, 2.5s)",
+        "desc": "Legendäres Alien-Schiff mit Kristallschilden und Spezialbewaffnung.",
+    },
+}
+
+
+def apply_starting_setup_for_ship(player_data, ship_name: str) -> None:
+    from classes.Crew import Crew
+    from classes.Weapon import Weapon
+
+    specs = SHIP_STARTING_SPECS.get(ship_name, SHIP_STARTING_SPECS["Kestrel"])
+    species_list = specs["crew_species"]
+
+    # Start-Crew setzen
+    player_data.crew.clear()
+    rooms = getattr(player_data.ship, "rooms", [])
+    for idx, spec in enumerate(species_list):
+        r = rooms[idx % len(rooms)] if rooms else None
+        cx = r.rect.centerx if r else 250
+        cy = r.rect.centery if r else 250
+        player_data.crew.append(Crew(cx, cy, species=spec))
+
+    # Start-Waffen setzen
+    player_data.weapons.clear()
+    if ship_name == "Kestrel":
+        player_data.weapons = [
+            Weapon("Standard Laser", charge_time=3.0, w_type="LASER"),
+            Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1),
+        ]
+    elif ship_name == "Kreuzer":
+        player_data.weapons = [
+            Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0),
+            Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0),
+        ]
+    elif ship_name == "Tarnschiff":
+        player_data.weapons = [
+            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0),
+            Weapon("Pike Strahl", charge_time=5.0, w_type="BEAM", damage=35.0),
+        ]
+    elif ship_name == "Zoltan-Fregatte":
+        player_data.weapons = [
+            Weapon("Halberd Strahl", charge_time=5.5, w_type="BEAM", damage=45.0),
+            Weapon("Ion Blast MK I", charge_time=3.0, w_type="ION", damage=10.0),
+        ]
+    elif ship_name == "Federations-Kreuzer":
+        player_data.weapons = [
+            Weapon("Standard Laser", charge_time=3.0, w_type="LASER", damage=25.0),
+            Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0),
+        ]
+    elif ship_name == "Mantis-Kaperer":
+        player_data.weapons = [
+            Weapon("Kurzstrecken-Flak", charge_time=3.2, w_type="FLAK", damage=30.0),
+            Weapon("Brand-Laser MK I", charge_time=3.8, w_type="LASER", damage=15.0, fire_chance=0.75),
+        ]
+    elif ship_name == "Rock-Schlachtschiff":
+        player_data.weapons = [
+            Weapon("Hermes Rakete", charge_time=4.5, w_type="MISSILE", ammo_cost=1, damage=50.0),
+            Weapon("Hüllenbruch-Bombe", charge_time=5.0, w_type="BOMB", ammo_cost=1, damage=15.0, breach_chance=0.90),
+        ]
+    elif ship_name == "Kristall-Kreuzer":
+        player_data.weapons = [
+            Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0),
+            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0),
+        ]
+
 
 ENEMY_SCOUT = ShipModel("Scout", 8, [
     Room("Schild", (600, 220, 80, 80), is_enemy=True),

@@ -1207,15 +1207,17 @@ class RenderManager:
         )
 
         # 8 Schiffskarten in 2x4 Raster
-        from classes.ShipModel import SHIP_BLUEPRINTS
+        from classes.ShipModel import SHIP_BLUEPRINTS, SHIP_STARTING_SPECS, PLAYER_SHIP
         from managers.save_manager import SaveManager
 
         selected_name = getattr(self.data.player.ship, "name", "Kestrel")
         unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
 
         col_x = [40, 250, 460, 670]
-        row_y = [85, 240]
+        row_y = [82, 226]
         ship_list = list(SHIP_BLUEPRINTS.items())
+
+        hovered_ship_tuple = None
 
         for idx, (name, ship_obj) in enumerate(ship_list):
             r_idx = idx // 4
@@ -1223,47 +1225,58 @@ class RenderManager:
             if r_idx >= 2:
                 break
 
-            btn = pygame.Rect(col_x[c_idx], row_y[r_idx], 195, 145)
+            btn = pygame.Rect(col_x[c_idx], row_y[r_idx], 195, 138)
             is_sel = (name == selected_name)
             is_unlocked = (name in unlocked)
             is_hov = btn.collidepoint(mx, my)
 
+            if is_hov:
+                hovered_ship_tuple = (name, ship_obj)
+
             c_surf = pygame.Surface((btn.width, btn.height), pygame.SRCALPHA)
             if is_sel:
-                c_surf.fill((25, 45, 70, 220))
-                border_col = (0, 220, 255)
+                c_surf.fill((25, 48, 75, 230))
+                border_col = (0, 230, 180)
             elif is_hov:
-                c_surf.fill((20, 35, 55, 200))
+                c_surf.fill((20, 38, 58, 210))
                 border_col = (100, 200, 255)
             else:
-                c_surf.fill((14, 22, 38, 190))
-                border_col = (60, 80, 110)
+                c_surf.fill((14, 22, 36, 190))
+                border_col = (55, 75, 105)
 
             self.screen.blit(c_surf, (btn.x, btn.y))
             pygame.draw.rect(self.screen, border_col, btn, 3 if is_sel else (2 if is_hov else 1))
 
             name_disp = name if len(name) <= 15 else name[:14] + "."
             name_txt = self.font.render(name_disp, True, (255, 255, 255) if is_sel else (210, 220, 240))
-            self.screen.blit(name_txt, (btn.x + 10, btn.y + 8))
+            self.screen.blit(name_txt, (btn.x + 8, btn.y + 6))
 
             pygame.draw.line(
-                self.screen, border_col, (btn.x + 8, btn.y + 32), (btn.x + btn.width - 8, btn.y + 32), 1
+                self.screen, border_col, (btn.x + 6, btn.y + 28), (btn.x + btn.width - 6, btn.y + 28), 1
             )
 
-            stat_font = pygame.font.SysFont(None, 18)
+            stat_font = pygame.font.SysFont(None, 16)
             stats_str = f"HP: {ship_obj.hp}  |  Waffen: {ship_obj.max_weapons}  |  Crew: {ship_obj.max_crew}"
             stats_txt = stat_font.render(stats_str, True, (140, 220, 240))
-            self.screen.blit(stats_txt, (btn.x + 10, btn.y + 38))
+            self.screen.blit(stats_txt, (btn.x + 8, btn.y + 32))
 
-            # Raum-Vorschau
+            # Raum-Vorschau mit einheitlicher taktischer Stahl-Optik
             rooms_count = len(ship_obj.rooms)
             for r in range(min(rooms_count, 6)):
-                rx = btn.x + 10 + r * 28
-                ry = btn.y + 60
-                pygame.draw.rect(self.screen, (35, 60, 90), (rx, ry, 22, 22))
-                pygame.draw.rect(self.screen, (0, 200, 255) if is_sel else (100, 130, 160), (rx, ry, 22, 22), 1)
+                rx = btn.x + 8 + r * 29
+                ry = btn.y + 54
+                r_name = ship_obj.rooms[r].name
+                r_initial = r_name[0].upper()
 
-            sel_btn_rect = pygame.Rect(btn.x + 10, btn.y + 95, btn.width - 20, 36)
+                r_border = (0, 220, 255) if is_sel else (70, 105, 145)
+                r_txt_col = (255, 255, 255) if is_sel else (170, 205, 235)
+
+                pygame.draw.rect(self.screen, (20, 32, 48), (rx, ry, 25, 25))
+                pygame.draw.rect(self.screen, r_border, (rx, ry, 25, 25), 1)
+                init_lbl = stat_font.render(r_initial, True, r_txt_col)
+                self.screen.blit(init_lbl, (rx + 8, ry + 5))
+
+            sel_btn_rect = pygame.Rect(btn.x + 8, btn.y + 92, btn.width - 16, 36)
             if is_sel:
                 self.draw_scifi_button(sel_btn_rect, "GEWÄHLT", is_active=True, primary_color=(0, 230, 140))
             elif is_unlocked:
@@ -1271,13 +1284,58 @@ class RenderManager:
             else:
                 self.draw_scifi_button(sel_btn_rect, "GESPERRT", enabled=False)
 
-        # Action Buttons Leiste unten
-        self.btn_start = pygame.Rect(40, 395, 195, 44)
-        self.btn_continue_game = pygame.Rect(250, 395, 195, 44)
-        self.btn_options = pygame.Rect(460, 395, 195, 44)
-        self.btn_quit = pygame.Rect(670, 395, 195, 44)
+        # -------------------------------------------------------------
+        # SCHIFFS-INSPEKTOR PANEL (Taktische Sci-Fi Übersicht)
+        # -------------------------------------------------------------
+        inspector_rect = pygame.Rect(40, 372, 825, 148)
+        pygame.draw.rect(self.screen, (16, 24, 38), inspector_rect)
+        pygame.draw.rect(self.screen, (0, 200, 255), inspector_rect, 2)
 
-        from managers.save_manager import SaveManager
+        inspect_name, inspect_ship = hovered_ship_tuple if hovered_ship_tuple else (selected_name, SHIP_BLUEPRINTS.get(selected_name, PLAYER_SHIP))
+        specs = SHIP_STARTING_SPECS.get(inspect_name, SHIP_STARTING_SPECS["Kestrel"])
+
+        hdr_font = pygame.font.SysFont(None, 20, bold=True)
+        body_font = pygame.font.SysFont(None, 16)
+        small_font = pygame.font.SysFont(None, 14)
+
+        insp_header = hdr_font.render(f"--- SCHIFFS-INSPEKTOR: {inspect_name.upper()} ---", True, (100, 220, 255))
+        self.screen.blit(insp_header, (inspector_rect.x + 15, inspector_rect.y + 10))
+
+        # Zeile 1: Crew & Waffen
+        line1_str = f"BESATZUNG: {specs['crew_summary']}   |   START-WAFFEN: {specs['weapons_summary']}"
+        self.screen.blit(body_font.render(line1_str, True, (255, 220, 100)), (inspector_rect.x + 15, inspector_rect.y + 32))
+
+        # Zeile 2: Beschreibung
+        self.screen.blit(body_font.render(f"DETAILS: {specs['desc']}", True, (200, 220, 240)), (inspector_rect.x + 15, inspector_rect.y + 54))
+
+        # Zeile 3: Raum-Layout & Systeme
+        rooms_str = ", ".join([r.name for r in inspect_ship.rooms])
+        sys_str = f"SYSTEME ({len(inspect_ship.rooms)}): {rooms_str}"
+        sys_lbl = small_font.render(sys_str, True, (160, 210, 245))
+        self.screen.blit(sys_lbl, (inspector_rect.x + 15, inspector_rect.y + 76))
+
+        # Zeile 4: Waffenslots
+        slots_parts = []
+        for idx, slot in enumerate(inspect_ship.weapon_slots):
+            allowed = slot.get("allowed_types")
+            if allowed:
+                types_str = "/".join(allowed)
+                slots_parts.append(f"H{idx+1}: [{types_str}]")
+            else:
+                slots_parts.append(f"H{idx+1}: [ALLE]")
+        slots_str = f"WAFFENSLOTS ({inspect_ship.max_weapons}): " + " | ".join(slots_parts)
+        slots_lbl = small_font.render(slots_str, True, (180, 215, 245))
+        self.screen.blit(slots_lbl, (inspector_rect.x + 15, inspector_rect.y + 96))
+
+        # Zeile 5: Waffentyp-Legende
+        legend_str = "HINWEIS: LASER (Schildbrecher) | BEAM (Linienschaden) | MISSILE (Schildbypass) | ION (Systemlähmung)"
+        self.screen.blit(small_font.render(legend_str, True, (130, 160, 195)), (inspector_rect.x + 15, inspector_rect.y + 118))
+
+        # Action Buttons Leiste unten (Y = 532)
+        self.btn_start = pygame.Rect(40, 532, 195, 42)
+        self.btn_continue_game = pygame.Rect(250, 532, 195, 42)
+        self.btn_options = pygame.Rect(460, 532, 195, 42)
+        self.btn_quit = pygame.Rect(670, 532, 195, 42)
 
         has_save = SaveManager.has_savegame()
 

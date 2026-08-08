@@ -343,30 +343,31 @@ class InputManager:
         # 8. Main Menu State
         if self.data.current_state == STATE_MAIN_MENU:
             import copy
-            from classes.ShipModel import SHIP_BLUEPRINTS
+            from classes.ShipModel import SHIP_BLUEPRINTS, apply_starting_setup_for_ship
             from managers.save_manager import SaveManager
 
             unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
 
             col_x = [40, 250, 460, 670]
-            row_y = [85, 240]
+            row_y = [82, 226]
             ship_list = list(SHIP_BLUEPRINTS.keys())
 
             for idx, name in enumerate(ship_list):
                 r_idx = idx // 4
                 c_idx = idx % 4
                 if r_idx < 2:
-                    card_btn = pygame.Rect(col_x[c_idx], row_y[r_idx], 195, 145)
+                    card_btn = pygame.Rect(col_x[c_idx], row_y[r_idx], 195, 138)
                     if card_btn.collidepoint(mx, my) and name in unlocked:
                         self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS[name])
+                        apply_starting_setup_for_ship(self.data.player, name)
                         if self.sound:
                             self.sound.play("click")
                         return
 
-            btn_start = pygame.Rect(40, 395, 195, 44)
-            btn_continue_game = pygame.Rect(250, 395, 195, 44)
-            btn_options = pygame.Rect(460, 395, 195, 44)
-            btn_quit = pygame.Rect(670, 395, 195, 44)
+            btn_start = pygame.Rect(40, 532, 195, 42)
+            btn_continue_game = pygame.Rect(250, 532, 195, 42)
+            btn_options = pygame.Rect(460, 532, 195, 42)
+            btn_quit = pygame.Rect(670, 532, 195, 42)
 
             if btn_options.collidepoint(mx, my):
                 self.data.current_state = STATE_OPTIONS
