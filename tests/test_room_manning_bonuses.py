@@ -61,6 +61,10 @@ class TestRoomManningBonuses(unittest.TestCase):
     def test_evasion_manning_levels(self):
         b_room = next((r for r in self.data.player.ship.rooms if r.name == "Brücke"), None)
         e_room = next((r for r in self.data.player.ship.rooms if r.name == "Maschinen"), None)
+        if b_room:
+            b_room.current_power = b_room.max_power = 1
+        if e_room:
+            e_room.current_power = e_room.max_power = 1
 
         self.data.player.crew.clear()
 
@@ -80,6 +84,20 @@ class TestRoomManningBonuses(unittest.TestCase):
         self.data.player.crew.append(pilot2)
         ev_2_pilots = self.combat_mgr.get_player_evasion()
         self.assertGreater(ev_2_pilots, ev_1_pilot)
+
+    def test_power_ratio_scaling(self):
+        w_room = next((r for r in self.data.player.ship.rooms if r.name == "Waffen"), None)
+        w_room.max_power = 4
+        w_room.current_power = 2  # 50% power
+
+        # Manned with 1 crew (base 1.20) at 50% power => 1.20 * 0.5 = 0.60
+        bonus_50 = get_room_manning_bonus("Waffen", 1, room=w_room)
+        self.assertAlmostEqual(bonus_50["multiplier"], 0.60)
+
+        # 0 power => 0.0 multiplier
+        w_room.current_power = 0
+        bonus_0 = get_room_manning_bonus("Waffen", 1, room=w_room)
+        self.assertEqual(bonus_0["multiplier"], 0.0)
 
 
 if __name__ == "__main__":

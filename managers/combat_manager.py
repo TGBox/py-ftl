@@ -263,8 +263,8 @@ class CombatManager:
             # Medbay-Heilung: Crew in eigener Medbay wird geheilt wenn Raum Strom hat (1 Crew: +25%, 2+ Crew: +50%)
             if not crew.is_boarding and crew.current_room and crew.current_room.name == "Medbay" and crew.current_room.current_power > 0:
                 m_count = len([c for c in self.data.player.crew if c.current_room == crew.current_room])
-                m_bonus = get_room_manning_bonus("Medbay", m_count)
-                heal_rate = 15.0 * crew.current_room.current_power * m_bonus["multiplier"]
+                m_bonus = get_room_manning_bonus("Medbay", m_count, room=crew.current_room)
+                heal_rate = 15.0 * m_bonus["multiplier"]
                 crew.hp = min(crew.max_hp, crew.hp + heal_rate * dt)
             # Tod prüfen
             if crew.hp <= 0.0:
@@ -410,7 +410,7 @@ class CombatManager:
         s_room = next((r for r in self.data.player.ship.rooms if r.name == "Schild"), None)
         s_power = s_room.current_power if s_room else 0
         s_count = len([c for c in self.data.player.crew if c.current_room == s_room]) if s_room else 0
-        s_bonus = get_room_manning_bonus("Schild", s_count)
+        s_bonus = get_room_manning_bonus("Schild", s_count, room=s_room)
 
         self.data.player.shield.update(
             dt * s_bonus["multiplier"],
@@ -420,7 +420,7 @@ class CombatManager:
         enemy_s_room = next((r for r in self.data.enemy.ship.rooms if r.name == "Schild"), None)
         enemy_s_power = enemy_s_room.current_power if enemy_s_room else 0
         enemy_s_count = len([c for c in self.enemy_crew if c.current_room == enemy_s_room]) if enemy_s_room else 0
-        enemy_s_bonus = get_room_manning_bonus("Schild", enemy_s_count)
+        enemy_s_bonus = get_room_manning_bonus("Schild", enemy_s_count, room=enemy_s_room)
 
         self.data.enemy.shield.update(
             dt * enemy_s_bonus["multiplier"],
@@ -433,7 +433,7 @@ class CombatManager:
 
         # Waffen-Bemannungsbonus (1 Crew: +20%, 2+ Crew: +35%)
         w_manned_count = len([c for c in self.data.player.crew if c.current_room == w_room]) if w_room else 0
-        charge_mult = get_room_manning_bonus("Waffen", w_manned_count)["multiplier"]
+        charge_mult = get_room_manning_bonus("Waffen", w_manned_count, room=w_room)["multiplier"]
 
         for weapon in self.data.player.weapons:
             weapon.update(dt * charge_mult, weapon_powered)
@@ -528,7 +528,7 @@ class CombatManager:
 
         enemy_w_room = next((r for r in self.data.enemy.ship.rooms if r.name == "Waffen"), None)
         enemy_w_count = len([c for c in self.enemy_crew if c.current_room == enemy_w_room]) if enemy_w_room else 0
-        manned_mult = get_room_manning_bonus("Waffen", enemy_w_count)["multiplier"]
+        manned_mult = get_room_manning_bonus("Waffen", enemy_w_count, room=enemy_w_room)["multiplier"]
 
         weapon.update(
             effective_dt * manned_mult,
@@ -682,7 +682,7 @@ class CombatManager:
         if pilot_count >= 1:
             a_multiplier = 1.0
             pilot_crew = pilot_crews[0]
-            b_bonus = get_room_manning_bonus("Brücke", pilot_count)
+            b_bonus = get_room_manning_bonus("Brücke", pilot_count, room=bridge_room)
             c_pilot_bonus = b_bonus["evasion"] + getattr(pilot_crew, "skill_piloting", 0) * 0.05
         else:
             bridge_power = bridge_room.current_power if bridge_room else 0
@@ -694,7 +694,7 @@ class CombatManager:
                 a_multiplier = 0.0
             c_pilot_bonus = 0.0
 
-        eng_bonus = get_room_manning_bonus("Maschinen", engine_count)
+        eng_bonus = get_room_manning_bonus("Maschinen", engine_count, room=engine_room)
         c_engine_bonus = eng_bonus["evasion"]
 
         s_cloak = 0.60 if getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0 else 0.0
