@@ -447,7 +447,8 @@ class CombatManager:
         charge_mult = get_room_manning_bonus("Waffen", w_manned_count, room=w_room)["multiplier"]
 
         for weapon in self.data.player.weapons:
-            weapon.update(dt * charge_mult, weapon_powered)
+            if weapon is not None:
+                weapon.update(dt * charge_mult, weapon_powered)
 
         if self.data.combat.autofire_enabled:
             self.fire_autofire_weapons()
@@ -457,6 +458,8 @@ class CombatManager:
         weapon_room = self.data.player.ship.rooms[1]
 
         for idx, weapon in enumerate(self.data.player.weapons):
+            if weapon is None:
+                continue
 
             if not weapon.is_ready():
                 continue

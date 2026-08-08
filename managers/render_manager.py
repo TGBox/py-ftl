@@ -804,7 +804,7 @@ class RenderManager:
                 has_w = slot_i < len(self.data.player.weapons)
                 w_obj = self.data.player.weapons[slot_i] if has_w else None
 
-                if not has_w:
+                if not has_w or w_obj is None:
                     status_str = "Einbauen (Slot Leer)"
                 elif w_obj.w_type == sel_item.get("w_type"):
                     status_str = f"WAFFEN-FUSION (Upgrade MK {w_obj.level} -> MK {w_obj.level+1})"
