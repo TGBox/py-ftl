@@ -1417,72 +1417,145 @@ class RenderManager:
 
     def draw_achievements_screen(self):
         bg_surf = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
-        bg_surf.fill((12, 18, 30, 240))
+        bg_surf.fill((10, 16, 28, 245))
         self.screen.blit(bg_surf, (0, 0))
 
-        banner_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 270, 15, 540, 48)
-        b_surf = pygame.Surface((banner_rect.width, banner_rect.height), pygame.SRCALPHA)
-        b_surf.fill((15, 30, 50, 220))
-        self.screen.blit(b_surf, (banner_rect.x, banner_rect.y))
-        pygame.draw.rect(self.screen, (255, 215, 0), banner_rect, 2)
+        pygame.draw.rect(self.screen, (18, 26, 42), (40, 20, 820, 560))
+        pygame.draw.rect(self.screen, (0, 200, 255), (40, 20, 820, 560), 2)
 
-        title_font = pygame.font.SysFont(None, 32, bold=True)
-        title_txt = title_font.render("🏆 GALAKTISCHE ERRUNGENSCHAFTEN", True, (255, 230, 100))
-        self.screen.blit(title_txt, (banner_rect.x + (banner_rect.width - title_txt.get_width()) // 2, banner_rect.y + 10))
+        title_font = pygame.font.SysFont(None, 24, bold=True)
+        sub_font = pygame.font.SysFont(None, 16, bold=True)
+        small_font = pygame.font.SysFont(None, 14)
 
+        # 1. Titel
+        t_lbl = title_font.render("--- GALAKTISCHE ERRUNGENSCHAFTEN ---", True, (100, 220, 255))
+        self.screen.blit(t_lbl, (LOGICAL_WIDTH // 2 - t_lbl.get_width() // 2, 28))
+
+        # 2. Gesamt-Fortschrittsbalken
         ach_mgr = getattr(self.data, "achievements", None)
-        ach_list = list(ach_mgr.achievements.values()) if ach_mgr else []
-        unlocked_count = sum(1 for a in ach_list if a.get("unlocked", False))
+        ach_dict = ach_mgr.achievements if ach_mgr else {}
+        total_count = len(ach_dict)
+        unlocked_count = sum(1 for a in ach_dict.values() if a.get("unlocked", False))
+        pct = (unlocked_count / total_count) if total_count > 0 else 0.0
 
-        stats_txt = self.font.render(f"Freigeschaltet: {unlocked_count} / {len(ach_list)}", True, (140, 220, 240))
-        self.screen.blit(stats_txt, (40, 72))
+        bar_rect = pygame.Rect(180, 54, 540, 20)
+        pygame.draw.rect(self.screen, (15, 25, 40), bar_rect)
+        pygame.draw.rect(self.screen, (80, 120, 160), bar_rect, 1)
 
-        col_x = [40, 460]
-        row_y = [102, 180, 258, 336, 414]
+        fill_w = int(536 * pct)
+        if fill_w > 0:
+            pygame.draw.rect(self.screen, (0, 220, 180), (182, 56, fill_w, 16))
 
+        prog_str = f"Freigeschaltet: {unlocked_count} / {total_count} ({int(pct * 100)}%)"
+        prog_lbl = small_font.render(prog_str, True, (255, 255, 255))
+        self.screen.blit(prog_lbl, (bar_rect.x + (bar_rect.width - prog_lbl.get_width()) // 2, bar_rect.y + 3))
+
+        # 3. Kategorie-Filter Tabs
+        categories = ["ALLE", "KAMPF", "CREW", "SCHIFF", "ERKUNDUNG"]
+        cur_cat = getattr(self, "achievement_category_filter", "ALLE")
         mx, my = self._logical_mouse_pos()
 
-        for idx, a_data in enumerate(ach_list):
-            if idx >= 10:
-                break
-            c_idx = idx % 2
+        for idx, cat in enumerate(categories):
+            btn_tab = pygame.Rect(55 + idx * 158, 82, 150, 28)
+            setattr(self, f"btn_ach_tab_{idx}", btn_tab)
+            is_sel = (cat == cur_cat)
+            is_hov = btn_tab.collidepoint(mx, my)
+
+            t_bg = (30, 80, 120) if is_sel else ((24, 40, 62) if is_hov else (18, 28, 44))
+            t_border = (0, 230, 255) if is_sel else ((100, 180, 240) if is_hov else (60, 90, 120))
+            pygame.draw.rect(self.screen, t_bg, btn_tab)
+            pygame.draw.rect(self.screen, t_border, btn_tab, 2 if is_sel else 1)
+
+            t_txt = sub_font.render(cat, True, (255, 255, 255) if is_sel else (180, 210, 240))
+            self.screen.blit(t_txt, (btn_tab.x + (btn_tab.width - t_txt.get_width()) // 2, btn_tab.y + 6))
+
+        # 4. Gefilterte Achievements Liste
+        filtered = [
+            a for a in ach_dict.values()
+            if cur_cat == "ALLE" or a.get("category", "KAMPF") == cur_cat
+        ]
+
+        cards_per_page = 6
+        total_pages = max(1, (len(filtered) + cards_per_page - 1) // cards_per_page)
+        cur_page = min(getattr(self, "achievement_page", 0), total_pages - 1)
+        self.achievement_page = cur_page
+
+        start_idx = cur_page * cards_per_page
+        page_items = filtered[start_idx : start_idx + cards_per_page]
+
+        # 2 Spalten x 3 Zeilen Grid
+        for idx, a_data in enumerate(page_items):
             r_idx = idx // 2
+            c_idx = idx % 2
+            card_x = 55 + c_idx * 396
+            card_y = 118 + r_idx * 122
+            card_rect = pygame.Rect(card_x, card_y, 386, 114)
 
-            card_rect = pygame.Rect(col_x[c_idx], row_y[r_idx], 400, 68)
-            is_unlocked = a_data.get("unlocked", False)
-            is_hov = card_rect.collidepoint(mx, my)
+            unlocked = a_data.get("unlocked", False)
+            u_time = a_data.get("unlock_time", "")
 
-            c_surf = pygame.Surface((card_rect.width, card_rect.height), pygame.SRCALPHA)
-            if is_unlocked:
-                c_surf.fill((25, 50, 40, 210) if is_hov else (18, 38, 30, 190))
-                border_col = (0, 230, 140)
+            if unlocked:
+                bg_col = (20, 45, 68)
+                border_col = (0, 230, 180)
+                badge_bg = (30, 85, 65)
+                badge_txt_col = (255, 220, 100)
+                status_str = f"FREIGESCHALTET AM {u_time}" if u_time else "FREIGESCHALTET"
+                title_col = (255, 255, 255)
+                desc_col = (190, 230, 255)
             else:
-                c_surf.fill((25, 30, 45, 190) if is_hov else (14, 20, 32, 170))
-                border_col = (60, 80, 110)
+                bg_col = (14, 20, 32)
+                border_col = (50, 70, 95)
+                badge_bg = (24, 32, 46)
+                badge_txt_col = (130, 150, 175)
+                status_str = "GESPERRT"
+                title_col = (150, 168, 190)
+                desc_col = (110, 125, 145)
 
-            self.screen.blit(c_surf, (card_rect.x, card_rect.y))
-            pygame.draw.rect(self.screen, border_col, card_rect, 2 if is_hov else 1)
+            pygame.draw.rect(self.screen, bg_col, card_rect)
+            pygame.draw.rect(self.screen, border_col, card_rect, 2 if unlocked else 1)
 
-            t_col = (255, 230, 120) if is_unlocked else (170, 185, 205)
-            t_txt = self.font.render(f"{a_data.get('icon', '⭐')} {a_data.get('title', '')}", True, t_col)
-            self.screen.blit(t_txt, (card_rect.x + 10, card_rect.y + 8))
+            # Badge oben
+            badge_rect = pygame.Rect(card_x + 8, card_y + 8, card_rect.width - 16, 20)
+            pygame.draw.rect(self.screen, badge_bg, badge_rect)
+            pygame.draw.rect(self.screen, border_col, badge_rect, 1)
+            b_lbl = small_font.render(status_str, True, badge_txt_col)
+            self.screen.blit(b_lbl, (badge_rect.x + (badge_rect.width - b_lbl.get_width()) // 2, badge_rect.y + 3))
 
-            desc_font = pygame.font.SysFont(None, 16)
-            d_txt = desc_font.render(a_data.get("desc", ""), True, (200, 215, 235) if is_unlocked else (130, 145, 165))
-            self.screen.blit(d_txt, (card_rect.x + 10, card_rect.y + 30))
+            # Titel
+            t_str = a_data["title"]
+            title_surf = sub_font.render(t_str, True, title_col)
+            self.screen.blit(title_surf, (card_x + 12, card_y + 34))
 
-            status_str = f"✔ Freigeschaltet am {a_data.get('unlock_time', '')}" if is_unlocked else "🔒 GESPERRT"
-            status_col = (0, 230, 140) if is_unlocked else (140, 150, 170)
-            s_txt = desc_font.render(status_str, True, status_col)
-            self.screen.blit(s_txt, (card_rect.x + 10, card_rect.y + 48))
+            # Beschreibung (mit Wort-Umbruch)
+            d_str = a_data["desc"]
+            words = d_str.split(" ")
+            line1, line2 = "", ""
+            for w in words:
+                if small_font.render((line1 + " " + w).strip(), True, desc_col).get_width() < card_rect.width - 24:
+                    line1 = (line1 + " " + w).strip()
+                else:
+                    line2 = (line2 + " " + w).strip()
 
-        self.btn_close_achievements = pygame.Rect(320, 510, 260, 42)
-        self.draw_scifi_button(
-            self.btn_close_achievements,
-            "ZURÜCK ZUM MENÜ",
-            is_hovered=self.btn_close_achievements.collidepoint(mx, my),
-            primary_color=(0, 200, 255),
-        )
+            self.screen.blit(small_font.render(line1, True, desc_col), (card_x + 12, card_y + 58))
+            if line2:
+                self.screen.blit(small_font.render(line2, True, desc_col), (card_x + 12, card_y + 76))
+
+            # Kategorie Tag unten rechts
+            cat_tag = small_font.render(f"[{a_data.get('category', 'KAMPF')}]", True, (100, 180, 240) if unlocked else (90, 110, 135))
+            self.screen.blit(cat_tag, (card_x + card_rect.width - cat_tag.get_width() - 10, card_y + 92))
+
+        # 5. Paginierung Buttons unten
+        self.btn_ach_prev = pygame.Rect(180, 492, 120, 36)
+        self.btn_ach_next = pygame.Rect(600, 492, 120, 36)
+        page_txt = sub_font.render(f"Seite {cur_page + 1} von {total_pages}", True, (200, 235, 255))
+        self.screen.blit(page_txt, (LOGICAL_WIDTH // 2 - page_txt.get_width() // 2, 501))
+
+        self.draw_scifi_button(self.btn_ach_prev, "< Vorherige", is_hovered=self.btn_ach_prev.collidepoint(mx, my), enabled=(cur_page > 0))
+        self.draw_scifi_button(self.btn_ach_next, "Nächste >", is_hovered=self.btn_ach_next.collidepoint(mx, my), enabled=(cur_page < total_pages - 1))
+
+        # 6. Hauptmenü / Zurück Button
+        self.btn_close_achievements = pygame.Rect(340, 532, 220, 38)
+        self.draw_scifi_button(self.btn_close_achievements, "ZURÜCK ZUM MENÜ", is_hovered=self.btn_close_achievements.collidepoint(mx, my), primary_color=(0, 200, 255))
 
 
 

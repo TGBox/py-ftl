@@ -306,11 +306,33 @@ class InputManager:
 
         # 6. Achievements Bildschirm
         if self.data.current_state == STATE_ACHIEVEMENTS:
-            btn_close = pygame.Rect(320, 510, 260, 42)
-            if btn_close.collidepoint(mx, my):
-                if self.sound:
-                    self.sound.play("click")
+            render_ref = getattr(self.data, "render_manager", None)
+            categories = ["ALLE", "KAMPF", "CREW", "SCHIFF", "ERKUNDUNG"]
+            for idx, cat in enumerate(categories):
+                btn_tab = pygame.Rect(55 + idx * 158, 82, 150, 28)
+                if btn_tab.collidepoint(mx, my):
+                    if render_ref:
+                        render_ref.achievement_category_filter = cat
+                        render_ref.achievement_page = 0
+                    if self.sound: self.sound.play("click")
+                    return
+
+            btn_prev = pygame.Rect(180, 492, 120, 36)
+            btn_next = pygame.Rect(600, 492, 120, 36)
+            btn_close = pygame.Rect(340, 532, 220, 38)
+
+            if btn_prev.collidepoint(mx, my) and render_ref:
+                render_ref.achievement_page = max(0, render_ref.achievement_page - 1)
+                if self.sound: self.sound.play("click")
+                return
+            elif btn_next.collidepoint(mx, my) and render_ref:
+                render_ref.achievement_page = render_ref.achievement_page + 1
+                if self.sound: self.sound.play("click")
+                return
+            elif btn_close.collidepoint(mx, my):
+                if self.sound: self.sound.play("click")
                 self.data.current_state = STATE_OPTIONS
+                return
             return
 
         # 7. Shop Modal State

@@ -6,65 +6,144 @@ import pygame
 ACHIEVEMENT_FILE = "data/achievements.json"
 
 ACHIEVEMENTS_MASTER = [
+    # --- KAMPF & ZERSTÖRUNG ---
     {
         "id": "first_victory",
         "title": "Erster Sieg",
         "desc": "Besiege ein feindliches Raumschiff im Gefecht.",
-        "icon": "⚔️",
+        "category": "KAMPF",
     },
     {
         "id": "boss_slayer",
         "title": "Rebellen-Schreck",
         "desc": "Besiege einen Sektor Mini-Boss.",
-        "icon": "💥",
+        "category": "KAMPF",
     },
     {
         "id": "flagship_down",
         "title": "Galaktischer Retter",
         "desc": "Zerstöre das Endboss-Flaggschiff der Rebellen!",
-        "icon": "🏆",
+        "category": "KAMPF",
     },
+    {
+        "id": "beam_master",
+        "title": "Strahlungs-Spezialist",
+        "desc": "Treffe 3 gegnerische Räume mit einem einzigen Laserstrahl.",
+        "category": "KAMPF",
+    },
+    {
+        "id": "fire_starter",
+        "title": "Pyromane",
+        "desc": "Entfache in 3 Räumen des Gegners gleichzeitig Feuer.",
+        "category": "KAMPF",
+    },
+    {
+        "id": "crew_eliminator",
+        "title": "Bio-Extinktion",
+        "desc": "Eliminiere die gesamte gegnerische Crew ohne das Schiff zu zerstören.",
+        "category": "KAMPF",
+    },
+    {
+        "id": "bare_hull",
+        "title": "Auf Messers Schneide",
+        "desc": "Gewinne einen Kampf mit nur 1 HP verbleibender Hüllenenergie.",
+        "category": "KAMPF",
+    },
+    {
+        "id": "boarding_party",
+        "title": "Entermannschaft",
+        "desc": "Teleportiere eine Entermannschaft auf das gegnerische Schiff.",
+        "category": "KAMPF",
+    },
+
+    # --- BESATZUNG & SKILLS ---
     {
         "id": "master_mechanic",
         "title": "Meister-Ingenieur",
         "desc": "Bringe den Reparatur-Skill eines Crew-Mitglieds auf Stufe 3.",
-        "icon": "🔧",
+        "category": "CREW",
     },
     {
         "id": "master_warrior",
         "title": "Kriegsfürst",
         "desc": "Bringe den Nahkampf-Skill eines Crew-Mitglieds auf Stufe 3.",
-        "icon": "⚔️",
+        "category": "CREW",
     },
     {
-        "id": "collector",
-        "title": "Schiffs-Sammler",
-        "desc": "Schalte mindestens 4 verschiedene Raumschiffe frei.",
-        "icon": "🚀",
-    },
-    {
-        "id": "survivor",
-        "title": "Überlebenskünstler",
-        "desc": "Triggere ein Event mit 0 Treibstoff und überlebe.",
-        "icon": "⚓",
+        "id": "ace_pilot",
+        "title": "As der Galaxie",
+        "desc": "Bringe den Piloten-Skill eines Crew-Mitglieds auf Stufe 3.",
+        "category": "CREW",
     },
     {
         "id": "full_house",
         "title": "Volles Haus",
         "desc": "Rekrutiere eine vollwertige Besatzung von 6 Crewmitgliedern.",
-        "icon": "👥",
+        "category": "CREW",
+    },
+    {
+        "id": "alien_coalition",
+        "title": "Galaktische Allianz",
+        "desc": "Habe mindestens 4 verschiedene Spezies in deiner Crew.",
+        "category": "CREW",
+    },
+
+    # --- SCHIFF & AUFRÜSTUNG ---
+    {
+        "id": "collector",
+        "title": "Schiffs-Sammler",
+        "desc": "Schalte mindestens 4 verschiedene Raumschiffe frei.",
+        "category": "SCHIFF",
+    },
+    {
+        "id": "armada",
+        "title": "Sternen-Armada",
+        "desc": "Schalte alle 8 Raumschiffe im Spiel frei!",
+        "category": "SCHIFF",
+    },
+    {
+        "id": "max_power",
+        "title": "Maximale Reaktorleistung",
+        "desc": "Rüste deinen Reaktor auf mindestens 25 Energiepunkte auf.",
+        "category": "SCHIFF",
+    },
+    {
+        "id": "impenetrable_shield",
+        "title": "Unüberwindbare Barriere",
+        "desc": "Besitze ein 4-schichtiges Schildsystem.",
+        "category": "SCHIFF",
     },
     {
         "id": "weapon_fuser",
         "title": "Waffenschmied",
         "desc": "Führe eine erfolgreiche Waffen-Fusion im Shop durch.",
-        "icon": "⚡",
+        "category": "SCHIFF",
+    },
+
+    # --- ERKUNDUNG & ÜBERLEBEN ---
+    {
+        "id": "survivor",
+        "title": "Überlebenskünstler",
+        "desc": "Triggere ein Event mit 0 Treibstoff und überlebe.",
+        "category": "ERKUNDUNG",
     },
     {
         "id": "event_explorer",
         "title": "Weltraum-Erkunder",
         "desc": "Erfülle 10 zufällige Sektor-Events.",
-        "icon": "🌌",
+        "category": "ERKUNDUNG",
+    },
+    {
+        "id": "scrap_hoarder",
+        "title": "Schrott-Millionär",
+        "desc": "Besitze mindestens 250 Scrap auf einmal im Frachtraum.",
+        "category": "ERKUNDUNG",
+    },
+    {
+        "id": "nebula_ghost",
+        "title": "Nebel-Phantom",
+        "desc": "Durchquere mindestens 5 Nebel-Knoten in einem Spieldurchgang.",
+        "category": "ERKUNDUNG",
     },
 ]
 
@@ -85,7 +164,7 @@ class AchievementManager:
                 "id": a_id,
                 "title": item["title"],
                 "desc": item["desc"],
-                "icon": item["icon"],
+                "category": item.get("category", "KAMPF"),
                 "unlocked": False,
                 "unlock_time": None,
             }

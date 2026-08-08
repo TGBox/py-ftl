@@ -899,9 +899,17 @@ class CombatManager:
             if is_final_boss and self.data.combat.boss_phase >= 3:
                 self.data.achievements.unlock("flagship_down")
 
+            if self.data.player.ship.hp == 1:
+                self.data.achievements.unlock("bare_hull")
+
+            if getattr(self.data.enemy.ship, "hp", 0) > 0:
+                self.data.achievements.unlock("crew_eliminator")
+
             unlocked_list = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
             if len(unlocked_list) >= 4:
                 self.data.achievements.unlock("collector")
+            if len(unlocked_list) >= 8:
+                self.data.achievements.unlock("armada")
 
         if is_final_boss:
             self.data.current_state = STATE_VICTORY
