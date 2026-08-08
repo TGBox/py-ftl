@@ -148,10 +148,50 @@ class MapManager:
             if evt_count >= 10:
                 self.data.achievements.unlock("event_explorer")
 
-        has_result = bool(choice_data.get("result_text"))
+        has_result = bool(choice_data.get("result_text")) or "outcomes" in choice_data
+
+        # 1. Stochastische Risiko-Auswertung (Erfolg vs. Fehlschlag)
+        if "outcomes" in choice_data and isinstance(choice_data["outcomes"], list):
+            outcomes = choice_data["outcomes"]
+            r = random.random()
+            cum_prob = 0.0
+            chosen = outcomes[-1]
+            for o in outcomes:
+                cum_prob += o.get("chance", 0.5)
+                if r <= cum_prob:
+                    chosen = o
+                    break
+            choice_data = chosen
+            action = choice_data.get("action", action)
+            has_result = bool(choice_data.get("result_text"))
+
         if has_result:
-            self.data.world.event_manager.result_text = choice_data["result_text"]
+            self.data.world.event_manager.result_text = choice_data.get("result_text", "")
             self.data.world.event_manager.pending_action = action
+
+        # 2. Ressourcen-Änderungen (Positiv & Negativ)
+        if choice_data.get("cost_scrap", 0) > 0:
+            self.data.player.scrap = max(0, self.data.player.scrap - choice_data["cost_scrap"])
+        if choice_data.get("cost_fuel", 0) > 0:
+            self.data.player.fuel = max(0, self.data.player.fuel - choice_data["cost_fuel"])
+        if choice_data.get("cost_missiles", 0) > 0:
+            self.data.player.missiles = max(0, self.data.player.missiles - choice_data["cost_missiles"])
+
+        # 3. Negative Gefahren & Schaden anwenden
+        c_dmg = choice_data.get("crew_damage", 0)
+        if c_dmg > 0 and self.data.player.crew:
+            affected = random.choice(self.data.player.crew)
+            affected.hp = max(0.0, affected.hp - c_dmg)
+            if affected.hp <= 0:
+                self.data.player.crew.remove(affected)
+
+        if choice_data.get("fire_room", False) and self.data.player.ship.rooms:
+            r_fire = random.choice(self.data.player.ship.rooms)
+            r_fire.fire_level = min(100.0, r_fire.fire_level + 60.0)
+
+        if choice_data.get("breach_room", False) and self.data.player.ship.rooms:
+            r_breach = random.choice(self.data.player.ship.rooms)
+            r_breach.has_breach = True
 
         if action == "BUY_FUEL":
             if self.data.player.scrap >= 10:
@@ -174,8 +214,6 @@ class MapManager:
                 self.data.current_state = STATE_MAP
 
         elif action == "TAKE_DAMAGE":
-            cost_scrap = choice_data.get("cost_scrap", 0)
-            self.data.player.scrap = max(0, self.data.player.scrap - cost_scrap)
             dmg = choice_data.get("damage", 0)
             self.data.player.ship.hp = max(0, self.data.player.ship.hp - dmg)
             if not has_result:
