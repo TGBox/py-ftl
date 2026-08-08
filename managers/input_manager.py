@@ -7,6 +7,7 @@ from managers.map_manager import MapManager
 from managers.shop_manager import ShopManager
 from managers.weapon_manager import WeaponManager
 from settings import *
+from utils import calculate_event_layout
 
 
 class InputManager:
@@ -123,23 +124,72 @@ class InputManager:
             elif self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
                 self.data.show_pause_menu = not getattr(self.data, "show_pause_menu", False)
                 if self.sound: self.sound.play("click")
+        elif event.key in (pygame.K_PLUS, pygame.K_KP_PLUS, pygame.K_EQUALS):
+            if self.sound:
+                self.sound.master_volume = min(1.0, round(self.sound.master_volume + 0.1, 2))
+                self.show_message(f"LAUTSTÄRKE: {int(self.sound.master_volume * 100)}%")
+        elif event.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
+            if self.sound:
+                self.sound.master_volume = max(0.0, round(self.sound.master_volume - 0.1, 2))
+                self.show_message(f"LAUTSTÄRKE: {int(self.sound.master_volume * 100)}%")
+        elif event.key == pygame.K_m and self.data.player.active_rename_idx is None:
+            if self.sound:
+                muted = not self.sound.music_enabled
+                self.sound.toggle_music()
+                self.show_message("MUSIK STUMM" if not muted else "MUSIK AN")
         elif event.key == pygame.K_s and (self.data.paused or getattr(self.data, "show_pause_menu", False) or self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY)):
+            self.data.show_slot_modal = True
+            self.data.slot_modal_mode = "SAVE"
+            if self.sound: self.sound.play("click")
+        elif event.key == pygame.K_l:
             from managers.save_manager import SaveManager
-            if SaveManager.save_game(self.data):
-                self.show_message("SPIELSTAND ERFOLGREICH GESPEICHERT!")
+            if SaveManager.has_any_savegame():
+                self.data.show_slot_modal = True
+                self.data.slot_modal_mode = "LOAD"
+                if self.sound: self.sound.play("click")
 
     def handle_left_click(self, event: pygame.event.Event):
 
-        mx, my = self._logical_mouse_pos(getattr(event, "pos", None))
+        mx, my = self._logical_mouse_pos(getattr(event, "pos", None))        # 1. 3 Save Slots Modal Interaction
+        if getattr(self.data, "show_slot_modal", False):
+            from managers.save_manager import SaveManager
+            mode = getattr(self.data, "slot_modal_mode", "SAVE")
 
-        # [?] HILFE Toggle Button Klick
-        btn_help_toggle = pygame.Rect(750, 135, 130, 26)
-        if btn_help_toggle.collidepoint(mx, my):
-            self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
-            if self.sound: self.sound.play("click")
+            btn_slot_1 = pygame.Rect(505, 150, 180, 42)
+            btn_slot_2 = pygame.Rect(505, 268, 180, 42)
+            btn_slot_3 = pygame.Rect(505, 386, 180, 42)
+            btn_close = pygame.Rect(350, 475, 200, 42)
+
+            if btn_close.collidepoint(mx, my):
+                self.data.show_slot_modal = False
+                if self.sound: self.sound.play("click")
+                return
+
+            slots = [(1, btn_slot_1), (2, btn_slot_2), (3, btn_slot_3)]
+            for slot_num, btn in slots:
+                if btn.collidepoint(mx, my):
+                    if mode == "SAVE":
+                        if SaveManager.save_game(self.data, slot=slot_num):
+                            self.sound.play("click") if self.sound else None
+                        self.data.show_slot_modal = False
+                    elif mode == "LOAD":
+                        if SaveManager.has_savegame(slot_num):
+                            if SaveManager.load_game(self.data, slot=slot_num):
+                                self.sound.play("jump") if self.sound else None
+                                self.data.show_pause_menu = False
+                                self.data.show_slot_modal = False
+                    return
             return
 
-        # Pause-Menü Modal Interaktion (wenn ESC-Pausemenü geöffnet ist)
+        # 2. Hilfe Overlay Modal Interaktion
+        if getattr(self.data, "show_help_overlay", False):
+            btn_close = pygame.Rect(320, 440, 220, 38)
+            if btn_close.collidepoint(mx, my) or not pygame.Rect(120, 50, 660, 440).collidepoint(mx, my):
+                self.data.show_help_overlay = False
+                if self.sound: self.sound.play("click")
+            return
+
+        # 3. Pause-Menü Modal Interaktion
         if getattr(self.data, "show_pause_menu", False) and self.data.current_state != STATE_OPTIONS:
             btn_pause_resume = pygame.Rect(300, 160, 300, 42)
             btn_pause_save = pygame.Rect(300, 215, 300, 42)
@@ -147,18 +197,16 @@ class InputManager:
             btn_pause_options = pygame.Rect(300, 325, 300, 42)
             btn_pause_main_menu = pygame.Rect(300, 380, 300, 42)
 
-            from managers.save_manager import SaveManager
-
             if btn_pause_resume.collidepoint(mx, my):
                 self.data.show_pause_menu = False
                 if self.sound: self.sound.play("click")
             elif btn_pause_save.collidepoint(mx, my):
-                if SaveManager.save_game(self.data):
-                    self.show_message("SPIELSTAND ERFOLGREICH GESPEICHERT!")
+                self.data.show_slot_modal = True
+                self.data.slot_modal_mode = "SAVE"
                 if self.sound: self.sound.play("click")
             elif btn_pause_load.collidepoint(mx, my):
-                if SaveManager.load_game(self.data):
-                    self.show_message("SPIELSTAND ERFOLGREICH GELADEN!")
+                self.data.show_slot_modal = True
+                self.data.slot_modal_mode = "LOAD"
                 if self.sound: self.sound.play("click")
             elif btn_pause_options.collidepoint(mx, my):
                 self.data.current_state = STATE_OPTIONS
@@ -170,14 +218,184 @@ class InputManager:
                 if self.sound: self.sound.play("click")
             return
 
-        # Crew-Menü Toggle & Interaction
-        btn_crew_toggle = pygame.Rect(750, 8, 130, 26)
-        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY) and btn_crew_toggle.collidepoint(mx, my):
-            self.data.player.show_crew_menu = not getattr(self.data.player, "show_crew_menu", False)
+        # 4. Crew-Menü Modal Interaktion
+        if getattr(self.data.player, "show_crew_menu", False):
+            close_btn = pygame.Rect(370, 465, 160, 38)
+            if close_btn.collidepoint(mx, my):
+                self.data.player.show_crew_menu = False
+                self.data.player.active_rename_idx = None
+                return
+
+            for idx, crew in enumerate(self.data.player.crew):
+                card_y = 130 + idx * 75
+                rename_btn = pygame.Rect(580, card_y + 15, 130, 35)
+                if rename_btn.collidepoint(mx, my):
+                    self.data.player.active_rename_idx = idx
+                    self.data.player.rename_buffer = crew.name
+                    return
             return
 
-        # Tür-Steuerung UI Buttons & Tür-Direktklicks
+        # 5. Optionen Bildschirm
+        if self.data.current_state == STATE_OPTIONS:
+            btn_toggle_fullscreen = pygame.Rect(210, 105, 480, 36)
+            btn_res_toggle = pygame.Rect(210, 148, 480, 36)
+            btn_audio_toggle = pygame.Rect(210, 191, 480, 36)
+
+            btn_master_down = pygame.Rect(452, 235, 34, 30)
+            btn_master_up = pygame.Rect(648, 235, 34, 30)
+
+            btn_music_down = pygame.Rect(452, 273, 34, 30)
+            btn_music_up = pygame.Rect(648, 273, 34, 30)
+
+            btn_sfx_down = pygame.Rect(452, 311, 34, 30)
+            btn_sfx_up = pygame.Rect(648, 311, 34, 30)
+
+            btn_autosave_toggle = pygame.Rect(210, 350, 480, 34)
+            btn_achievements_menu = pygame.Rect(210, 390, 480, 34)
+            btn_close_options = pygame.Rect(350, 460, 200, 40)
+
+            if btn_toggle_fullscreen.collidepoint(mx, my):
+                if self.game:
+                    self.game.cycle_display_mode()
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_res_toggle.collidepoint(mx, my):
+                if self.game:
+                    self.game.cycle_resolution()
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_audio_toggle.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.toggle()
+                    self.sound.play("click")
+            elif btn_master_down.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.master_volume = max(0.0, round(self.sound.master_volume - 0.1, 2))
+                    self.sound.play("click")
+            elif btn_master_up.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.master_volume = min(2.0, round(self.sound.master_volume + 0.1, 2))
+                    self.sound.play("click")
+            elif btn_music_down.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.music_volume = max(0.0, round(self.sound.music_volume - 0.1, 2))
+                    self.sound.play("click")
+            elif btn_music_up.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.music_volume = min(2.0, round(self.sound.music_volume + 0.1, 2))
+                    self.sound.play("click")
+            elif btn_sfx_down.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.sfx_volume = max(0.0, round(self.sound.sfx_volume - 0.1, 2))
+                    self.sound.play("click")
+            elif btn_sfx_up.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.sfx_volume = min(1.0, round(self.sound.sfx_volume + 0.1, 2))
+                    self.sound.play("click")
+            elif btn_autosave_toggle.collidepoint(mx, my):
+                self.data.auto_save_enabled = not getattr(self.data, "auto_save_enabled", False)
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_achievements_menu.collidepoint(mx, my):
+                self.data.current_state = STATE_ACHIEVEMENTS
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_close_options.collidepoint(mx, my):
+                if self.sound:
+                    self.sound.play("click")
+                if getattr(self.data, "show_pause_menu", False) or self.data.paused:
+                    self.data.current_state = STATE_MAP
+                else:
+                    self.data.current_state = STATE_MAIN_MENU
+            return
+
+        # 6. Achievements Bildschirm
+        if self.data.current_state == STATE_ACHIEVEMENTS:
+            categories = ["ALLE", "KAMPF", "CREW", "SCHIFF", "ERKUNDUNG"]
+            for idx, cat in enumerate(categories):
+                btn_tab = pygame.Rect(55 + idx * 158, 82, 150, 28)
+                if btn_tab.collidepoint(mx, my):
+                    self.data.achievement_category_filter = cat
+                    self.data.achievement_page = 0
+                    if self.sound: self.sound.play("click")
+                    return
+
+            btn_prev = pygame.Rect(180, 492, 120, 36)
+            btn_next = pygame.Rect(600, 492, 120, 36)
+            btn_close = pygame.Rect(340, 532, 220, 38)
+
+            if btn_prev.collidepoint(mx, my):
+                cur_p = getattr(self.data, "achievement_page", 0)
+                self.data.achievement_page = max(0, cur_p - 1)
+                if self.sound: self.sound.play("click")
+                return
+            elif btn_next.collidepoint(mx, my):
+                cur_p = getattr(self.data, "achievement_page", 0)
+                self.data.achievement_page = cur_p + 1
+                if self.sound: self.sound.play("click")
+                return
+            elif btn_close.collidepoint(mx, my):
+                if self.sound: self.sound.play("click")
+                self.data.current_state = STATE_OPTIONS
+                return
+            return
+
+        # 7. Shop Modal State
+        if self.data.current_state == STATE_SHOP:
+            self.shop_manager.handle_click(mx, my)
+            return
+
+        # 8. Main Menu State
+        if self.data.current_state == STATE_MAIN_MENU:
+            import copy
+            from classes.ShipModel import SHIP_BLUEPRINTS, apply_starting_setup_for_ship
+            from managers.save_manager import SaveManager
+
+            unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
+
+            col_x = [40, 250, 460, 670]
+            row_y = [82, 226]
+            ship_list = list(SHIP_BLUEPRINTS.keys())
+
+            for idx, name in enumerate(ship_list):
+                r_idx = idx // 4
+                c_idx = idx % 4
+                if r_idx < 2:
+                    card_btn = pygame.Rect(col_x[c_idx], row_y[r_idx], 195, 138)
+                    if card_btn.collidepoint(mx, my) and name in unlocked:
+                        self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS[name])
+                        apply_starting_setup_for_ship(self.data.player, name)
+                        if self.sound:
+                            self.sound.play("click")
+                        return
+
+            btn_start = pygame.Rect(40, 532, 195, 42)
+            btn_continue_game = pygame.Rect(250, 532, 195, 42)
+            btn_options = pygame.Rect(460, 532, 195, 42)
+            btn_quit = pygame.Rect(670, 532, 195, 42)
+
+            if btn_options.collidepoint(mx, my):
+                self.data.current_state = STATE_OPTIONS
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_start.collidepoint(mx, my):
+                self.data.current_state = STATE_MAP
+                if self.sound:
+                    self.sound.play("jump")
+            elif SaveManager.has_any_savegame() and btn_continue_game.collidepoint(mx, my):
+                self.data.show_slot_modal = True
+                self.data.slot_modal_mode = "LOAD"
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_quit.collidepoint(mx, my):
+                self.data.running = False
+                if self.sound:
+                    self.sound.play("click")
+            return
+
+        # 9. Top Action Bar & Door Controls (ONLY evaluated when NO modal/menu/shop is open)
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
+            btn_crew_toggle = pygame.Rect(750, 8, 130, 26)
             btn_open_all = pygame.Rect(750, 38, 130, 26)
             btn_close_all = pygame.Rect(750, 68, 130, 26)
             btn_vent = pygame.Rect(750, 98, 130, 26)
@@ -187,8 +405,10 @@ class InputManager:
                 self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
                 if self.sound: self.sound.play("click")
                 return
-
-            if btn_open_all.collidepoint(mx, my):
+            elif btn_crew_toggle.collidepoint(mx, my):
+                self.data.player.show_crew_menu = not getattr(self.data.player, "show_crew_menu", False)
+                return
+            elif btn_open_all.collidepoint(mx, my):
                 self.data.player.ship.open_all_doors()
                 if self.sound: self.sound.play("click")
                 return
@@ -207,116 +427,9 @@ class InputManager:
                     if self.sound: self.sound.play("click")
                     return
 
-        if getattr(self.data.player, "show_crew_menu", False):
-            close_btn = pygame.Rect(370, 465, 160, 38)
-            if close_btn.collidepoint(mx, my):
-                self.data.player.show_crew_menu = False
-                self.data.player.active_rename_idx = None
-                return
-
-            for idx, crew in enumerate(self.data.player.crew):
-                card_y = 130 + idx * 75
-                rename_btn = pygame.Rect(580, card_y + 15, 130, 35)
-                if rename_btn.collidepoint(mx, my):
-                    self.data.player.active_rename_idx = idx
-                    self.data.player.rename_buffer = crew.name
-                    return
-            return
-
-        if self.data.current_state == STATE_OPTIONS:
-            btn_toggle_fullscreen = pygame.Rect(210, 140, 480, 44)
-            btn_res_toggle = pygame.Rect(210, 195, 480, 44)
-            btn_audio_toggle = pygame.Rect(220, 250, 460, 44)
-            btn_achievements_menu = pygame.Rect(220, 305, 460, 44)
-            btn_close_options = pygame.Rect(350, 440, 200, 45)
-            if btn_toggle_fullscreen.collidepoint(mx, my):
-                if self.game:
-                    self.game.cycle_display_mode()
-                if self.sound:
-                    self.sound.play("click")
-            elif btn_res_toggle.collidepoint(mx, my):
-                if self.game:
-                    self.game.cycle_resolution()
-                if self.sound:
-                    self.sound.play("click")
-            elif btn_audio_toggle.collidepoint(mx, my):
-                if self.sound:
-                    self.sound.toggle()
-                    self.sound.play("click")
-            elif btn_achievements_menu.collidepoint(mx, my):
-                self.data.current_state = STATE_ACHIEVEMENTS
-                if self.sound:
-                    self.sound.play("click")
-            elif btn_close_options.collidepoint(mx, my):
-                if self.sound:
-                    self.sound.play("click")
-                if getattr(self.data, "show_pause_menu", False) or self.data.paused:
-                    self.data.current_state = STATE_MAP
-                else:
-                    self.data.current_state = STATE_MAIN_MENU
-            return
-
-        if self.data.current_state == STATE_ACHIEVEMENTS:
-            btn_close = pygame.Rect(320, 510, 260, 42)
-            if btn_close.collidepoint(mx, my):
-                if self.sound:
-                    self.sound.play("click")
-                self.data.current_state = STATE_OPTIONS
-            return
-
-        if self.data.current_state == STATE_MAIN_MENU:
-            import copy
-            from classes.ShipModel import SHIP_BLUEPRINTS
-            from managers.save_manager import SaveManager
-
-            unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
-
-            col_x = [40, 250, 460, 670]
-            row_y = [85, 240]
-            ship_list = list(SHIP_BLUEPRINTS.keys())
-
-            for idx, name in enumerate(ship_list):
-                r_idx = idx // 4
-                c_idx = idx % 4
-                if r_idx < 2:
-                    card_btn = pygame.Rect(col_x[c_idx], row_y[r_idx], 195, 145)
-                    if card_btn.collidepoint(mx, my) and name in unlocked:
-                        self.data.player.ship = copy.deepcopy(SHIP_BLUEPRINTS[name])
-                        if self.sound:
-                            self.sound.play("click")
-                        return
-
-            btn_start = pygame.Rect(40, 395, 195, 44)
-            btn_continue_game = pygame.Rect(250, 395, 195, 44)
-            btn_options = pygame.Rect(460, 395, 195, 44)
-            btn_quit = pygame.Rect(670, 395, 195, 44)
-
-            if btn_options.collidepoint(mx, my):
-                self.data.current_state = STATE_OPTIONS
-                if self.sound:
-                    self.sound.play("click")
-            elif btn_start.collidepoint(mx, my):
-                self.data.current_state = STATE_MAP
-                if self.sound:
-                    self.sound.play("jump")
-            elif SaveManager.has_savegame() and btn_continue_game.collidepoint(mx, my):
-                if SaveManager.load_game(self.data):
-                    if self.sound:
-                        self.sound.play("jump")
-            elif btn_quit.collidepoint(mx, my):
-                self.data.running = False
-                if self.sound:
-                    self.sound.play("click")
-            return
-
-
-
-
-        elif self.data.current_state == STATE_MAP:
+        # 10. State-specific clicks (Map, Event, Combat, Training)
+        if self.data.current_state == STATE_MAP:
             self.handle_map_click(mx, my)
-
-        elif self.data.current_state == STATE_SHOP:
-            self.shop_manager.handle_click(mx, my)
 
         elif self.data.current_state == STATE_TRAINING:
             training_mgr = getattr(self.data, "training_manager", None)
@@ -370,28 +483,29 @@ class InputManager:
         mx, my = self._logical_mouse_pos()
         ev_mgr = self.data.world.event_manager
 
-        box_rect = pygame.Rect(120, 100, 660, 380)
-
-        # Wenn result_text angezeigt wird: Klick im Fenster schließt Event ab
-        if ev_mgr.result_text:
-            if box_rect.collidepoint(mx, my):
-                self.map_manager.continue_event()
-            return
-
+        ev_text = ev_mgr.current_event_text
+        res_text = getattr(ev_mgr, "result_text", "")
         choices = ev_mgr.choices
-        if not choices:
-            if box_rect.collidepoint(mx, my):
+
+        font = pygame.font.SysFont(None, 24)
+        layout = calculate_event_layout(ev_text, res_text, choices, font)
+        box_rect = layout["box_rect"]
+
+        # Wenn result_text angezeigt wird oder keine Choices da sind: Klick im Fenster schließt Event ab
+        if ev_mgr.result_text or not choices:
+            cont_btn = layout.get("cont_btn")
+            if (cont_btn and cont_btn.collidepoint(mx, my)) or box_rect.collidepoint(mx, my):
                 self.map_manager.continue_event()
             return
 
         for idx, choice in enumerate(choices):
-            btn_y = 200 + idx * 44
-            btn_rect = pygame.Rect(150, btn_y, 600, 38)
-            if btn_rect.collidepoint(mx, my):
-                action = choice.get("action", "")
-                if self.sound: self.sound.play("click")
-                self.map_manager.handle_choice(action, choice)
-                return
+            if idx < len(layout["choice_rects"]):
+                btn_rect = layout["choice_rects"][idx]
+                if btn_rect.collidepoint(mx, my):
+                    action = choice.get("action", "")
+                    if self.sound: self.sound.play("click")
+                    self.map_manager.handle_choice(action, choice)
+                    return
 
 
 

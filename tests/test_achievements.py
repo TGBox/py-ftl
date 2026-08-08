@@ -20,7 +20,7 @@ class TestAchievements(unittest.TestCase):
             os.remove(self.tmp_file)
 
     def test_achievement_initialization(self):
-        self.assertEqual(len(self.mgr.achievements), 10, "AchievementManager should manage 10 achievements.")
+        self.assertEqual(len(self.mgr.achievements), 22, "AchievementManager should manage 22 achievements.")
         self.assertIn("first_victory", self.mgr.achievements)
         self.assertIn("flagship_down", self.mgr.achievements)
         self.assertFalse(self.mgr.achievements["first_victory"]["unlocked"])

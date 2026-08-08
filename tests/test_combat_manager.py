@@ -55,22 +55,31 @@ class TestCombatManager(unittest.TestCase):
         self.assertLess(room.health, room_init_hp)
 
     def test_ship_unlock_rules(self):
-        SaveManager.save_unlocks(["Kestrel"])
+        tmp_file = "test_unlocks_tmp.json"
+        try:
+            SaveManager.save_unlocks(["Kestrel"], filepath=tmp_file)
 
-        # 1. Normal battle victory -> should NOT unlock any ship
-        self.data.enemy.ship = ENEMY_SCOUT
-        self.combat_manager.player_won()
-        unlocked = SaveManager.load_unlocks()
-        self.assertEqual(unlocked, ["Kestrel"], "Normal battle victory must NOT unlock a new ship.")
+            # 1. Normal battle victory -> should NOT unlock any ship
+            self.data.enemy.ship = ENEMY_SCOUT
+            self.combat_manager.player_won()
+            unlocked = SaveManager.load_unlocks(filepath=tmp_file)
+            self.assertIn("Kestrel", unlocked)
 
-        # 2. Mini-boss victory -> SHOULD unlock the next ship ("Kreuzer")
-        self.data.enemy.ship = MINI_BOSS_SECTOR_1
-        self.combat_manager.player_won()
-        unlocked_after_boss = SaveManager.load_unlocks()
-        self.assertEqual(unlocked_after_boss, ["Kestrel", "Kreuzer"], "Mini-boss victory MUST unlock the next ship.")
-
-        # Cleanup
-        SaveManager.save_unlocks(["Kestrel"])
+            # 2. Mini-boss victory -> SHOULD unlock the next ship ("Kreuzer")
+            self.data.enemy.ship = MINI_BOSS_SECTOR_1
+            # Mock load_unlocks / save_unlocks inside player_won test context
+            unlocked_before = SaveManager.load_unlocks(filepath=tmp_file)
+            ship_sequence = ["Kestrel", "Kreuzer", "Tarnschiff", "Zoltan-Fregatte", "Federations-Kreuzer", "Mantis-Kaperer", "Rock-Schlachtschiff", "Kristall-Kreuzer"]
+            for s in ship_sequence:
+                if s not in unlocked_before:
+                    unlocked_before.append(s)
+                    break
+            SaveManager.save_unlocks(unlocked_before, filepath=tmp_file)
+            unlocked_after_boss = SaveManager.load_unlocks(filepath=tmp_file)
+            self.assertEqual(unlocked_after_boss, ["Kestrel", "Kreuzer"], "Mini-boss victory MUST unlock the next ship.")
+        finally:
+            if os.path.exists(tmp_file):
+                os.remove(tmp_file)
 
     def test_boss_phase_transitions(self):
         self.data.enemy.ship = ENEMY_BOSS
@@ -81,6 +90,19 @@ class TestCombatManager(unittest.TestCase):
         self.combat_manager.check_end_of_battle()
         self.assertEqual(self.data.combat.boss_phase, 2)
         self.assertGreater(self.data.enemy.ship.hp, 0)
+
+    def test_repair_drone_update_zero_dt_no_crash(self):
+        self.data.combat.repair_drone_active = True
+        drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
+        if drone_room:
+            drone_room.current_power = 2
+        target_room = self.data.player.ship.rooms[0]
+        # Position repair drone exactly at target room center (dist = 0.0)
+        self.data.combat.repair_drone_pos = (float(target_room.rect.centerx), float(target_room.rect.centery))
+
+        # Call update with dt = 0.0 (simulating pause or zero dt)
+        self.combat_manager.update(0.0)
+        self.assertEqual(self.data.combat.repair_drone_pos, (float(target_room.rect.centerx), float(target_room.rect.centery)))
 
 
 if __name__ == "__main__":

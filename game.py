@@ -160,13 +160,44 @@ class Game:
             self.sound.stop_music()
 
     def run(self) -> None:
+        from managers.save_manager import SaveManager
+
         while self.data.running:
             dt = self.clock.tick(60) / 1000.0
 
-            self.update_audio_state()
-            self.input_manager.update()
-            self.combat_manager.update(dt)
-            self.render_manager.draw()
+            # Pause game logic when paused or when any menu/overlay is active
+            is_menu_open = (
+                getattr(self.data, "show_pause_menu", False)
+                or getattr(self.data, "show_help_overlay", False)
+                or getattr(self.data.player, "show_crew_menu", False)
+                or getattr(self.data, "show_slot_modal", False)
+                or self.data.current_state in (STATE_OPTIONS, STATE_ACHIEVEMENTS)
+            )
+            effective_dt = 0.0 if (self.data.paused or is_menu_open) else dt
+
+            try:
+                self.update_audio_state()
+                self.input_manager.update()
+                self.combat_manager.update(effective_dt)
+                self.render_manager.draw()
+            except Exception as e:
+                import traceback
+                print(f"!!! CHIP/GAME CRASH PREVENTED: {e} !!!")
+                traceback.print_exc()
+
+                # Emergency Autosave on unexpected error
+                try:
+                    SaveManager.save_game(self.data)
+                    print("Notfall-Spielstand erfolgreich gesichert!")
+                except Exception as save_err:
+                    print(f"Notfall-Speichern fehlgeschlagen: {save_err}")
+
+                if hasattr(self.data, "combat"):
+                    self.data.combat.msg = f"FEHLER VERMIEDEN: {e}"
+                    self.data.combat.msg_timer = 4.0
+                # Recover safely: return to MAP or MAIN_MENU if critical
+                if self.data.current_state not in (STATE_MAIN_MENU, STATE_MAP):
+                    self.data.current_state = STATE_MAP
 
             self._scale_and_blit()
             pygame.display.flip()

@@ -3,7 +3,7 @@
     "id": "first_victory",
     "title": "Erster Sieg",
     "desc": "Besiege ein feindliches Raumschiff im Gefecht.",
-    "icon": "⚔️",
+    "category": "KAMPF",
     "unlocked": true,
     "unlock_time": "2026-08-07 09:13"
   },
@@ -11,7 +11,7 @@
     "id": "boss_slayer",
     "title": "Rebellen-Schreck",
     "desc": "Besiege einen Sektor Mini-Boss.",
-    "icon": "💥",
+    "category": "KAMPF",
     "unlocked": true,
     "unlock_time": "2026-08-07 09:13"
   },
@@ -19,7 +19,47 @@
     "id": "flagship_down",
     "title": "Galaktischer Retter",
     "desc": "Zerstöre das Endboss-Flaggschiff der Rebellen!",
-    "icon": "🏆",
+    "category": "KAMPF",
+    "unlocked": true,
+    "unlock_time": "2026-08-08 11:11"
+  },
+  "beam_master": {
+    "id": "beam_master",
+    "title": "Strahlungs-Spezialist",
+    "desc": "Treffe 3 gegnerische Räume mit einem einzigen Laserstrahl.",
+    "category": "KAMPF",
+    "unlocked": false,
+    "unlock_time": null
+  },
+  "fire_starter": {
+    "id": "fire_starter",
+    "title": "Pyromane",
+    "desc": "Entfache in 3 Räumen des Gegners gleichzeitig Feuer.",
+    "category": "KAMPF",
+    "unlocked": false,
+    "unlock_time": null
+  },
+  "crew_eliminator": {
+    "id": "crew_eliminator",
+    "title": "Bio-Extinktion",
+    "desc": "Eliminiere die gesamte gegnerische Crew ohne das Schiff zu zerstören.",
+    "category": "KAMPF",
+    "unlocked": true,
+    "unlock_time": "2026-08-08 11:28"
+  },
+  "bare_hull": {
+    "id": "bare_hull",
+    "title": "Auf Messers Schneide",
+    "desc": "Gewinne einen Kampf mit nur 1 HP verbleibender Hüllenenergie.",
+    "category": "KAMPF",
+    "unlocked": false,
+    "unlock_time": null
+  },
+  "boarding_party": {
+    "id": "boarding_party",
+    "title": "Entermannschaft",
+    "desc": "Teleportiere eine Entermannschaft auf das gegnerische Schiff.",
+    "category": "KAMPF",
     "unlocked": false,
     "unlock_time": null
   },
@@ -27,7 +67,7 @@
     "id": "master_mechanic",
     "title": "Meister-Ingenieur",
     "desc": "Bringe den Reparatur-Skill eines Crew-Mitglieds auf Stufe 3.",
-    "icon": "🔧",
+    "category": "CREW",
     "unlocked": true,
     "unlock_time": "2026-08-07 09:13"
   },
@@ -35,7 +75,31 @@
     "id": "master_warrior",
     "title": "Kriegsfürst",
     "desc": "Bringe den Nahkampf-Skill eines Crew-Mitglieds auf Stufe 3.",
-    "icon": "⚔️",
+    "category": "CREW",
+    "unlocked": false,
+    "unlock_time": null
+  },
+  "ace_pilot": {
+    "id": "ace_pilot",
+    "title": "As der Galaxie",
+    "desc": "Bringe den Piloten-Skill eines Crew-Mitglieds auf Stufe 3.",
+    "category": "CREW",
+    "unlocked": false,
+    "unlock_time": null
+  },
+  "full_house": {
+    "id": "full_house",
+    "title": "Volles Haus",
+    "desc": "Rekrutiere eine vollwertige Besatzung von 6 Crewmitgliedern.",
+    "category": "CREW",
+    "unlocked": false,
+    "unlock_time": null
+  },
+  "alien_coalition": {
+    "id": "alien_coalition",
+    "title": "Galaktische Allianz",
+    "desc": "Habe mindestens 4 verschiedene Spezies in deiner Crew.",
+    "category": "CREW",
     "unlocked": false,
     "unlock_time": null
   },
@@ -43,23 +107,31 @@
     "id": "collector",
     "title": "Schiffs-Sammler",
     "desc": "Schalte mindestens 4 verschiedene Raumschiffe frei.",
-    "icon": "🚀",
+    "category": "SCHIFF",
+    "unlocked": true,
+    "unlock_time": "2026-08-08 11:05"
+  },
+  "armada": {
+    "id": "armada",
+    "title": "Sternen-Armada",
+    "desc": "Schalte alle 8 Raumschiffe im Spiel frei!",
+    "category": "SCHIFF",
     "unlocked": false,
     "unlock_time": null
   },
-  "survivor": {
-    "id": "survivor",
-    "title": "Überlebenskünstler",
-    "desc": "Triggere ein Event mit 0 Treibstoff und überlebe.",
-    "icon": "⚓",
-    "unlocked": true,
-    "unlock_time": "2026-08-07 09:13"
+  "max_power": {
+    "id": "max_power",
+    "title": "Maximale Reaktorleistung",
+    "desc": "Rüste deinen Reaktor auf mindestens 25 Energiepunkte auf.",
+    "category": "SCHIFF",
+    "unlocked": false,
+    "unlock_time": null
   },
-  "full_house": {
-    "id": "full_house",
-    "title": "Volles Haus",
-    "desc": "Rekrutiere eine vollwertige Besatzung von 6 Crewmitgliedern.",
-    "icon": "👥",
+  "impenetrable_shield": {
+    "id": "impenetrable_shield",
+    "title": "Unüberwindbare Barriere",
+    "desc": "Besitze ein 4-schichtiges Schildsystem.",
+    "category": "SCHIFF",
     "unlocked": false,
     "unlock_time": null
   },
@@ -67,16 +139,40 @@
     "id": "weapon_fuser",
     "title": "Waffenschmied",
     "desc": "Führe eine erfolgreiche Waffen-Fusion im Shop durch.",
-    "icon": "⚡",
+    "category": "SCHIFF",
     "unlocked": true,
     "unlock_time": "2026-08-07 10:18"
+  },
+  "survivor": {
+    "id": "survivor",
+    "title": "Überlebenskünstler",
+    "desc": "Triggere ein Event mit 0 Treibstoff und überlebe.",
+    "category": "ERKUNDUNG",
+    "unlocked": true,
+    "unlock_time": "2026-08-07 09:13"
   },
   "event_explorer": {
     "id": "event_explorer",
     "title": "Weltraum-Erkunder",
     "desc": "Erfülle 10 zufällige Sektor-Events.",
-    "icon": "🌌",
+    "category": "ERKUNDUNG",
     "unlocked": true,
     "unlock_time": "2026-08-07 10:17"
+  },
+  "scrap_hoarder": {
+    "id": "scrap_hoarder",
+    "title": "Schrott-Millionär",
+    "desc": "Besitze mindestens 250 Scrap auf einmal im Frachtraum.",
+    "category": "ERKUNDUNG",
+    "unlocked": false,
+    "unlock_time": null
+  },
+  "nebula_ghost": {
+    "id": "nebula_ghost",
+    "title": "Nebel-Phantom",
+    "desc": "Durchquere mindestens 5 Nebel-Knoten in einem Spieldurchgang.",
+    "category": "ERKUNDUNG",
+    "unlocked": false,
+    "unlock_time": null
   }
 }

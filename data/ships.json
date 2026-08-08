@@ -1,0 +1,25 @@
+[
+  {
+    "name": "Kestrel",
+    "max_hp": 15,
+    "max_weapons": 3,
+    "max_crew": 4,
+    "rooms_config": [
+      {"type": "Schild", "pos": [60, 200], "size": [90, 90], "max_power": 1},
+      {"type": "Waffen", "pos": [160, 200], "size": [90, 90], "max_power": 1},
+      {"type": "Brücke", "pos": [260, 200], "size": [90, 90], "max_power": 2}
+    ]
+  },
+  {
+    "name": "Kreuzer",
+    "max_hp": 18,
+    "max_weapons": 4,
+    "max_crew": 6,
+    "rooms_config": [
+      {"type": "Schild", "pos": [50, 190], "size": [85, 85], "max_power": 1},
+      {"type": "Waffen", "pos": [145, 190], "size": [85, 85], "max_power": 1},
+      {"type": "Maschinen", "pos": [240, 190], "size": [85, 85], "max_power": 1},
+      {"type": "Brücke", "pos": [335, 190], "size": [85, 85], "max_power": 2}
+    ]
+  }
+]

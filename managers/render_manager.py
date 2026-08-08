@@ -2,6 +2,7 @@ import pygame
 
 from classes.GameData import GameData
 from settings import *
+from utils import calculate_event_layout, wrap_text
 
 class RenderManager:
 
@@ -142,6 +143,17 @@ class RenderManager:
             self.data.achievements.update_toasts(0.016)
             self.data.achievements.draw_toasts(self.screen, self.font)
 
+        # In-Game Speichern-Benachrichtigung (HUD Toast)
+        save_timer = getattr(self.data, "save_notification_timer", 0.0)
+        if save_timer > 0.0:
+            self.data.save_notification_timer = max(0.0, save_timer - 0.016)
+            msg = getattr(self.data, "save_notification_msg", "SPIELSTAND GESPEICHERT")
+            badge_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 165, 34, 330, 24)
+            pygame.draw.rect(self.screen, (10, 45, 30), badge_rect)
+            pygame.draw.rect(self.screen, (0, 255, 180), badge_rect, 2)
+            save_lbl = pygame.font.SysFont(None, 16, bold=True).render(f"💾  {msg}", True, (150, 255, 200))
+            self.screen.blit(save_lbl, (badge_rect.x + (badge_rect.width - save_lbl.get_width()) // 2, badge_rect.y + 4))
+
         # Taktische Pause Banner (SPACE)
         if self.data.paused and not getattr(self.data, "show_pause_menu", False):
             banner_rect = pygame.Rect(245, 34, 265, 22)
@@ -160,6 +172,73 @@ class RenderManager:
         # Hilfe-Overlay Modal (H / F1)
         if getattr(self.data, "show_help_overlay", False):
             self.draw_help_overlay()
+
+        # 3 Save Slots Selector Modal
+        if getattr(self.data, "show_slot_modal", False):
+            self.draw_save_load_slot_modal()
+
+    def draw_save_load_slot_modal(self):
+        overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((10, 15, 25, 230))
+        self.screen.blit(overlay, (0, 0))
+
+        modal_rect = pygame.Rect(160, 50, 580, 490)
+        pygame.draw.rect(self.screen, (20, 30, 45), modal_rect)
+        pygame.draw.rect(self.screen, (0, 200, 255), modal_rect, 3)
+
+        mode = getattr(self.data, "slot_modal_mode", "SAVE")
+        title = "--- SPIELSTAND SPEICHERN (SLOT 1 - 3) ---" if mode == "SAVE" else "--- SPIELSTAND LADEN (SLOT 1 - 3) ---"
+        title_txt = self.font.render(title, True, (100, 220, 255))
+        self.screen.blit(title_txt, (modal_rect.x + (modal_rect.width - title_txt.get_width()) // 2, modal_rect.y + 16))
+
+        from managers.save_manager import SaveManager
+        mx, my = self._logical_mouse_pos()
+
+        for slot in (1, 2, 3):
+            card_y = modal_rect.y + 52 + (slot - 1) * 118
+            card_rect = pygame.Rect(modal_rect.x + 20, card_y, 540, 106)
+            info = SaveManager.get_slot_info(slot)
+            is_active_slot = getattr(self.data, "active_save_slot", 1) == slot
+
+            bg_col = (30, 55, 80) if is_active_slot else (25, 35, 50)
+            border_col = (0, 230, 180) if is_active_slot else (80, 120, 160)
+            pygame.draw.rect(self.screen, bg_col, card_rect)
+            pygame.draw.rect(self.screen, border_col, card_rect, 2)
+
+            slot_head = f"SLOT {slot}" + ("  [AKTIV]" if is_active_slot else "")
+            self.screen.blit(self.font.render(slot_head, True, (255, 220, 100) if is_active_slot else (180, 210, 240)), (card_rect.x + 15, card_rect.y + 10))
+
+            if info:
+                line1 = f"Schiff: {info['ship_name']}  |  Sektor {info['sector']} ({info['sector_type']})"
+                line2 = f"Hülle: {info['hp']}  |  Scrap: {info['scrap']}  |  Zeit: {info['time_str']}"
+                self.screen.blit(self.small_font.render(line1, True, (200, 235, 255)), (card_rect.x + 15, card_rect.y + 38))
+                self.screen.blit(self.small_font.render(line2, True, (160, 200, 230)), (card_rect.x + 15, card_rect.y + 60))
+            else:
+                self.screen.blit(self.small_font.render("[ LEERER SPEICHERSLOT ]", True, (140, 155, 175)), (card_rect.x + 15, card_rect.y + 48))
+
+            # Action Button inside slot card
+            btn_rect = pygame.Rect(card_rect.x + 345, card_rect.y + 48, 180, 42)
+            btn_attr = f"btn_slot_{slot}"
+            setattr(self, btn_attr, btn_rect)
+
+            btn_label = f"In Slot {slot} sichern" if mode == "SAVE" else f"Slot {slot} laden"
+            btn_color = (0, 220, 130) if mode == "SAVE" else (0, 180, 255)
+            self.draw_scifi_button(
+                btn_rect,
+                btn_label,
+                is_hovered=btn_rect.collidepoint(mx, my),
+                primary_color=btn_color,
+                enabled=(mode == "SAVE" or info is not None)
+            )
+
+        # Close Modal Button
+        self.btn_close_slot_modal = pygame.Rect(modal_rect.x + 190, modal_rect.y + 425, 200, 42)
+        self.draw_scifi_button(
+            self.btn_close_slot_modal,
+            "ABBRECHEN",
+            is_hovered=self.btn_close_slot_modal.collidepoint(mx, my),
+            primary_color=(230, 80, 80)
+        )
 
     def draw_help_overlay(self):
         overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
@@ -361,7 +440,8 @@ class RenderManager:
 
         p_hp = self.data.player.ship.hp
         p_max_hp = self.data.player.ship.max_hp
-        status_txt = f"Dein Scrap: {self.data.player.scrap} Scrap  |  Hülle: {p_hp}/{p_max_hp} HP  |  Fuel: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}"
+        p_drones = getattr(self.data.player, "drone_parts", 5)
+        status_txt = f"Dein Scrap: {self.data.player.scrap} Scrap  |  Hülle: {p_hp}/{p_max_hp} HP  |  Fuel: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  Drohnen: {p_drones}"
         st_lbl = sub_font.render(status_txt, True, (255, 220, 100))
         self.screen.blit(st_lbl, (LOGICAL_WIDTH // 2 - st_lbl.get_width() // 2, 80))
 
@@ -371,13 +451,15 @@ class RenderManager:
         hdr_left = sub_font.render("SCHIFFS-SERVICE & VORRÄTE:", True, (100, 220, 255))
         self.screen.blit(hdr_left, (80, 108))
 
+        shop_ref = getattr(self.data, "shop_manager", None)
         items_left = [
-            (self.data.shop_manager.btn_repair if hasattr(self.data, "shop_manager") else pygame.Rect(80, 130, 350, 30), f"Hülle reparieren (+1 HP) - 2 Scrap (Aktuell: {p_hp}/{p_max_hp})"),
-            (pygame.Rect(80, 165, 350, 30), f"Treibstoff kaufen (+1 Fuel) - 3 Scrap"),
-            (pygame.Rect(80, 200, 350, 30), f"Raketen kaufen (+3 Raketen) - 6 Scrap"),
-            (pygame.Rect(80, 235, 350, 30), f"Reaktor aufrüsten (+1 Power) - 15 Scrap"),
-            (pygame.Rect(80, 270, 350, 30), f"Crew-Mitglied anheuern - 25 Scrap"),
-            (pygame.Rect(80, 305, 350, 30), f"Schiff-Layout umbauen - 15 Scrap"),
+            (shop_ref.btn_repair if shop_ref else pygame.Rect(80, 115, 350, 28), f"Hülle reparieren (+1 HP) - 2 Scrap (Aktuell: {p_hp}/{p_max_hp})"),
+            (shop_ref.btn_fuel if shop_ref else pygame.Rect(80, 148, 350, 28), f"Treibstoff kaufen (+1 Fuel) - 3 Scrap"),
+            (shop_ref.btn_missiles if shop_ref else pygame.Rect(80, 181, 350, 28), f"Raketen kaufen (+3 Raketen) - 6 Scrap"),
+            (shop_ref.btn_drone_parts if shop_ref else pygame.Rect(80, 214, 350, 28), f"Drohnenteile kaufen (+2 Drohnen) - 6 Scrap"),
+            (shop_ref.btn_upgrade_reactor if shop_ref else pygame.Rect(80, 247, 350, 28), f"Reaktor aufrüsten (+1 Power) - 15 Scrap"),
+            (shop_ref.btn_buy_crew if shop_ref else pygame.Rect(80, 280, 350, 28), f"Crew-Mitglied anheuern - 25 Scrap"),
+            (shop_ref.btn_edit_layout if shop_ref else pygame.Rect(80, 313, 350, 28), f"Schiff-Layout umbauen - 15 Scrap"),
         ]
 
         mx, my = self._logical_mouse_pos()
@@ -490,28 +572,83 @@ class RenderManager:
 
         if is_swap_mode:
             overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
-            overlay.fill((10, 15, 25, 210))
+            overlay.fill((10, 15, 25, 220))
             self.screen.blit(overlay, (0, 0))
 
-            title_txt = "SCHIFF-LAYOUT UMBAUEN (15 SCRAP)"
-            subtitle_txt = f"1. Raum: {first_r.name.upper()} | Klicke auf den 2. Raum zum Tauschen!" if first_r else "KLICKE AUF ZWEI RÄUME, UM DEREN SYSTEME ZU TAUSCHEN:"
+            swap_type = getattr(shop_mgr, "layout_swap_type", "ROOMS")
+            first_sel = getattr(shop_mgr, "layout_swap_first_selection", None)
 
-            t_lbl = self.font.render(title_txt, True, (255, 220, 100))
+            # Tab-Buttons rendern
+            tab_rooms = pygame.Rect(200, 20, 190, 32)
+            tab_weapons = pygame.Rect(410, 20, 190, 32)
+
+            col_r_fill = (50, 70, 100) if swap_type == "ROOMS" else (25, 35, 50)
+            col_r_bord = (255, 220, 100) if swap_type == "ROOMS" else (80, 120, 160)
+            pygame.draw.rect(self.screen, col_r_fill, tab_rooms)
+            pygame.draw.rect(self.screen, col_r_bord, tab_rooms, 2)
+            lbl_tr = self.small_font.render("Räume tauschen", True, (255, 255, 255))
+            self.screen.blit(lbl_tr, (tab_rooms.x + (tab_rooms.width - lbl_tr.get_width()) // 2, tab_rooms.y + 8))
+
+            col_w_fill = (50, 70, 100) if swap_type == "WEAPONS" else (25, 35, 50)
+            col_w_bord = (255, 220, 100) if swap_type == "WEAPONS" else (80, 120, 160)
+            pygame.draw.rect(self.screen, col_w_fill, tab_weapons)
+            pygame.draw.rect(self.screen, col_w_bord, tab_weapons, 2)
+            lbl_tw = self.small_font.render("Waffenslots tauschen", True, (255, 255, 255))
+            self.screen.blit(lbl_tw, (tab_weapons.x + (tab_weapons.width - lbl_tw.get_width()) // 2, tab_weapons.y + 8))
+
+            if swap_type == "ROOMS":
+                first_r_name = first_sel.name if (first_sel and hasattr(first_sel, "name")) else ""
+                subtitle_txt = f"1. Raum: {first_r_name.upper()} | Klicke auf den 2. Raum zum Tauschen!" if first_r_name else "KLICKE AUF ZWEI RÄUME, UM DEREN SYSTEME ZU TAUSCHEN:"
+            else:
+                s1_num = f"H{first_sel+1}" if isinstance(first_sel, int) else ""
+                subtitle_txt = f"1. Slot: {s1_num} | Klicke auf den 2. Waffenslot zum Tauschen!" if s1_num else "KLICKE AUF ZWEI WAFFENSLOTS, UM DEREN TYPEN ZU TAUSCHEN:"
+
             st_lbl = self.small_font.render(subtitle_txt, True, (100, 220, 255))
-            self.screen.blit(t_lbl, (240, 30))
             self.screen.blit(st_lbl, (220, 58))
 
-            # Spielerschiff Räume zeichnen
-            for r in self.data.player.ship.rooms:
-                is_first = (r == first_r)
-                border_color = (255, 220, 0) if is_first else (100, 200, 255)
-                fill_color = (70, 70, 20) if is_first else (30, 45, 65)
+            if swap_type == "ROOMS":
+                # Spielerschiff Räume zeichnen
+                for r in self.data.player.ship.rooms:
+                    is_first = (r == first_sel)
+                    border_color = (255, 220, 0) if is_first else (100, 200, 255)
+                    fill_color = (70, 70, 20) if is_first else (30, 45, 65)
 
-                pygame.draw.rect(self.screen, fill_color, r.rect)
-                pygame.draw.rect(self.screen, border_color, r.rect, 3 if is_first else 2)
+                    pygame.draw.rect(self.screen, fill_color, r.rect)
+                    pygame.draw.rect(self.screen, border_color, r.rect, 3 if is_first else 2)
 
-                lbl_r = self.small_font.render(r.name, True, (255, 255, 255))
-                self.screen.blit(lbl_r, (r.rect.x + 6, r.rect.y + 6))
+                    lbl_r = self.small_font.render(r.name, True, (255, 255, 255))
+                    self.screen.blit(lbl_r, (r.rect.x + 6, r.rect.y + 6))
+            else:
+                # Spielerschiff Räume abgedunkelt im Hintergrund
+                for r in self.data.player.ship.rooms:
+                    pygame.draw.rect(self.screen, (20, 30, 45), r.rect)
+                    pygame.draw.rect(self.screen, (40, 60, 90), r.rect, 1)
+
+                # Waffenslot-Karten zeichnen
+                tiny_font = pygame.font.SysFont(None, 13)
+                small_font = pygame.font.SysFont(None, 14, bold=True)
+                for idx, slot in enumerate(getattr(self.data.player.ship, "weapon_slots", [])):
+                    hx, hy = slot["pos"]
+                    slot_rect = pygame.Rect(hx - 65, hy - 25, 130, 50)
+                    is_first = (isinstance(first_sel, int) and first_sel == idx)
+
+                    b_fill = (80, 75, 25) if is_first else (22, 35, 55)
+                    b_bord = (255, 220, 0) if is_first else (100, 200, 255)
+
+                    pygame.draw.rect(self.screen, b_fill, slot_rect)
+                    pygame.draw.rect(self.screen, b_bord, slot_rect, 2)
+
+                    allowed = slot.get("allowed_types")
+                    allowed_str = ", ".join(allowed) if allowed else "ALLE"
+                    w_name = self.data.player.weapons[idx].name if idx < len(self.data.player.weapons) else "[Leer]"
+
+                    lbl_title = small_font.render(f"Slot H{idx+1}", True, (255, 220, 100) if is_first else (200, 240, 255))
+                    lbl_type = tiny_font.render(f"Typ: {allowed_str}", True, (160, 220, 255))
+                    lbl_weap = tiny_font.render(f"Waffe: {w_name}", True, (255, 255, 200))
+
+                    self.screen.blit(lbl_title, (slot_rect.x + 6, slot_rect.y + 4))
+                    self.screen.blit(lbl_type, (slot_rect.x + 6, slot_rect.y + 20))
+                    self.screen.blit(lbl_weap, (slot_rect.x + 6, slot_rect.y + 34))
 
             cancel_btn = pygame.Rect(320, 490, 260, 40)
             pygame.draw.rect(self.screen, (70, 40, 40), cancel_btn)
@@ -653,7 +790,10 @@ class RenderManager:
         self.screen.blit(p_surf, (p_box.x, p_box.y))
         pygame.draw.rect(self.screen, (0, 200, 255), p_box, 1)
 
-        evade_val = int(self.data.player.ship.rooms[2].current_power * 0.20 * 100) if len(self.data.player.ship.rooms) > 2 else 10
+        if hasattr(self.data, "combat_manager") and hasattr(self.data.combat_manager, "get_player_evasion"):
+            evade_val = int(self.data.combat_manager.get_player_evasion() * 100)
+        else:
+            evade_val = int(self.data.player.ship.rooms[2].current_power * 0.20 * 100) if len(self.data.player.ship.rooms) > 2 else 10
         p_lbl = small_font.render(f"Spieler Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp} HP  |  Ausw: {evade_val}%", True, (130, 240, 170))
         self.screen.blit(p_lbl, (p_box.x + 8, p_box.y + 4))
 
@@ -676,8 +816,14 @@ class RenderManager:
             self.screen.blit(s_overlay, (50, 95))
 
         # 2. Räume & Türen zeichnen
+        manned_font = pygame.font.SysFont(None, 14, bold=True)
         for r in self.data.player.ship.rooms:
             r.draw(self.screen)
+            m_count = len([c for c in self.data.player.crew if c.current_room == r])
+            if m_count > 0 and r.name in ("Waffen", "Schild", "Brücke", "Maschinen", "Medbay", "Drohnen-Kontrolle"):
+                badge_str = "⭐" if m_count == 1 else "⭐⭐"
+                lbl_m = manned_font.render(badge_str, True, (255, 220, 100))
+                self.screen.blit(lbl_m, (r.rect.left + 3, r.rect.top + 3))
 
         # Sensor-Stufen Prüfung
         sens_room = next((r for r in self.data.player.ship.rooms if r.name == "Sensoren"), None)
@@ -1061,15 +1207,17 @@ class RenderManager:
         )
 
         # 8 Schiffskarten in 2x4 Raster
-        from classes.ShipModel import SHIP_BLUEPRINTS
+        from classes.ShipModel import SHIP_BLUEPRINTS, SHIP_STARTING_SPECS, PLAYER_SHIP
         from managers.save_manager import SaveManager
 
         selected_name = getattr(self.data.player.ship, "name", "Kestrel")
         unlocked = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
 
         col_x = [40, 250, 460, 670]
-        row_y = [85, 240]
+        row_y = [82, 226]
         ship_list = list(SHIP_BLUEPRINTS.items())
+
+        hovered_ship_tuple = None
 
         for idx, (name, ship_obj) in enumerate(ship_list):
             r_idx = idx // 4
@@ -1077,47 +1225,58 @@ class RenderManager:
             if r_idx >= 2:
                 break
 
-            btn = pygame.Rect(col_x[c_idx], row_y[r_idx], 195, 145)
+            btn = pygame.Rect(col_x[c_idx], row_y[r_idx], 195, 138)
             is_sel = (name == selected_name)
             is_unlocked = (name in unlocked)
             is_hov = btn.collidepoint(mx, my)
 
+            if is_hov:
+                hovered_ship_tuple = (name, ship_obj)
+
             c_surf = pygame.Surface((btn.width, btn.height), pygame.SRCALPHA)
             if is_sel:
-                c_surf.fill((25, 45, 70, 220))
-                border_col = (0, 220, 255)
+                c_surf.fill((25, 48, 75, 230))
+                border_col = (0, 230, 180)
             elif is_hov:
-                c_surf.fill((20, 35, 55, 200))
+                c_surf.fill((20, 38, 58, 210))
                 border_col = (100, 200, 255)
             else:
-                c_surf.fill((14, 22, 38, 190))
-                border_col = (60, 80, 110)
+                c_surf.fill((14, 22, 36, 190))
+                border_col = (55, 75, 105)
 
             self.screen.blit(c_surf, (btn.x, btn.y))
             pygame.draw.rect(self.screen, border_col, btn, 3 if is_sel else (2 if is_hov else 1))
 
             name_disp = name if len(name) <= 15 else name[:14] + "."
             name_txt = self.font.render(name_disp, True, (255, 255, 255) if is_sel else (210, 220, 240))
-            self.screen.blit(name_txt, (btn.x + 10, btn.y + 8))
+            self.screen.blit(name_txt, (btn.x + 8, btn.y + 6))
 
             pygame.draw.line(
-                self.screen, border_col, (btn.x + 8, btn.y + 32), (btn.x + btn.width - 8, btn.y + 32), 1
+                self.screen, border_col, (btn.x + 6, btn.y + 28), (btn.x + btn.width - 6, btn.y + 28), 1
             )
 
-            stat_font = pygame.font.SysFont(None, 18)
+            stat_font = pygame.font.SysFont(None, 16)
             stats_str = f"HP: {ship_obj.hp}  |  Waffen: {ship_obj.max_weapons}  |  Crew: {ship_obj.max_crew}"
             stats_txt = stat_font.render(stats_str, True, (140, 220, 240))
-            self.screen.blit(stats_txt, (btn.x + 10, btn.y + 38))
+            self.screen.blit(stats_txt, (btn.x + 8, btn.y + 32))
 
-            # Raum-Vorschau
+            # Raum-Vorschau mit einheitlicher taktischer Stahl-Optik
             rooms_count = len(ship_obj.rooms)
             for r in range(min(rooms_count, 6)):
-                rx = btn.x + 10 + r * 28
-                ry = btn.y + 60
-                pygame.draw.rect(self.screen, (35, 60, 90), (rx, ry, 22, 22))
-                pygame.draw.rect(self.screen, (0, 200, 255) if is_sel else (100, 130, 160), (rx, ry, 22, 22), 1)
+                rx = btn.x + 8 + r * 29
+                ry = btn.y + 54
+                r_name = ship_obj.rooms[r].name
+                r_initial = r_name[0].upper()
 
-            sel_btn_rect = pygame.Rect(btn.x + 10, btn.y + 95, btn.width - 20, 36)
+                r_border = (0, 220, 255) if is_sel else (70, 105, 145)
+                r_txt_col = (255, 255, 255) if is_sel else (170, 205, 235)
+
+                pygame.draw.rect(self.screen, (20, 32, 48), (rx, ry, 25, 25))
+                pygame.draw.rect(self.screen, r_border, (rx, ry, 25, 25), 1)
+                init_lbl = stat_font.render(r_initial, True, r_txt_col)
+                self.screen.blit(init_lbl, (rx + 8, ry + 5))
+
+            sel_btn_rect = pygame.Rect(btn.x + 8, btn.y + 92, btn.width - 16, 36)
             if is_sel:
                 self.draw_scifi_button(sel_btn_rect, "GEWÄHLT", is_active=True, primary_color=(0, 230, 140))
             elif is_unlocked:
@@ -1125,13 +1284,58 @@ class RenderManager:
             else:
                 self.draw_scifi_button(sel_btn_rect, "GESPERRT", enabled=False)
 
-        # Action Buttons Leiste unten
-        self.btn_start = pygame.Rect(40, 395, 195, 44)
-        self.btn_continue_game = pygame.Rect(250, 395, 195, 44)
-        self.btn_options = pygame.Rect(460, 395, 195, 44)
-        self.btn_quit = pygame.Rect(670, 395, 195, 44)
+        # -------------------------------------------------------------
+        # SCHIFFS-INSPEKTOR PANEL (Taktische Sci-Fi Übersicht)
+        # -------------------------------------------------------------
+        inspector_rect = pygame.Rect(40, 372, 825, 148)
+        pygame.draw.rect(self.screen, (16, 24, 38), inspector_rect)
+        pygame.draw.rect(self.screen, (0, 200, 255), inspector_rect, 2)
 
-        from managers.save_manager import SaveManager
+        inspect_name, inspect_ship = hovered_ship_tuple if hovered_ship_tuple else (selected_name, SHIP_BLUEPRINTS.get(selected_name, PLAYER_SHIP))
+        specs = SHIP_STARTING_SPECS.get(inspect_name, SHIP_STARTING_SPECS["Kestrel"])
+
+        hdr_font = pygame.font.SysFont(None, 20, bold=True)
+        body_font = pygame.font.SysFont(None, 16)
+        small_font = pygame.font.SysFont(None, 14)
+
+        insp_header = hdr_font.render(f"--- SCHIFFS-INSPEKTOR: {inspect_name.upper()} ---", True, (100, 220, 255))
+        self.screen.blit(insp_header, (inspector_rect.x + 15, inspector_rect.y + 10))
+
+        # Zeile 1: Crew & Waffen
+        line1_str = f"BESATZUNG: {specs['crew_summary']}   |   START-WAFFEN: {specs['weapons_summary']}"
+        self.screen.blit(body_font.render(line1_str, True, (255, 220, 100)), (inspector_rect.x + 15, inspector_rect.y + 32))
+
+        # Zeile 2: Beschreibung
+        self.screen.blit(body_font.render(f"DETAILS: {specs['desc']}", True, (200, 220, 240)), (inspector_rect.x + 15, inspector_rect.y + 54))
+
+        # Zeile 3: Raum-Layout & Systeme
+        rooms_str = ", ".join([r.name for r in inspect_ship.rooms])
+        sys_str = f"SYSTEME ({len(inspect_ship.rooms)}): {rooms_str}"
+        sys_lbl = small_font.render(sys_str, True, (160, 210, 245))
+        self.screen.blit(sys_lbl, (inspector_rect.x + 15, inspector_rect.y + 76))
+
+        # Zeile 4: Waffenslots
+        slots_parts = []
+        for idx, slot in enumerate(inspect_ship.weapon_slots):
+            allowed = slot.get("allowed_types")
+            if allowed:
+                types_str = "/".join(allowed)
+                slots_parts.append(f"H{idx+1}: [{types_str}]")
+            else:
+                slots_parts.append(f"H{idx+1}: [ALLE]")
+        slots_str = f"WAFFENSLOTS ({inspect_ship.max_weapons}): " + " | ".join(slots_parts)
+        slots_lbl = small_font.render(slots_str, True, (180, 215, 245))
+        self.screen.blit(slots_lbl, (inspector_rect.x + 15, inspector_rect.y + 96))
+
+        # Zeile 5: Waffentyp-Legende
+        legend_str = "HINWEIS: LASER (Schildbrecher) | BEAM (Linienschaden) | MISSILE (Schildbypass) | ION (Systemlähmung)"
+        self.screen.blit(small_font.render(legend_str, True, (130, 160, 195)), (inspector_rect.x + 15, inspector_rect.y + 118))
+
+        # Action Buttons Leiste unten (Y = 532)
+        self.btn_start = pygame.Rect(40, 532, 195, 42)
+        self.btn_continue_game = pygame.Rect(250, 532, 195, 42)
+        self.btn_options = pygame.Rect(460, 532, 195, 42)
+        self.btn_quit = pygame.Rect(670, 532, 195, 42)
 
         has_save = SaveManager.has_savegame()
 
@@ -1165,12 +1369,12 @@ class RenderManager:
             self.draw_options_menu()
 
     def draw_options_menu(self):
-        pygame.draw.rect(self.screen, (20, 28, 42), (180, 70, 540, 440))
-        pygame.draw.rect(self.screen, (100, 200, 255), (180, 70, 540, 440), 3)
+        pygame.draw.rect(self.screen, (20, 28, 42), (180, 50, 540, 480))
+        pygame.draw.rect(self.screen, (100, 200, 255), (180, 50, 540, 480), 3)
 
         self.screen.blit(
             self.font.render("--- OPTIONEN & EINSTELLUNGEN ---", True, (100, 220, 255)),
-            (290, 95),
+            (290, 68),
         )
 
         game_ref = getattr(self, "game", None)
@@ -1178,8 +1382,12 @@ class RenderManager:
         res_idx = getattr(game_ref, "resolution_idx", 0) if game_ref else 0
         res_list = getattr(game_ref, "resolutions", RESOLUTIONS) if game_ref else RESOLUTIONS
         cur_res = res_list[res_idx] if res_idx < len(res_list) else (1920, 1080)
-        sound_ref = getattr(game_ref, "sound", None) if game_ref else None
+        sound_ref = getattr(game_ref, "sound", None) if game_ref else (getattr(self, "sound", None))
         audio_on = sound_ref.enabled if sound_ref else True
+
+        master_v = sound_ref.master_volume if sound_ref else 1.0
+        music_v = sound_ref.music_volume if sound_ref else 0.8
+        sfx_v = sound_ref.sfx_volume if sound_ref else 0.7
 
         mode_labels = {
             "FULLSCREEN_WINDOWED": "Fullscreen Fenstermodus [STANDARD]",
@@ -1189,154 +1397,282 @@ class RenderManager:
         disp_mode_label = mode_labels.get(mode_str, mode_str)
 
         # 1. Anzeigemodus Button
-        self.btn_toggle_fullscreen = pygame.Rect(210, 140, 480, 44)
+        self.btn_toggle_fullscreen = pygame.Rect(210, 105, 480, 36)
         m_col = (30, 80, 100) if mode_str == "FULLSCREEN_WINDOWED" else ((40, 60, 90) if mode_str == "WINDOWED" else (70, 50, 90))
         pygame.draw.rect(self.screen, m_col, self.btn_toggle_fullscreen)
         pygame.draw.rect(self.screen, (0, 200, 255), self.btn_toggle_fullscreen, 2)
         fs_txt = pygame.font.SysFont(None, 17, bold=True).render(f"Anzeigemodus: {disp_mode_label}", True, (100, 255, 220))
-        self.screen.blit(fs_txt, (self.btn_toggle_fullscreen.x + 18, self.btn_toggle_fullscreen.y + 14))
+        self.screen.blit(fs_txt, (self.btn_toggle_fullscreen.x + 18, self.btn_toggle_fullscreen.y + 10))
 
         # 2. Fensterauflösung
-        self.btn_res_toggle = pygame.Rect(210, 195, 480, 44)
+        self.btn_res_toggle = pygame.Rect(210, 148, 480, 36)
         pygame.draw.rect(self.screen, (40, 60, 90), self.btn_res_toggle)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_res_toggle, 2)
         res_txt = self.font.render(f"Auflösung: {cur_res[0]} x {cur_res[1]} (Klick = Wechseln)", True, (220, 240, 255))
-        self.screen.blit(res_txt, (self.btn_res_toggle.x + 55, self.btn_res_toggle.y + 12))
+        self.screen.blit(res_txt, (self.btn_res_toggle.x + 55, self.btn_res_toggle.y + 8))
 
-        # 3. Audio & Soundeffekte
-        self.btn_audio_toggle = pygame.Rect(220, 250, 460, 44)
+        # 3. Audio Stummschalten Toggle
+        self.btn_audio_toggle = pygame.Rect(210, 191, 480, 36)
         aud_col = (40, 80, 40) if audio_on else (80, 40, 40)
         pygame.draw.rect(self.screen, aud_col, self.btn_audio_toggle)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_audio_toggle, 2)
-        aud_label = "Audio & SFX: AN" if audio_on else "Audio & SFX: AUS (Stumm)"
+        aud_label = "Audio Hauptschalter: AN" if audio_on else "Audio Hauptschalter: STUMM"
         aud_color = (150, 240, 150) if audio_on else (255, 120, 120)
         audio_txt = self.font.render(aud_label, True, aud_color)
-        self.screen.blit(audio_txt, (self.btn_audio_toggle.x + 130, self.btn_audio_toggle.y + 12))
+        self.screen.blit(audio_txt, (self.btn_audio_toggle.x + 140, self.btn_audio_toggle.y + 8))
 
-        # 4. Errungenschaften Button
-        self.btn_achievements_menu = pygame.Rect(220, 305, 460, 44)
+        # --- LAUTSTÄRKE EINSTELLUNGEN ---
+        # Helper to draw a volume row with [-] [ Bar ] [+]
+        def draw_vol_row(y: int, label: str, val: float, btn_down_attr: str, btn_up_attr: str):
+            lbl_surf = self.font.render(f"{label}: {int(val * 100)}%", True, (200, 235, 255))
+            self.screen.blit(lbl_surf, (215, y + 6))
+
+            btn_down = pygame.Rect(452, y, 34, 30)
+            btn_up = pygame.Rect(648, y, 34, 30)
+            setattr(self, btn_down_attr, btn_down)
+            setattr(self, btn_up_attr, btn_up)
+
+            pygame.draw.rect(self.screen, (50, 70, 100), btn_down)
+            pygame.draw.rect(self.screen, (0, 200, 255), btn_down, 1)
+            self.screen.blit(self.font.render("-", True, (255, 255, 255)), (btn_down.x + 12, btn_down.y + 5))
+
+            pygame.draw.rect(self.screen, (50, 70, 100), btn_up)
+            pygame.draw.rect(self.screen, (0, 200, 255), btn_up, 1)
+            self.screen.blit(self.font.render("+", True, (255, 255, 255)), (btn_up.x + 10, btn_up.y + 5))
+
+            # Progress Bar Background & Fill (capped strictly inside container)
+            bar_rect = pygame.Rect(492, y + 4, 150, 22)
+            pygame.draw.rect(self.screen, (15, 25, 40), bar_rect)
+            pygame.draw.rect(self.screen, (80, 120, 160), bar_rect, 1)
+
+            # Map 0.0 - 2.0 to 0 - 146 px width
+            fill_width = int(min(146, max(0, 146 * (val / 2.0))))
+            if fill_width > 0:
+                fill_rect = pygame.Rect(494, y + 6, fill_width, 18)
+                pygame.draw.rect(self.screen, (0, 220, 180), fill_rect)
+
+        draw_vol_row(235, "Master (Gesamt)", master_v, "btn_master_down", "btn_master_up")
+        draw_vol_row(273, "Musik (BGM)", music_v, "btn_music_down", "btn_music_up")
+        draw_vol_row(311, "Effekte (SFX)", sfx_v, "btn_sfx_down", "btn_sfx_up")
+
+        # 4. Auto-Speichern Toggle
+        auto_save_on = getattr(self.data, "auto_save_enabled", False)
+        self.btn_autosave_toggle = pygame.Rect(210, 350, 480, 34)
+        as_col = (40, 80, 40) if auto_save_on else (80, 40, 40)
+        pygame.draw.rect(self.screen, as_col, self.btn_autosave_toggle)
+        pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_autosave_toggle, 2)
+        as_label = "Auto-Speichern bei Sprung: AN" if auto_save_on else "Auto-Speichern bei Sprung: AUS [MANUELL]"
+        as_color = (150, 240, 150) if auto_save_on else (255, 200, 150)
+        as_txt = self.font.render(as_label, True, as_color)
+        self.screen.blit(as_txt, (self.btn_autosave_toggle.x + 60, self.btn_autosave_toggle.y + 7))
+
+        # 5. Errungenschaften Button
+        self.btn_achievements_menu = pygame.Rect(210, 390, 480, 34)
         pygame.draw.rect(self.screen, (35, 65, 95), self.btn_achievements_menu)
         pygame.draw.rect(self.screen, (255, 215, 0), self.btn_achievements_menu, 2)
-        ach_btn_txt = self.font.render("🏆 ERRUNGENSCHAFTEN ANSEHEN", True, (255, 230, 100))
-        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + 90, self.btn_achievements_menu.y + 12))
+        ach_btn_txt = self.font.render("ERRUNGENSCHAFTEN ANSEHEN", True, (255, 230, 100))
+        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + 110, self.btn_achievements_menu.y + 7))
 
         # Steuerungshinweis
-        ctrl_font = pygame.font.SysFont(None, 18)
-        self.screen.blit(ctrl_font.render("Steuerung: S = Speichern | L = Laden | Pausieren = Leertaste", True, (160, 180, 210)), (230, 365))
+        ctrl_font = pygame.font.SysFont(None, 17)
+        self.screen.blit(ctrl_font.render("Steuerung: S = Speichern | L = Laden | Pausieren = Leertaste | +/- = Lautstärke", True, (160, 180, 210)), (210, 432))
 
-        # 5. Zurück Button
-        self.btn_close_options = pygame.Rect(350, 440, 200, 45)
+        # 6. Zurück Button
+        self.btn_close_options = pygame.Rect(350, 460, 200, 40)
         pygame.draw.rect(self.screen, (70, 40, 40), self.btn_close_options)
         pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, self.btn_close_options, 2)
         close_txt = "Zurück zur Pause" if self.data.paused else "Zurück zum Menü"
-        self.screen.blit(self.font.render(close_txt, True, (255, 200, 200)), (self.btn_close_options.x + 25, self.btn_close_options.y + 12))
+        self.screen.blit(self.font.render(close_txt, True, (255, 200, 200)), (self.btn_close_options.x + 25, self.btn_close_options.y + 9))
 
     def draw_achievements_screen(self):
         bg_surf = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
-        bg_surf.fill((12, 18, 30, 240))
+        bg_surf.fill((10, 16, 28, 245))
         self.screen.blit(bg_surf, (0, 0))
 
-        banner_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 270, 15, 540, 48)
-        b_surf = pygame.Surface((banner_rect.width, banner_rect.height), pygame.SRCALPHA)
-        b_surf.fill((15, 30, 50, 220))
-        self.screen.blit(b_surf, (banner_rect.x, banner_rect.y))
-        pygame.draw.rect(self.screen, (255, 215, 0), banner_rect, 2)
+        pygame.draw.rect(self.screen, (18, 26, 42), (40, 20, 820, 560))
+        pygame.draw.rect(self.screen, (0, 200, 255), (40, 20, 820, 560), 2)
 
-        title_font = pygame.font.SysFont(None, 32, bold=True)
-        title_txt = title_font.render("🏆 GALAKTISCHE ERRUNGENSCHAFTEN", True, (255, 230, 100))
-        self.screen.blit(title_txt, (banner_rect.x + (banner_rect.width - title_txt.get_width()) // 2, banner_rect.y + 10))
+        title_font = pygame.font.SysFont(None, 24, bold=True)
+        sub_font = pygame.font.SysFont(None, 16, bold=True)
+        small_font = pygame.font.SysFont(None, 14)
 
+        # 1. Titel
+        t_lbl = title_font.render("--- GALAKTISCHE ERRUNGENSCHAFTEN ---", True, (100, 220, 255))
+        self.screen.blit(t_lbl, (LOGICAL_WIDTH // 2 - t_lbl.get_width() // 2, 28))
+
+        # 2. Gesamt-Fortschrittsbalken
         ach_mgr = getattr(self.data, "achievements", None)
-        ach_list = list(ach_mgr.achievements.values()) if ach_mgr else []
-        unlocked_count = sum(1 for a in ach_list if a.get("unlocked", False))
+        ach_dict = ach_mgr.achievements if ach_mgr else {}
+        total_count = len(ach_dict)
+        unlocked_count = sum(1 for a in ach_dict.values() if a.get("unlocked", False))
+        pct = (unlocked_count / total_count) if total_count > 0 else 0.0
 
-        stats_txt = self.font.render(f"Freigeschaltet: {unlocked_count} / {len(ach_list)}", True, (140, 220, 240))
-        self.screen.blit(stats_txt, (40, 72))
+        bar_rect = pygame.Rect(180, 54, 540, 20)
+        pygame.draw.rect(self.screen, (15, 25, 40), bar_rect)
+        pygame.draw.rect(self.screen, (80, 120, 160), bar_rect, 1)
 
-        col_x = [40, 460]
-        row_y = [102, 180, 258, 336, 414]
+        fill_w = int(536 * pct)
+        if fill_w > 0:
+            pygame.draw.rect(self.screen, (0, 220, 180), (182, 56, fill_w, 16))
 
+        prog_str = f"Freigeschaltet: {unlocked_count} / {total_count} ({int(pct * 100)}%)"
+        prog_lbl = small_font.render(prog_str, True, (255, 255, 255))
+        self.screen.blit(prog_lbl, (bar_rect.x + (bar_rect.width - prog_lbl.get_width()) // 2, bar_rect.y + 3))
+
+        # 3. Kategorie-Filter Tabs
+        categories = ["ALLE", "KAMPF", "CREW", "SCHIFF", "ERKUNDUNG"]
+        cur_cat = getattr(self.data, "achievement_category_filter", "ALLE")
         mx, my = self._logical_mouse_pos()
 
-        for idx, a_data in enumerate(ach_list):
-            if idx >= 10:
-                break
-            c_idx = idx % 2
+        for idx, cat in enumerate(categories):
+            btn_tab = pygame.Rect(55 + idx * 158, 82, 150, 28)
+            setattr(self, f"btn_ach_tab_{idx}", btn_tab)
+            is_sel = (cat == cur_cat)
+            is_hov = btn_tab.collidepoint(mx, my)
+
+            t_bg = (30, 80, 120) if is_sel else ((24, 40, 62) if is_hov else (18, 28, 44))
+            t_border = (0, 230, 255) if is_sel else ((100, 180, 240) if is_hov else (60, 90, 120))
+            pygame.draw.rect(self.screen, t_bg, btn_tab)
+            pygame.draw.rect(self.screen, t_border, btn_tab, 2 if is_sel else 1)
+
+            t_txt = sub_font.render(cat, True, (255, 255, 255) if is_sel else (180, 210, 240))
+            self.screen.blit(t_txt, (btn_tab.x + (btn_tab.width - t_txt.get_width()) // 2, btn_tab.y + 6))
+
+        # 4. Gefilterte Achievements Liste
+        filtered = [
+            a for a in ach_dict.values()
+            if cur_cat == "ALLE" or a.get("category", "KAMPF") == cur_cat
+        ]
+
+        cards_per_page = 6
+        total_pages = max(1, (len(filtered) + cards_per_page - 1) // cards_per_page)
+        cur_page = min(getattr(self.data, "achievement_page", 0), total_pages - 1)
+        self.data.achievement_page = cur_page
+
+        start_idx = cur_page * cards_per_page
+        page_items = filtered[start_idx : start_idx + cards_per_page]
+
+        # 2 Spalten x 3 Zeilen Grid
+        for idx, a_data in enumerate(page_items):
             r_idx = idx // 2
+            c_idx = idx % 2
+            card_x = 55 + c_idx * 396
+            card_y = 118 + r_idx * 122
+            card_rect = pygame.Rect(card_x, card_y, 386, 114)
 
-            card_rect = pygame.Rect(col_x[c_idx], row_y[r_idx], 400, 68)
-            is_unlocked = a_data.get("unlocked", False)
-            is_hov = card_rect.collidepoint(mx, my)
+            unlocked = a_data.get("unlocked", False)
+            raw_time = a_data.get("unlock_time", "")
+            from managers.achievement_manager import format_german_datetime
+            u_time = format_german_datetime(raw_time)
 
-            c_surf = pygame.Surface((card_rect.width, card_rect.height), pygame.SRCALPHA)
-            if is_unlocked:
-                c_surf.fill((25, 50, 40, 210) if is_hov else (18, 38, 30, 190))
-                border_col = (0, 230, 140)
+            if unlocked:
+                bg_col = (20, 45, 68)
+                border_col = (0, 230, 180)
+                badge_bg = (30, 85, 65)
+                badge_txt_col = (255, 220, 100)
+                status_str = f"FREIGESCHALTET AM {u_time}" if u_time else "FREIGESCHALTET"
+                title_col = (255, 255, 255)
+                desc_col = (190, 230, 255)
             else:
-                c_surf.fill((25, 30, 45, 190) if is_hov else (14, 20, 32, 170))
-                border_col = (60, 80, 110)
+                bg_col = (14, 20, 32)
+                border_col = (50, 70, 95)
+                badge_bg = (24, 32, 46)
+                badge_txt_col = (130, 150, 175)
+                status_str = "GESPERRT"
+                title_col = (150, 168, 190)
+                desc_col = (110, 125, 145)
 
-            self.screen.blit(c_surf, (card_rect.x, card_rect.y))
-            pygame.draw.rect(self.screen, border_col, card_rect, 2 if is_hov else 1)
+            pygame.draw.rect(self.screen, bg_col, card_rect)
+            pygame.draw.rect(self.screen, border_col, card_rect, 2 if unlocked else 1)
 
-            t_col = (255, 230, 120) if is_unlocked else (170, 185, 205)
-            t_txt = self.font.render(f"{a_data.get('icon', '⭐')} {a_data.get('title', '')}", True, t_col)
-            self.screen.blit(t_txt, (card_rect.x + 10, card_rect.y + 8))
+            # Badge oben
+            badge_rect = pygame.Rect(card_x + 8, card_y + 8, card_rect.width - 16, 20)
+            pygame.draw.rect(self.screen, badge_bg, badge_rect)
+            pygame.draw.rect(self.screen, border_col, badge_rect, 1)
+            b_lbl = small_font.render(status_str, True, badge_txt_col)
+            self.screen.blit(b_lbl, (badge_rect.x + (badge_rect.width - b_lbl.get_width()) // 2, badge_rect.y + 3))
 
-            desc_font = pygame.font.SysFont(None, 16)
-            d_txt = desc_font.render(a_data.get("desc", ""), True, (200, 215, 235) if is_unlocked else (130, 145, 165))
-            self.screen.blit(d_txt, (card_rect.x + 10, card_rect.y + 30))
+            # Titel
+            t_str = a_data["title"]
+            title_surf = sub_font.render(t_str, True, title_col)
+            self.screen.blit(title_surf, (card_x + 12, card_y + 34))
 
-            status_str = f"✔ Freigeschaltet am {a_data.get('unlock_time', '')}" if is_unlocked else "🔒 GESPERRT"
-            status_col = (0, 230, 140) if is_unlocked else (140, 150, 170)
-            s_txt = desc_font.render(status_str, True, status_col)
-            self.screen.blit(s_txt, (card_rect.x + 10, card_rect.y + 48))
+            # Beschreibung (mit Wort-Umbruch)
+            d_str = a_data["desc"]
+            words = d_str.split(" ")
+            line1, line2 = "", ""
+            for w in words:
+                if small_font.render((line1 + " " + w).strip(), True, desc_col).get_width() < card_rect.width - 24:
+                    line1 = (line1 + " " + w).strip()
+                else:
+                    line2 = (line2 + " " + w).strip()
 
-        self.btn_close_achievements = pygame.Rect(320, 510, 260, 42)
-        self.draw_scifi_button(
-            self.btn_close_achievements,
-            "ZURÜCK ZUM MENÜ",
-            is_hovered=self.btn_close_achievements.collidepoint(mx, my),
-            primary_color=(0, 200, 255),
-        )
+            self.screen.blit(small_font.render(line1, True, desc_col), (card_x + 12, card_y + 58))
+            if line2:
+                self.screen.blit(small_font.render(line2, True, desc_col), (card_x + 12, card_y + 76))
+
+            # Kategorie Tag unten rechts
+            cat_tag = small_font.render(f"[{a_data.get('category', 'KAMPF')}]", True, (100, 180, 240) if unlocked else (90, 110, 135))
+            self.screen.blit(cat_tag, (card_x + card_rect.width - cat_tag.get_width() - 10, card_y + 92))
+
+        # 5. Paginierung Buttons unten
+        self.btn_ach_prev = pygame.Rect(180, 492, 120, 36)
+        self.btn_ach_next = pygame.Rect(600, 492, 120, 36)
+        page_txt = sub_font.render(f"Seite {cur_page + 1} von {total_pages}", True, (200, 235, 255))
+        self.screen.blit(page_txt, (LOGICAL_WIDTH // 2 - page_txt.get_width() // 2, 501))
+
+        self.draw_scifi_button(self.btn_ach_prev, "< Vorherige", is_hovered=self.btn_ach_prev.collidepoint(mx, my), enabled=(cur_page > 0))
+        self.draw_scifi_button(self.btn_ach_next, "Nächste >", is_hovered=self.btn_ach_next.collidepoint(mx, my), enabled=(cur_page < total_pages - 1))
+
+        # 6. Hauptmenü / Zurück Button
+        self.btn_close_achievements = pygame.Rect(340, 532, 220, 38)
+        self.draw_scifi_button(self.btn_close_achievements, "ZURÜCK ZUM MENÜ", is_hovered=self.btn_close_achievements.collidepoint(mx, my), primary_color=(0, 200, 255))
 
 
 
 
     def draw_event(self):
-        pygame.draw.rect(self.screen, (30, 40, 55), (120, 100, 660, 380))
-        pygame.draw.rect(self.screen, COLOR_BORDER, (120, 100, 660, 380), 3)
-
         ev_text = self.data.world.event_manager.current_event_text
-        self.screen.blit(
-            self.font.render(ev_text, True, (240, 240, 240)),
-            (150, 130),
-        )
-
         res_text = getattr(self.data.world.event_manager, "result_text", "")
+        choices = self.data.world.event_manager.choices
+
+        layout = calculate_event_layout(ev_text, res_text, choices, self.font)
+        box_rect = layout["box_rect"]
+
+        pygame.draw.rect(self.screen, (30, 40, 55), box_rect)
+        pygame.draw.rect(self.screen, COLOR_BORDER, box_rect, 3)
+
+        # Event-Text zeilenweise rendern
+        curr_y = box_rect.y + 25
+        for line in layout["ev_lines"]:
+            lbl = self.font.render(line, True, (240, 240, 240))
+            self.screen.blit(lbl, (box_rect.x + 30, curr_y))
+            curr_y += 24
+
+        # Result-Text (falls vorhanden)
         if res_text:
-            self.screen.blit(
-                self.font.render(res_text, True, (100, 255, 180)),
-                (150, 175),
-            )
-            cont_btn = pygame.Rect(280, 400, 340, 42)
+            curr_y = layout["res_start_y"]
+            for line in layout["res_lines"]:
+                lbl = self.font.render(line, True, (100, 255, 180))
+                self.screen.blit(lbl, (box_rect.x + 30, curr_y))
+                curr_y += 24
+
+            cont_btn = layout["cont_btn"]
             pygame.draw.rect(self.screen, (40, 70, 100), cont_btn)
             pygame.draw.rect(self.screen, (100, 200, 255), cont_btn, 2)
             lbl = self.font.render("Weiter (Fortfahren)", True, (255, 255, 255))
             self.screen.blit(lbl, (cont_btn.x + (cont_btn.width - lbl.get_width()) // 2, cont_btn.y + 11))
             return
 
-        choices = self.data.world.event_manager.choices
         if not choices:
-            cont_btn = pygame.Rect(280, 400, 340, 42)
+            cont_btn = layout["cont_btn"]
             pygame.draw.rect(self.screen, (40, 70, 100), cont_btn)
             pygame.draw.rect(self.screen, (100, 200, 255), cont_btn, 2)
             lbl = self.font.render("Weiter (Fortfahren)", True, (255, 255, 255))
             self.screen.blit(lbl, (cont_btn.x + (cont_btn.width - lbl.get_width()) // 2, cont_btn.y + 11))
         else:
             for idx, choice in enumerate(choices):
-                btn_y = 200 + idx * 44
-                btn = pygame.Rect(150, btn_y, 600, 38)
+                btn = layout["choice_rects"][idx]
                 is_blue = choice.get("is_blue", False)
                 bg_color = (30, 90, 190) if is_blue else (45, 60, 85)
                 border_color = (100, 200, 255) if is_blue else COLOR_BORDER
@@ -1344,8 +1680,12 @@ class RenderManager:
 
                 pygame.draw.rect(self.screen, bg_color, btn)
                 pygame.draw.rect(self.screen, border_color, btn, 2)
+
                 lbl = self.font.render(choice["text"], True, text_color)
-                self.screen.blit(lbl, (btn.x + 15, btn.y + 10))
+                # Falls Choice-Text zu lang ist, mit small_font rendern
+                if lbl.get_width() > 570:
+                    lbl = self.small_font.render(choice["text"], True, text_color)
+                self.screen.blit(lbl, (btn.x + 15, btn.y + (btn.height - lbl.get_height()) // 2))
 
 
 

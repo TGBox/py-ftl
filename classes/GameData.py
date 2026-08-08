@@ -38,6 +38,15 @@ class PlayerData:
         self.unlocked_ships: list[str] = SaveManager.load_unlocks()
         self.newly_unlocked_ship: Optional[str] = None
 
+    @property
+    def drones(self) -> int:
+        return self.drone_parts
+
+    @drones.setter
+    def drones(self, value: int) -> None:
+        self.drone_parts = value
+
+
 
 
 
@@ -105,6 +114,7 @@ class GameData:
         self.paused: bool = False
         self.show_pause_menu: bool = False
         self.show_help_overlay: bool = False
+        self.auto_save_enabled: bool = False
         self.current_state: str = STATE_MAIN_MENU
 
         self.player: PlayerData = PlayerData()

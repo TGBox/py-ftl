@@ -26,6 +26,7 @@ class Room:
     self.has_breach: bool = False  # Hüllenleck
     self.fire_level: float = 0.0  # Feuer (0.0 bis 100.0)
     self.ion_timer: float = 0.0  # Ion-Sperre (Sekunden)
+    self.was_destroyed: bool = False  # Komplett zerstört (0 HP)
 
   def effective_max_power(self) -> int:
     eff = math.floor(self.max_power * (self.health / self.max_health))
@@ -48,6 +49,8 @@ class Room:
 
   def apply_damage(self, amount: float, reactor: Reactor) -> None:
     self.health = max(0.0, self.health - amount)
+    if self.health <= 0.0:
+        self.was_destroyed = True
     import random
     if random.random() < 0.35:
         self.has_breach = True
@@ -57,13 +60,24 @@ class Room:
       self.remove_power(reactor)
 
   def repair(self, amount: float) -> None:
+    if self.health <= 0.0:
+        self.was_destroyed = True
+
     if self.has_breach:
         self.has_breach = False
         return
     if self.fire_level > 0.0:
         self.fire_level = max(0.0, self.fire_level - amount * 1.5)
         return
-    self.health = min(self.max_health, self.health + amount)
+
+    # Komplett zerstörte Gegner-Räume benötigen 5-mal so lange zum Reparieren
+    effective_amount = amount
+    if self.is_enemy and getattr(self, "was_destroyed", False):
+        effective_amount = amount / 5.0
+
+    self.health = min(self.max_health, self.health + effective_amount)
+    if self.health >= self.max_health:
+        self.was_destroyed = False
 
   def update_oxygen(self, dt: float, connected_rooms: list["Room"] = None) -> None:
     """Updates oxygen levels, fire processing, and ion timers for FTL room simulation."""
@@ -139,6 +153,11 @@ class Room:
 
         fire_lbl = get_font(14, bold=True).render("FEUER", True, (255, 100, 0))
         surface.blit(fire_lbl, (self.rect.x + 6, self.rect.bottom - 16))
+
+    # Zerstört 5x Reparatur Overlay für Gegner-Räume
+    if self.is_enemy and getattr(self, "was_destroyed", False) and self.health < self.max_health:
+        dest_lbl = get_font(12, bold=True).render("ZERSTÖRT (5X REP)", True, (255, 60, 60))
+        surface.blit(dest_lbl, (self.rect.x + 6, self.rect.y + 36))
 
     surface.blit(
         get_font(14, bold=True).render(self.name, True, (230, 240, 255)),

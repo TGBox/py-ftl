@@ -111,7 +111,7 @@
     {
       "id": "distress_medical_emergency",
       "event_type": "DISTRESS",
-      "text": "Ein Transporter meldet einen Ausbruch einer seltenen Weltraum-Grippe an Bord!",
+      "text": "Ein Frachter meldet den Ausbruch einer tödlichen Weltraum-Grippe an Bord! Die Besatzung fleht um Hilfe.",
       "choices": [
         {
           "text": "[Zoltan-Spezial] Energiefeld zur Hüllen-Sterilisation einsetzen",
@@ -123,7 +123,27 @@
           "result_text": "Das Hochfrequenz-Feld des Zoltan inaktiviert die Erreger spurlos! Die dankbare Frachter-Crew belohnt dich fürstlich."
         },
         {
-          "text": "1. Medizinische Vorräte spenden (-10 Scrap)",
+          "text": "1. Außenteam an Bord schicken, um Krankenstation zu behandeln",
+          "outcomes": [
+            {
+              "chance": 0.45,
+              "action": "CLAIM_RESOURCES",
+              "scrap": 45,
+              "fuel": 2,
+              "drones": 1,
+              "result_text": "ERFOLG! Dein Außenteam dämmt die Epidemie ein. Die Frachter-Crew belohnt dich reichlich mit Ressourcen!"
+            },
+            {
+              "chance": 0.55,
+              "action": "TAKE_DAMAGE",
+              "damage": 6,
+              "crew_damage": 45,
+              "result_text": "KATASTROPHE! Die Weltraum-Grippe mutiert und greift auf dein Außenteam über! Ein Crew-Mitglied infiziert sich schwer (-45 HP) und eure Hülle nimmt Schaden!"
+            }
+          ]
+        },
+        {
+          "text": "2. Medizinische Vorräte aus der Distanz spenden (-10 Scrap)",
           "action": "CLAIM_RESOURCES",
           "scrap": -10,
           "missiles": 3,
@@ -131,7 +151,7 @@
           "result_text": "Zum Dank schenkt dir der Frachter Raketen und Treibstoff!"
         },
         {
-          "text": "2. Sicherheitsabstand wahren und weiterfliegen",
+          "text": "3. Sicherheitsabstand wahren und weiterfliegen",
           "action": "CONTINUE",
           "result_text": "Du meidest den Infektionsherd."
         }
@@ -153,11 +173,24 @@
           "result_text": "Eure Fachexpertise ermöglicht die maximale Ressourcenausbeute aus dem Wrack!"
         },
         {
-          "text": "1. Wrack nach brauchbaren Teilen durchsuchen",
-          "action": "CLAIM_RESOURCES",
-          "scrap": 30,
-          "fuel": 1,
-          "result_text": "Du findest funktionstüchtige Bauteile und etwas Treibstoff."
+          "text": "1. Tief ins labile Wrack vordringen und Hauptkammer leeren",
+          "outcomes": [
+            {
+              "chance": 0.50,
+              "action": "CLAIM_RESOURCES",
+              "scrap": 55,
+              "fuel": 2,
+              "drones": 1,
+              "result_text": "ERFOLG! Ihr bergt wertvollen Schrott, Treibstoff und Drohnenteile aus der Hauptkammer."
+            },
+            {
+              "chance": 0.50,
+              "action": "TAKE_DAMAGE",
+              "damage": 8,
+              "fire_room": true,
+              "result_text": "FEHLSCHLAG! Der Reaktor des Wracks implodiert! Die Trümmerwelle trifft eure Hülle (-8 HP) und entfacht ein Feuer an Bord!"
+            }
+          ]
         },
         {
           "text": "2. Sicherheitshalber weiterfliegen",

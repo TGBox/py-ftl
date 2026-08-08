@@ -79,6 +79,7 @@ class RoomSaveSchema(BaseModel):
     max_power: int
     oxygen: float
     has_breach: bool = False
+    was_destroyed: bool = False
 
 
 class WeaponSaveSchema(BaseModel):
@@ -94,10 +95,12 @@ class WeaponSaveSchema(BaseModel):
     breach_chance: float = 0.0
     stun_duration: float = 0.0
     crew_damage: float = 0.0
+    max_range: float | None = None
 
 
 class SavegameSchema(BaseModel):
     schema_version: int = 2
+    auto_save_enabled: bool = False
     current_sector: int = 1
     rebel_fleet_x: float = 30.0
     sector_type: str = "Zivil"
@@ -108,6 +111,7 @@ class SavegameSchema(BaseModel):
     player_scrap: int = 20
     player_fuel: int = 6
     player_missiles: int = 6
+    player_drone_parts: int = 5
     ship_name: str = "Kestrel"
     ship_hp: int = 15
     max_hp: int = 15

@@ -356,7 +356,7 @@ class Crew:
       tx, ty = self.target_pos
       dx, dy = tx - self.x, ty - self.y
       dist = math.hypot(dx, dy)
-      if dist < 120.0 * dt:
+      if dist <= 120.0 * dt or dist < 1e-5:
         self.x, self.y = float(tx), float(ty)
         self.target_pos = None
       else:

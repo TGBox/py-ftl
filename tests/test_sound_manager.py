@@ -54,6 +54,30 @@ class TestSoundManager(unittest.TestCase):
         self.sound.toggle()
         self.assertTrue(self.sound.enabled)
 
+    def test_volume_controls(self):
+        # Default volume checks
+        self.assertEqual(self.sound.master_volume, 1.0)
+        self.assertEqual(self.sound.music_volume, 1.0)
+        self.assertEqual(self.sound.sfx_volume, 0.45)
+
+        # Set master volume
+        self.sound.master_volume = 0.5
+        self.assertEqual(self.sound.master_volume, 0.5)
+
+        # Set music volume
+        self.sound.music_volume = 0.9
+        self.assertEqual(self.sound.music_volume, 0.9)
+
+        # Set sfx volume
+        self.sound.sfx_volume = 0.4
+        self.assertEqual(self.sound.sfx_volume, 0.4)
+
+        # Test volume clamping bounds (up to 2.0)
+        self.sound.master_volume = 2.5
+        self.assertEqual(self.sound.master_volume, 2.0)
+        self.sound.music_volume = -0.5
+        self.assertEqual(self.sound.music_volume, 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
