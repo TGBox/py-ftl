@@ -400,6 +400,8 @@ class RenderManager:
             
     def draw_combat(self):
 
+        is_enemy_destroyed = (self.data.enemy.ship.hp <= 0) or getattr(self.data.combat, "combat_won", False)
+
         # Triebwerks-Partikel dynamisch am Heck (Unterseite) der Schiffe emittieren (nach unten)
         if hasattr(self.data, "particle_manager"):
             if self.data.player.ship.rooms:
@@ -410,7 +412,7 @@ class RenderManager:
                 self.data.particle_manager.emit_thruster(p_left + int(p_w * 0.35), p_bottom + 6, direction_x=0.0, direction_y=1.0)
                 self.data.particle_manager.emit_thruster(p_left + int(p_w * 0.65), p_bottom + 6, direction_x=0.0, direction_y=1.0)
 
-            if self.data.enemy.ship.rooms:
+            if not is_enemy_destroyed and self.data.enemy.ship.rooms:
                 e_left = min(r.rect.left for r in self.data.enemy.ship.rooms)
                 e_right = max(r.rect.right for r in self.data.enemy.ship.rooms)
                 e_bottom = max(r.rect.bottom for r in self.data.enemy.ship.rooms)
@@ -1075,12 +1077,14 @@ class RenderManager:
         p_cx = (min(r.rect.left for r in p_rooms) + max(r.rect.right for r in p_rooms)) // 2 if p_rooms else 220
         p_cy = (min(r.rect.top for r in p_rooms) + max(r.rect.bottom for r in p_rooms)) // 2 if p_rooms else 245
 
-        e_rooms = self.data.enemy.ship.rooms
-        e_cx = (min(r.rect.left for r in e_rooms) + max(r.rect.right for r in e_rooms)) // 2 if e_rooms else 710
-        e_cy = (min(r.rect.top for r in e_rooms) + max(r.rect.bottom for r in e_rooms)) // 2 if e_rooms else 245
-
         self.data.player.shield.draw_bubble(self.screen, (p_cx, p_cy), 170)
-        self.data.enemy.shield.draw_bubble(self.screen, (e_cx, e_cy), 150)
+
+        is_enemy_destroyed = (self.data.enemy.ship.hp <= 0) or getattr(self.data.combat, "combat_won", False)
+        if not is_enemy_destroyed:
+            e_rooms = self.data.enemy.ship.rooms
+            e_cx = (min(r.rect.left for r in e_rooms) + max(r.rect.right for r in e_rooms)) // 2 if e_rooms else 710
+            e_cy = (min(r.rect.top for r in e_rooms) + max(r.rect.bottom for r in e_rooms)) // 2 if e_rooms else 245
+            self.data.enemy.shield.draw_bubble(self.screen, (e_cx, e_cy), 150)
 
     def draw_projectiles(self):
         for p in self.data.player.projectiles:
@@ -1094,13 +1098,15 @@ class RenderManager:
         return raw_mx, raw_my
 
     def draw_weapons(self):
-        # 1. Dauerhafte Schusslinien (Weapon Targets)
-        for idx, (_, start_p, end_p) in self.data.combat.weapon_targets.items():
-            color_line = WEAPON_LINE_COLORS[idx % len(WEAPON_LINE_COLORS)]
-            pygame.draw.line(self.screen, color_line, start_p, end_p, 2)
-            pygame.draw.circle(self.screen, color_line, end_p, 7, 2)
-            w_badge = self.font.render(f"W{idx+1}", True, color_line)
-            self.screen.blit(w_badge, (end_p[0] + 10, end_p[1] - 8))
+        is_enemy_destroyed = (self.data.enemy.ship.hp <= 0) or getattr(self.data.combat, "combat_won", False)
+        if not is_enemy_destroyed:
+            # 1. Dauerhafte Schusslinien (Weapon Targets)
+            for idx, (_, start_p, end_p) in self.data.combat.weapon_targets.items():
+                color_line = WEAPON_LINE_COLORS[idx % len(WEAPON_LINE_COLORS)]
+                pygame.draw.line(self.screen, color_line, start_p, end_p, 2)
+                pygame.draw.circle(self.screen, color_line, end_p, 7, 2)
+                w_badge = self.font.render(f"W{idx+1}", True, color_line)
+                self.screen.blit(w_badge, (end_p[0] + 10, end_p[1] - 8))
 
         # 2. Zielen-Linie (beim aktiven Zielen mit Maus)
         if self.data.combat.is_targeting:

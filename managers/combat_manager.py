@@ -889,9 +889,20 @@ class CombatManager:
         self.data.player.missiles += missile_reward
         self.data.player.drone_parts += drone_reward
         self.enemy_crew.clear()
-
         self.data.player.projectiles.clear()
         self.data.combat.weapon_targets.clear()
+
+        # Boarding-Crew zurück auf das eigene Schiff teleportieren
+        p_rooms = self.data.player.ship.rooms
+        for c in self.data.player.crew:
+            if c.is_boarding or (c.current_room and getattr(c.current_room, "is_enemy", False)):
+                c.is_boarding = False
+                c.current_room = p_rooms[0] if p_rooms else None
+                if p_rooms:
+                    c.x = float(p_rooms[0].rect.centerx)
+                    c.y = float(p_rooms[0].rect.centery)
+                    c.target_pos = None
+                    c.path_waypoints = []
 
         new_ship = None
         if is_final_boss or is_mini_boss:
