@@ -7,21 +7,21 @@ from classes.Weapon import Weapon
 from settings import *
 
 WEAPON_CATALOG_MASTER = [
-    {"name": "Standard Laser", "charge_time": 3.0, "w_type": "LASER", "shield_pierce": 0, "damage": 25.0, "ammo_cost": 0, "price": 30, "subtype": "STANDARD"},
-    {"name": "Schwerer Laser", "charge_time": 3.5, "w_type": "LASER", "shield_pierce": 0, "damage": 45.0, "ammo_cost": 0, "price": 50, "subtype": "HEAVY"},
-    {"name": "Burst Laser MK II", "charge_time": 4.0, "w_type": "LASER", "shield_pierce": 0, "damage": 60.0, "ammo_cost": 0, "price": 70, "subtype": "STANDARD"},
+    {"name": "Standard Laser", "charge_time": 3.0, "w_type": "LASER", "shield_pierce": 0, "damage": 25.0, "ammo_cost": 0, "price": 30, "subtype": "STANDARD", "max_range": 650.0},
+    {"name": "Schwerer Laser", "charge_time": 3.5, "w_type": "LASER", "shield_pierce": 0, "damage": 45.0, "ammo_cost": 0, "price": 50, "subtype": "HEAVY", "max_range": 600.0},
+    {"name": "Burst Laser MK II", "charge_time": 4.0, "w_type": "LASER", "shield_pierce": 0, "damage": 60.0, "ammo_cost": 0, "price": 70, "subtype": "STANDARD", "max_range": 600.0},
     {"name": "Artemis Rakete", "charge_time": 4.0, "w_type": "MISSILE", "shield_pierce": 1, "damage": 40.0, "ammo_cost": 1, "price": 40, "subtype": "STANDARD", "crew_damage": 35.0},
     {"name": "Hermes Rakete", "charge_time": 4.5, "w_type": "MISSILE", "shield_pierce": 1, "damage": 50.0, "ammo_cost": 1, "price": 65, "subtype": "HEAVY", "crew_damage": 45.0},
-    {"name": "Pike Strahl", "charge_time": 5.0, "w_type": "BEAM", "shield_pierce": 1, "damage": 35.0, "ammo_cost": 0, "price": 60, "subtype": "STANDARD"},
-    {"name": "Halberd Strahl", "charge_time": 5.5, "w_type": "BEAM", "shield_pierce": 1, "damage": 45.0, "ammo_cost": 0, "price": 75, "subtype": "STANDARD"},
+    {"name": "Pike Strahl", "charge_time": 5.0, "w_type": "BEAM", "shield_pierce": 1, "damage": 35.0, "ammo_cost": 0, "price": 60, "subtype": "STANDARD", "max_range": 500.0},
+    {"name": "Halberd Strahl", "charge_time": 5.5, "w_type": "BEAM", "shield_pierce": 1, "damage": 45.0, "ammo_cost": 0, "price": 75, "subtype": "STANDARD", "max_range": 550.0},
     {"name": "Ion Blast MK I", "charge_time": 3.0, "w_type": "ION", "shield_pierce": 0, "damage": 10.0, "ammo_cost": 0, "price": 45, "subtype": "STANDARD"},
-    {"name": "Bio-Strahl MK I", "charge_time": 4.5, "w_type": "BEAM", "shield_pierce": 0, "damage": 0.0, "ammo_cost": 0, "price": 65, "subtype": "BIO", "crew_damage": 65.0},
-    {"name": "Brand-Laser MK I", "charge_time": 3.8, "w_type": "LASER", "shield_pierce": 0, "damage": 15.0, "ammo_cost": 0, "price": 55, "subtype": "FIRE", "fire_chance": 0.75},
-    {"name": "Betäubungs-Ion MK I", "charge_time": 3.0, "w_type": "ION", "shield_pierce": 0, "damage": 10.0, "ammo_cost": 0, "price": 50, "subtype": "STUN", "stun_duration": 6.0},
-    {"name": "Schwerer Hüllenbrecher", "charge_time": 4.2, "w_type": "LASER", "shield_pierce": 0, "damage": 35.0, "ammo_cost": 0, "price": 60, "subtype": "BREACH", "breach_chance": 0.60},
+    {"name": "Bio-Strahl MK I", "charge_time": 4.5, "w_type": "BEAM", "shield_pierce": 0, "damage": 0.0, "ammo_cost": 0, "price": 65, "subtype": "BIO", "crew_damage": 65.0, "max_range": 480.0},
+    {"name": "Brand-Laser MK I", "charge_time": 3.8, "w_type": "LASER", "shield_pierce": 0, "damage": 15.0, "ammo_cost": 0, "price": 55, "subtype": "FIRE", "fire_chance": 0.75, "max_range": 600.0},
+    {"name": "Betäubungs-Ion MK I", "charge_time": 3.0, "w_type": "ION", "shield_pierce": 0, "damage": 10.0, "ammo_cost": 0, "price": 50, "subtype": "STUN", "stun_duration": 6.0, "max_range": 550.0},
+    {"name": "Schwerer Hüllenbrecher", "charge_time": 4.2, "w_type": "LASER", "shield_pierce": 0, "damage": 35.0, "ammo_cost": 0, "price": 60, "subtype": "BREACH", "breach_chance": 0.60, "max_range": 580.0},
     {"name": "Anti-Materie Kanone", "charge_time": 4.8, "w_type": "MISSILE", "shield_pierce": 1, "damage": 10.0, "ammo_cost": 1, "price": 75, "subtype": "BIO", "crew_damage": 85.0},
-    {"name": "Feuer-Bombe", "charge_time": 4.5, "w_type": "BOMB", "shield_pierce": 99, "damage": 0.0, "ammo_cost": 1, "price": 55, "subtype": "FIRE", "fire_chance": 0.90},
-    {"name": "Hüllenbruch-Bombe", "charge_time": 5.0, "w_type": "BOMB", "shield_pierce": 99, "damage": 15.0, "ammo_cost": 1, "price": 60, "subtype": "BREACH", "breach_chance": 0.90},
+    {"name": "Feuer-Bombe", "charge_time": 4.5, "w_type": "BOMB", "shield_pierce": 99, "damage": 0.0, "ammo_cost": 1, "price": 55, "subtype": "FIRE", "fire_chance": 0.90, "max_range": 420.0},
+    {"name": "Hüllenbruch-Bombe", "charge_time": 5.0, "w_type": "BOMB", "shield_pierce": 99, "damage": 15.0, "ammo_cost": 1, "price": 60, "subtype": "BREACH", "breach_chance": 0.90, "max_range": 420.0},
     {"name": "Kurzstrecken-Flak", "charge_time": 3.2, "w_type": "FLAK", "shield_pierce": 0, "damage": 30.0, "ammo_cost": 0, "price": 45, "subtype": "STANDARD", "max_range": 350.0},
     {"name": "Impuls-Laser (Kurz)", "charge_time": 2.5, "w_type": "LASER", "shield_pierce": 0, "damage": 25.0, "ammo_cost": 0, "price": 40, "subtype": "STANDARD", "max_range": 320.0},
 ]
@@ -295,6 +295,7 @@ class ShopManager:
                     breach_chance=item.get("breach_chance", 0.0),
                     stun_duration=item.get("stun_duration", 0.0),
                     crew_damage=item.get("crew_damage", 0.0),
+                    max_range=item.get("max_range"),
                 )
                 self.data.combat.msg = f"ERSETZT AN SLOT {slot_idx+1}: {item['name']} eingebaut (+{refund} Scrap Altverkauf)!"
                 self.data.combat.msg_timer = 2.8
@@ -315,6 +316,7 @@ class ShopManager:
                 breach_chance=item.get("breach_chance", 0.0),
                 stun_duration=item.get("stun_duration", 0.0),
                 crew_damage=item.get("crew_damage", 0.0),
+                max_range=item.get("max_range"),
             )
             self.data.player.weapons.append(new_w)
             self.data.combat.msg = f"GEKAUFT: {item['name']} an Slot {slot_idx+1} eingebaut!"

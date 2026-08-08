@@ -587,10 +587,19 @@ class InputManager:
                     idx = self.data.combat.target_weapon_idx
                     if idx is not None and idx < len(self.data.player.weapons):
                         w = self.data.player.weapons[idx]
+                        start = self.data.combat.start_pos
+                        target = (mx, my)
+                        # Reichweiten-Check
+                        if w.max_range is not None:
+                            dist_to_target = math.hypot(target[0] - start[0], target[1] - start[1])
+                            if dist_to_target > w.max_range:
+                                self.show_message("ZIEL AUSSER REICHWEITE!")
+                                self.data.combat.is_targeting = False
+                                return
                         self.data.combat.weapon_targets[idx] = (
                             e_room,
-                            self.data.combat.start_pos,
-                            (mx, my),
+                            start,
+                            target,
                         )
                         if w.is_ready():
                             if w.ammo_cost > 0 and self.data.player.missiles < w.ammo_cost:
@@ -600,8 +609,8 @@ class InputManager:
                                     self.data.player.missiles -= w.ammo_cost
                                 self.data.player.projectiles.append(
                                     Projectile(
-                                        self.data.combat.start_pos,
-                                        (mx, my),
+                                        start,
+                                        target,
                                         e_room,
                                         is_player_shot=True,
                                         w_type=w.w_type,
@@ -613,6 +622,7 @@ class InputManager:
                     break
             self.data.combat.is_targeting = False
             return
+
 
         weapon_room = self.data.player.ship.rooms[1]
         clicked_weapon_idx = None

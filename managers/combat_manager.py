@@ -482,6 +482,13 @@ class CombatManager:
             slots = getattr(self.data.player.ship, "weapon_slots", [])
             start_pos = slots[idx]["pos"] if (slots and idx < len(slots)) else weapon_room.rect.center
 
+            # Reichweiten-Check
+            if weapon.max_range is not None:
+                dist = math.hypot(end_pos[0] - start_pos[0], end_pos[1] - start_pos[1])
+                if dist > weapon.max_range:
+                    del self.data.combat.weapon_targets[idx]
+                    continue
+
             self.data.player.projectiles.append(
                 Projectile(
                     start_pos,

@@ -1,3 +1,4 @@
+import math
 import pygame
 
 from classes.GameData import GameData
@@ -982,8 +983,31 @@ class RenderManager:
             mx, my = self._logical_mouse_pos()
             t_idx = self.data.combat.target_weapon_idx if self.data.combat.target_weapon_idx is not None else 0
             color_line = WEAPON_LINE_COLORS[t_idx % len(WEAPON_LINE_COLORS)]
-            pygame.draw.line(self.screen, color_line, self.data.combat.start_pos, (mx, my), 2)
-            pygame.draw.circle(self.screen, color_line, (mx, my), 7, 2)
+            start = self.data.combat.start_pos
+
+            # Reichweiten-Kreis & Out-of-Range-Anzeige
+            weapon = None
+            if t_idx < len(self.data.player.weapons):
+                weapon = self.data.player.weapons[t_idx]
+            if weapon and weapon.max_range is not None:
+                # Reichweiten-Kreis zeichnen
+                range_surf = pygame.Surface((int(weapon.max_range * 2) + 4, int(weapon.max_range * 2) + 4), pygame.SRCALPHA)
+                pygame.draw.circle(range_surf, (*color_line, 40), (int(weapon.max_range) + 2, int(weapon.max_range) + 2), int(weapon.max_range), 2)
+                self.screen.blit(range_surf, (int(start[0] - weapon.max_range - 2), int(start[1] - weapon.max_range - 2)))
+
+                dist_to_mouse = math.hypot(mx - start[0], my - start[1])
+                if dist_to_mouse > weapon.max_range:
+                    # Rote Ziel-Linie und Warnung
+                    pygame.draw.line(self.screen, (255, 60, 60), start, (mx, my), 2)
+                    pygame.draw.circle(self.screen, (255, 60, 60), (mx, my), 7, 2)
+                    oor_lbl = self.font.render("AUSSER REICHWEITE", True, (255, 60, 60))
+                    self.screen.blit(oor_lbl, (mx + 10, my - 20))
+                else:
+                    pygame.draw.line(self.screen, color_line, start, (mx, my), 2)
+                    pygame.draw.circle(self.screen, color_line, (mx, my), 7, 2)
+            else:
+                pygame.draw.line(self.screen, color_line, start, (mx, my), 2)
+                pygame.draw.circle(self.screen, color_line, (mx, my), 7, 2)
             w_badge = self.font.render(f"W{t_idx+1}", True, color_line)
             self.screen.blit(w_badge, (mx + 10, my - 8))
 
@@ -1005,6 +1029,11 @@ class RenderManager:
             disp_name = w.name if len(w.name) <= 14 else w.name[:13] + "."
             lbl = small_font.render(f"{disp_name}{target_indicator}", True, lbl_color)
             self.screen.blit(lbl, (bar_x, bar_y - 18))
+
+            # Reichweiten-Anzeige unter der Ladeleiste
+            if w.max_range is not None:
+                range_lbl = small_font.render(f"R:{int(w.max_range)}", True, (180, 180, 200))
+                self.screen.blit(range_lbl, (bar_x + 75, bar_y + 1))
 
         # 4. Untere Aktions-Buttons (Sci-Fi Glassmorphism Style)
         mx, my = self._logical_mouse_pos()
