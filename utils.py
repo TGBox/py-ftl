@@ -122,3 +122,43 @@ def get_room_manning_bonus(room_name: str, crew_count: int) -> dict:
         return {"multiplier": mult, "evasion": 0.0, "desc": f"+{int((mult-1)*100)}% Drohnen-Tempo"}
 
     return {"multiplier": 1.0, "evasion": 0.0, "desc": f"{count} Crew"}
+
+
+def can_afford_choice(choice: dict, player) -> bool:
+    """Checks if player has enough resources (scrap, fuel, missiles, drones) for an event choice."""
+    if not player or not choice:
+        return True
+
+    action = choice.get("action", "")
+    if action == "BUY_FUEL" and getattr(player, "scrap", 0) < 10:
+        return False
+
+    req_scrap = choice.get("requires_scrap", 0)
+    req_fuel = choice.get("requires_fuel", 0)
+    req_missiles = choice.get("requires_missiles", 0)
+    req_drones = choice.get("requires_drones", choice.get("requires_drone_parts", 0))
+
+    scrap_val = choice.get("scrap", 0)
+    fuel_val = choice.get("fuel", 0)
+    missile_val = choice.get("missiles", 0)
+    drone_val = choice.get("drones", choice.get("drone_parts", 0))
+
+    if scrap_val < 0:
+        req_scrap = max(req_scrap, abs(scrap_val))
+    if fuel_val < 0:
+        req_fuel = max(req_fuel, abs(fuel_val))
+    if missile_val < 0:
+        req_missiles = max(req_missiles, abs(missile_val))
+    if drone_val < 0:
+        req_drones = max(req_drones, abs(drone_val))
+
+    if getattr(player, "scrap", 0) < req_scrap:
+        return False
+    if getattr(player, "fuel", 0) < req_fuel:
+        return False
+    if getattr(player, "missiles", 0) < req_missiles:
+        return False
+    if getattr(player, "drone_parts", 0) < req_drones:
+        return False
+
+    return True

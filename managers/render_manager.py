@@ -1671,20 +1671,36 @@ class RenderManager:
             lbl = self.font.render("Weiter (Fortfahren)", True, (255, 255, 255))
             self.screen.blit(lbl, (cont_btn.x + (cont_btn.width - lbl.get_width()) // 2, cont_btn.y + 11))
         else:
+            from utils import can_afford_choice
             for idx, choice in enumerate(choices):
                 btn = layout["choice_rects"][idx]
                 is_blue = choice.get("is_blue", False)
-                bg_color = (30, 90, 190) if is_blue else (45, 60, 85)
-                border_color = (100, 200, 255) if is_blue else COLOR_BORDER
-                text_color = (180, 240, 255) if is_blue else (220, 240, 255)
+                affordable = can_afford_choice(choice, self.data.player)
+
+                if not affordable:
+                    bg_color = (35, 40, 50)
+                    border_color = (65, 70, 80)
+                    text_color = (110, 120, 130)
+                elif is_blue:
+                    bg_color = (30, 90, 190)
+                    border_color = (100, 200, 255)
+                    text_color = (180, 240, 255)
+                else:
+                    bg_color = (45, 60, 85)
+                    border_color = COLOR_BORDER
+                    text_color = (220, 240, 255)
 
                 pygame.draw.rect(self.screen, bg_color, btn)
                 pygame.draw.rect(self.screen, border_color, btn, 2)
 
-                lbl = self.font.render(choice["text"], True, text_color)
+                ch_text = choice["text"]
+                if not affordable:
+                    ch_text += " [UNZUREICHENDE RESSOURCEN]"
+
+                lbl = self.font.render(ch_text, True, text_color)
                 # Falls Choice-Text zu lang ist, mit small_font rendern
                 if lbl.get_width() > 570:
-                    lbl = self.small_font.render(choice["text"], True, text_color)
+                    lbl = self.small_font.render(ch_text, True, text_color)
                 self.screen.blit(lbl, (btn.x + 15, btn.y + (btn.height - lbl.get_height()) // 2))
 
 

@@ -498,10 +498,13 @@ class InputManager:
                 self.map_manager.continue_event()
             return
 
+        from utils import can_afford_choice
         for idx, choice in enumerate(choices):
             if idx < len(layout["choice_rects"]):
                 btn_rect = layout["choice_rects"][idx]
                 if btn_rect.collidepoint(mx, my):
+                    if not can_afford_choice(choice, self.data.player):
+                        return
                     action = choice.get("action", "")
                     if self.sound: self.sound.play("click")
                     self.map_manager.handle_choice(action, choice)

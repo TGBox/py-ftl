@@ -208,10 +208,10 @@ class MapManager:
                 self.data.current_state = STATE_MAP
 
         elif action in ("CLAIM_RESOURCES", "GIVE_RESOURCES"):
-            self.data.player.scrap += choice_data.get("scrap", 0)
-            self.data.player.fuel += choice_data.get("fuel", 0)
-            self.data.player.missiles += choice_data.get("missiles", 0)
-            self.data.player.drone_parts += choice_data.get("drones", choice_data.get("drone_parts", 0))
+            self.data.player.scrap = max(0, self.data.player.scrap + choice_data.get("scrap", 0))
+            self.data.player.fuel = max(0, self.data.player.fuel + choice_data.get("fuel", 0))
+            self.data.player.missiles = max(0, self.data.player.missiles + choice_data.get("missiles", 0))
+            self.data.player.drone_parts = max(0, self.data.player.drone_parts + choice_data.get("drones", choice_data.get("drone_parts", 0)))
             if not has_result:
                 self.data.current_state = STATE_MAP
 

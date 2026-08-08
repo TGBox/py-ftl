@@ -60,6 +60,23 @@ class TestMapAndChoices(unittest.TestCase):
         self.assertEqual(self.data.player.scrap, 20)
         self.assertEqual(self.data.player.fuel, 4)
 
+    def test_can_afford_choice(self):
+        from utils import can_afford_choice
+        self.data.player.scrap = 5
+        self.data.player.fuel = 1
+
+        costly_choice = {"action": "GIVE_RESOURCES", "scrap": -10}
+        affordable_choice = {"action": "GIVE_RESOURCES", "scrap": -5}
+
+        self.assertFalse(can_afford_choice(costly_choice, self.data.player))
+        self.assertTrue(can_afford_choice(affordable_choice, self.data.player))
+
+    def test_non_negative_resource_clamping(self):
+        self.data.player.scrap = 5
+        choice_data = {"scrap": -20}
+        self.map_manager.handle_choice("GIVE_RESOURCES", choice_data)
+        self.assertEqual(self.data.player.scrap, 0, "Scrap must never become negative.")
+
     def test_handle_choice_take_damage(self):
         self.data.player.ship.hp = 15
         self.data.player.scrap = 20
