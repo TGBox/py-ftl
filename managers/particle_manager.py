@@ -1,8 +1,12 @@
+from typing import TYPE_CHECKING
+
+    
 import math
 import random
 import pygame
 
-from game import Game
+if TYPE_CHECKING:
+    from game import Game
 
 
 class Particle:

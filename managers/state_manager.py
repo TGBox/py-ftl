@@ -1,8 +1,12 @@
+from typing import TYPE_CHECKING
 from classes.GameData import GameData
-from game import Game
 from settings import *
 
 
+
+if TYPE_CHECKING:
+    from game import Game
+    
 class StateManager:
     """
     Verwaltet alle Zustandswechsel des Spiels.

@@ -1,10 +1,14 @@
+from typing import TYPE_CHECKING
+
 import json
 import os
 import time
 import pygame
 
-from game import Game
 from managers.sound_manager import SoundManager
+
+if TYPE_CHECKING:
+    from game import Game
 
 ACHIEVEMENT_FILE = "data/achievements.json"
 

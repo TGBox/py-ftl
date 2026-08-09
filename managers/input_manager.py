@@ -1,13 +1,16 @@
+from typing import TYPE_CHECKING
 import math
 import pygame
 
 from classes.GameData import GameData
 from classes.Projectile import Projectile
-from game import Game
 from managers.sound_manager import SoundManager
 from settings import *
 from utils import *
 
+
+if TYPE_CHECKING:
+    from game import Game
 
 class InputManager:
 

@@ -1,8 +1,12 @@
+from typing import TYPE_CHECKING
+
 import pygame
 from classes.Crew import Crew
 from classes.GameData import GameData
-from game import Game
 from settings import STATE_MAP
+
+if TYPE_CHECKING:
+    from game import Game
 
 
 class TrainingManager:

@@ -1,3 +1,6 @@
+from typing import TYPE_CHECKING
+
+
 import copy
 import random
 from typing import Any
@@ -8,10 +11,11 @@ from classes.Reactor import Reactor
 from classes.ShieldSystem import ShieldSystem
 from classes.ShipModel import ENEMY_BOSS
 from classes.Weapon import Weapon
-from game import Game
 from managers.sound_manager import SoundManager
 from settings import *
 
+if TYPE_CHECKING:
+    from game import Game
 
 class MapManager:
 

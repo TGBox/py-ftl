@@ -1,10 +1,11 @@
+from typing import TYPE_CHECKING
+
+
 import hashlib
 import json
 import os
 from typing import Any
-# pyrefly: ignore [missing-import]
 from Crypto.Cipher import AES
-# pyrefly: ignore [missing-import]
 from Crypto.Protocol.KDF import PBKDF2
 
 from classes.Crew import Crew
@@ -21,9 +22,11 @@ from classes.Reactor import Reactor
 from classes.ShieldSystem import ShieldSystem
 from classes.ShipModel import SHIP_BLUEPRINTS
 from classes.Weapon import Weapon
-from game import Game
 from settings import STATE_GAME_OVER, STATE_MAIN_MENU, STATE_MAP, STATE_VICTORY
 
+if TYPE_CHECKING:
+    from game import Game
+    
 KEY_SALT = b"FTL_SECRET_SALT_2026_VERSION_1.0"
 PASSPHRASE = b"PyGame_FTL_Encryption_Seed"
 

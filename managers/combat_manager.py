@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 import math
 import random
 
@@ -6,10 +7,12 @@ from classes.GameData import GameData
 from classes.Projectile import Projectile
 from classes.Room import Room
 from classes.Weapon import Weapon
-from game import Game
 from managers.sound_manager import SoundManager
 from settings import *
 from utils import get_room_manning_bonus
+
+if TYPE_CHECKING:
+    from game import Game
 
 
 def center_crew_in_rooms(crew_list: list[Crew], rooms: list[Room]):

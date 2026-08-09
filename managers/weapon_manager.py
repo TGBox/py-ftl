@@ -1,9 +1,13 @@
+from typing import TYPE_CHECKING
+
 import pygame
 
 from classes.GameData import GameData
 from classes.Projectile import Projectile
 from classes.Room import Room
-from game import Game
+if TYPE_CHECKING:
+    from game import Game
+
 
 
 class WeaponManager:
@@ -92,6 +96,7 @@ class WeaponManager:
 
         self.data.combat.is_targeting = False
 
+        assert weapon is not None
         if weapon.is_ready():
             self.fire_weapon(
                 idx,
@@ -114,9 +119,9 @@ class WeaponManager:
 
         if weapon_index >= len(self.data.player.weapons) or self.data.player.weapons[weapon_index] is None:
             return False
-
         weapon = self.data.player.weapons[weapon_index]
 
+        assert weapon is not None
         if (
             weapon.ammo_cost > 0
             and self.data.player.missiles < weapon.ammo_cost

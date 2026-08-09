@@ -1,10 +1,13 @@
+from typing import TYPE_CHECKING
+    
 import math
 import struct
 from typing import Callable
 import pygame
 
-from game import Game
 
+if TYPE_CHECKING:
+    from game import Game
 
 class SoundManager:
     """Procedural sound effects & background music engine — generates all audio from synth waveforms."""

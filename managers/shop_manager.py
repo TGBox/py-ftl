@@ -1,3 +1,6 @@
+from typing import TYPE_CHECKING
+
+    
 import random
 from typing import Any
 import pygame
@@ -6,8 +9,10 @@ from classes.Crew import Crew
 from classes.GameData import GameData
 from classes.Room import Room
 from classes.Weapon import Weapon
-from game import Game
 from settings import *
+
+if TYPE_CHECKING:
+    from game import Game
 
 WEAPON_CATALOG_MASTER: list[dict[str, Any]] = [
     {"name": "Standard Laser", "charge_time": 3.0, "w_type": "LASER", "shield_pierce": 0, "damage": 25.0, "ammo_cost": 0, "price": 30, "subtype": "STANDARD", "max_range": 650.0},

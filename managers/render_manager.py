@@ -1,11 +1,14 @@
+from typing import TYPE_CHECKING
 import math
 from typing import Any
 import pygame
 
 from classes.GameData import GameData
-from game import Game
 from settings import *
 from utils import *
+
+if TYPE_CHECKING:
+    from game import Game
 
 class RenderManager:
 

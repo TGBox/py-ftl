@@ -1,10 +1,15 @@
+from typing import TYPE_CHECKING
+
+    
 import pygame
 
 from classes.GameData import GameData
-from game import Game
 from settings import *
 
 
+if TYPE_CHECKING:
+    from game import Game
+    
 class ConsoleManager:
     """In-game developer console and cheat code system (TODO 43)."""
 
