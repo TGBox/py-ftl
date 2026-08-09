@@ -99,6 +99,8 @@ x 2026-08-08 (A) 2026-08-08 Shop-System erweitern: Verkauf von Räumen und Kauf/
 (E) 2026-08-09 Im Shop soll es eine Möglichkeit geben, Crewmitglieder zu verkaufen. Sie sollten je nach Spezies und Fähigkeiten mehr oder weniger Geld einbringen. +Refactoring @code
 (E) 2026-08-09 Wenn das gegnerische Schiff nach einem Sieg des Spielers vom Spielfeld entfernt wird, dann bleiben noch Restartefakte übrig, die auch noch entfernt werden müssen. Es bleiben die Crewmitglieder, Raketeneffekte, Explosionen, Ladebalken, Schildanimationen, etc. die alle entfernt werden müssen. +Refactoring @code
 (E) 2026-08-09 Die Fortschritte in den Achievements und in den unlocks sollten beide im OptionenMenü einzeln zurückgesetzt werden können. +Refactoring @code
+(E) 2026-08-09 Die neuen Game Sounds werden nicht verwendet. Hier kommen immernoch die alten 8-Bit Sounds zum Einsatz. +Refactoring @code
+(E) 2026-08-09 Drohnen Sounds? +Refactoring @code
 
 
 
