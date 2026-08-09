@@ -1,9 +1,10 @@
 import json
 import os
 import random
-from typing import Any
+from typing import Any, Optional
 
 from classes.Crew import Crew
+from classes.GameData import PlayerData
 
 
 class EventManager:
@@ -25,9 +26,53 @@ class EventManager:
                     with open(p, "r", encoding="utf-8") as f:
                         data = json.load(f)
                         self.events_db = data.get("events", [])
+                        print(f"Geladene Events: {len(self.events_db)}")
                         return
                 except Exception as e:
                     print(f"Fehler beim Laden von {p}: {e}")
+
+    def select_choice(self, choice_idx: int, player_data: Optional[PlayerData] = None) -> str:
+        """Verarbeitet die gewählte Option, setzt den Resultat-Text und führt Aktionen aus."""
+        from classes.GameData import PlayerData
+        if choice_idx < 0 or choice_idx >= len(self.choices):
+            return "CONTINUE"
+        
+        choice: dict[str, Any] = self.choices[choice_idx]
+        # Unterstützt zufällige Outcomes (Erfolg/Fehlschlag mit Wahrscheinlichkeit)
+        outcomes: list[dict[str, Any]] | None = choice.get("outcomes")
+        if outcomes:
+            roll = random.random()
+            cumulative = 0.0
+            chosen_outcome = outcomes[-1]
+            for outcome in outcomes:
+                cumulative += float(outcome.get("chance", 1.0))
+                if roll <= cumulative:
+                    chosen_outcome = outcome
+                    break
+            choice = chosen_outcome
+
+        # Resultat-Text für das UI setzen
+        self.result_text = str(choice.get("result_text", "Aktion erfolgreich ausgeführt."))
+        action = str(choice.get("action", "CONTINUE"))
+            
+        if isinstance(player_data, PlayerData):
+            # Spieler-Ressourcen/Schaden anpassen, falls übergeben
+            if player_data:
+                if "scrap" in choice:
+                    player_data.scrap = max(0, player_data.scrap + int(choice["scrap"]))
+                if "fuel" in choice:
+                    player_data.fuel = max(0, player_data.fuel + int(choice["fuel"]))
+                if "missiles" in choice:
+                    player_data.missiles = max(0, player_data.missiles + int(choice["missiles"]))
+                if "drones" in choice or "drone_parts" in choice:
+                    d_val = int(choice.get("drones", choice.get("drone_parts", 0)))
+                    player_data.drone_parts = max(0, getattr(player_data, "drone_parts", 5) + d_val)
+                if "damage" in choice and hasattr(player_data, "ship") and player_data.ship:
+                    player_data.ship.hp = max(0, player_data.ship.hp - int(choice["damage"]))
+
+            self.pending_action = action
+            self.choices = []
+        return action
 
     def trigger_event(
         self, event_type: str, player_crew: list[Crew] | None = None, player_fuel: int = 1
@@ -53,8 +98,12 @@ class EventManager:
             ])
             return 0, 0
 
-        # Finde passende Events aus events.json
-        matching = [e for e in self.events_db if e.get("event_type") == event_type]
+        # Finde passende Events aus events.json (case-insensitive machen zur Sicherheit)
+        # Finde passende Events aus events.json (Case-Insensitive)
+        matching = [
+            e for e in self.events_db 
+            if str(e.get("event_type", "")).upper() == str(event_type).upper()
+        ]
         if matching:
             event_def = random.choice(matching)
             self.current_event_text = event_def.get("text", "")
@@ -63,7 +112,14 @@ class EventManager:
             for ch in raw_choices:
                 req = ch.get("requires_species")
                 if req and req not in crew_species:
-                    continue  # Erfülle Spezies-Voraussetzung nicht -> ausblenden
+                    continue  # Spezies-Voraussetzung nicht erfüllt -> ausblenden
+                
+                # Kompatibilität für UIherstellung sicherstellen (text & label)
+                if "text" in ch and "label" not in ch:
+                    ch["label"] = ch["text"]
+                elif "label" in ch and "text" not in ch:
+                    ch["text"] = ch["label"]
+                    
                 self.choices.append(ch)
             return 0, 0
 
@@ -113,10 +169,20 @@ class EventManager:
                 {"text": "1. Shop betreten", "action": "ENTER_SHOP"}
             ]
             return 0, 0
+        
+        elif event_type == "NEBULA":
+            self.current_event_text = "Ihr trefft in dichten Nebelwolken auf treibende Reste."
+            self.choices = [{"text": "1. Nebel durchkunden", "action": "CONTINUE"}]
+            return 0, 0
+
+        elif event_type == "EMPTY":
+            self.current_event_text = "Dieser Sektorpunkt ist ruhig und leer."
+            self.choices = [{"text": "1. Weiterfliegen", "action": "CONTINUE"}]
+            return 0, 0
 
         else:
             self.current_event_text = "Dieser Sektor ist ruhig. Keine ungewöhnlichen Aktivitäten gemeldet."
             self.choices = [
-                {"text": "1. Weiterfliegen", "action": "CONTINUE"}
+                {"text": "1. Weiterfliegen", "label": "1. Weiterfliegen", "action": "CONTINUE"}
             ]
             return 0, 0

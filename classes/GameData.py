@@ -5,7 +5,6 @@ from classes.Crew import Crew
 import copy
 from typing import Optional, Tuple
 
-from classes.EventManager import EventManager
 from classes.Projectile import Projectile
 from classes.Reactor import Reactor
 from classes.Room import Room
@@ -109,6 +108,7 @@ class WorldData:
 
     def __init__(self) -> None:
         self.star_map: StarMap = StarMap()
+        from classes.EventManager import EventManager
         self.event_manager: EventManager = EventManager()
 
 class GameData:

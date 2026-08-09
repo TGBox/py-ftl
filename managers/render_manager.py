@@ -1851,10 +1851,10 @@ class RenderManager:
 
     def draw_event(self):
         assert self.game is not None
-        ev_text = self.data.world.event_manager.current_event_text
-        res_text = getattr(self.data.world.event_manager, "result_text", "")
-        choices = self.data.world.event_manager.choices
-
+        ev_text = self.game.event_manager.current_event_text
+        res_text = getattr(self.game.event_manager, "result_text", "")
+        choices = self.game.event_manager.choices
+        
         layout = calculate_event_layout(ev_text, res_text, choices, self.font)
         box_rect = layout["box_rect"]
 
