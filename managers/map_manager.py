@@ -5,8 +5,10 @@ from classes.GameData import GameData
 from classes.Node import Node
 from classes.Reactor import Reactor
 from classes.ShieldSystem import ShieldSystem
-from classes.ShipModel import ENEMY_BOSS, ENEMY_SCOUT
+from classes.ShipModel import ENEMY_BOSS
 from classes.Weapon import Weapon
+from game import Game
+from managers.sound_manager import SoundManager
 from settings import *
 
 
@@ -14,7 +16,8 @@ class MapManager:
 
     def __init__(self, data: GameData):
         self.data = data
-        self.sound = None  # Set by Game after construction
+        self.game: Game | None = None   # Set by Game after construction
+        self.sound: SoundManager | None = None  # Set by Game after construction
 
     def travel_to_node(self, node: Node):
 
@@ -135,20 +138,23 @@ class MapManager:
 
     def trigger_event(self, event_type: str):
         if self.data.player.fuel <= 0 and event_type == "DISTRESS" and hasattr(self.data, "achievements"):
-            self.data.achievements.unlock("survivor")
+            assert self.game is not None
+            self.game.achievement_manager.unlock("survivor")
 
-        self.data.world.event_manager.trigger_event(
+        assert self.game is not None
+        self.game.event_manager.trigger_event(
             event_type, self.data.player.crew, self.data.player.fuel
         )
         self.data.current_state = STATE_EVENT
 
 
-    def handle_choice(self, action: str, choice_data: dict):
+    def handle_choice(self, action: str, choice_data: dict[str, str | int | bool]):
         if hasattr(self.data, "achievements"):
             evt_count = getattr(self.data, "events_completed_count", 0) + 1
-            self.data.events_completed_count = evt_count
+            self.events_completed_count = evt_count
             if evt_count >= 10:
-                self.data.achievements.unlock("event_explorer")
+                assert self.game is not None
+                self.game.achievement_manager.unlock("event_explorer")
 
         has_result = bool(choice_data.get("result_text")) or "outcomes" in choice_data
 

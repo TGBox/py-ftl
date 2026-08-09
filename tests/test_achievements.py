@@ -54,15 +54,15 @@ class TestAchievements(unittest.TestCase):
 
     def test_gamedata_integration(self):
         data = GameData()
-        self.assertIsNotNone(data.achievements)
+        self.assertIsNotNone(data.achievement_manager)
 
         # Test skill level 3 unlock
         crew = Crew(100, 100, species="Engi")
-        crew.train_skill("repair", data.achievements)
-        crew.train_skill("repair", data.achievements)
-        crew.train_skill("repair", data.achievements)
+        crew.train_skill("repair", data.achievement_manager)
+        crew.train_skill("repair", data.achievement_manager)
+        crew.train_skill("repair", data.achievement_manager)
 
-        self.assertTrue(data.achievements.achievements["master_mechanic"]["unlocked"])
+        self.assertTrue(data.achievement_manager.achievements["master_mechanic"]["unlocked"])
 
 
 if __name__ == "__main__":

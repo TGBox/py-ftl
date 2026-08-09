@@ -4,8 +4,12 @@ import pygame
 import random
 
 from classes.Door import Door
+from classes.GameData import GameData
 from classes.Room import Room
-from settings import COLOR_CREW, COLOR_SELECTED, get_font
+from game import Game
+from managers.achievement_manager import AchievementManager
+from managers.combat_manager import CombatManager
+from settings import *
 
 SPECIES_NAMES = {
     "Mensch": ["Vance", "Sarah", "Jackson", "Elena", "Marcus", "David", "Lisa", "Alex"],
@@ -25,7 +29,7 @@ def find_room_path(
 
     adj: dict[Room, list[tuple[Room, Door]]] = {r: [] for r in rooms}
     for d in doors:
-        if not d.is_airlock and d.room_a in adj and d.room_b in adj and d.room_b is not None:
+        if not d.is_airlock and d.room_a in adj and d.room_b in adj and d.room_b is not None: # type: ignore
             adj[d.room_a].append((d.room_b, d))
             adj[d.room_b].append((d.room_a, d))
 
@@ -132,7 +136,7 @@ class Crew:
 
         self.move_speed: float = 160.0 if self.trait == "Sprinter" else 120.0
 
-    def activate_ability(self, data, combat_mgr=None) -> bool:
+    def activate_ability(self, data: GameData, game: Game, combat_mgr: CombatManager | None = None) -> bool:
         if self.ability_cooldown > 0.0:
             if combat_mgr:
                 combat_mgr.show_message(f"{self.name.upper()} FÄHIGKEIT LÄDT NOCH ({int(self.ability_cooldown)}s)!")
@@ -159,16 +163,16 @@ class Crew:
                 enemies_in_room = [e for e in getattr(combat_mgr, "enemy_crew", []) if e.current_room == self.current_room]
                 for e in enemies_in_room:
                     e.stun_timer = 4.0
-                if hasattr(data, "particle_manager"):
-                    data.particle_manager.emit_explosion(self.x, self.y, count=15)
+                if hasattr(game, "particle_manager"):
+                    game.particle_manager.emit_explosion(self.x, self.y, count=15)
                 if sound: sound.play("explosion")
                 if combat_mgr: combat_mgr.show_message(f"{self.name.upper()} ERDERSCHÜTTERUNG! Gegner stunnt (4s)!")
 
         elif self.species == "Zoltan":
             shield_max = max(1, getattr(data.player.shield, "max_layers", 1))
             data.player.shield.current_layers = min(shield_max, data.player.shield.current_layers + 1)
-            if hasattr(data, "particle_manager"):
-                data.particle_manager.emit_shield_ripple(self.x, self.y, (100, 255, 140))
+            if hasattr(game, "particle_manager"):
+                game.particle_manager.emit_shield_ripple(self.x, self.y, (100, 255, 140))
             if sound: sound.play("shield_recharge")
             if combat_mgr: combat_mgr.show_message(f"{self.name.upper()} SCHILD-BURST! +1 Schildschicht wiederhergestellt!")
 
@@ -182,7 +186,7 @@ class Crew:
 
         return True
 
-    def train_skill(self, skill_name: str, achievement_manager=None) -> bool:
+    def train_skill(self, skill_name: str, achievement_manager: AchievementManager | None = None) -> bool:
         if skill_name == "repair" and self.skill_repair < 3:
             self.skill_repair += 1
             self.repair_multiplier *= 1.25
@@ -235,7 +239,7 @@ class Crew:
             return
 
         waypoints: list[tuple[float, float]] = []
-        for next_r, door in room_path:
+        for _next_r, door in room_path:
             waypoints.append((float(door.rect.centerx), float(door.rect.centery)))
         waypoints.append((tx, ty))
 

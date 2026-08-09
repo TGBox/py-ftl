@@ -3,6 +3,9 @@ import os
 import time
 import pygame
 
+from game import Game
+from managers.sound_manager import SoundManager
+
 ACHIEVEMENT_FILE = "data/achievements.json"
 
 ACHIEVEMENTS_MASTER = [
@@ -178,8 +181,10 @@ class AchievementManager:
 
     def __init__(self, filepath: str = ACHIEVEMENT_FILE):
         self.filepath = filepath
-        self.achievements: dict[str, dict] = {}
-        self.toasts: list[dict] = []  # Active popups
+        self.achievements: dict[str, dict[str, str | list[str] | bool | float | str | None]] = {}
+        self.toasts: list[dict[str, str]] = []  # Active popups
+        self.game: Game | None = None   # Set by Game after construction
+        self.sound: SoundManager | None = None   # Set by Game after construction
         self.init_achievements()
         self.load_achievements()
 
@@ -257,7 +262,7 @@ class AchievementManager:
         pygame.draw.rect(surface, (255, 215, 0), (x, y, w, h), 2)
         pygame.draw.rect(surface, (255, 180, 0), (x + 2, y + 2, w - 4, h - 4), 1)
 
-        header = font.render(f"[★] ERRUNGENSCHAFT: {toast['title']}", True, (255, 230, 100))
+        header = font.render(f"ERRUNGENSCHAFT: {toast['title']}", True, (255, 230, 100))
         surface.blit(header, (x + 15, y + 8))
 
         sub_font = pygame.font.SysFont(None, 18)

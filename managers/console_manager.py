@@ -1,6 +1,7 @@
 import pygame
 
 from classes.GameData import GameData
+from game import Game
 from settings import LOGICAL_HEIGHT, LOGICAL_WIDTH
 
 
@@ -9,6 +10,7 @@ class ConsoleManager:
 
     def __init__(self, data: GameData):
         self.data = data
+        self.game: Game | None = None   # Set by Game after construction
         self.active: bool = False
         self.input_text: str = ""
         self.history: list[str] = [

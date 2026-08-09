@@ -3,12 +3,14 @@ import pygame
 from classes.GameData import GameData
 from classes.Projectile import Projectile
 from classes.Room import Room
+from game import Game
 
 
 class WeaponManager:
 
     def __init__(self, data: GameData):
         self.data = data
+        self.game: Game | None = None   # Set by Game after construction
 
     # --------------------------------------------------
     # UPDATE
@@ -279,4 +281,4 @@ class WeaponManager:
 
         self.data.combat.msg = text
 
-        self.data.combat.msg_timer = 1.5
+        self.data.combat.msg_timer = 1.5

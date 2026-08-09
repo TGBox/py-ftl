@@ -5,6 +5,7 @@ from classes.Crew import Crew
 from classes.GameData import GameData
 from classes.Room import Room
 from classes.Weapon import Weapon
+from game import Game
 from settings import *
 
 WEAPON_CATALOG_MASTER = [
@@ -52,6 +53,7 @@ class ShopManager:
 
     def __init__(self, data: GameData):
         self.data = data
+        self.game: Game | None = None   # Set by Game after construction
         self.catalog_stock: list[dict] = []
         self.selecting_slot_item: dict | None = None
         self.layout_swap_mode: bool = False
@@ -357,7 +359,7 @@ class ShopManager:
                     self.data.player.scrap -= price
                     cur_w.upgrade()
                     if hasattr(self.data, "achievements"):
-                        self.data.achievements.unlock("weapon_fuser")
+                        self.game.achievement_manager.unlock("weapon_fuser")
                     self.data.combat.msg = f"FUSION AN SLOT {slot_idx+1}! {cur_w.name} ist nun Stufe {cur_w.level} (MK {cur_w.level})!"
                     self.data.combat.msg_timer = 2.8
                     self.selecting_slot_item = None
@@ -481,7 +483,7 @@ class ShopManager:
         self.data.combat.msg_timer = 2.5
         self.generate_next_crew_candidate()
         if len(self.data.player.crew) >= 6 and hasattr(self.data, "achievements"):
-            self.data.achievements.unlock("full_house")
+            self.game.achievement_manager.unlock("full_house")
 
     def buy_room_system(self, sys_item: dict):
         price = sys_item.get("price", 50)

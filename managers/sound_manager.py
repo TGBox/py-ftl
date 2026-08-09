@@ -1,6 +1,9 @@
 import math
 import struct
+from typing import Callable
 import pygame
+
+from game import Game
 
 
 class SoundManager:
@@ -18,6 +21,7 @@ class SoundManager:
         self._sfx_volume: float = 0.25
         self._current_track_name: str | None = None
         self._music_channel: pygame.mixer.Channel | None = None
+        self.game: Game | None = None   # Set by Game after construction
 
         self._generate_all()
         self._generate_music()
@@ -136,7 +140,7 @@ class SoundManager:
         sample_rate: int = 22050
     ) -> bytes:
         n_samples = int(sample_rate * duration_ms / 1000)
-        samples = []
+        samples: list[float] = []
         for i in range(n_samples):
             t = i / sample_rate
             if wave == "sin":
@@ -170,7 +174,7 @@ class SoundManager:
         sample_rate: int = 22050
     ) -> bytes:
         n_samples = int(sample_rate * duration_ms / 1000)
-        samples = []
+        samples: list[float] = []
         phase = 0.0
         for i in range(n_samples):
             t = i / n_samples
@@ -292,7 +296,7 @@ class SoundManager:
         os.makedirs(music_dir, exist_ok=True)
 
         expected_tracks = ["bgm_menu", "bgm_explore", "bgm_combat", "bgm_boss"]
-        loaded_from_file = set()
+        loaded_from_file: set[str] = set()
 
         for track in expected_tracks:
             for ext in [".ogg", ".wav", ".mp3"]:
@@ -370,16 +374,16 @@ class SoundManager:
             val = math.sin(2 * math.pi * pitch * t_rel) * decay
             return val * vol
 
-        def build_orchestral_buffer(duration_sec: float, generator_fn, alpha_lpf: float = 0.30) -> bytes:
+        def build_orchestral_buffer(duration_sec: float, generator_fn: Callable[[float], float], alpha_lpf: float = 0.30) -> bytes:
             n_samples = int(sample_rate * duration_sec)
-            raw = []
+            raw: list[float] = []
             for i in range(n_samples):
                 t = i / sample_rate
                 raw.append(generator_fn(t))
 
             # Warm low-pass filter to eliminate digital harshness
             smooth = 0.0
-            pcm = []
+            pcm: list[float] = []
             for v in raw:
                 smooth += alpha_lpf * (v - smooth)
                 pcm.append(int(max(-1.0, min(1.0, smooth)) * 26000))
@@ -474,7 +478,7 @@ class SoundManager:
         # 4. BGM Boss: Grand Flagship Overture (12.8s loop) - Dramatic & Powerful
         if "bgm_boss" not in loaded_from_file:
             def boss_synth(t: float) -> float:
-                t_tr = t % 0.15
+                _t_tr = t % 0.15
                 tr_freqs = [65.41, 98.00, 130.81, 155.56]  # C2, G2, C3, Eb3
                 tr_idx = int(t / 0.15) % len(tr_freqs)
                 cell_val = string_section(t, [tr_freqs[tr_idx]], vol=0.50)

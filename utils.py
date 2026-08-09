@@ -1,3 +1,6 @@
+from typing import Any, Optional
+from classes.GameData import PlayerData
+from classes.Room import Room
 import pygame
 
 
@@ -5,7 +8,7 @@ def wrap_text(text: str, font: pygame.font.Font, max_width: int) -> list[str]:
     """Wraps text into lines that do not exceed max_width pixels when rendered by font."""
     if not text:
         return []
-    lines = []
+    lines: list[str] = []
     paragraphs = text.split("\n")
     for paragraph in paragraphs:
         words = paragraph.split(" ")
@@ -30,14 +33,14 @@ def wrap_text(text: str, font: pygame.font.Font, max_width: int) -> list[str]:
 def calculate_event_layout(
     ev_text: str,
     res_text: str,
-    choices: list,
+    choices: list[dict[str, str | int | bool]],
     font: pygame.font.Font,
     box_x: int = 120,
     box_y: int = 100,
     box_width: int = 660,
     min_box_height: int = 380,
     max_text_width: int = 600,
-) -> dict:
+) -> dict[str, Any]:
     """Calculates dynamic layout positions for event panel text, result text, and choice buttons."""
     ev_lines = wrap_text(ev_text, font, max_text_width)
     start_y = box_y + 25
@@ -63,7 +66,7 @@ def calculate_event_layout(
         }
 
     btn_start_y = max(200, text_end_y + 15)
-    choice_rects = []
+    choice_rects: list[pygame.Rect] = []
     if not choices:
         cont_btn_y = max(400, btn_start_y)
         last_y = cont_btn_y + 42 + 20
@@ -77,7 +80,7 @@ def calculate_event_layout(
             "box_rect": pygame.Rect(box_x, box_y, box_width, box_height),
         }
 
-    for idx, choice in enumerate(choices):
+    for idx, _choice in enumerate(choices):
         btn_y = btn_start_y + idx * 44
         choice_rects.append(pygame.Rect(box_x + 30, btn_y, 600, 38))
 
@@ -94,7 +97,7 @@ def calculate_event_layout(
     }
 
 
-def get_room_manning_bonus(room_name: str, crew_count: int, room=None) -> dict:
+def get_room_manning_bonus(room_name: str, crew_count: int, room: Optional[Room] | None = None) -> dict[str, Any]:
     """Returns manning bonus multipliers and description based on room name, stationed crew count, and room power ratio."""
     power_ratio = 1.0
     if room is not None:
@@ -131,7 +134,7 @@ def get_room_manning_bonus(room_name: str, crew_count: int, room=None) -> dict:
     return {"multiplier": 1.0 * power_ratio, "evasion": 0.0, "power_ratio": power_ratio, "desc": f"{count} Crew"}
 
 
-def can_afford_choice(choice: dict, player) -> bool:
+def can_afford_choice(choice: dict[str, str], player: PlayerData) -> bool:
     """Checks if player has enough resources (scrap, fuel, missiles, drones) for an event choice."""
     if not player or not choice:
         return True
@@ -140,15 +143,15 @@ def can_afford_choice(choice: dict, player) -> bool:
     if action == "BUY_FUEL" and getattr(player, "scrap", 0) < 10:
         return False
 
-    req_scrap = choice.get("requires_scrap", 0)
-    req_fuel = choice.get("requires_fuel", 0)
-    req_missiles = choice.get("requires_missiles", 0)
-    req_drones = choice.get("requires_drones", choice.get("requires_drone_parts", 0))
+    req_scrap: int = int(choice.get("requires_scrap", 0))
+    req_fuel: int = int(choice.get("requires_fuel", 0))
+    req_missiles: int = int(choice.get("requires_missiles", 0))
+    req_drones: int = int(choice.get("requires_drones", choice.get("requires_drone_parts", 0)))
 
-    scrap_val = choice.get("scrap", 0)
-    fuel_val = choice.get("fuel", 0)
-    missile_val = choice.get("missiles", 0)
-    drone_val = choice.get("drones", choice.get("drone_parts", 0))
+    scrap_val: int = int(choice.get("scrap", 0))
+    fuel_val: int = int(choice.get("fuel", 0))
+    missile_val: int = int(choice.get("missiles", 0))
+    drone_val: int = int(choice.get("drones", choice.get("drone_parts", 0)))
 
     if scrap_val < 0:
         req_scrap = max(req_scrap, abs(scrap_val))

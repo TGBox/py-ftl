@@ -2,6 +2,8 @@ import json
 import os
 import random
 
+from classes.Crew import Crew
+
 
 class EventManager:
 
@@ -9,8 +11,8 @@ class EventManager:
         self.current_event_text: str = ""
         self.current_event_type: str | None = None
         self.result_text: str = ""
-        self.choices: list[dict] = []
-        self.events_db: list[dict] = []
+        self.choices: list[dict[str, str | int | bool]] = []
+        self.events_db: list[dict[str, str]] = []
         self.load_events_json(json_path)
 
     def load_events_json(self, json_path: str) -> None:
@@ -26,7 +28,7 @@ class EventManager:
                     print(f"Fehler beim Laden von {p}: {e}")
 
     def trigger_event(
-        self, event_type: str, player_crew: list = None, player_fuel: int = 1
+        self, event_type: str, player_crew: list[Crew] | None = None, player_fuel: int = 1
     ) -> tuple[int, int]:
         self.current_event_type = event_type
         self.choices.clear()

@@ -3,29 +3,23 @@ import pygame
 
 from classes.GameData import GameData
 from classes.Projectile import Projectile
-from managers.map_manager import MapManager
-from managers.shop_manager import ShopManager
-from managers.weapon_manager import WeaponManager
+from game import Game
+from managers.sound_manager import SoundManager
 from settings import *
-from utils import calculate_event_layout
+from utils import *
 
 
 class InputManager:
 
     def __init__(
         self,
-        data: GameData,
-        shop_manager: ShopManager,
-        map_manager: MapManager,
-        weapon_manager: WeaponManager | None = None,
+        data: GameData
     ):
-        self.data = data
-        self.shop_manager = shop_manager
-        self.map_manager = map_manager
-        self.weapon_manager = weapon_manager or WeaponManager(data)
-        self.sound = None   # Set by Game after construction
-        self.game = None    # Set by Game after construction
+        self.data: GameData = data
+        self.game: Game | None = None   # Set by Game after construction
+        self.sound: SoundManager | None = None   # Set by Game after construction
 
+    # TODO: Investigate if this function causes the rendering resolution to look as bad.
     def _logical_mouse_pos(self, pos: tuple[int, int] | None = None) -> tuple[int, int]:
         """Convert raw screen mouse position to logical 900x600 coordinates."""
         if pos is not None:
@@ -105,9 +99,11 @@ class InputManager:
                 selected = [c for c in self.data.player.crew if c.selected]
                 if selected:
                     for c in selected:
-                        c.activate_ability(self.data, combat_mgr)
+                        assert self.game is not None
+                        c.activate_ability(self.data, self.game)
                 elif self.data.player.crew:
-                    self.data.player.crew[0].activate_ability(self.data, combat_mgr)
+                    assert self.game is not None
+                    self.data.player.crew[0].activate_ability(self.data, self.game)
 
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
             if event.key == pygame.K_o:
@@ -352,7 +348,8 @@ class InputManager:
 
         # 7. Shop Modal State
         if self.data.current_state == STATE_SHOP:
-            self.shop_manager.handle_click(mx, my)
+            assert self.game is not None
+            self.game.shop_manager.handle_click(mx, my)
             return
 
         # 8. Main Menu State
@@ -488,12 +485,14 @@ class InputManager:
             )
 
             if dist <= 18:
-                self.map_manager.travel_to_node(node)
+                assert self.game is not None
+                self.game.map_manager.travel_to_node(node)
                 break
 
     def handle_shop_click(self, event: pygame.event.Event):
         mx, my = self._logical_mouse_pos()
-        self.shop_manager.handle_click(mx, my)
+        assert self.game is not None
+        self.game.shop_manager.handle_click(mx, my)
 
     def handle_event_click(self):
         mx, my = self._logical_mouse_pos()
@@ -501,7 +500,7 @@ class InputManager:
 
         ev_text = ev_mgr.current_event_text
         res_text = getattr(ev_mgr, "result_text", "")
-        choices = ev_mgr.choices
+        choices: list[dict[str, str | int | bool]] = ev_mgr.choices
 
         font = pygame.font.SysFont(None, 24)
         layout = calculate_event_layout(ev_text, res_text, choices, font)
@@ -511,7 +510,8 @@ class InputManager:
         if ev_mgr.result_text or not choices:
             cont_btn = layout.get("cont_btn")
             if (cont_btn and cont_btn.collidepoint(mx, my)) or box_rect.collidepoint(mx, my):
-                self.map_manager.continue_event()
+                assert self.game is not None
+                self.game.map_manager.continue_event()
             return
 
         from utils import can_afford_choice
@@ -523,7 +523,8 @@ class InputManager:
                         return
                     action = choice.get("action", "")
                     if self.sound: self.sound.play("click")
-                    self.map_manager.handle_choice(action, choice)
+                    assert self.game is not None
+                    self.game.map_manager.handle_choice(action, choice)
                     return
 
 
@@ -731,4 +732,4 @@ class InputManager:
         self.data.combat.msg_timer = 2.0
         self.data.save_toast_text = text
         self.data.save_toast_timer = 2.5
-
+

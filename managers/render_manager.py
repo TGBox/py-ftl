@@ -2,15 +2,16 @@ import math
 import pygame
 
 from classes.GameData import GameData
+from game import Game
 from settings import *
-from utils import calculate_event_layout, wrap_text
+from utils import *
 
 class RenderManager:
 
     def __init__(self, screen: pygame.Surface, data: GameData):
         self.screen = screen
         self.data = data
-        self.game = None
+        self.game: Game | None = None   # Set by Game after construction
         self.load_assets()
         self.small_font = pygame.font.SysFont(None, 18)
         self.font = pygame.font.SysFont(None, 24)
@@ -50,8 +51,8 @@ class RenderManager:
     def load_assets(self):
         import os
 
-        self.assets = {}
-        asset_defs = {
+        self.assets: dict[str, pygame.Surface] = {}
+        asset_defs: dict[str, tuple[str, tuple[int, int], tuple[int, int, int] | None]] = {
             "space_bg": ("assets/space_bg.png", (LOGICAL_WIDTH, LOGICAL_HEIGHT), None),
             "main_menu_bg": ("assets/main_menu_bg.png", (LOGICAL_WIDTH, LOGICAL_HEIGHT), None),
             "kestrel_hull": ("assets/kestrel_hull.png", (450, 260), (0, 0, 0)),
@@ -66,7 +67,7 @@ class RenderManager:
                         w, h = img.get_size()
                         for x in range(w):
                             for y in range(h):
-                                r, g, b, a = img.get_at((x, y))
+                                r, g, b, _a = img.get_at((x, y))
                                 if colorkey == (0, 0, 0) and r < 35 and g < 35 and b < 35:
                                     img.set_at((x, y), (0, 0, 0, 0))
                                 elif colorkey == (255, 255, 255) and r > 220 and g > 220 and b > 220:
@@ -143,13 +144,13 @@ class RenderManager:
 
         # Toast Notifications
         if hasattr(self.data, "achievements"):
-            self.data.achievements.update_toasts(0.016)
-            self.data.achievements.draw_toasts(self.screen, self.font)
+            self.game.achievement_manager.update_toasts(0.016)
+            self.game.achievement_manager.draw_toasts(self.screen, self.font)
 
         # In-Game Speichern-Benachrichtigung (HUD Toast)
-        save_timer = getattr(self.data, "save_notification_timer", 0.0)
+        save_timer = getattr(self.game, "save_notification_timer", 0.0)
         if save_timer > 0.0:
-            self.data.save_notification_timer = max(0.0, save_timer - 0.016)
+            self.game.save_notification_timer = max(0.0, save_timer - 0.016)
             msg = getattr(self.data, "save_notification_msg", "SPIELSTAND GESPEICHERT")
             badge_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 165, 34, 330, 24)
             pygame.draw.rect(self.screen, (10, 45, 30), badge_rect)
@@ -205,7 +206,7 @@ class RenderManager:
         for slot in (1, 2, 3):
             card_y = modal_rect.y + 52 + (slot - 1) * 118
             card_rect = pygame.Rect(modal_rect.x + 20, card_y, 540, 106)
-            info = SaveManager.get_slot_info(slot)
+            info: SaveManager = SaveManager.get_slot_info(slot) # TODO: This needs to get typed correctly! And Manager should get moved to Game object!
             is_active_slot = getattr(self.data, "active_save_slot", 1) == slot
 
             bg_col = (30, 55, 80) if is_active_slot else (25, 35, 50)
@@ -409,23 +410,23 @@ class RenderManager:
                 p_right = max(r.rect.right for r in self.data.player.ship.rooms)
                 p_bottom = max(r.rect.bottom for r in self.data.player.ship.rooms)
                 p_w = p_right - p_left
-                self.data.particle_manager.emit_thruster(p_left + int(p_w * 0.35), p_bottom + 6, direction_x=0.0, direction_y=1.0)
-                self.data.particle_manager.emit_thruster(p_left + int(p_w * 0.65), p_bottom + 6, direction_x=0.0, direction_y=1.0)
+                self.game.particle_manager.emit_thruster(p_left + int(p_w * 0.35), p_bottom + 6, direction_x=0.0, direction_y=1.0)
+                self.game.particle_manager.emit_thruster(p_left + int(p_w * 0.65), p_bottom + 6, direction_x=0.0, direction_y=1.0)
 
             if not is_enemy_destroyed and self.data.enemy.ship.rooms:
                 e_left = min(r.rect.left for r in self.data.enemy.ship.rooms)
                 e_right = max(r.rect.right for r in self.data.enemy.ship.rooms)
                 e_bottom = max(r.rect.bottom for r in self.data.enemy.ship.rooms)
                 e_w = e_right - e_left
-                self.data.particle_manager.emit_thruster(e_left + int(e_w * 0.35), e_bottom + 6, direction_x=0.0, direction_y=1.0)
-                self.data.particle_manager.emit_thruster(e_left + int(e_w * 0.65), e_bottom + 6, direction_x=0.0, direction_y=1.0)
+                self.game.particle_manager.emit_thruster(e_left + int(e_w * 0.35), e_bottom + 6, direction_x=0.0, direction_y=1.0)
+                self.game.particle_manager.emit_thruster(e_left + int(e_w * 0.65), e_bottom + 6, direction_x=0.0, direction_y=1.0)
 
         self.draw_rooms()
 
         self.draw_projectiles()
 
-        if hasattr(self.data, "particle_manager"):
-            self.data.particle_manager.draw(self.screen)
+        if hasattr(self.game, "particle_manager"):
+            self.game.particle_manager.draw(self.screen)
 
         self.draw_shields()
 
@@ -914,8 +915,8 @@ class RenderManager:
         self.screen.blit(p_surf, (p_box.x, p_box.y))
         pygame.draw.rect(self.screen, (0, 200, 255), p_box, 1)
 
-        if hasattr(self.data, "combat_manager") and hasattr(self.data.combat_manager, "get_player_evasion"):
-            evade_val = int(self.data.combat_manager.get_player_evasion() * 100)
+        if hasattr(self.data, "combat_manager") and hasattr(self.game.combat_manager, "get_player_evasion"):
+            evade_val = int(self.game.combat_manager.get_player_evasion() * 100)
         else:
             evade_val = int(self.data.player.ship.rooms[2].current_power * 0.20 * 100) if len(self.data.player.ship.rooms) > 2 else 10
         p_lbl = small_font.render(f"Spieler Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp} HP  |  Ausw: {evade_val}%", True, (130, 240, 170))
@@ -995,7 +996,7 @@ class RenderManager:
             c.draw(self.screen)
 
         if sensor_power >= 1:
-            for c in getattr(self.data.combat_manager, "enemy_crew", []):
+            for c in getattr(self.game.combat_manager, "enemy_crew", []):
                 c.draw(self.screen)
 
         # 4. Drohnen im Raum & Orbit zeichnen

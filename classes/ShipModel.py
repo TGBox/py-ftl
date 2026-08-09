@@ -1,7 +1,10 @@
-import copy
+import pygame
 
+from classes.Crew import Crew
 from classes.Door import Door
+from classes.GameData import PlayerData
 from classes.Room import Room
+from classes.Weapon import Weapon
 
 
 class ShipModel:
@@ -13,7 +16,7 @@ class ShipModel:
         is_enemy: bool = False,
         max_weapons: int = 3,
         max_crew: int = 4,
-        weapon_slots: list[dict] | None = None,
+        weapon_slots: list[dict[str, int | tuple[int, int] | list[str] | None]] = [],
     ):
         self.name = name
         self.max_hp = max_hp
@@ -22,7 +25,7 @@ class ShipModel:
         self.is_enemy = is_enemy
         self.max_weapons = max_weapons
         self.max_crew = max_crew
-        self.weapon_slots: list[dict] = weapon_slots or []
+        self.weapon_slots: list[dict[str, int | tuple[int, int] | list[str] | None]] = weapon_slots or []
         self.doors: list[Door] = []
         self.generate_doors()
         if not self.weapon_slots:
@@ -67,7 +70,7 @@ class ShipModel:
         # Türen & Luftschleusen neu berechnen
         self.generate_doors()
 
-    def swap_weapon_slots(self, idx1: int, idx2: int, player_weapons: list | None = None) -> bool:
+    def swap_weapon_slots(self, idx1: int, idx2: int, player_weapons: list[Weapon] | None = None) -> bool:
         if idx1 < 0 or idx1 >= len(self.weapon_slots) or idx2 < 0 or idx2 >= len(self.weapon_slots) or idx1 == idx2:
             return False
 
@@ -118,7 +121,7 @@ class ShipModel:
             self.doors.append(Door(min_x_room, None, (min_x_room.rect.left - 4, min_x_room.rect.centery - 12, 6, 24), is_airlock=True))
             self.doors.append(Door(max_x_room, None, (max_x_room.rect.right - 2, max_x_room.rect.centery - 12, 6, 24), is_airlock=True))
 
-    def update_doors(self, dt: float, crew_list: list | None = None) -> None:
+    def update_doors(self, dt: float, crew_list: list[Crew] | None = None) -> None:
         for d in self.doors:
             d.update(dt)
             if d.opened_by_crew and not d.is_airlock:
@@ -133,7 +136,7 @@ class ShipModel:
                     d.is_open = False
                     d.opened_by_crew = False
 
-    def draw_doors(self, surface, door_level: int = 1) -> None:
+    def draw_doors(self, surface: pygame.Surface, door_level: int = 1) -> None:
         for d in self.doors:
             d.draw(surface, door_level=door_level)
 
@@ -273,7 +276,7 @@ SHIP_BLUEPRINTS = {
     "Kristall-Kreuzer": CRYSTAL_SHIP,
 }
 
-SHIP_STARTING_SPECS = {
+SHIP_STARTING_SPECS: dict[str, dict[str, str | list[str]]] = {
     "Kestrel": {
         "crew_summary": "1x Mensch, 1x Engi",
         "crew_species": ["Mensch", "Engi"],
@@ -325,7 +328,7 @@ SHIP_STARTING_SPECS = {
 }
 
 
-def apply_starting_setup_for_ship(player_data, ship_name: str) -> None:
+def apply_starting_setup_for_ship(player_data: PlayerData, ship_name: str) -> None:
     from classes.Crew import Crew
     from classes.Weapon import Weapon
 
@@ -462,4 +465,4 @@ ENEMY_TEMPLATES = [
     ENEMY_ROCK_WARSHIP,
     ENEMY_DRONE_CARRIER,
 ]
-
+
