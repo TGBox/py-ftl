@@ -4,16 +4,16 @@
     "title": "Erster Sieg",
     "desc": "Besiege ein feindliches Raumschiff im Gefecht.",
     "category": "KAMPF",
-    "unlocked": true,
-    "unlock_time": "08.08.2026, 16:16 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "boss_slayer": {
     "id": "boss_slayer",
     "title": "Rebellen-Schreck",
     "desc": "Besiege einen Sektor Mini-Boss.",
     "category": "KAMPF",
-    "unlocked": true,
-    "unlock_time": "08.08.2026, 16:36 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "flagship_down": {
     "id": "flagship_down",
@@ -44,8 +44,8 @@
     "title": "Bio-Extinktion",
     "desc": "Eliminiere die gesamte gegnerische Crew ohne das Schiff zu zerstören.",
     "category": "KAMPF",
-    "unlocked": true,
-    "unlock_time": "08.08.2026, 16:16 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "bare_hull": {
     "id": "bare_hull",
@@ -68,8 +68,8 @@
     "title": "Meister-Ingenieur",
     "desc": "Bringe den Reparatur-Skill eines Crew-Mitglieds auf Stufe 3.",
     "category": "CREW",
-    "unlocked": true,
-    "unlock_time": "08.08.2026, 16:16 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "master_warrior": {
     "id": "master_warrior",
@@ -108,16 +108,16 @@
     "title": "Schiffs-Sammler",
     "desc": "Schalte mindestens 4 verschiedene Raumschiffe frei.",
     "category": "SCHIFF",
-    "unlocked": true,
-    "unlock_time": "08.08.2026, 16:23 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "armada": {
     "id": "armada",
     "title": "Sternen-Armada",
     "desc": "Schalte alle 8 Raumschiffe im Spiel frei!",
     "category": "SCHIFF",
-    "unlocked": true,
-    "unlock_time": "08.08.2026, 16:23 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "max_power": {
     "id": "max_power",
@@ -148,16 +148,16 @@
     "title": "Überlebenskünstler",
     "desc": "Triggere ein Event mit 0 Treibstoff und überlebe.",
     "category": "ERKUNDUNG",
-    "unlocked": true,
-    "unlock_time": "08.08.2026, 16:16 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "event_explorer": {
     "id": "event_explorer",
     "title": "Weltraum-Erkunder",
     "desc": "Erfülle 10 zufällige Sektor-Events.",
     "category": "ERKUNDUNG",
-    "unlocked": true,
-    "unlock_time": "08.08.2026, 16:16 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "scrap_hoarder": {
     "id": "scrap_hoarder",

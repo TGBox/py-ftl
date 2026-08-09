@@ -77,10 +77,59 @@ x 2026-08-08 (A) 2026-08-08 Wenn ich einen Schuss von einer Waffe starte und im 
 x 2026-08-08 (A) 2026-08-08 Der Counter für Drohnen und Tarnung sollte zwischen Battles zurückgesetzt werden. Im Moment kann ich Drohnen am Ende eines Kampfes spawnen und diese sind im nächsten Kampf noch aktiv. Genauso verhält es sich mit der Tarnung. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Wenn ich eine Waffe aus einem der ersten Slots verkaufe, rutschen die anderen Waffen einfach auf. Die position der Waffen innerhalb des Schiffes sollte sich nicht auf diese art ändern. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Ich möchte eine Reihe von Cheatcodes, die mir beim Testen ermöglichen viele Szenarien effektiv zu testen. Es sollten durch die Cheatcodes alle für den Spieler relevanten Aspekte des Spiels beeinflusst werden können. Und es sollte ein paar nutzlose aber amüsante CheatCodes geben. +Refactoring @code
-x 2026-08-08 (A) 2026-08-08 Buttons auf einer niedrigeren Z-Achse können zwar nicht geklickt werden, werden aber visuell noch als Ziel/Hover dargestellt. Hover-Z-State korrigieren. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Wenn zwei Crewmitglieder im selben Raum sind, sollten sie mit einem Offset von der Mitte in Richtung gegenüberliegender Ecken platziert werden für bessere Auswählbarkeit. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Lautstärke und Liste der alten 8-Bit-Sounds überarbeiten zum Ersetzen. Verschiedene Soundtracks für mehere Sektorentypen einbauen. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Mehr Abwechslung bei gegnerischen Schiffstypen im Kampf hinzufügen. +Refactoring @code
-x 2026-08-08 (A) 2026-08-08 Fusion auf MK6 im Shop verhindern/korrigieren. Ersetzen von besseren Waffen ohne vorherigen expliziten Verkauf blockieren. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Schiff-Freischaltlogik korrigieren: Nach einem Sieg soll strikt nur das direkt nächste Schiff in der Reihenfolge freigeschaltet werden. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Shop-System erweitern: Verkauf von Räumen und Kauf/Einbau neuer Räume auf offenen Slots ermöglichen. +Refactoring @code
+(A) 2026-08-09 Es kommt vor, dass nach manchen Kämpfen die Kampfmusik nicht endet. Danach gewinnt man jeden Kampf automatisch und es wird ein Notfall Savegame erstellt. Siehe Log Random Win Bug. +Refactoring @code
+(A) 2026-08-09 Wenn man während dem Kampf in das Hauptmenü wechselt per ESC, dann verlässt man den aktuellen Kampf und landet beim zurückkehren in der Kartenansicht. +Refactoring @code
+(A) 2026-08-09 Wenn man keinen passenden Waffenslot übrig hat und eine unpassende Waffe kauft, dann crasht das Spiel. +Refactoring @code
+(A) 2026-08-09 Es gibt einen Bug, bei dem man random im Spiel nach einem regulären Kampf "gewinnt" und wieder im Hauptmenü landet. (Random Win Bug) +Refactoring @code
+(B) 2026-08-09 Das Notfall Savegame sollte nicht auf einem der drei User Savegame Slots gespeichert werden, sondern auf einem vierten Slot, der nur geladen, aber auf dem vom User nicht gespeichert werden kann. Aktuell werden alte Spiele überschrieben wenn ein Notfall Savegame erstellt wird. +Refactoring @code
+(B) 2026-08-09 Beim Tarnschiff gibt es im ersten Waffenslot den Impulsstrahl mit kurzer Reichweite. Mit diesem kann kein anderes Schiff angegriffen werden. Dieser müsste im dritten Slot starten, damit er überhaupt irgendwas treffen kann. Oder er muss durch eine andere Waffe ersetzt werden die längere Reichweite hat. +Refactoring @code
+(B) 2026-08-09 Es muss bei allen Schiffen geprüft werden, ob die Waffen in den Anfangskonfigurationen viable sind. +Refactoring @code
+(C) 2026-08-09 Die Waffenreichweite ist für Waffen im Shop nicht erkennbar. Somit weiss ich beim Kaufen nicht, ob dieser Kauf sinn macht. +Refactoring @code
+(C) 2026-08-09 Drohnen sollten explizit im Inventar sichtbar gemacht werden. Derzeit ist nur die Anzahl bekannt, aber keine detaillierten Infos oder die Möglichkeit, diese gezielt freizugeben/auszustatten. +Refactoring @code
+(C) 2026-08-09 Im Shop sehe ich nicht, wie viele verfügbare Raumslots ich noch habe oder wo im Schiff diese liegen. +Refactoring @code
+(D) 2026-08-08 Anzeige für mögliche Fusion auf MK6 im Shop verhindern/korrigieren. Sollte anzeigen dass die Waffe voll aufgerüstet ist. Ersetzen von besseren Waffen ohne vorherigen expliziten Verkauf blockieren. +Refactoring @code
+(D) 2026-08-09 Cheatmenü ist aktuell nicht scrollbar. Dadurch sieht man bei "help" nicht mehr die ersten Befehle der Hilfe. +Refactoring @code
+(D) 2026-08-08 Buttons auf einer niedrigeren Z-Achse können zwar nicht geklickt werden, werden aber visuell noch als Ziel/Hover dargestellt. Hover-Z-State korrigieren. +Refactoring @code
+(D) 2026-08-09 Die Random Events enden bei riskanten Aktionen immer noch viel zu oft positiv. +Refactoring @code
+(E) 2026-08-09 Im Shop soll es eine Möglichkeit geben, Crewmitglieder zu verkaufen. Sie sollten je nach Spezies und Fähigkeiten mehr oder weniger Geld einbringen. +Refactoring @code
+(E) 2026-08-09 Wenn das gegnerische Schiff nach einem Sieg des Spielers vom Spielfeld entfernt wird, dann bleiben noch Restartefakte übrig, die auch noch entfernt werden müssen. Es bleiben die Crewmitglieder, Raketeneffekte, Explosionen, Ladebalken, Schildanimationen, etc. die alle entfernt werden müssen. +Refactoring @code
+(E) 2026-08-09 Die Fortschritte in den Achievements und in den unlocks sollten beide im OptionenMenü einzeln zurückgesetzt werden können. +Refactoring @code
+
+
+
+
+
+##### Log für den Random Win Bug
+!!! CHIP/GAME CRASH PREVENTED: 'NoneType' object has no attribute 'current_charge' !!!
+Traceback (most recent call last):
+  File "C:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\game.py", line 197, in run
+    self.render_manager.draw()
+  File "C:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\managers\render_manager.py", line 124, in draw
+    self.draw_combat()
+  File "C:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\managers\render_manager.py", line 432, in draw_combat
+    self.draw_weapons()
+  File "C:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\managers\render_manager.py", line 1150, in draw_weapons
+    charge_ratio = w.current_charge / w.charge_time
+                   ^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'current_charge'
+Spielstand erfolgreich gespeichert in data/savegame_slot_1.dat (Slot 1)!
+Notfall-Spielstand erfolgreich gesichert!
+!!! CHIP/GAME CRASH PREVENTED: 'NoneType' object has no attribute 'current_charge' !!!
+Traceback (most recent call last):
+  File "C:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\game.py", line 197, in run
+    self.render_manager.draw()
+  File "C:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\managers\render_manager.py", line 124, in draw
+    self.draw_combat()
+  File "C:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\managers\render_manager.py", line 432, in draw_combat
+    self.draw_weapons()
+  File "C:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\managers\render_manager.py", line 1150, in draw_weapons
+    charge_ratio = w.current_charge / w.charge_time
+                   ^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'current_charge'
+Spielstand erfolgreich gespeichert in data/savegame_slot_1.dat (Slot 1)!
+Notfall-Spielstand erfolgreich gesichert!
