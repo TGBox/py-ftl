@@ -99,7 +99,7 @@ class SaveManager:
             iv = file_bytes[:16]
             ciphertext = file_bytes[16:]
             key = cls.get_key()
-            cipher = AES.new(key, AES.MODE_CFB, iv=iv)
+            cipher = AES.new(key, AES.MODE_CFB, iv=iv)  # type: ignore
             decrypted_text = cipher.decrypt(ciphertext).decode("utf-8")
 
             payload = json.loads(decrypted_text)

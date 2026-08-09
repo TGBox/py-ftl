@@ -153,7 +153,7 @@ class MapManager:
 
         # 1. Stochastische Risiko-Auswertung (Erfolg vs. Fehlschlag)
         if "outcomes" in choice_data and isinstance(choice_data["outcomes"], list):
-            outcomes = choice_data.get("outcomes", [])
+            outcomes: list[dict[str, Any]] = choice_data.get("outcomes", [])
             assert isinstance(outcomes, list)
             r = random.random()
             cum_prob = 0.0

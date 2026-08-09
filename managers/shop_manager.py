@@ -150,7 +150,7 @@ class ShopManager:
                 avail_all.remove(w)
 
         a_sample = random.sample(AUGMENT_CATALOG_MASTER, min(1, len(AUGMENT_CATALOG_MASTER)))
-        self.catalog_stock = w_sample + a_sample
+        self.catalog_stock: list[dict[str, Any]] = w_sample + a_sample
         self.selecting_slot_item = None
         self.layout_swap_mode = False
         self.layout_swap_first_room = None
@@ -291,18 +291,19 @@ class ShopManager:
                         self.data.combat.msg = f"1. RAUM ({room.name.upper()}) GEWÄHLT! KLICKE AUF DEN 2. RAUM."
                         self.data.combat.msg_timer = 3.0
                     elif room != self.layout_swap_first_selection and hasattr(self.layout_swap_first_selection, "name"):
-                        r1 = self.layout_swap_first_selection
-                        r2 = room
-                        self.data.player.scrap -= 15
-                        self.data.player.ship.swap_room_systems(r1, r2)
-                        self.data.combat.msg = f"LAYOUT-UMBAU: {r1.name.upper()} UND {r2.name.upper()} GETAUSCHT!"
-                        self.data.combat.msg_timer = 3.0
-                        self.layout_swap_mode = False
-                        self.layout_swap_first_selection = None
+                        if isinstance(self.layout_swap_first_selection, Room):
+                            r1: Room = self.layout_swap_first_selection
+                            self.data.player.ship.swap_room_systems(r1, room)
+                            self.data.player.scrap -= 15
+                            self.data.combat.msg = f"LAYOUT-UMBAU: {r1.name.upper()} UND {room.name.upper()} GETAUSCHT!"
+                            self.data.combat.msg_timer = 3.0
+                            self.layout_swap_mode = False
+                            self.layout_swap_first_selection = None
                     return
         else:
             for idx, slot in enumerate(self.data.player.ship.weapon_slots):
-                hx, hy = slot["pos"]
+                pos: tuple[int, int] = slot.get("pos", (0, 0))
+                hx, hy = pos
                 slot_rect = pygame.Rect(hx - 65, hy - 25, 130, 50)
                 if slot_rect.collidepoint(int(mx), int(my)):
                     if self.layout_swap_first_selection is None:
@@ -355,19 +356,21 @@ class ShopManager:
         # Ist der Slot belegt?
         if slot_idx < len(self.data.player.weapons) and self.data.player.weapons[slot_idx] is not None:
             cur_w = self.data.player.weapons[slot_idx]
-            if cur_w.w_type == item["w_type"]:
-                if cur_w.level < 5:
-                    self.data.player.scrap -= price
-                    cur_w.upgrade()
-                    if hasattr(self.data, "achievements"):
-                        self.game.achievement_manager.unlock("weapon_fuser")
-                    self.data.combat.msg = f"FUSION AN SLOT {slot_idx+1}! {cur_w.name} ist nun Stufe {cur_w.level} (MK {cur_w.level})!"
-                    self.data.combat.msg_timer = 2.8
-                    self.selecting_slot_item = None
-                else:
-                    self.data.combat.msg = f"MAXIMALES FUSION-LEVEL (MK V) AN SLOT {slot_idx+1} ERREICHT!"
-                    self.data.combat.msg_timer = 2.2
-                return
+            if cur_w is not None:
+                if cur_w.w_type == item["w_type"]:
+                    if cur_w.level < 5:
+                        self.data.player.scrap -= price
+                        cur_w.upgrade()
+                        if hasattr(self.data, "achievements"):
+                            assert self.game is not None
+                            self.game.achievement_manager.unlock("weapon_fuser")
+                        self.data.combat.msg = f"FUSION AN SLOT {slot_idx+1}! {cur_w.name} ist nun Stufe {cur_w.level} (MK {cur_w.level})!"
+                        self.data.combat.msg_timer = 2.8
+                        self.selecting_slot_item = None
+                    else:
+                        self.data.combat.msg = f"MAXIMALES FUSION-LEVEL (MK V) AN SLOT {slot_idx+1} ERREICHT!"
+                        self.data.combat.msg_timer = 2.2
+                    return
             else:
                 # TODO 48: Verhindere versehentliches Überschreiben ohne expliziten Verkauf!
                 self.data.combat.msg = f"SLOT {slot_idx+1} BELEGT! Verkaufe zuerst die alte Waffe ({cur_w.name})!"

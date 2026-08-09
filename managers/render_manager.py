@@ -151,6 +151,7 @@ class RenderManager:
         # In-Game Speichern-Benachrichtigung (HUD Toast)
         save_timer = getattr(self.game, "save_notification_timer", 0.0)
         if save_timer > 0.0:
+            assert self.game is not None
             self.game.save_notification_timer = max(0.0, save_timer - 0.016)
             msg = getattr(self.data, "save_notification_msg", "SPIELSTAND GESPEICHERT")
             badge_rect = pygame.Rect(LOGICAL_WIDTH // 2 - 165, 34, 330, 24)
@@ -610,7 +611,7 @@ class RenderManager:
             hdr_crew = sub_font.render("NÄCHSTES CREW-MITGLIED ZUM ANHEUERN (VORSCHAU):", True, (100, 255, 180))
             self.screen.blit(hdr_crew, (100, 138))
 
-            cand = getattr(shop_mgr, "next_crew_candidate", None) or {"name": "Rekrut #1", "species": "Mensch", "price": 25, "perks": "Allrounder"}
+            cand: dict[str, Any] = getattr(shop_mgr, "next_crew_candidate", None) or {"name": "Rekrut #1", "species": "Mensch", "price": 25, "perks": "Allrounder"}
             card_box = pygame.Rect(100, 160, 340, 170)
             pygame.draw.rect(self.screen, (25, 40, 60), card_box)
             pygame.draw.rect(self.screen, (0, 220, 255), card_box, 2)
@@ -796,7 +797,7 @@ class RenderManager:
 
             title = self.font.render(f"Wähle Slot für {sel_item['name']} ({sel_item['price']} Scrap):", True, (255, 220, 100))
             self.screen.blit(title, (dialog.x + 30, dialog.y + 20))
-
+            max_slots = 3
             for slot_i in range(max_slots):
                 s_btn = pygame.Rect(150, 150 + slot_i * 65, 600, 52)
                 pygame.draw.rect(self.screen, (40, 60, 85), s_btn)
@@ -1713,7 +1714,7 @@ class RenderManager:
 
         # 2. Gesamt-Fortschrittsbalken
         ach_mgr = getattr(self.data, "achievements", None)
-        ach_dict = ach_mgr.achievements if ach_mgr else {}
+        ach_dict: dict[str, Any] = ach_mgr.achievements if ach_mgr else {}
         total_count = len(ach_dict)
         unlocked_count = sum(1 for a in ach_dict.values() if a.get("unlocked", False))
         pct = (unlocked_count / total_count) if total_count > 0 else 0.0
