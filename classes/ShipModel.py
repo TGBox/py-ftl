@@ -1,3 +1,5 @@
+from typing import Any
+
 import pygame
 
 from classes.Crew import Crew
@@ -25,7 +27,7 @@ class ShipModel:
         self.is_enemy = is_enemy
         self.max_weapons = max_weapons
         self.max_crew = max_crew
-        self.weapon_slots: list[dict[str, int | tuple[int, int] | list[str] | None]] = weapon_slots or []
+        self.weapon_slots: list[dict[Any, Any]] = weapon_slots or []
         self.doors: list[Door] = []
         self.generate_doors()
         if not self.weapon_slots:
@@ -70,23 +72,9 @@ class ShipModel:
         # Türen & Luftschleusen neu berechnen
         self.generate_doors()
 
-    def swap_weapon_slots(self, idx1: int, idx2: int, player_weapons: list[Weapon] | None = None) -> bool:
-        if idx1 < 0 or idx1 >= len(self.weapon_slots) or idx2 < 0 or idx2 >= len(self.weapon_slots) or idx1 == idx2:
-            return False
-
-        # Tausche allowed_types der beiden Slots
-        self.weapon_slots[idx1]["allowed_types"], self.weapon_slots[idx2]["allowed_types"] = (
-            self.weapon_slots[idx2]["allowed_types"],
-            self.weapon_slots[idx1]["allowed_types"],
-        )
-
-        # Tausche auch ausgerüstete Waffen in player_weapons (falls vorhanden)
-        if player_weapons is not None:
-            max_len = len(player_weapons)
-            if idx1 < max_len and idx2 < max_len:
-                player_weapons[idx1], player_weapons[idx2] = player_weapons[idx2], player_weapons[idx1]
-
-        return True
+    def swap_weapon_slots(self, s1: int, s2: int, player_weapons: list[Weapon | None]) -> None:
+        if 0 <= s1 < len(player_weapons) and 0 <= s2 < len(player_weapons):
+            player_weapons[s1], player_weapons[s2] = player_weapons[s2], player_weapons[s1]
 
     def generate_doors(self) -> None:
         self.doors.clear()

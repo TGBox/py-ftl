@@ -124,7 +124,7 @@ class ShopManager:
         compatible = [w for w in WEAPON_CATALOG_MASTER if self.is_weapon_compatible(w)]
         incompatible = [w for w in WEAPON_CATALOG_MASTER if not self.is_weapon_compatible(w)]
 
-        w_sample: list[str] = []
+        w_sample: list[dict[str, Any]] = []
         avail_comp = list(compatible)
         avail_incomp = list(incompatible)
         avail_all = list(WEAPON_CATALOG_MASTER)
@@ -150,7 +150,7 @@ class ShopManager:
                 avail_all.remove(w)
 
         a_sample = random.sample(AUGMENT_CATALOG_MASTER, min(1, len(AUGMENT_CATALOG_MASTER)))
-        self.catalog_stock: list[dict[str, Any]] = w_sample + a_sample
+        self.catalog_stock: list[dict[str, Any]] = list(w_sample + a_sample)
         self.selecting_slot_item = None
         self.layout_swap_mode = False
         self.layout_swap_first_room = None
@@ -314,6 +314,7 @@ class ShopManager:
                         s1 = self.layout_swap_first_selection
                         s2 = idx
                         self.data.player.scrap -= 15
+                        assert self.data.player.weapons is not None
                         self.data.player.ship.swap_weapon_slots(s1, s2, self.data.player.weapons)
                         self.data.combat.msg = f"LAYOUT-UMBAU: WAFFENSLOT H{s1+1} UND H{s2+1} GETAUSCHT!"
                         self.data.combat.msg_timer = 3.0
@@ -373,8 +374,9 @@ class ShopManager:
                     return
             else:
                 # TODO 48: Verhindere versehentliches Überschreiben ohne expliziten Verkauf!
-                self.data.combat.msg = f"SLOT {slot_idx+1} BELEGT! Verkaufe zuerst die alte Waffe ({cur_w.name})!"
-                self.data.combat.msg_timer = 3.0
+                if cur_w is not None:
+                    self.data.combat.msg = f"SLOT {slot_idx+1} BELEGT! Verkaufe zuerst die alte Waffe ({cur_w.name})!"
+                    self.data.combat.msg_timer = 3.0
                 return
         else:
             # Slot frei -> Einbauen

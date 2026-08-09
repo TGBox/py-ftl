@@ -126,13 +126,13 @@ class SaveManager:
     def save_game(cls, data: GameData, game: Game, slot: int | str = 1, filepath: str | None = None) -> bool:
         if isinstance(slot, str) and ("/" in slot or "\\" in slot or slot.endswith(".dat")):
             path = slot
-            _slot_num = 1
+            _ = 1
         elif filepath is not None:
             path = filepath
-            _slot_num = slot if isinstance(slot, int) else 1
+            _ = slot if isinstance(slot, int) else 1
         else:
             path = cls.get_slot_filepath(slot)
-            _slot_num = slot if isinstance(slot, int) else 1
+            _ = slot if isinstance(slot, int) else 1
 
         try:
             # Map-Knoten serialisieren
@@ -253,7 +253,7 @@ class SaveManager:
             game.save_notification_timer = 3.0
             data.combat.msg = f"💾 SPIELSTAND ERFOLGREICH GESPEICHERT (SLOT {slot})!"
             data.combat.msg_timer = 3.0
-            data.active_save_slot = slot
+            data.active_save_slot = int(slot) if str(slot).isdigit() else 1
 
             print(f"Spielstand erfolgreich gespeichert in {path} (Slot {slot})!")
             return True
@@ -265,13 +265,13 @@ class SaveManager:
     def load_game(cls, data: GameData, slot: int | str = 1, filepath: str | None = None) -> bool:
         if isinstance(slot, str) and ("/" in slot or "\\" in slot or slot.endswith(".dat")):
             path = slot
-            slot_num = 1
+            _ = 1
         elif filepath is not None:
             path = filepath
-            slot_num = slot if isinstance(slot, int) else 1
+            _ = slot if isinstance(slot, int) else 1
         else:
             path = cls.get_slot_filepath(slot)
-            slot_num = slot if isinstance(slot, int) else 1
+            _ = slot if isinstance(slot, int) else 1
 
         if not os.path.exists(path):
             print(f"Kein Speicherstand unter {path} gefunden!")
@@ -284,7 +284,7 @@ class SaveManager:
             iv = file_bytes[:16]
             ciphertext = file_bytes[16:]
             key = cls.get_key()
-            cipher = AES.new(key, AES.MODE_CFB, iv=iv)
+            cipher: Any = AES.new(key, AES.MODE_CFB, iv=iv)  # type: ignore
             decrypted_text = cipher.decrypt(ciphertext).decode("utf-8")
 
             payload = json.loads(decrypted_text)
@@ -406,7 +406,7 @@ class SaveManager:
             data.combat.target_weapon_idx = None
             data.paused = False
 
-            data.active_save_slot = slot
+            data.active_save_slot = int(slot) if str(slot).isdigit() else 1
             target_state = schema.current_state if schema.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY) else STATE_MAP
             data.current_state = target_state
 

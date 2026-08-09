@@ -970,7 +970,7 @@ class CombatManager:
         if is_final_boss:
             self.data.current_state = STATE_VICTORY
         elif is_mini_boss:
-            _sec = self.data.world.star_map.sector # TODO: Check if needed?
+            _ = self.data.world.star_map.sector # TODO: Check if needed?
             self.data.world.star_map.sector += 1
             self.data.world.star_map.generate_map()
             self.data.player.scrap += 25

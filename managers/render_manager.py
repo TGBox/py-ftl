@@ -1,4 +1,5 @@
 import math
+from typing import Any
 import pygame
 
 from classes.GameData import GameData
@@ -67,7 +68,7 @@ class RenderManager:
                         w, h = img.get_size()
                         for x in range(w):
                             for y in range(h):
-                                r, g, b, _a = img.get_at((x, y))
+                                r, g, b, _ = img.get_at((x, y))
                                 if colorkey == (0, 0, 0) and r < 35 and g < 35 and b < 35:
                                     img.set_at((x, y), (0, 0, 0, 0))
                                 elif colorkey == (255, 255, 255) and r > 220 and g > 220 and b > 220:
@@ -568,7 +569,7 @@ class RenderManager:
             self.screen.blit(hdr_weapons, (80, 352))
 
             max_slots = getattr(self.data.player.ship, "max_weapons", 3)
-            slots = getattr(self.data.player.ship, "weapon_slots", [])
+            slots: dict[Any, Any] = getattr(self.data.player.ship, "weapon_slots", {})
             card_w = (740 - (max_slots - 1) * 12) // max_slots
 
             for idx in range(max_slots):
@@ -577,8 +578,8 @@ class RenderManager:
                 pygame.draw.rect(self.screen, (22, 32, 48), card_rect)
                 pygame.draw.rect(self.screen, COLOR_BORDER, card_rect, 1)
 
-                slot_info = slots[idx] if idx < len(slots) else {}
-                allowed = slot_info.get("allowed_types")
+                slot_info: dict[Any, Any] = slots[idx] if idx < len(slots) else {}
+                allowed: list[str] = slot_info.get("allowed_types", [])
                 allowed_txt = ", ".join(allowed) if allowed else "Alle"
 
                 w = self.data.player.weapons[idx] if idx < len(self.data.player.weapons) else None
@@ -694,7 +695,7 @@ class RenderManager:
 
         # Modal 1: Layout-Umbau Modal Overlay
         is_swap_mode = getattr(shop_mgr, "layout_swap_mode", False) if shop_mgr else False
-        first_r = getattr(shop_mgr, "layout_swap_first_room", None) if shop_mgr else None
+        _: Any | None = getattr(shop_mgr, "layout_swap_first_room", None) if shop_mgr else None # "_" used to be "_first_r"
 
         if is_swap_mode:
             overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
@@ -768,7 +769,9 @@ class RenderManager:
 
                     allowed = slot.get("allowed_types")
                     allowed_str = ", ".join(allowed) if allowed else "ALLE"
-                    w_name = self.data.player.weapons[idx].name if idx < len(self.data.player.weapons) else "[Leer]"
+                    tmp_w = self.data.player.weapons[idx]
+                    assert tmp_w is not None
+                    w_name = tmp_w.name if idx < len(self.data.player.weapons) else "[Leer]"
 
                     lbl_title = small_font.render(f"Slot H{idx+1}", True, (255, 220, 100) if is_first else (200, 240, 255))
                     lbl_type = tiny_font.render(f"Typ: {allowed_str}", True, (160, 220, 255))
@@ -798,14 +801,15 @@ class RenderManager:
             title = self.font.render(f"Wähle Slot für {sel_item['name']} ({sel_item['price']} Scrap):", True, (255, 220, 100))
             self.screen.blit(title, (dialog.x + 30, dialog.y + 20))
             max_slots = 3
+            slots: dict[Any, Any] = {}
             for slot_i in range(max_slots):
                 s_btn = pygame.Rect(150, 150 + slot_i * 65, 600, 52)
                 pygame.draw.rect(self.screen, (40, 60, 85), s_btn)
                 pygame.draw.rect(self.screen, COLOR_BORDER, s_btn, 2)
 
-                s_info = slots[slot_i] if slot_i < len(slots) else {}
-                al_types = s_info.get("allowed_types")
-                al_str = ", ".join(al_types) if al_types else "Alle Typen"
+                slot_info: dict[Any, Any] = slots[slot_i] if slot_i < len(slots) else {}
+                allowed: list[str] = slot_info.get("allowed_types", [])
+                al_str = ", ".join(allowed) if allowed else "Alle Typen"
 
                 has_w = slot_i < len(self.data.player.weapons)
                 w_obj = self.data.player.weapons[slot_i] if has_w else None
@@ -864,7 +868,7 @@ class RenderManager:
             self.screen.blit(hp_txt, (card_rect.x + 60, card_rect.y + 36))
 
             # Render 4 Skill Upgrade Cards
-            for s_idx, (s_key, s_name, s_desc) in enumerate(skills):
+            for s_idx, (s_key, s_name, _) in enumerate(skills):
                 s_box = pygame.Rect(465 + s_idx * 98, card_y + 8, 92, 68)
                 pygame.draw.rect(self.screen, (22, 30, 48), s_box)
                 pygame.draw.rect(self.screen, (70, 90, 130), s_box, 1)
@@ -1321,7 +1325,7 @@ class RenderManager:
         title_txt = title_font.render("--- SPIEL PAUSIERT ---", True, (255, 255, 100))
         self.screen.blit(title_txt, (LOGICAL_WIDTH // 2 - title_txt.get_width() // 2, 110))
 
-        buttons = [
+        buttons: list[tuple[pygame.Rect, str, tuple[int, int, int], tuple[int, int, int]]] = [
             (self.btn_pause_resume, "Weiter (Spiel fortsetzen)", (50, 120, 70), (100, 255, 100)),
             (self.btn_pause_save, "Spiel Speichern (S)", (40, 60, 90), COLOR_BORDER),
             (self.btn_pause_load, "Spiel Laden (L)", (40, 60, 90), COLOR_BORDER),
@@ -1527,13 +1531,12 @@ class RenderManager:
         # Zeile 4: Waffenslots
         slots_parts: list[str] = []
         for idx, slot in enumerate(inspect_ship.weapon_slots):
-            
-            allowed = slot.get("allowed_types")
-            if isinstance(allowed, list):
-                allowed_str = ", ".join(allowed)
-            else:
-                allowed_str = "ALLE"
-        slots_parts.append(allowed_str) # type: ignore # TODO: HOW TO AVOID?
+            raw_allowed: list[str] = slot.get("allowed_types") or []
+            allowed_str = "ALLE"
+
+            if raw_allowed:
+                allowed_str = ", ".join(raw_allowed)
+            slots_parts.append(allowed_str)
         slots_str = f"WAFFENSLOTS ({inspect_ship.max_weapons}): " + " | ".join(slots_parts)
         slots_lbl = small_font.render(slots_str, True, (180, 215, 245))
         self.screen.blit(slots_lbl, (inspector_rect.x + 15, inspector_rect.y + 96))
