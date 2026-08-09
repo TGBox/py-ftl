@@ -1,12 +1,17 @@
+from typing import TYPE_CHECKING
+
+
 from typing import Any
 
 import pygame
 
 from classes.Crew import Crew
 from classes.Door import Door
-from classes.GameData import PlayerData
 from classes.Room import Room
 from classes.Weapon import Weapon
+
+if TYPE_CHECKING:
+    from classes.GameData import PlayerData
 
 
 class ShipModel:
@@ -316,7 +321,7 @@ SHIP_STARTING_SPECS: dict[str, dict[str, str | list[str]]] = {
 }
 
 
-def apply_starting_setup_for_ship(player_data: PlayerData, ship_name: str) -> None:
+def apply_starting_setup_for_ship(player_data: "PlayerData", ship_name: str) -> None:
     from classes.Crew import Crew
     from classes.Weapon import Weapon
 

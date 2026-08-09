@@ -24,7 +24,7 @@ class SoundManager:
         self._sfx_volume: float = 0.25
         self._current_track_name: str | None = None
         self._music_channel: pygame.mixer.Channel | None = None
-        self.game: Game | None = None   # Set by Game after construction
+        self.game: "Game | None" = None   # Set by Game after construction
 
         self._generate_all()
         self._generate_music()

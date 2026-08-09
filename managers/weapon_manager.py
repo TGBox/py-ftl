@@ -14,7 +14,7 @@ class WeaponManager:
 
     def __init__(self, data: GameData):
         self.data = data
-        self.game: Game | None = None   # Set by Game after construction
+        self.game: "Game | None" = None   # Set by Game after construction
 
     # --------------------------------------------------
     # UPDATE

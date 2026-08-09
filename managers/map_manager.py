@@ -21,7 +21,7 @@ class MapManager:
 
     def __init__(self, data: GameData) -> None:
         self.data: GameData = data
-        self.game: Game | None = None   # Set by Game after construction
+        self.game: "Game | None" = None   # Set by Game after construction
         self.sound: SoundManager | None = None  # Set by Game after construction
 
     def travel_to_node(self, node: Node) -> bool:

@@ -13,7 +13,7 @@ class TrainingManager:
 
     def __init__(self, data: GameData):
         self.data = data
-        self.game: Game | None = None   # Set by Game after construction
+        self.game: "Game | None" = None   # Set by Game after construction
         self.btn_leave_training = pygame.Rect(320, 510, 260, 42)
         self.training_cost = 20
 

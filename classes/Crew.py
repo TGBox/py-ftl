@@ -9,12 +9,12 @@ import random
 from classes.Door import Door
 from classes.Room import Room
 from managers.achievement_manager import AchievementManager
-from managers.combat_manager import CombatManager
 from settings import *
 
 if TYPE_CHECKING:
     from classes.GameData import GameData
     from game import Game
+    from managers.combat_manager import CombatManager
 
 SPECIES_NAMES = {
     "Mensch": ["Vance", "Sarah", "Jackson", "Elena", "Marcus", "David", "Lisa", "Alex"],
@@ -141,7 +141,7 @@ class Crew:
 
         self.move_speed: float = 160.0 if self.trait == "Sprinter" else 120.0
 
-    def activate_ability(self, data: "GameData", game: Game, combat_mgr: CombatManager | None = None) -> bool:
+    def activate_ability(self, data: "GameData", game: "Game", combat_mgr: "CombatManager | None" = None) -> bool:
         if self.ability_cooldown > 0.0:
             if combat_mgr:
                 combat_mgr.show_message(f"{self.name.upper()} FÄHIGKEIT LÄDT NOCH ({int(self.ability_cooldown)}s)!")

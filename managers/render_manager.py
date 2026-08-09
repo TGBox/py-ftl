@@ -15,7 +15,7 @@ class RenderManager:
     def __init__(self, screen: pygame.Surface, data: GameData):
         self.screen = screen
         self.data = data
-        self.game: Game | None = None   # Set by Game after construction
+        self.game: "Game | None" = None   # Set by Game after construction
         self.load_assets()
         self.small_font = pygame.font.SysFont(None, 18)
         self.font = pygame.font.SysFont(None, 24)

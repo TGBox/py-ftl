@@ -57,7 +57,7 @@ class ParticleManager:
 
     def __init__(self):
         self.particles: list[Particle] = []
-        self.game: Game | None = None   # Set by Game after construction
+        self.game: "Game | None" = None   # Set by Game after construction
 
     def clear(self):
         self.particles.clear()

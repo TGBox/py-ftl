@@ -59,7 +59,7 @@ class ShopManager:
 
     def __init__(self, data: GameData):
         self.data = data
-        self.game: Game | None = None   # Set by Game after construction
+        self.game: "Game | None" = None   # Set by Game after construction
         self.catalog_stock: list[dict[str, Any]] = []
         self.selecting_slot_item: dict[str, Any] | None = None
         self.layout_swap_mode: bool = False

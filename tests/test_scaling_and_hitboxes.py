@@ -6,7 +6,7 @@ import pygame
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from game import Game
-from settings import LOGICAL_WIDTH, LOGICAL_HEIGHT
+from settings import *
 
 
 class TestScalingAndHitboxes(unittest.TestCase):
@@ -44,7 +44,7 @@ class TestScalingAndHitboxes(unittest.TestCase):
     def test_render_manager_uses_logical_coordinates(self):
         self.game.screen = pygame.Surface((1920, 1080))
         # Verify render_manager._logical_mouse_pos returns scaled logical coordinates
-        lx, ly = self.game.render_manager._logical_mouse_pos()
+        lx, ly = self.game.render_manager._logical_mouse_pos() # type: ignore
         self.assertIsInstance(lx, int)
         self.assertIsInstance(ly, int)
 

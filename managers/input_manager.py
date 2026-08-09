@@ -19,7 +19,7 @@ class InputManager:
         data: GameData
     ):
         self.data: GameData = data
-        self.game: Game | None = None   # Set by Game after construction
+        self.game: "Game | None" = None   # Set by Game after construction
         self.sound: SoundManager | None = None   # Set by Game after construction
 
     # TODO: Investigate if this function causes the rendering resolution to look as bad.

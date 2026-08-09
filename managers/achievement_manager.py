@@ -187,7 +187,7 @@ class AchievementManager:
         self.filepath = filepath
         self.achievements: dict[str, dict[str, str | list[str] | bool | float | str | None]] = {}
         self.toasts: list[dict[str, Any]] = []  # Active popups
-        self.game: Game | None = None   # Set by Game after construction
+        self.game: "Game | None" = None   # Set by Game after construction
         self.sound: SoundManager | None = None   # Set by Game after construction
         self.init_achievements()
         self.load_achievements()

@@ -33,7 +33,7 @@ PASSPHRASE = b"PyGame_FTL_Encryption_Seed"
 
 class SaveManager:
     def __init__(self) -> None:
-        self.game: Game | None = None
+        self.game: "Game | None" = None
 
     @staticmethod
     def get_key() -> bytes:
@@ -126,7 +126,7 @@ class SaveManager:
             return None
 
     @classmethod
-    def save_game(cls, data: GameData, game: Game, slot: int | str = 1, filepath: str | None = None) -> bool:
+    def save_game(cls, data: GameData, game: "Game", slot: int | str = 1, filepath: str | None = None) -> bool:
         if isinstance(slot, str) and ("/" in slot or "\\" in slot or slot.endswith(".dat")):
             path = slot
             _ = 1
