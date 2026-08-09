@@ -49,6 +49,9 @@ class Game:
         pygame.display.set_caption("FTL Clone - Pygame-CE Engine")
         self.clock: pygame.time.Clock = pygame.time.Clock()
 
+        self.save_notification_timer: float = 0.0
+        self.save_notification_msg: str = ""
+
         self.data: GameData = GameData()
         
         self.achievement_manager: AchievementManager = AchievementManager()

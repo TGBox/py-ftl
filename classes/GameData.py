@@ -119,6 +119,7 @@ class GameData:
         self.achievement_page: int = 0
         self.slot_modal_mode: str = "LOAD"
         self.current_state: str = STATE_MAIN_MENU
+        self.active_save_slot: int = 1
 
         self.player: PlayerData = PlayerData()
         self.enemy: EnemyData = EnemyData()

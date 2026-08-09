@@ -1,6 +1,7 @@
 import json
 import os
 import random
+from typing import Any
 
 from classes.Crew import Crew
 
@@ -11,8 +12,8 @@ class EventManager:
         self.current_event_text: str = ""
         self.current_event_type: str | None = None
         self.result_text: str = ""
-        self.choices: list[dict[str, str | int | bool]] = []
-        self.events_db: list[dict[str, str]] = []
+        self.choices: list[dict[str, Any]] = []
+        self.events_db: list[dict[str, Any]] = []
         self.pending_action: str | None = None
         self.load_events_json(json_path)
 

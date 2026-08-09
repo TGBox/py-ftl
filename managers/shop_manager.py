@@ -1,4 +1,5 @@
 import random
+from typing import Any
 import pygame
 
 from classes.Crew import Crew
@@ -8,7 +9,7 @@ from classes.Weapon import Weapon
 from game import Game
 from settings import *
 
-WEAPON_CATALOG_MASTER = [
+WEAPON_CATALOG_MASTER: list[dict[str, Any]] = [
     {"name": "Standard Laser", "charge_time": 3.0, "w_type": "LASER", "shield_pierce": 0, "damage": 25.0, "ammo_cost": 0, "price": 30, "subtype": "STANDARD", "max_range": 650.0},
     {"name": "Schwerer Laser", "charge_time": 3.5, "w_type": "LASER", "shield_pierce": 0, "damage": 45.0, "ammo_cost": 0, "price": 50, "subtype": "HEAVY", "max_range": 600.0},
     {"name": "Burst Laser MK II", "charge_time": 4.0, "w_type": "LASER", "shield_pierce": 0, "damage": 60.0, "ammo_cost": 0, "price": 70, "subtype": "STANDARD", "max_range": 600.0},
@@ -29,7 +30,7 @@ WEAPON_CATALOG_MASTER = [
 ]
 
 
-AUGMENT_CATALOG_MASTER = [
+AUGMENT_CATALOG_MASTER: list[dict[str, Any]] = [
     {"name": "Waffen-Vorheizer", "type": "AUGMENT", "desc": "Waffen starten zu 100% geladen!", "price": 80},
     {"name": "Schild-Booster", "type": "AUGMENT", "desc": "+30% Schild-Erholung!", "price": 60},
     {"name": "Automatisierte Relais", "type": "AUGMENT", "desc": "Repariert Räume automatisch!", "price": 50},
@@ -38,7 +39,7 @@ AUGMENT_CATALOG_MASTER = [
 ]
 
 
-SYSTEM_ROOM_CATALOG = [
+SYSTEM_ROOM_CATALOG: list[dict[str, Any]] = [
     {"name": "Medbay", "desc": "Heilt Crew-Mitglieder im Raum", "price": 50, "max_power": 3},
     {"name": "Teleporter", "desc": "Entern feindlicher Schiffe", "price": 60, "max_power": 2},
     {"name": "Tarnung", "desc": "Unsichtbarkeit & Ausweichen im Kampf", "price": 80, "max_power": 3},
@@ -54,13 +55,13 @@ class ShopManager:
     def __init__(self, data: GameData):
         self.data = data
         self.game: Game | None = None   # Set by Game after construction
-        self.catalog_stock: list[dict] = []
-        self.selecting_slot_item: dict | None = None
+        self.catalog_stock: list[dict[str, Any]] = []
+        self.selecting_slot_item: dict[str, Any] | None = None
         self.layout_swap_mode: bool = False
         self.layout_swap_type: str = "ROOMS"  # "ROOMS" oder "WEAPONS"
         self.layout_swap_first_selection = None
         self.active_tab: str = "RESOURCES"  # "RESOURCES", "WEAPONS", "CREW", "ROOMS"
-        self.next_crew_candidate: dict | None = None
+        self.next_crew_candidate: dict[str, Any] | None = None
 
         # Tab-Buttons oben (überlappungsfrei unter dem Ressourcen-Header)
         self.tab_resources = pygame.Rect(75, 96, 170, 28)
@@ -104,7 +105,7 @@ class ShopManager:
             "perks": species_perks.get(species, "Spezialist"),
         }
 
-    def is_weapon_compatible(self, weapon: dict) -> bool:
+    def is_weapon_compatible(self, weapon: dict[str, Weapon]) -> bool:
         """Prüft, ob eine Waffe in mindestens einen Waffenslot des aktuellen Spielerschiffs passt."""
         ship = getattr(self.data.player, "ship", None)
         if not ship:
@@ -123,7 +124,7 @@ class ShopManager:
         compatible = [w for w in WEAPON_CATALOG_MASTER if self.is_weapon_compatible(w)]
         incompatible = [w for w in WEAPON_CATALOG_MASTER if not self.is_weapon_compatible(w)]
 
-        w_sample = []
+        w_sample: list[str] = []
         avail_comp = list(compatible)
         avail_incomp = list(incompatible)
         avail_all = list(WEAPON_CATALOG_MASTER)
@@ -335,8 +336,8 @@ class ShopManager:
             if slot_btn.collidepoint(mx, my):
                 self.buy_weapon_to_slot(item, slot_idx)
                 return
-
-    def buy_weapon_to_slot(self, item: dict, slot_idx: int):
+    
+    def buy_weapon_to_slot(self, item: dict[str, Any], slot_idx: int) -> None:
         price = item.get("price", 40)
         if self.data.player.scrap < price:
             self.data.combat.msg = "NICHT GENUG SCRAP!"
@@ -483,9 +484,10 @@ class ShopManager:
         self.data.combat.msg_timer = 2.5
         self.generate_next_crew_candidate()
         if len(self.data.player.crew) >= 6 and hasattr(self.data, "achievements"):
+            assert self.game is not None
             self.game.achievement_manager.unlock("full_house")
 
-    def buy_room_system(self, sys_item: dict):
+    def buy_room_system(self, sys_item: dict[str, Any]):
         price = sys_item.get("price", 50)
         if self.data.player.scrap < price:
             self.data.combat.msg = "NICHT GENUG SCRAP!"
@@ -538,9 +540,9 @@ class ShopManager:
         self.data.combat.msg = f"SYSTEM {sold_name.upper()} VERKAUFT (+{refund} Scrap)!"
         self.data.combat.msg_timer = 2.5
 
-    def buy_augment(self, item: dict):
+    def buy_augment(self, item: dict[str, str]):
         name = item["name"]
-        price = item.get("price", 60)
+        price = int(item.get("price", 60))
         augments = getattr(self.data.player, "augments", [])
         if name in augments:
             self.data.combat.msg = f"{name.upper()} BEREITS AUSGERÜSTET!"

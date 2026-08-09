@@ -144,6 +144,7 @@ class RenderManager:
 
         # Toast Notifications
         if hasattr(self.data, "achievements"):
+            assert self.game is not None
             self.game.achievement_manager.update_toasts(0.016)
             self.game.achievement_manager.draw_toasts(self.screen, self.font)
 
@@ -206,7 +207,7 @@ class RenderManager:
         for slot in (1, 2, 3):
             card_y = modal_rect.y + 52 + (slot - 1) * 118
             card_rect = pygame.Rect(modal_rect.x + 20, card_y, 540, 106)
-            info: SaveManager = SaveManager.get_slot_info(slot) # TODO: This needs to get typed correctly! And Manager should get moved to Game object!
+            info: dict[str, Any] | None = SaveManager.get_slot_info(slot)
             is_active_slot = getattr(self.data, "active_save_slot", 1) == slot
 
             bg_col = (30, 55, 80) if is_active_slot else (25, 35, 50)
@@ -400,7 +401,7 @@ class RenderManager:
 
             
     def draw_combat(self):
-
+        assert self.game is not None
         is_enemy_destroyed = (self.data.enemy.ship.hp <= 0) or getattr(self.data.combat, "combat_won", False)
 
         # Triebwerks-Partikel dynamisch am Heck (Unterseite) der Schiffe emittieren (nach unten)
@@ -437,6 +438,7 @@ class RenderManager:
     def draw_map(self):
         self.data.world.star_map.draw(self.screen)       
     def draw_shop(self):
+        assert self.game is not None
         shop_mgr = getattr(self.game, "shop_manager", None) or getattr(self.data, "shop_manager", None)
         pygame.draw.rect(self.screen, (16, 24, 38), (60, 45, 780, 510))
         pygame.draw.rect(self.screen, COLOR_SHOP_NODE, (60, 45, 780, 510), 2)
@@ -751,7 +753,9 @@ class RenderManager:
                 tiny_font = pygame.font.SysFont(None, 13)
                 small_font = pygame.font.SysFont(None, 14, bold=True)
                 for idx, slot in enumerate(getattr(self.data.player.ship, "weapon_slots", [])):
-                    hx, hy = slot["pos"]
+                    pos: tuple[int, int] = slot["pos"]
+                    assert isinstance(pos, tuple)
+                    hx, hy = pos
                     slot_rect = pygame.Rect(hx - 65, hy - 25, 130, 50)
                     is_first = (isinstance(first_sel, int) and first_sel == idx)
 
@@ -822,6 +826,7 @@ class RenderManager:
             self.screen.blit(c_lbl, (cancel_btn.x + 70, cancel_btn.y + 8))
 
     def draw_training(self):
+        assert self.game is not None
         panel_rect = pygame.Rect(40, 30, 820, 540)
         pygame.draw.rect(self.screen, (20, 25, 40), panel_rect)
         pygame.draw.rect(self.screen, COLOR_TRAINING_NODE, panel_rect, 3)
@@ -888,6 +893,7 @@ class RenderManager:
         self.screen.blit(l_lbl, (btn_leave.x + (btn_leave.width - l_lbl.get_width()) // 2, btn_leave.y + 10))
 
     def draw_rooms(self):
+        assert self.game is not None
         is_enemy_destroyed = (self.data.enemy.ship.hp <= 0) or getattr(self.data.combat, "combat_won", False)
 
         # 0. Schiffshüllen (Player & Enemy Hull Sprites)
@@ -1074,6 +1080,7 @@ class RenderManager:
             self.screen.blit(w_lbl, (550, 166))
 
     def draw_shields(self):
+        assert self.game is not None
         p_rooms = self.data.player.ship.rooms
         p_cx = (min(r.rect.left for r in p_rooms) + max(r.rect.right for r in p_rooms)) // 2 if p_rooms else 220
         p_cy = (min(r.rect.top for r in p_rooms) + max(r.rect.bottom for r in p_rooms)) // 2 if p_rooms else 245
@@ -1099,6 +1106,7 @@ class RenderManager:
         return raw_mx, raw_my
 
     def draw_weapons(self):
+        assert self.game is not None
         is_enemy_destroyed = (self.data.enemy.ship.hp <= 0) or getattr(self.data.combat, "combat_won", False)
         if not is_enemy_destroyed:
             # 1. Dauerhafte Schusslinien (Weapon Targets)
@@ -1147,6 +1155,7 @@ class RenderManager:
         self.screen.blit(self.font.render("Waffensysteme:", True, (200, 220, 255)), (25, weapon_ui_y))
         small_font = pygame.font.SysFont(None, 18)
         for i, w in enumerate(self.data.player.weapons):
+            assert w is not None
             bar_x, bar_y = 25 + i * 125, weapon_ui_y + 35
             charge_ratio = w.current_charge / w.charge_time
             pygame.draw.rect(self.screen, (30, 35, 45), (bar_x, bar_y, 115, 16))
@@ -1299,6 +1308,7 @@ class RenderManager:
             self.screen.blit(msg_txt, (msg_box.x + 10, msg_box.y + 4))
 
     def draw_pause_menu(self):
+        assert self.game is not None
         overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
         overlay.fill((10, 15, 25, 200))
         self.screen.blit(overlay, (0, 0))
@@ -1384,6 +1394,7 @@ class RenderManager:
         )
 
     def draw_main_menu(self):
+        assert self.game is not None
         if "main_menu_bg" in self.assets:
             self.screen.blit(self.assets["main_menu_bg"], (0, 0))
         else:
@@ -1513,14 +1524,15 @@ class RenderManager:
         self.screen.blit(sys_lbl, (inspector_rect.x + 15, inspector_rect.y + 76))
 
         # Zeile 4: Waffenslots
-        slots_parts = []
+        slots_parts: list[str] = []
         for idx, slot in enumerate(inspect_ship.weapon_slots):
+            
             allowed = slot.get("allowed_types")
-            if allowed:
-                types_str = "/".join(allowed)
-                slots_parts.append(f"H{idx+1}: [{types_str}]")
+            if isinstance(allowed, list):
+                allowed_str = ", ".join(allowed)
             else:
-                slots_parts.append(f"H{idx+1}: [ALLE]")
+                allowed_str = "ALLE"
+        slots_parts.append(allowed_str) # type: ignore # TODO: HOW TO AVOID?
         slots_str = f"WAFFENSLOTS ({inspect_ship.max_weapons}): " + " | ".join(slots_parts)
         slots_lbl = small_font.render(slots_str, True, (180, 215, 245))
         self.screen.blit(slots_lbl, (inspector_rect.x + 15, inspector_rect.y + 96))
@@ -1567,6 +1579,7 @@ class RenderManager:
             self.draw_options_menu()
 
     def draw_options_menu(self):
+        assert self.game is not None
         pygame.draw.rect(self.screen, (20, 28, 42), (180, 50, 540, 480))
         pygame.draw.rect(self.screen, (100, 200, 255), (180, 50, 540, 480), 3)
 
@@ -1830,6 +1843,7 @@ class RenderManager:
 
 
     def draw_event(self):
+        assert self.game is not None
         ev_text = self.data.world.event_manager.current_event_text
         res_text = getattr(self.data.world.event_manager, "result_text", "")
         choices = self.data.world.event_manager.choices

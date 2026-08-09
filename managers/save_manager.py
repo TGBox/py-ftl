@@ -242,7 +242,7 @@ class SaveManager:
 
             # AES-256-CFB Encryption (SRS Kap. 8)
             key = cls.get_key()
-            cipher: AES = AES.new(key, AES.MODE_CFB)
+            cipher: Any = AES.new(key, AES.MODE_CFB, iv=iv) # type: ignore
             iv = cipher.iv
             ciphertext = cipher.encrypt(payload.encode("utf-8"))
 

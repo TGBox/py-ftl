@@ -141,7 +141,7 @@ class MapManager:
         )
         self.data.current_state = STATE_EVENT
 
-    def handle_choice(self, action: str, choice_data: dict[str, list[Any]]) -> None:
+    def handle_choice(self, action: str, choice_data: dict[str, Any]) -> None:
         if hasattr(self.game, "achievements"):
             evt_count = getattr(self.data, "events_completed_count", 0) + 1
             self.events_completed_count = evt_count
@@ -153,7 +153,8 @@ class MapManager:
 
         # 1. Stochastische Risiko-Auswertung (Erfolg vs. Fehlschlag)
         if "outcomes" in choice_data and isinstance(choice_data["outcomes"], list):
-            outcomes: list[dict[str, Any]] = choice_data["outcomes"]
+            outcomes = choice_data.get("outcomes", [])
+            assert isinstance(outcomes, list)
             r = random.random()
             cum_prob = 0.0
             chosen = outcomes[-1]
