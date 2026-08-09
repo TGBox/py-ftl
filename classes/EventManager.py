@@ -13,6 +13,7 @@ class EventManager:
         self.result_text: str = ""
         self.choices: list[dict[str, str | int | bool]] = []
         self.events_db: list[dict[str, str]] = []
+        self.pending_action: str | None = None
         self.load_events_json(json_path)
 
     def load_events_json(self, json_path: str) -> None:

@@ -1,5 +1,6 @@
 import copy
 import random
+from typing import Any
 
 from classes.GameData import GameData
 from classes.Node import Node
@@ -14,12 +15,12 @@ from settings import *
 
 class MapManager:
 
-    def __init__(self, data: GameData):
-        self.data = data
+    def __init__(self, data: GameData) -> None:
+        self.data: GameData = data
         self.game: Game | None = None   # Set by Game after construction
         self.sound: SoundManager | None = None  # Set by Game after construction
 
-    def travel_to_node(self, node: Node):
+    def travel_to_node(self, node: Node) -> bool:
 
         if self.data.player.fuel <= 0:
             self.trigger_event("DISTRESS")
@@ -49,7 +50,7 @@ class MapManager:
 
         return True
 
-    def handle_node_event(self, node: Node):
+    def handle_node_event(self, node: Node) -> None:
 
         match node.event_type:
 
@@ -65,14 +66,14 @@ class MapManager:
             case _:
                 self.trigger_event(node.event_type)
 
-    def handle_exit_node(self):
+    def handle_exit_node(self) -> None:
         sec = self.data.world.star_map.sector
         if sec < 5:
             self.start_mini_boss_fight(sec)
         else:
             self.start_boss_fight()
 
-    def start_rebel_pursuit_combat(self):
+    def start_rebel_pursuit_combat(self) -> None:
         from classes.ShipModel import ENEMY_CRUISER
         self.data.enemy.ship = copy.deepcopy(ENEMY_CRUISER)
         self.data.enemy.ship.name = "Rebellen-Verfolger"
@@ -85,7 +86,7 @@ class MapManager:
         self.data.combat.msg_timer = 3.0
         self.data.current_state = STATE_COMBAT
 
-    def start_mini_boss_fight(self, sector: int):
+    def start_mini_boss_fight(self, sector: int) -> None:
         from classes.ShipModel import MINI_BOSS_SECTOR_1, MINI_BOSS_SECTOR_2, ENEMY_CRUISER
         template = MINI_BOSS_SECTOR_1 if sector == 1 else (MINI_BOSS_SECTOR_2 if sector == 2 else ENEMY_CRUISER)
         self.data.enemy.ship = copy.deepcopy(template)
@@ -101,15 +102,7 @@ class MapManager:
 
         self.data.current_state = STATE_COMBAT
 
-
-        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + sector)
-        self.data.enemy.shield = ShieldSystem()
-        w_type = "FLAK" if sector == 1 else "HEAVY_LASER"
-        self.data.enemy.weapon = Weapon(f"Mini-Boss {w_type.capitalize()}", charge_time=3.5, w_type=w_type, damage=40.0)
-
-        self.data.current_state = STATE_COMBAT
-
-    def start_boss_fight(self):
+    def start_boss_fight(self) -> None:
         self.data.combat.boss_phase = 1
         self.data.combat.zoltan_shield_hp = 0
         self.data.combat.drone_surge_timer = 18.0
@@ -128,16 +121,16 @@ class MapManager:
         self.data.combat.msg_timer = 4.0
         self.data.current_state = STATE_COMBAT
 
-    def enter_shop(self):
+    def enter_shop(self) -> None:
         shop_mgr = getattr(self.data, "shop_manager", None)
         if shop_mgr and hasattr(shop_mgr, "refresh_catalog"):
             shop_mgr.refresh_catalog()
         self.data.current_state = STATE_SHOP
 
-    def enter_training(self):
+    def enter_training(self) -> None:
         self.data.current_state = STATE_TRAINING
 
-    def trigger_event(self, event_type: str):
+    def trigger_event(self, event_type: str) -> None:
         if self.data.player.fuel <= 0 and event_type == "DISTRESS" and hasattr(self.data, "achievements"):
             assert self.game is not None
             self.game.achievement_manager.unlock("survivor")
@@ -148,9 +141,8 @@ class MapManager:
         )
         self.data.current_state = STATE_EVENT
 
-
-    def handle_choice(self, action: str, choice_data: dict[str, str | int | bool]):
-        if hasattr(self.data, "achievements"):
+    def handle_choice(self, action: str, choice_data: dict[str, list[Any]]) -> None:
+        if hasattr(self.game, "achievements"):
             evt_count = getattr(self.data, "events_completed_count", 0) + 1
             self.events_completed_count = evt_count
             if evt_count >= 10:
@@ -161,7 +153,7 @@ class MapManager:
 
         # 1. Stochastische Risiko-Auswertung (Erfolg vs. Fehlschlag)
         if "outcomes" in choice_data and isinstance(choice_data["outcomes"], list):
-            outcomes = choice_data["outcomes"]
+            outcomes: list[dict[str, Any]] = choice_data["outcomes"]
             r = random.random()
             cum_prob = 0.0
             chosen = outcomes[-1]
@@ -260,7 +252,7 @@ class MapManager:
             if not has_result:
                 self.data.current_state = STATE_MAP
 
-    def continue_event(self):
+    def continue_event(self) -> None:
         ev_mgr = self.data.world.event_manager
         pending = getattr(ev_mgr, "pending_action", None)
         ev_type = ev_mgr.current_event_type
@@ -275,7 +267,7 @@ class MapManager:
         else:
             self.data.current_state = STATE_MAP
 
-    def start_normal_combat(self):
+    def start_normal_combat(self) -> None:
         import random
         from classes.ShipModel import (
             ENEMY_SCOUT, ENEMY_FIGHTER, ENEMY_BOMBER, ENEMY_CRUISER,
@@ -314,8 +306,7 @@ class MapManager:
 
         self.data.current_state = STATE_COMBAT
 
-
-    def restart_game(self):
+    def restart_game(self) -> None:
         from classes.Crew import Crew
         from classes.Reactor import Reactor
         from classes.ShieldSystem import ShieldSystem

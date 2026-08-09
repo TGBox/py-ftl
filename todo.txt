@@ -82,6 +82,7 @@ x 2026-08-08 (A) 2026-08-08 Lautstärke und Liste der alten 8-Bit-Sounds überar
 x 2026-08-08 (A) 2026-08-08 Mehr Abwechslung bei gegnerischen Schiffstypen im Kampf hinzufügen. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Schiff-Freischaltlogik korrigieren: Nach einem Sieg soll strikt nur das direkt nächste Schiff in der Reihenfolge freigeschaltet werden. +Refactoring @code
 x 2026-08-08 (A) 2026-08-08 Shop-System erweitern: Verkauf von Räumen und Kauf/Einbau neuer Räume auf offenen Slots ermöglichen. +Refactoring @code
+(A) 2026-08-09 Es muss eine Event Klasse und eine Event Choice Klasse angelegt werden damit die Typisierung hier richtig durchgeführt werden kann. +Refactoring @code
 (A) 2026-08-09 Es kommt vor, dass nach manchen Kämpfen die Kampfmusik nicht endet. Danach gewinnt man jeden Kampf automatisch und es wird ein Notfall Savegame erstellt. Siehe Log Random Win Bug. +Refactoring @code
 (A) 2026-08-09 Wenn man während dem Kampf in das Hauptmenü wechselt per ESC, dann verlässt man den aktuellen Kampf und landet beim zurückkehren in der Kartenansicht. +Refactoring @code
 (A) 2026-08-09 Wenn man keinen passenden Waffenslot übrig hat und eine unpassende Waffe kauft, dann crasht das Spiel. +Refactoring @code
