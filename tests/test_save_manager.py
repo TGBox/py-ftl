@@ -2,6 +2,8 @@ import os
 import sys
 import unittest
 
+from game import Game
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from classes.GameData import GameData
@@ -29,12 +31,13 @@ class TestSaveManager(unittest.TestCase):
 
     def test_save_and_load_game_roundtrip(self):
         data = GameData()
+        game = Game()
         data.player.scrap = 350
         data.player.fuel = 18
         data.world.star_map.sector = 3
 
         # Save game
-        self.assertTrue(SaveManager.save_game(data, self.test_save_file))
+        self.assertTrue(SaveManager.save_game(data, game, self.test_save_file))
         self.assertTrue(SaveManager.has_savegame(self.test_save_file))
 
         # Load into new GameData instance
@@ -47,10 +50,11 @@ class TestSaveManager(unittest.TestCase):
 
     def test_auto_save_setting_roundtrip(self):
         data = GameData()
+        game = Game()
         self.assertFalse(data.auto_save_enabled)
 
         data.auto_save_enabled = True
-        self.assertTrue(SaveManager.save_game(data, self.test_save_file))
+        self.assertTrue(SaveManager.save_game(data, game, self.test_save_file))
 
         loaded_data = GameData()
         self.assertTrue(SaveManager.load_game(loaded_data, self.test_save_file))
@@ -58,7 +62,8 @@ class TestSaveManager(unittest.TestCase):
 
     def test_tampered_save_rejection(self):
         data = GameData()
-        SaveManager.save_game(data, self.test_save_file)
+        game = Game()
+        SaveManager.save_game(data, game, self.test_save_file)
 
         # Corrupt bytes in save file
         with open(self.test_save_file, "r+b") as f:

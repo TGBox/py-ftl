@@ -1,4 +1,3 @@
-from typing import Any
 from pydantic import BaseModel, Field
 
 
@@ -54,7 +53,7 @@ class NodeSaveSchema(BaseModel):
     y: int
     event_type: str
     visited: bool = False
-    connection_ids: list[int] = Field(default_factory=list)
+    connection_ids: list[int] = Field(default_factory=list[int])
 
 
 class CrewSaveSchema(BaseModel):
@@ -106,7 +105,7 @@ class SavegameSchema(BaseModel):
     sector_type: str = "Zivil"
     current_state: str = "MAP"
     current_node_id: int = 0
-    nodes: list[NodeSaveSchema] = Field(default_factory=list)
+    nodes: list[NodeSaveSchema] = Field(default_factory=list[NodeSaveSchema])
 
     player_scrap: int = 20
     player_fuel: int = 6
@@ -119,7 +118,7 @@ class SavegameSchema(BaseModel):
     reactor_available_power: int = 6
     shield_max_layers: int = 0
 
-    rooms: list[RoomSaveSchema] = Field(default_factory=list)
-    weapons: list[WeaponSaveSchema] = Field(default_factory=list)
-    crew: list[CrewSaveSchema] = Field(default_factory=list)
+    rooms: list[RoomSaveSchema] = Field(default_factory=list[RoomSaveSchema])
+    weapons: list[WeaponSaveSchema] = Field(default_factory=list[WeaponSaveSchema])
+    crew: list[CrewSaveSchema] = Field(default_factory=list[CrewSaveSchema])
     unlocked_ships: list[str] = Field(default_factory=lambda: ["Kestrel"])

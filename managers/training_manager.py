@@ -1,4 +1,5 @@
 import pygame
+from classes.Crew import Crew
 from classes.GameData import GameData
 from game import Game
 from settings import STATE_MAP
@@ -35,7 +36,7 @@ class TrainingManager:
                     self.buy_training(crew, skill, skill_names_de[skill])
                     return
 
-    def buy_training(self, crew, skill_name: str, display_name: str):
+    def buy_training(self, crew: Crew, skill_name: str, display_name: str):
         current_lvl = getattr(crew, f"skill_{skill_name}", 0)
         if current_lvl >= 3:
             self.data.combat.msg = f"{crew.name.upper()}: {display_name.upper()} BEREITS MAXIMAL (LVL 3)!"

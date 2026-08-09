@@ -175,7 +175,8 @@ class InputManager:
             for slot_num, btn in slots:
                 if btn.collidepoint(mx, my):
                     if mode == "SAVE":
-                        if SaveManager.save_game(self.data, slot=slot_num):
+                        assert self.game is not None
+                        if SaveManager.save_game(self.data, self.game, slot=slot_num):
                             self.sound.play("click") if self.sound else None
                         self.data.show_slot_modal = False
                     elif mode == "LOAD":
@@ -519,11 +520,13 @@ class InputManager:
             if idx < len(layout["choice_rects"]):
                 btn_rect = layout["choice_rects"][idx]
                 if btn_rect.collidepoint(mx, my):
+                    assert choice is dict[str, str]
                     if not can_afford_choice(choice, self.data.player):
                         return
                     action = choice.get("action", "")
                     if self.sound: self.sound.play("click")
                     assert self.game is not None
+                    assert action is str
                     self.game.map_manager.handle_choice(action, choice)
                     return
 
@@ -607,6 +610,7 @@ class InputManager:
                         start = self.data.combat.start_pos
                         target = (mx, my)
                         # Reichweiten-Check
+                        assert w is not None
                         if w.max_range is not None:
                             dist_to_target = math.hypot(target[0] - start[0], target[1] - start[1])
                             if dist_to_target > w.max_range:
@@ -642,7 +646,7 @@ class InputManager:
 
 
         weapon_room = self.data.player.ship.rooms[1]
-        clicked_weapon_idx = None
+        clicked_weapon_idx: int | None = None
         for idx, w in enumerate(self.data.player.weapons):
             bar_x = 30 + idx * 135
             bar_rect = pygame.Rect(bar_x, 500, 120, 35)
@@ -650,7 +654,10 @@ class InputManager:
                 clicked_weapon_idx = idx
                 break
 
-        if clicked_weapon_idx is not None and self.data.player.weapons[clicked_weapon_idx].is_ready():
+        assert self.data.player.weapons is not None
+        assert clicked_weapon_idx is not None
+        assert self.data.player.weapons[clicked_weapon_idx] is not None
+        if clicked_weapon_idx is not None and self.data.player.weapons[clicked_weapon_idx].is_ready(): # type: ignore
             self.data.combat.is_targeting = True
             self.data.combat.target_weapon_idx = clicked_weapon_idx
             slots = getattr(self.data.player.ship, "weapon_slots", [])
@@ -699,7 +706,8 @@ class InputManager:
                         break
 
     def restart_game(self):
-        self.map_manager.restart_game()
+        assert self.game is not None
+        self.game.map_manager.restart_game()
 
     def remove_weapon_target(self, mx: float, my: float) -> bool:
         for idx in list(self.data.combat.weapon_targets.keys()):

@@ -2,7 +2,7 @@ import pygame
 
 from classes.GameData import GameData
 from game import Game
-from settings import LOGICAL_HEIGHT, LOGICAL_WIDTH
+from settings import *
 
 
 class ConsoleManager:

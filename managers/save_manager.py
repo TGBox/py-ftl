@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+from typing import Any
 # pyrefly: ignore [missing-import]
 from Crypto.Cipher import AES
 # pyrefly: ignore [missing-import]
@@ -17,10 +18,10 @@ from classes.DataModels import (
 from classes.GameData import GameData
 from classes.Node import Node
 from classes.Reactor import Reactor
-from classes.Room import Room
 from classes.ShieldSystem import ShieldSystem
 from classes.ShipModel import SHIP_BLUEPRINTS
 from classes.Weapon import Weapon
+from game import Game
 from settings import STATE_GAME_OVER, STATE_MAIN_MENU, STATE_MAP, STATE_VICTORY
 
 KEY_SALT = b"FTL_SECRET_SALT_2026_VERSION_1.0"
@@ -28,10 +29,12 @@ PASSPHRASE = b"PyGame_FTL_Encryption_Seed"
 
 
 class SaveManager:
+    def __init__(self) -> None:
+        self.game: Game | None = None
 
     @staticmethod
     def get_key() -> bytes:
-        return PBKDF2(PASSPHRASE, KEY_SALT, dkLen=32, count=1000)
+        return PBKDF2(str(PASSPHRASE), KEY_SALT, dkLen=32, count=1000)
 
     @classmethod
     def load_unlocks(cls, filepath: str = "data/unlocks.json") -> list[str]:
@@ -85,7 +88,7 @@ class SaveManager:
         return any(cls.has_savegame(s) for s in (1, 2, 3))
 
     @classmethod
-    def get_slot_info(cls, slot: int = 1) -> dict | None:
+    def get_slot_info(cls, slot: int = 1) -> dict[str, Any] | None:
         path = cls.get_slot_filepath(slot)
         if not cls.has_savegame(slot, path):
             return None
@@ -120,20 +123,20 @@ class SaveManager:
             return None
 
     @classmethod
-    def save_game(cls, data: GameData, slot: int | str = 1, filepath: str | None = None) -> bool:
+    def save_game(cls, data: GameData, game: Game, slot: int | str = 1, filepath: str | None = None) -> bool:
         if isinstance(slot, str) and ("/" in slot or "\\" in slot or slot.endswith(".dat")):
             path = slot
-            slot_num = 1
+            _slot_num = 1
         elif filepath is not None:
             path = filepath
-            slot_num = slot if isinstance(slot, int) else 1
+            _slot_num = slot if isinstance(slot, int) else 1
         else:
             path = cls.get_slot_filepath(slot)
-            slot_num = slot if isinstance(slot, int) else 1
+            _slot_num = slot if isinstance(slot, int) else 1
 
         try:
             # Map-Knoten serialisieren
-            node_schemas = []
+            node_schemas: list[NodeSaveSchema] = []
             for n in data.world.star_map.nodes:
                 conn_ids = [c.id for c in n.connections]
                 node_schemas.append(
@@ -239,15 +242,15 @@ class SaveManager:
 
             # AES-256-CFB Encryption (SRS Kap. 8)
             key = cls.get_key()
-            cipher = AES.new(key, AES.MODE_CFB)
+            cipher: AES = AES.new(key, AES.MODE_CFB)
             iv = cipher.iv
             ciphertext = cipher.encrypt(payload.encode("utf-8"))
 
             with open(path, "wb") as f:
                 f.write(iv + ciphertext)
 
-            data.save_notification_msg = f"SPIELSTAND GESPEICHERT (SLOT {slot})"
-            data.save_notification_timer = 3.0
+            game.save_notification_msg = f"SPIELSTAND GESPEICHERT (SLOT {slot})"
+            game.save_notification_timer = 3.0
             data.combat.msg = f"💾 SPIELSTAND ERFOLGREICH GESPEICHERT (SLOT {slot})!"
             data.combat.msg_timer = 3.0
             data.active_save_slot = slot

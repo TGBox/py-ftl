@@ -37,6 +37,7 @@ class PlayerData:
         from managers.save_manager import SaveManager
         self.unlocked_ships: list[str] = SaveManager.load_unlocks()
         self.newly_unlocked_ship: Optional[str] = None
+        self.godmode: bool = False
 
     @property
     def drones(self) -> int:
@@ -112,6 +113,8 @@ class GameData:
         self.show_help_overlay: bool = False
         self.auto_save_enabled: bool = False
         self.show_slot_modal: bool = True
+        self.save_toast_text: str = ""
+        self.save_toast_timer: float = 0.0
         self.achievement_category_filter: str = "ALLE"
         self.achievement_page: int = 0
         self.slot_modal_mode: str = "LOAD"

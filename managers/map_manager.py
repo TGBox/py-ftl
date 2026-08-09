@@ -35,7 +35,8 @@ class MapManager:
         if getattr(self.data, "auto_save_enabled", False):
             from managers.save_manager import SaveManager
             try:
-                SaveManager.save_game(self.data)
+                assert self.game is not None
+                SaveManager.save_game(self.data, self.game)
             except Exception as e:
                 print(f"Auto-Save Fehler: {e}")
 

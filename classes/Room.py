@@ -29,7 +29,7 @@ class Room:
     self.was_destroyed: bool = False  # Komplett zerstört (0 HP)
 
   def effective_max_power(self) -> int:
-    eff = math.floor(self.max_power * (self.health / self.max_health))
+    eff: int = math.floor(self.max_power * (self.health / self.max_health))
     if self.ion_timer > 0.0:
         eff = max(0, eff - 1)
     return max(0, eff)
@@ -79,7 +79,7 @@ class Room:
     if self.health >= self.max_health:
         self.was_destroyed = False
 
-  def update_oxygen(self, dt: float, connected_rooms: list["Room"] = None) -> None:
+  def update_oxygen(self, dt: float, connected_rooms: list["Room"] | None = None) -> None:
     """Updates oxygen levels, fire processing, and ion timers for FTL room simulation."""
     self.ion_timer = max(0.0, self.ion_timer - dt)
 
