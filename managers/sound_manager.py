@@ -127,7 +127,6 @@ class SoundManager:
     @property
     def music_enabled(self) -> bool:
         return self._music_enabled
-        return self._music_enabled
 
     # ------------------------------------------------------------------
     # Waveform & Synthesizer generation helpers
@@ -481,7 +480,7 @@ class SoundManager:
         # 4. BGM Boss: Grand Flagship Overture (12.8s loop) - Dramatic & Powerful
         if "bgm_boss" not in loaded_from_file:
             def boss_synth(t: float) -> float:
-                _t_tr = t % 0.15
+                _ = t % 0.15
                 tr_freqs = [65.41, 98.00, 130.81, 155.56]  # C2, G2, C3, Eb3
                 tr_idx = int(t / 0.15) % len(tr_freqs)
                 cell_val = string_section(t, [tr_freqs[tr_idx]], vol=0.50)

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import json
 import os
@@ -186,7 +186,7 @@ class AchievementManager:
     def __init__(self, filepath: str = ACHIEVEMENT_FILE):
         self.filepath = filepath
         self.achievements: dict[str, dict[str, str | list[str] | bool | float | str | None]] = {}
-        self.toasts: list[dict[str, str]] = []  # Active popups
+        self.toasts: list[dict[str, Any]] = []  # Active popups
         self.game: Game | None = None   # Set by Game after construction
         self.sound: SoundManager | None = None   # Set by Game after construction
         self.init_achievements()
@@ -245,7 +245,8 @@ class AchievementManager:
 
     def update_toasts(self, dt: float):
         for toast in self.toasts[:]:
-            toast["timer"] -= dt
+            current = float(toast["timer"])
+            toast["timer"] = current - dt
             if toast["timer"] <= 0:
                 self.toasts.remove(toast)
 

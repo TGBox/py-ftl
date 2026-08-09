@@ -493,7 +493,7 @@ class InputManager:
                 self.game.map_manager.travel_to_node(node)
                 break
 
-    def handle_shop_click(self, event: pygame.event.Event):
+    def handle_shop_click(self, _: pygame.event.Event):
         mx, my = self._logical_mouse_pos()
         assert self.game is not None
         self.game.shop_manager.handle_click(mx, my)
@@ -535,7 +535,7 @@ class InputManager:
 
 
 
-    def handle_combat_click(self, event: pygame.event.Event):
+    def handle_combat_click(self, _: pygame.event.Event):
         mx, my = self._logical_mouse_pos()
         self.data.world.event_manager.current_event_type = None
 
@@ -720,7 +720,7 @@ class InputManager:
                 return True
         return False
 
-    def deselect_crew(self, event: pygame.event.Event) -> bool:
+    def deselect_crew(self, _: pygame.event.Event) -> bool:
         has_selected = False
         for c in self.data.player.crew:
             if c.selected:

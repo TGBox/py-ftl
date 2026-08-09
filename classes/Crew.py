@@ -244,7 +244,7 @@ class Crew:
             return
 
         waypoints: list[tuple[float, float]] = []
-        for _next_r, door in room_path:
+        for _, door in room_path:
             waypoints.append((float(door.rect.centerx), float(door.rect.centery)))
         waypoints.append((tx, ty))
 
