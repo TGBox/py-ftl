@@ -338,6 +338,7 @@ def apply_starting_setup_for_ship(player_data: "PlayerData", ship_name: str) -> 
         player_data.crew.append(Crew(cx, cy, species=spec))
 
     # Start-Waffen setzen
+    assert player_data.weapons is not None
     player_data.weapons.clear()
     if ship_name == "Kestrel":
         player_data.weapons = [

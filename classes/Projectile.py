@@ -69,7 +69,7 @@ class Projectile:
 
   def get_intersected_rooms(self, rooms: list[Room]) -> list[Room]:
     """Prüft per Liniensegment-Schnittpunkt, welche Räume vom Beam gekreuzt werden (SRS Kap. 6.2)."""
-    intersected = []
+    intersected: list[Room] = []
     for room in rooms:
         if room.rect.clipline((self.start_x, self.start_y), (self.x, self.y)):
             intersected.append(room)
@@ -120,4 +120,4 @@ class Projectile:
       pygame.draw.circle(
           surface, COLOR_PROJECTILE, (int(self.x), int(self.y)), 5
       )
-
+

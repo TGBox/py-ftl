@@ -14,6 +14,17 @@ class StarMap:
     self.rebel_fleet_x: float = 30.0
     self.sector_type: str = "Zivil"
     self.generate_map()
+    
+  def to_str(self) -> str:
+    """Methode um aus der Sternenkarte eine von Menschen gut lesbare String Repräsentation zu generieren.
+
+    Returns:
+        str: Die String Repräsentation des StarMap Objekts.
+    """
+    s_str = f"Karte - Sektor {self.sector} - Typ: {self.sector_type} - Position X-Achse Rebellenflotte: {self.rebel_fleet_x} - Aktive Node: {self.current_node} von insgesamt {len(self.nodes)} Knoten - Knotenpunkte:\n"
+    for i, n in enumerate(self.nodes):
+      s_str += f"{i}: {n.to_str()}\n"
+    return s_str
 
   def advance_fleet(self) -> None:
     self.rebel_fleet_x += REBEL_FLEET_SPEED
@@ -152,4 +163,4 @@ class StarMap:
           self.current_node is not None
           and node in self.current_node.connections
       ):
-        pygame.draw.circle(surface, (255, 255, 255), (node.x, node.y), 18, 2)
+        pygame.draw.circle(surface, (255, 255, 255), (node.x, node.y), 18, 2)

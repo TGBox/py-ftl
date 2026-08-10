@@ -27,6 +27,16 @@ class Room:
     self.fire_level: float = 0.0  # Feuer (0.0 bis 100.0)
     self.ion_timer: float = 0.0  # Ion-Sperre (Sekunden)
     self.was_destroyed: bool = False  # Komplett zerstört (0 HP)
+    
+  def to_str(self) -> str:
+    """Methode um eine String Repräsentation des Raum Objektes zu generieren, welche von Menschen gut gelesen werden kann.
+
+    Returns:
+        str: Die String Repräsentation des Objekts.
+    """
+    r_str = f"{"Gegner" if self.is_enemy else "Spieler"}-Raum \"{self.name}\" mit Position x={self.rect.x}, y={self.rect.y}, Energie: {self.current_power} / {self.max_power}, Gesundheit: {self.health} / {self.max_health}, "
+    r_str += f"Sauerstofflevel: {self.oxygen} %, Hüllenleck: {self.has_breach}, Feuerlevel: {self.fire_level} %, Ionen-Sperre: {self.ion_timer} Sekunden, Wurde zerstört: {self.was_destroyed}"
+    return r_str
 
   def effective_max_power(self) -> int:
     eff: int = math.floor(self.max_power * (self.health / self.max_health))

@@ -50,6 +50,7 @@ class PlayerData:
         return (f"PlayerData - Schrott: {self.scrap}, Treibstoff: {self.fuel}, "
                 f"Raketen: {self.missiles}, Drohnenteile: {self.drone_parts} | "
                 f"Crew: {len(self.crew)} | Waffen: {w_count} | Godmode: {self.godmode}")
+    #TODO: Complete the string method.
 
     @property
     def drones(self) -> int:
@@ -59,10 +60,6 @@ class PlayerData:
     def drones(self, value: int) -> None:
         self.drone_parts = value
 
-
-
-
-
 class EnemyData:
 
     def __init__(self) -> None:
@@ -71,6 +68,9 @@ class EnemyData:
         self.shield: ShieldSystem = ShieldSystem()
         self.weapon: Weapon = Weapon("Laser", charge_time=4.5, w_type="LASER")
 
+    def __str__(self) -> str:
+        return (f"EnemyData - Schiff: {self.ship.name} | Reaktor-Energie: {self.reactor.available_power} / {self.reactor.total_power} | "
+                f"Waffe: {self.weapon.name} vom Typ {self.weapon.w_type} mit Ladezeit von {self.weapon.charge_time} | Schild: ") #TODO: Add the Schild.to_str() method here!
 
 class CombatData:
 
@@ -109,6 +109,11 @@ class CombatData:
         self.ftl_ready: bool = False
         self.combat_won: bool = False
 
+    def __str__(self) -> str:
+        return (f"CombatData - Kampf gewonnen: {self.combat_won} | Autofire: {self.autofire_enabled} | "
+                f"FTL bereit: {self.ftl_ready} | Boss Phase: {self.boss_phase}")
+#TODO: Add the other values of this object.
+
 
 class WorldData:
 
@@ -116,6 +121,10 @@ class WorldData:
         self.star_map: StarMap = StarMap()
         from classes.EventManager import EventManager
         self.event_manager: EventManager = EventManager()
+
+    def __str__(self) -> str:
+        return "WorldData - (Sternenkarte und Event-Manager sind geladen)"
+#TODO: Add the other values of this object.
 
 class GameData:
 
@@ -138,3 +147,10 @@ class GameData:
         self.enemy: EnemyData = EnemyData()
         self.combat: CombatData = CombatData()
         self.world: WorldData = WorldData()
+
+    def __str__(self) -> str:
+        return (f"GameData - Status: {self.current_state} | Pausiert: {self.paused} | Save Slot: {self.active_save_slot}\n"
+            f"  -> {self.player}\n"
+            f"  -> {self.enemy}\n"
+            f"  -> {self.combat}")
+#TODO: Add the other values of this object.
