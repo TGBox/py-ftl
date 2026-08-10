@@ -26,7 +26,7 @@ class PlayerData:
         self.reactor: Reactor = Reactor(total_power=PLAYER_START_POWER)
         self.shield: ShieldSystem = ShieldSystem()
         self.crew: "list[Crew]" = [Crew(305, 290, species="Mensch"), Crew(205, 290, species="Engi")]
-        self.weapons: list[Weapon] | None = [
+        self.weapons: list[Weapon | None] = [
             Weapon("Standard Laser", charge_time=3.0, w_type="LASER"),
             Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1),
         ]
