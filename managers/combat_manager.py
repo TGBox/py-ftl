@@ -82,7 +82,10 @@ class CombatManager:
             if "Waffen-Vorheizer" in getattr(self.data.player, "augments", []):
                 assert self.data.player.weapons is not None
                 for w in self.data.player.weapons:
-                    w.current_charge = w.charge_time
+                    if w is None:
+                        continue  # Leeren Slot überspringen
+                    else:
+                        w.current_charge = w.charge_time
                 self.show_message("WAFFEN-VORHEIZER AKTIV! Waffen voll geladen!")
 
         self.data.combat.msg_timer = max(
@@ -455,7 +458,10 @@ class CombatManager:
         charge_mult = get_room_manning_bonus("Waffen", w_manned_count, room=w_room)["multiplier"]
         assert self.data.player.weapons is not None
         for weapon in self.data.player.weapons:
-            weapon.update(dt * charge_mult, weapon_powered)
+            if weapon is None:
+                continue  # Leeren Slot überspringen
+            else:
+                weapon.update(dt * charge_mult, weapon_powered)
 
         if self.data.combat.autofire_enabled:
             self.fire_autofire_weapons()
@@ -463,11 +469,11 @@ class CombatManager:
     def fire_autofire_weapons(self):
 
         weapon_room = self.data.player.ship.rooms[1]
-        if self.data.player.weapons is None:
-            return
-        else:
-            assert self.data.player.weapons is not None
-            for idx, weapon in enumerate(self.data.player.weapons):
+        assert self.data.player.weapons is not None
+        for idx, weapon in enumerate(self.data.player.weapons):
+            if weapon is None:
+                continue  # Leeren Slot überspringen
+            else:
 
                 if not weapon.is_ready():
                     continue

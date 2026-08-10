@@ -192,7 +192,7 @@ class SaveManager:
                     crew_damage=getattr(w, "crew_damage", 0.0),
                     max_range=getattr(w, "max_range", None),
                 )
-                for w in data.player.weapons
+                for w in data.player.weapons if w is not None  # <- "if w is not None" hinzufügen
             ]
 
             # Crew serialisieren

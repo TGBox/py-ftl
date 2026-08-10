@@ -94,6 +94,9 @@ class ConsoleManager:
             upgraded_count = 0
             assert self.data.player.weapons is not None
             for w in self.data.player.weapons:
+                if w is None:
+                    continue  # Leeren Slot überspringen
+                else:
                     while w.level < 5:
                         w.upgrade()
                     upgraded_count += 1
