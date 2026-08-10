@@ -82,8 +82,7 @@ class CombatManager:
             if "Waffen-Vorheizer" in getattr(self.data.player, "augments", []):
                 assert self.data.player.weapons is not None
                 for w in self.data.player.weapons:
-                    if w is not None:
-                        w.current_charge = w.charge_time
+                    w.current_charge = w.charge_time
                 self.show_message("WAFFEN-VORHEIZER AKTIV! Waffen voll geladen!")
 
         self.data.combat.msg_timer = max(
@@ -456,8 +455,7 @@ class CombatManager:
         charge_mult = get_room_manning_bonus("Waffen", w_manned_count, room=w_room)["multiplier"]
         assert self.data.player.weapons is not None
         for weapon in self.data.player.weapons:
-            if weapon is not None:
-                weapon.update(dt * charge_mult, weapon_powered)
+            weapon.update(dt * charge_mult, weapon_powered)
 
         if self.data.combat.autofire_enabled:
             self.fire_autofire_weapons()
@@ -465,70 +463,71 @@ class CombatManager:
     def fire_autofire_weapons(self):
 
         weapon_room = self.data.player.ship.rooms[1]
-        assert self.data.player.weapons is not None
-        for idx, weapon in enumerate(self.data.player.weapons):
-            if weapon is None:
-                continue
+        if self.data.player.weapons is None:
+            return
+        else:
+            assert self.data.player.weapons is not None
+            for idx, weapon in enumerate(self.data.player.weapons):
 
-            if not weapon.is_ready():
-                continue
-
-            if idx not in self.data.combat.weapon_targets:
-                continue
-
-            target_room, _, end_pos = \
-                self.data.combat.weapon_targets[idx]
-
-            if target_room not in self.data.enemy.ship.rooms:
-                continue
-
-            if (
-                weapon.ammo_cost > 0
-                and self.data.player.missiles < weapon.ammo_cost
-            ):
-                assert self.game is not None
-                self.game.state_manager.show_message("KEINE RAKETEN MEHR!")
-                continue
-
-            if weapon.ammo_cost > 0:
-                self.data.player.missiles -= weapon.ammo_cost
-
-            slots = getattr(self.data.player.ship, "weapon_slots", [])
-            start_pos = slots[idx]["pos"] if (slots and idx < len(slots)) else weapon_room.rect.center
-
-            # Reichweiten-Check
-            if weapon.max_range is not None:
-                dist = math.hypot(end_pos[0] - start_pos[0], end_pos[1] - start_pos[1])
-                if dist > weapon.max_range:
-                    del self.data.combat.weapon_targets[idx]
+                if not weapon.is_ready():
                     continue
 
-            self.data.player.projectiles.append(
-                Projectile(
-                    start_pos,
-                    end_pos,
-                    target_room,
-                    is_player_shot=True,
-                    w_type=weapon.w_type,
-                    shield_pierce=weapon.shield_pierce,
-                    damage=weapon.damage,
-                    subtype=getattr(weapon, "subtype", "STANDARD"),
-                    fire_chance=getattr(weapon, "fire_chance", 0.0),
-                    breach_chance=getattr(weapon, "breach_chance", 0.0),
-                    stun_duration=getattr(weapon, "stun_duration", 0.0),
-                    crew_damage=getattr(weapon, "crew_damage", 0.0),
-                    max_range=getattr(weapon, "max_range", None),
+                if idx not in self.data.combat.weapon_targets:
+                    continue
+
+                target_room, _, end_pos = \
+                    self.data.combat.weapon_targets[idx]
+
+                if target_room not in self.data.enemy.ship.rooms:
+                    continue
+
+                if (
+                    weapon.ammo_cost > 0
+                    and self.data.player.missiles < weapon.ammo_cost
+                ):
+                    assert self.game is not None
+                    self.game.state_manager.show_message("KEINE RAKETEN MEHR!")
+                    continue
+
+                if weapon.ammo_cost > 0:
+                    self.data.player.missiles -= weapon.ammo_cost
+
+                slots = getattr(self.data.player.ship, "weapon_slots", [])
+                start_pos = slots[idx]["pos"] if (slots and idx < len(slots)) else weapon_room.rect.center
+
+                # Reichweiten-Check
+                if weapon.max_range is not None:
+                    dist = math.hypot(end_pos[0] - start_pos[0], end_pos[1] - start_pos[1])
+                    if dist > weapon.max_range:
+                        del self.data.combat.weapon_targets[idx]
+                        continue
+
+                self.data.player.projectiles.append(
+                    Projectile(
+                        start_pos,
+                        end_pos,
+                        target_room,
+                        is_player_shot=True,
+                        w_type=weapon.w_type,
+                        shield_pierce=weapon.shield_pierce,
+                        damage=weapon.damage,
+                        subtype=getattr(weapon, "subtype", "STANDARD"),
+                        fire_chance=getattr(weapon, "fire_chance", 0.0),
+                        breach_chance=getattr(weapon, "breach_chance", 0.0),
+                        stun_duration=getattr(weapon, "stun_duration", 0.0),
+                        crew_damage=getattr(weapon, "crew_damage", 0.0),
+                        max_range=getattr(weapon, "max_range", None),
+                    )
                 )
-            )
 
-            # Sound: weapon fire
-            if self.sound:
-                sfx = {"LASER": "laser_fire", "MISSILE": "missile_fire",
-                       "BEAM": "beam_fire", "FLAK": "flak_fire",
-                       "HEAVY_LASER": "laser_fire"}.get(weapon.w_type, "laser_fire")
-                self.sound.play(sfx)
+                # Sound: weapon fire
+                if self.sound:
+                    sfx = {"LASER": "laser_fire", "MISSILE": "missile_fire",
+                        "BEAM": "beam_fire", "FLAK": "flak_fire",
+                        "HEAVY_LASER": "laser_fire"}.get(weapon.w_type, "laser_fire")
+                    self.sound.play(sfx)
 
-            weapon.reset()
+                weapon.reset()
 
     def activate_cloaking(self):
         cloak_room = next((r for r in self.data.player.ship.rooms if r.name == "Tarnung"), None)

@@ -80,7 +80,7 @@ def calculate_event_layout(
             "box_rect": pygame.Rect(box_x, box_y, box_width, box_height),
         }
 
-    for idx, _choice in enumerate(choices):
+    for idx, _ in enumerate(choices):
         btn_y = btn_start_y + idx * 44
         choice_rects.append(pygame.Rect(box_x + 30, btn_y, 600, 38))
 

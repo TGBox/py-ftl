@@ -92,8 +92,8 @@ class ConsoleManager:
 
         elif cmd in ("upgrade_weapons", "max_weapons", "waffen5", "mk5", "level5", "waffen", "upgrade_all_weapons"):
             upgraded_count = 0
+            assert self.data.player.weapons is not None
             for w in self.data.player.weapons:
-                if w is not None:
                     while w.level < 5:
                         w.upgrade()
                     upgraded_count += 1

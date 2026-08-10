@@ -193,7 +193,6 @@ class SaveManager:
                     max_range=getattr(w, "max_range", None),
                 )
                 for w in data.player.weapons
-                if w is not None
             ]
 
             # Crew serialisieren
@@ -246,7 +245,7 @@ class SaveManager:
 
             # AES-256-CFB Encryption (SRS Kap. 8)
             key = cls.get_key()
-            cipher: Any = AES.new(key, AES.MODE_CFB, iv=iv) # type: ignore
+            cipher: Any = AES.new(key, AES.MODE_CFB) # type: ignore
             iv = cipher.iv
             ciphertext = cipher.encrypt(payload.encode("utf-8"))
 

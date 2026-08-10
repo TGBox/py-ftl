@@ -54,6 +54,7 @@ class InputManager:
                     self.handle_right_click(event)
 
     def handle_keydown(self, event: pygame.event.Event):
+        logger.debug(f"Keyboard Taste {event.key} wurde gedrückt.")
         console_mgr = getattr(self, "console_manager", None) or getattr(self.data, "console_manager", None)
         if console_mgr and console_mgr.handle_keydown(event):
             return
@@ -160,6 +161,7 @@ class InputManager:
                 if self.sound: self.sound.play("click")
 
     def handle_left_click(self, event: pygame.event.Event):
+        logger.debug(f"Linksklick auf Position x={event.x}, y={event.y}, Ziel: {event.target}")
 
         mx, my = self._logical_mouse_pos(getattr(event, "pos", None))        # 1. 3 Save Slots Modal Interaction
         if getattr(self.data, "show_slot_modal", False):
@@ -461,6 +463,7 @@ class InputManager:
 
 
     def handle_right_click(self, event: pygame.event.Event):
+        logger.debug(f"Linksklick auf Position x={event.x}, y={event.y}, Ziel: {event.target}")
         if self.data.current_state != STATE_COMBAT:
             return
         mx, my = self._logical_mouse_pos(getattr(event, "pos", None))

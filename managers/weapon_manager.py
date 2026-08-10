@@ -25,9 +25,8 @@ class WeaponManager:
         weapon_powered = (
             self.data.player.ship.rooms[1].current_power > 0
         )
-
+        assert self.data.player.weapons is not None
         for weapon in self.data.player.weapons:
-            if weapon is not None:
                 weapon.update(dt, weapon_powered)
 
         if self.data.combat.autofire_enabled:
@@ -41,9 +40,8 @@ class WeaponManager:
 
         weapon_room = self.data.player.ship.rooms[1]
 
+        assert self.data.player.weapons is not None
         for idx, weapon in enumerate(self.data.player.weapons):
-            if weapon is None:
-                continue
 
             bar_x = 30 + idx * 115
 
@@ -83,7 +81,8 @@ class WeaponManager:
         if idx is None:
             return False
 
-        if idx >= len(self.data.player.weapons) or self.data.player.weapons[idx] is None:
+        assert self.data.player.weapons is not None
+        if idx >= len(self.data.player.weapons):
             return False
 
         weapon = self.data.player.weapons[idx]
@@ -117,7 +116,8 @@ class WeaponManager:
         end_pos: tuple[float, float],
     ):
 
-        if weapon_index >= len(self.data.player.weapons) or self.data.player.weapons[weapon_index] is None:
+        assert self.data.player.weapons is not None
+        if weapon_index >= len(self.data.player.weapons):
             return False
         weapon = self.data.player.weapons[weapon_index]
 
@@ -168,11 +168,10 @@ class WeaponManager:
 
         weapon_room = self.data.player.ship.rooms[1]
 
+        assert self.data.player.weapons is not None
         for idx, weapon in enumerate(
             self.data.player.weapons
         ):
-            if weapon is None:
-                continue
 
             if not weapon.is_ready():
                 continue

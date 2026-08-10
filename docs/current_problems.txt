@@ -1,0 +1,1836 @@
+Datei: c:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\managers\save_manager.py
+  [Error] Zeile 248: "iv" is unbound
+
+Datei: c:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\managers\console_manager.py
+  [Error] Zeile 96: Condition will always evaluate to True since the types "Weapon" and "None" have no overlap
+  [Hint] Zeile 1: "TYPE_CHECKING" is not accessed
+  [Error] Zeile 1: Import "TYPE_CHECKING" is not accessed
+  [Error] Zeile 4: Import "pygame" is not accessed
+  [Hint] Zeile 4: "pygame" is not accessed
+  [Hint] Zeile 6: "GameData" is not accessed
+  [Error] Zeile 6: Import "GameData" is not accessed
+  [Hint] Zeile 11: "Game" is not accessed
+  [Error] Zeile 11: Import "Game" is not accessed
+  [Hint] Zeile 16: "self" is not accessed
+  [Hint] Zeile 16: "data" is not accessed
+  [Hint] Zeile 29: "self" is not accessed
+  [Hint] Zeile 33: "self" is not accessed
+  [Hint] Zeile 33: "event" is not accessed
+  [Hint] Zeile 47: "cmd" is not accessed
+  [Error] Zeile 47: Variable "cmd" is not accessed
+  [Hint] Zeile 65: "self" is not accessed
+  [Hint] Zeile 65: "cmd_str" is not accessed
+  [Hint] Zeile 66: "parts" is not accessed
+  [Error] Zeile 66: Variable "parts" is not accessed
+  [Hint] Zeile 70: "cmd" is not accessed
+  [Error] Zeile 70: Variable "cmd" is not accessed
+  [Hint] Zeile 71: "arg" is not accessed
+  [Error] Zeile 71: Variable "arg" is not accessed
+  [Hint] Zeile 89: "val" is not accessed
+  [Error] Zeile 89: Variable "val" is not accessed
+  [Hint] Zeile 103: "val" is not accessed
+  [Error] Zeile 103: Variable "val" is not accessed
+  [Hint] Zeile 108: "val" is not accessed
+  [Error] Zeile 108: Variable "val" is not accessed
+  [Hint] Zeile 113: "val" is not accessed
+  [Error] Zeile 113: Variable "val" is not accessed
+  [Hint] Zeile 94: "upgraded_count" is not accessed
+  [Error] Zeile 94: Variable "upgraded_count" is not accessed
+  [Hint] Zeile 99: "upgraded_count" is not accessed
+  [Error] Zeile 99: Variable "upgraded_count" is not accessed
+  [Hint] Zeile 95: "w" is not accessed
+  [Error] Zeile 95: Variable "w" is not accessed
+  [Hint] Zeile 118: "cur" is not accessed
+  [Error] Zeile 118: Variable "cur" is not accessed
+  [Hint] Zeile 120: "state_str" is not accessed
+  [Error] Zeile 120: Variable "state_str" is not accessed
+  [Hint] Zeile 159: "state_str" is not accessed
+  [Error] Zeile 159: Variable "state_str" is not accessed
+  [Hint] Zeile 165: "state_str" is not accessed
+  [Error] Zeile 165: Variable "state_str" is not accessed
+  [Hint] Zeile 125: "c" is not accessed
+  [Error] Zeile 125: Variable "c" is not accessed
+  [Hint] Zeile 127: "r" is not accessed
+  [Error] Zeile 127: Variable "r" is not accessed
+  [Hint] Zeile 141: "SaveManager" is not accessed
+  [Error] Zeile 141: Import "SaveManager" is not accessed
+  [Hint] Zeile 142: "all_ships" is not accessed
+  [Error] Zeile 142: Variable "all_ships" is not accessed
+  [Hint] Zeile 171: "self" is not accessed
+  [Hint] Zeile 171: "screen" is not accessed
+  [Hint] Zeile 175: "font" is not accessed
+  [Error] Zeile 175: Variable "font" is not accessed
+  [Hint] Zeile 176: "c_rect" is not accessed
+  [Error] Zeile 176: Variable "c_rect" is not accessed
+  [Hint] Zeile 178: "s" is not accessed
+  [Error] Zeile 178: Variable "s" is not accessed
+  [Hint] Zeile 184: "lines_to_draw" is not accessed
+  [Error] Zeile 184: Variable "lines_to_draw" is not accessed
+  [Hint] Zeile 185: "idx" is not accessed
+  [Error] Zeile 185: Variable "idx" is not accessed
+  [Hint] Zeile 185: "line" is not accessed
+  [Error] Zeile 185: Variable "line" is not accessed
+  [Hint] Zeile 186: "col" is not accessed
+  [Error] Zeile 186: Variable "col" is not accessed
+  [Hint] Zeile 187: "surf" is not accessed
+  [Error] Zeile 187: Variable "surf" is not accessed
+  [Hint] Zeile 192: "prompt_txt" is not accessed
+  [Error] Zeile 192: Variable "prompt_txt" is not accessed
+  [Hint] Zeile 193: "p_surf" is not accessed
+  [Error] Zeile 193: Variable "p_surf" is not accessed
+
+Datei: c:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\managers\render_manager.py
+  [Hint] Zeile 1: "TYPE_CHECKING" is not accessed
+  [Error] Zeile 1: Import "TYPE_CHECKING" is not accessed
+  [Error] Zeile 2: Import "math" is not accessed
+  [Hint] Zeile 2: "math" is not accessed
+  [Hint] Zeile 3: "Any" is not accessed
+  [Error] Zeile 3: Import "Any" is not accessed
+  [Error] Zeile 4: Import "pygame" is not accessed
+  [Hint] Zeile 4: "pygame" is not accessed
+  [Hint] Zeile 6: "GameData" is not accessed
+  [Error] Zeile 6: Import "GameData" is not accessed
+  [Hint] Zeile 11: "Game" is not accessed
+  [Error] Zeile 11: Import "Game" is not accessed
+  [Hint] Zeile 15: "self" is not accessed
+  [Hint] Zeile 15: "screen" is not accessed
+  [Hint] Zeile 15: "data" is not accessed
+  [Hint] Zeile 55: "self" is not accessed
+  [Error] Zeile 56: Import "os" is not accessed
+  [Hint] Zeile 56: "os" is not accessed
+  [Hint] Zeile 59: "asset_defs" is not accessed
+  [Error] Zeile 59: Variable "asset_defs" is not accessed
+  [Hint] Zeile 65: "key" is not accessed
+  [Error] Zeile 65: Variable "key" is not accessed
+  [Hint] Zeile 65: "path" is not accessed
+  [Error] Zeile 65: Variable "path" is not accessed
+  [Hint] Zeile 65: "size" is not accessed
+  [Error] Zeile 65: Variable "size" is not accessed
+  [Hint] Zeile 65: "colorkey" is not accessed
+  [Error] Zeile 65: Variable "colorkey" is not accessed
+  [Hint] Zeile 68: "img" is not accessed
+  [Error] Zeile 68: Variable "img" is not accessed
+  [Hint] Zeile 70: "img" is not accessed
+  [Error] Zeile 70: Variable "img" is not accessed
+  [Hint] Zeile 80: "img" is not accessed
+  [Error] Zeile 80: Variable "img" is not accessed
+  [Hint] Zeile 83: "img" is not accessed
+  [Error] Zeile 83: Variable "img" is not accessed
+  [Hint] Zeile 71: "w" is not accessed
+  [Error] Zeile 71: Variable "w" is not accessed
+  [Hint] Zeile 71: "h" is not accessed
+  [Error] Zeile 71: Variable "h" is not accessed
+  [Hint] Zeile 72: "x" is not accessed
+  [Error] Zeile 72: Variable "x" is not accessed
+  [Hint] Zeile 73: "y" is not accessed
+  [Error] Zeile 73: Variable "y" is not accessed
+  [Hint] Zeile 74: "r" is not accessed
+  [Error] Zeile 74: Variable "r" is not accessed
+  [Hint] Zeile 74: "g" is not accessed
+  [Error] Zeile 74: Variable "g" is not accessed
+  [Hint] Zeile 74: "b" is not accessed
+  [Error] Zeile 74: Variable "b" is not accessed
+  [Hint] Zeile 85: "e" is not accessed
+  [Error] Zeile 85: Variable "e" is not accessed
+  [Hint] Zeile 88: "self" is not accessed
+  [Hint] Zeile 96: "b_rect" is not accessed
+  [Error] Zeile 96: Variable "b_rect" is not accessed
+  [Hint] Zeile 97: "b_surf" is not accessed
+  [Error] Zeile 97: Variable "b_surf" is not accessed
+  [Hint] Zeile 102: "status_str" is not accessed
+  [Error] Zeile 102: Variable "status_str" is not accessed
+  [Hint] Zeile 107: "lbl" is not accessed
+  [Error] Zeile 107: Variable "lbl" is not accessed
+  [Hint] Zeile 111: "mx" is not accessed
+  [Error] Zeile 111: Variable "mx" is not accessed
+  [Hint] Zeile 111: "my" is not accessed
+  [Error] Zeile 111: Variable "my" is not accessed
+  [Hint] Zeile 156: "save_timer" is not accessed
+  [Error] Zeile 156: Variable "save_timer" is not accessed
+  [Hint] Zeile 160: "msg" is not accessed
+  [Error] Zeile 160: Variable "msg" is not accessed
+  [Hint] Zeile 161: "badge_rect" is not accessed
+  [Error] Zeile 161: Variable "badge_rect" is not accessed
+  [Hint] Zeile 164: "save_lbl" is not accessed
+  [Error] Zeile 164: Variable "save_lbl" is not accessed
+  [Hint] Zeile 169: "banner_rect" is not accessed
+  [Error] Zeile 169: Variable "banner_rect" is not accessed
+  [Hint] Zeile 172: "p_lbl" is not accessed
+  [Error] Zeile 172: Variable "p_lbl" is not accessed
+  [Hint] Zeile 191: "console_mgr" is not accessed
+  [Error] Zeile 191: Variable "console_mgr" is not accessed
+  [Hint] Zeile 195: "self" is not accessed
+  [Hint] Zeile 196: "overlay" is not accessed
+  [Error] Zeile 196: Variable "overlay" is not accessed
+  [Hint] Zeile 200: "modal_rect" is not accessed
+  [Error] Zeile 200: Variable "modal_rect" is not accessed
+  [Hint] Zeile 204: "mode" is not accessed
+  [Error] Zeile 204: Variable "mode" is not accessed
+  [Hint] Zeile 205: "title" is not accessed
+  [Error] Zeile 205: Variable "title" is not accessed
+  [Hint] Zeile 206: "title_txt" is not accessed
+  [Error] Zeile 206: Variable "title_txt" is not accessed
+  [Hint] Zeile 209: "SaveManager" is not accessed
+  [Error] Zeile 209: Import "SaveManager" is not accessed
+  [Hint] Zeile 210: "mx" is not accessed
+  [Error] Zeile 210: Variable "mx" is not accessed
+  [Hint] Zeile 210: "my" is not accessed
+  [Error] Zeile 210: Variable "my" is not accessed
+  [Hint] Zeile 212: "slot" is not accessed
+  [Error] Zeile 212: Variable "slot" is not accessed
+  [Hint] Zeile 213: "card_y" is not accessed
+  [Error] Zeile 213: Variable "card_y" is not accessed
+  [Hint] Zeile 214: "card_rect" is not accessed
+  [Error] Zeile 214: Variable "card_rect" is not accessed
+  [Hint] Zeile 215: "info" is not accessed
+  [Error] Zeile 215: Variable "info" is not accessed
+  [Hint] Zeile 216: "is_active_slot" is not accessed
+  [Error] Zeile 216: Variable "is_active_slot" is not accessed
+  [Hint] Zeile 218: "bg_col" is not accessed
+  [Error] Zeile 218: Variable "bg_col" is not accessed
+  [Hint] Zeile 219: "border_col" is not accessed
+  [Error] Zeile 219: Variable "border_col" is not accessed
+  [Hint] Zeile 223: "slot_head" is not accessed
+  [Error] Zeile 223: Variable "slot_head" is not accessed
+  [Hint] Zeile 227: "line1" is not accessed
+  [Error] Zeile 227: Variable "line1" is not accessed
+  [Hint] Zeile 228: "line2" is not accessed
+  [Error] Zeile 228: Variable "line2" is not accessed
+  [Hint] Zeile 235: "btn_rect" is not accessed
+  [Error] Zeile 235: Variable "btn_rect" is not accessed
+  [Hint] Zeile 236: "btn_attr" is not accessed
+  [Error] Zeile 236: Variable "btn_attr" is not accessed
+  [Hint] Zeile 239: "btn_label" is not accessed
+  [Error] Zeile 239: Variable "btn_label" is not accessed
+  [Hint] Zeile 240: "btn_color" is not accessed
+  [Error] Zeile 240: Variable "btn_color" is not accessed
+  [Hint] Zeile 258: "self" is not accessed
+  [Hint] Zeile 259: "overlay" is not accessed
+  [Error] Zeile 259: Variable "overlay" is not accessed
+  [Hint] Zeile 263: "box" is not accessed
+  [Error] Zeile 263: Variable "box" is not accessed
+  [Hint] Zeile 267: "title_font" is not accessed
+  [Error] Zeile 267: Variable "title_font" is not accessed
+  [Hint] Zeile 268: "head" is not accessed
+  [Error] Zeile 268: Variable "head" is not accessed
+  [Hint] Zeile 271: "font" is not accessed
+  [Error] Zeile 271: Variable "font" is not accessed
+  [Hint] Zeile 272: "bold_font" is not accessed
+  [Error] Zeile 272: Variable "bold_font" is not accessed
+  [Hint] Zeile 274: "col1_x" is not accessed
+  [Error] Zeile 274: Variable "col1_x" is not accessed
+  [Hint] Zeile 275: "col2_x" is not accessed
+  [Error] Zeile 275: Variable "col2_x" is not accessed
+  [Hint] Zeile 276: "y" is not accessed
+  [Error] Zeile 276: Variable "y" is not accessed
+  [Hint] Zeile 281: "y" is not accessed
+  [Error] Zeile 281: Variable "y" is not accessed
+  [Hint] Zeile 301: "y" is not accessed
+  [Error] Zeile 301: Variable "y" is not accessed
+  [Hint] Zeile 279: "lbl1" is not accessed
+  [Error] Zeile 279: Variable "lbl1" is not accessed
+  [Hint] Zeile 283: "controls_col1" is not accessed
+  [Error] Zeile 283: Variable "controls_col1" is not accessed
+  [Hint] Zeile 296: "key" is not accessed
+  [Error] Zeile 296: Variable "key" is not accessed
+  [Hint] Zeile 316: "key" is not accessed
+  [Error] Zeile 316: Variable "key" is not accessed
+  [Hint] Zeile 296: "desc" is not accessed
+  [Error] Zeile 296: Variable "desc" is not accessed
+  [Hint] Zeile 316: "desc" is not accessed
+  [Error] Zeile 316: Variable "desc" is not accessed
+  [Hint] Zeile 297: "k_lbl" is not accessed
+  [Error] Zeile 297: Variable "k_lbl" is not accessed
+  [Hint] Zeile 317: "k_lbl" is not accessed
+  [Error] Zeile 317: Variable "k_lbl" is not accessed
+  [Hint] Zeile 298: "d_lbl" is not accessed
+  [Error] Zeile 298: Variable "d_lbl" is not accessed
+  [Hint] Zeile 318: "d_lbl" is not accessed
+  [Error] Zeile 318: Variable "d_lbl" is not accessed
+  [Hint] Zeile 304: "y2" is not accessed
+  [Error] Zeile 304: Variable "y2" is not accessed
+  [Hint] Zeile 307: "y2" is not accessed
+  [Error] Zeile 307: Variable "y2" is not accessed
+  [Hint] Zeile 321: "y2" is not accessed
+  [Error] Zeile 321: Variable "y2" is not accessed
+  [Hint] Zeile 323: "y2" is not accessed
+  [Error] Zeile 323: Variable "y2" is not accessed
+  [Hint] Zeile 326: "y2" is not accessed
+  [Error] Zeile 326: Variable "y2" is not accessed
+  [Hint] Zeile 340: "y2" is not accessed
+  [Error] Zeile 340: Variable "y2" is not accessed
+  [Hint] Zeile 305: "lbl2" is not accessed
+  [Error] Zeile 305: Variable "lbl2" is not accessed
+  [Hint] Zeile 309: "controls_col2" is not accessed
+  [Error] Zeile 309: Variable "controls_col2" is not accessed
+  [Hint] Zeile 324: "tips_lbl" is not accessed
+  [Error] Zeile 324: Variable "tips_lbl" is not accessed
+  [Hint] Zeile 328: "tips" is not accessed
+  [Error] Zeile 328: Variable "tips" is not accessed
+  [Hint] Zeile 337: "tip" is not accessed
+  [Error] Zeile 337: Variable "tip" is not accessed
+  [Hint] Zeile 338: "t_lbl" is not accessed
+  [Error] Zeile 338: Variable "t_lbl" is not accessed
+  [Hint] Zeile 342: "close_lbl" is not accessed
+  [Error] Zeile 342: Variable "close_lbl" is not accessed
+  [Hint] Zeile 345: "self" is not accessed
+  [Hint] Zeile 354: "idx" is not accessed
+  [Error] Zeile 354: Variable "idx" is not accessed
+  [Hint] Zeile 354: "crew" is not accessed
+  [Error] Zeile 354: Variable "crew" is not accessed
+  [Hint] Zeile 355: "card_y" is not accessed
+  [Error] Zeile 355: Variable "card_y" is not accessed
+  [Hint] Zeile 356: "card_rect" is not accessed
+  [Error] Zeile 356: Variable "card_rect" is not accessed
+  [Hint] Zeile 360: "hp_lbl" is not accessed
+  [Error] Zeile 360: Variable "hp_lbl" is not accessed
+  [Hint] Zeile 363: "input_rect" is not accessed
+  [Error] Zeile 363: Variable "input_rect" is not accessed
+  [Hint] Zeile 366: "cur_text" is not accessed
+  [Error] Zeile 366: Variable "cur_text" is not accessed
+  [Hint] Zeile 370: "name_lbl" is not accessed
+  [Error] Zeile 370: Variable "name_lbl" is not accessed
+  [Hint] Zeile 375: "perk_str" is not accessed
+  [Error] Zeile 375: Variable "perk_str" is not accessed
+  [Hint] Zeile 378: "perk_str" is not accessed
+  [Error] Zeile 378: Variable "perk_str" is not accessed
+  [Hint] Zeile 381: "perk_str" is not accessed
+  [Error] Zeile 381: Variable "perk_str" is not accessed
+  [Hint] Zeile 376: "badge_col" is not accessed
+  [Error] Zeile 376: Variable "badge_col" is not accessed
+  [Hint] Zeile 379: "badge_col" is not accessed
+  [Error] Zeile 379: Variable "badge_col" is not accessed
+  [Hint] Zeile 382: "badge_col" is not accessed
+  [Error] Zeile 382: Variable "badge_col" is not accessed
+  [Hint] Zeile 384: "perk_lbl" is not accessed
+  [Error] Zeile 384: Variable "perk_lbl" is not accessed
+  [Hint] Zeile 387: "rename_btn" is not accessed
+  [Error] Zeile 387: Variable "rename_btn" is not accessed
+  [Hint] Zeile 388: "btn_col" is not accessed
+  [Error] Zeile 388: Variable "btn_col" is not accessed
+  [Hint] Zeile 391: "btn_txt" is not accessed
+  [Error] Zeile 391: Variable "btn_txt" is not accessed
+  [Hint] Zeile 394: "skills_str" is not accessed
+  [Error] Zeile 394: Variable "skills_str" is not accessed
+  [Hint] Zeile 395: "small_font" is not accessed
+  [Error] Zeile 395: Variable "small_font" is not accessed
+  [Hint] Zeile 396: "skills_lbl" is not accessed
+  [Error] Zeile 396: Variable "skills_lbl" is not accessed
+  [Hint] Zeile 401: "close_btn" is not accessed
+  [Error] Zeile 401: Variable "close_btn" is not accessed
+  [Hint] Zeile 415: "r" is not accessed
+  [Error] Zeile 415: Variable "r" is not accessed
+  [Hint] Zeile 416: "r" is not accessed
+  [Error] Zeile 416: Variable "r" is not accessed
+  [Hint] Zeile 417: "r" is not accessed
+  [Error] Zeile 417: Variable "r" is not accessed
+  [Hint] Zeile 423: "r" is not accessed
+  [Error] Zeile 423: Variable "r" is not accessed
+  [Hint] Zeile 424: "r" is not accessed
+  [Error] Zeile 424: Variable "r" is not accessed
+  [Hint] Zeile 425: "r" is not accessed
+  [Error] Zeile 425: Variable "r" is not accessed
+  [Hint] Zeile 408: "self" is not accessed
+  [Hint] Zeile 410: "is_enemy_destroyed" is not accessed
+  [Error] Zeile 410: Variable "is_enemy_destroyed" is not accessed
+  [Hint] Zeile 415: "p_left" is not accessed
+  [Error] Zeile 415: Variable "p_left" is not accessed
+  [Hint] Zeile 416: "p_right" is not accessed
+  [Error] Zeile 416: Variable "p_right" is not accessed
+  [Hint] Zeile 417: "p_bottom" is not accessed
+  [Error] Zeile 417: Variable "p_bottom" is not accessed
+  [Hint] Zeile 418: "p_w" is not accessed
+  [Error] Zeile 418: Variable "p_w" is not accessed
+  [Hint] Zeile 423: "e_left" is not accessed
+  [Error] Zeile 423: Variable "e_left" is not accessed
+  [Hint] Zeile 424: "e_right" is not accessed
+  [Error] Zeile 424: Variable "e_right" is not accessed
+  [Hint] Zeile 425: "e_bottom" is not accessed
+  [Error] Zeile 425: Variable "e_bottom" is not accessed
+  [Hint] Zeile 426: "e_w" is not accessed
+  [Error] Zeile 426: Variable "e_w" is not accessed
+  [Hint] Zeile 443: "self" is not accessed
+  [Hint] Zeile 497: "r" is not accessed
+  [Error] Zeile 497: Variable "r" is not accessed
+  [Hint] Zeile 670: "r" is not accessed
+  [Error] Zeile 670: Variable "r" is not accessed
+  [Hint] Zeile 683: "item" is not accessed
+  [Error] Zeile 683: Variable "item" is not accessed
+  [Hint] Zeile 445: "self" is not accessed
+  [Hint] Zeile 447: "shop_mgr" is not accessed
+  [Error] Zeile 447: Variable "shop_mgr" is not accessed
+  [Hint] Zeile 452: "title_font" is not accessed
+  [Error] Zeile 452: Variable "title_font" is not accessed
+  [Hint] Zeile 453: "sub_font" is not accessed
+  [Error] Zeile 453: Variable "sub_font" is not accessed
+  [Hint] Zeile 454: "tiny_font" is not accessed
+  [Error] Zeile 454: Variable "tiny_font" is not accessed
+  [Hint] Zeile 758: "tiny_font" is not accessed
+  [Error] Zeile 758: Variable "tiny_font" is not accessed
+  [Hint] Zeile 456: "t_lbl" is not accessed
+  [Error] Zeile 456: Variable "t_lbl" is not accessed
+  [Hint] Zeile 484: "t_lbl" is not accessed
+  [Error] Zeile 484: Variable "t_lbl" is not accessed
+  [Hint] Zeile 459: "p_hp" is not accessed
+  [Error] Zeile 459: Variable "p_hp" is not accessed
+  [Hint] Zeile 460: "p_max_hp" is not accessed
+  [Error] Zeile 460: Variable "p_max_hp" is not accessed
+  [Hint] Zeile 461: "p_drones" is not accessed
+  [Error] Zeile 461: Variable "p_drones" is not accessed
+  [Hint] Zeile 462: "status_txt" is not accessed
+  [Error] Zeile 462: Variable "status_txt" is not accessed
+  [Hint] Zeile 463: "st_lbl" is not accessed
+  [Error] Zeile 463: Variable "st_lbl" is not accessed
+  [Hint] Zeile 736: "st_lbl" is not accessed
+  [Error] Zeile 736: Variable "st_lbl" is not accessed
+  [Hint] Zeile 466: "mx" is not accessed
+  [Error] Zeile 466: Variable "mx" is not accessed
+  [Hint] Zeile 466: "my" is not accessed
+  [Error] Zeile 466: Variable "my" is not accessed
+  [Hint] Zeile 467: "active_tab" is not accessed
+  [Error] Zeile 467: Variable "active_tab" is not accessed
+  [Hint] Zeile 470: "tabs" is not accessed
+  [Error] Zeile 470: Variable "tabs" is not accessed
+  [Hint] Zeile 477: "tab_key" is not accessed
+  [Error] Zeile 477: Variable "tab_key" is not accessed
+  [Hint] Zeile 477: "tab_rect" is not accessed
+  [Error] Zeile 477: Variable "tab_rect" is not accessed
+  [Hint] Zeile 477: "tab_label" is not accessed
+  [Error] Zeile 477: Variable "tab_label" is not accessed
+  [Hint] Zeile 478: "is_active" is not accessed
+  [Error] Zeile 478: Variable "is_active" is not accessed
+  [Hint] Zeile 479: "is_hov" is not accessed
+  [Error] Zeile 479: Variable "is_hov" is not accessed
+  [Hint] Zeile 509: "is_hov" is not accessed
+  [Error] Zeile 509: Variable "is_hov" is not accessed
+  [Hint] Zeile 538: "is_hov" is not accessed
+  [Error] Zeile 538: Variable "is_hov" is not accessed
+  [Hint] Zeile 657: "is_hov" is not accessed
+  [Error] Zeile 657: Variable "is_hov" is not accessed
+  [Hint] Zeile 679: "is_hov" is not accessed
+  [Error] Zeile 679: Variable "is_hov" is not accessed
+  [Hint] Zeile 480: "bg_col" is not accessed
+  [Error] Zeile 480: Variable "bg_col" is not accessed
+  [Hint] Zeile 481: "border_col" is not accessed
+  [Error] Zeile 481: Variable "border_col" is not accessed
+  [Hint] Zeile 493: "hdr_left" is not accessed
+  [Error] Zeile 493: Variable "hdr_left" is not accessed
+  [Hint] Zeile 496: "r_total" is not accessed
+  [Error] Zeile 496: Variable "r_total" is not accessed
+  [Hint] Zeile 497: "r_max_needed" is not accessed
+  [Error] Zeile 497: Variable "r_max_needed" is not accessed
+  [Hint] Zeile 498: "r_cap_txt" is not accessed
+  [Error] Zeile 498: Variable "r_cap_txt" is not accessed
+  [Hint] Zeile 500: "items_left" is not accessed
+  [Error] Zeile 500: Variable "items_left" is not accessed
+  [Hint] Zeile 508: "btn" is not accessed
+  [Error] Zeile 508: Variable "btn" is not accessed
+  [Hint] Zeile 508: "text" is not accessed
+  [Error] Zeile 508: Variable "text" is not accessed
+  [Hint] Zeile 512: "lbl" is not accessed
+  [Error] Zeile 512: Variable "lbl" is not accessed
+  [Hint] Zeile 516: "info_box" is not accessed
+  [Error] Zeile 516: Variable "info_box" is not accessed
+  [Hint] Zeile 532: "hdr_right" is not accessed
+  [Error] Zeile 532: Variable "hdr_right" is not accessed
+  [Hint] Zeile 535: "catalog" is not accessed
+  [Error] Zeile 535: Variable "catalog" is not accessed
+  [Hint] Zeile 536: "idx" is not accessed
+  [Error] Zeile 536: Variable "idx" is not accessed
+  [Hint] Zeile 578: "idx" is not accessed
+  [Error] Zeile 578: Variable "idx" is not accessed
+  [Hint] Zeile 638: "idx" is not accessed
+  [Error] Zeile 638: Variable "idx" is not accessed
+  [Hint] Zeile 655: "idx" is not accessed
+  [Error] Zeile 655: Variable "idx" is not accessed
+  [Hint] Zeile 677: "idx" is not accessed
+  [Error] Zeile 677: Variable "idx" is not accessed
+  [Hint] Zeile 760: "idx" is not accessed
+  [Error] Zeile 760: Variable "idx" is not accessed
+  [Hint] Zeile 536: "item" is not accessed
+  [Error] Zeile 536: Variable "item" is not accessed
+  [Hint] Zeile 537: "item_btn" is not accessed
+  [Error] Zeile 537: Variable "item_btn" is not accessed
+  [Hint] Zeile 543: "name_lbl" is not accessed
+  [Error] Zeile 543: Variable "name_lbl" is not accessed
+  [Hint] Zeile 549: "name_lbl" is not accessed
+  [Error] Zeile 549: Variable "name_lbl" is not accessed
+  [Hint] Zeile 544: "stats_lbl" is not accessed
+  [Error] Zeile 544: Variable "stats_lbl" is not accessed
+  [Hint] Zeile 551: "stats_lbl" is not accessed
+  [Error] Zeile 551: Variable "stats_lbl" is not accessed
+  [Hint] Zeile 546: "w_type" is not accessed
+  [Error] Zeile 546: Variable "w_type" is not accessed
+  [Hint] Zeile 547: "sub" is not accessed
+  [Error] Zeile 547: Variable "sub" is not accessed
+  [Hint] Zeile 548: "sub_tag" is not accessed
+  [Error] Zeile 548: Variable "sub_tag" is not accessed
+  [Hint] Zeile 550: "eff_txt" is not accessed
+  [Error] Zeile 550: Variable "eff_txt" is not accessed
+  [Hint] Zeile 553: "price_badge" is not accessed
+  [Error] Zeile 553: Variable "price_badge" is not accessed
+  [Hint] Zeile 556: "price_lbl" is not accessed
+  [Error] Zeile 556: Variable "price_lbl" is not accessed
+  [Hint] Zeile 563: "btn_layout" is not accessed
+  [Error] Zeile 563: Variable "btn_layout" is not accessed
+  [Hint] Zeile 564: "is_lay_hov" is not accessed
+  [Error] Zeile 564: Variable "is_lay_hov" is not accessed
+  [Hint] Zeile 571: "hdr_weapons" is not accessed
+  [Error] Zeile 571: Variable "hdr_weapons" is not accessed
+  [Hint] Zeile 574: "max_slots" is not accessed
+  [Error] Zeile 574: Variable "max_slots" is not accessed
+  [Hint] Zeile 806: "max_slots" is not accessed
+  [Error] Zeile 806: Variable "max_slots" is not accessed
+  [Hint] Zeile 575: "slots" is not accessed
+  [Error] Zeile 575: Variable "slots" is not accessed
+  [Hint] Zeile 807: "slots" is not accessed
+  [Error] Zeile 807: Variable "slots" is not accessed
+  [Hint] Zeile 576: "card_w" is not accessed
+  [Error] Zeile 576: Variable "card_w" is not accessed
+  [Hint] Zeile 579: "card_x" is not accessed
+  [Error] Zeile 579: Variable "card_x" is not accessed
+  [Hint] Zeile 580: "card_rect" is not accessed
+  [Error] Zeile 580: Variable "card_rect" is not accessed
+  [Hint] Zeile 584: "slot_info" is not accessed
+  [Error] Zeile 584: Variable "slot_info" is not accessed
+  [Hint] Zeile 813: "slot_info" is not accessed
+  [Error] Zeile 813: Variable "slot_info" is not accessed
+  [Hint] Zeile 585: "allowed" is not accessed
+  [Error] Zeile 585: Variable "allowed" is not accessed
+  [Hint] Zeile 773: "allowed" is not accessed
+  [Error] Zeile 773: Variable "allowed" is not accessed
+  [Hint] Zeile 814: "allowed" is not accessed
+  [Error] Zeile 814: Variable "allowed" is not accessed
+  [Hint] Zeile 586: "allowed_txt" is not accessed
+  [Error] Zeile 586: Variable "allowed_txt" is not accessed
+  [Hint] Zeile 588: "w" is not accessed
+  [Error] Zeile 588: Variable "w" is not accessed
+  [Hint] Zeile 590: "w_sub" is not accessed
+  [Error] Zeile 590: Variable "w_sub" is not accessed
+  [Hint] Zeile 591: "w_sub_tag" is not accessed
+  [Error] Zeile 591: Variable "w_sub_tag" is not accessed
+  [Hint] Zeile 592: "refund" is not accessed
+  [Error] Zeile 592: Variable "refund" is not accessed
+  [Hint] Zeile 684: "refund" is not accessed
+  [Error] Zeile 684: Variable "refund" is not accessed
+  [Hint] Zeile 594: "lbl_name" is not accessed
+  [Error] Zeile 594: Variable "lbl_name" is not accessed
+  [Hint] Zeile 595: "lbl_allow" is not accessed
+  [Error] Zeile 595: Variable "lbl_allow" is not accessed
+  [Hint] Zeile 607: "lbl_allow" is not accessed
+  [Error] Zeile 607: Variable "lbl_allow" is not accessed
+  [Hint] Zeile 599: "sell_btn" is not accessed
+  [Error] Zeile 599: Variable "sell_btn" is not accessed
+  [Hint] Zeile 678: "sell_btn" is not accessed
+  [Error] Zeile 678: Variable "sell_btn" is not accessed
+  [Hint] Zeile 600: "is_sell_hov" is not accessed
+  [Error] Zeile 600: Variable "is_sell_hov" is not accessed
+  [Hint] Zeile 603: "lbl_sell" is not accessed
+  [Error] Zeile 603: Variable "lbl_sell" is not accessed
+  [Hint] Zeile 606: "lbl_empty" is not accessed
+  [Error] Zeile 606: Variable "lbl_empty" is not accessed
+  [Hint] Zeile 615: "hdr_crew" is not accessed
+  [Error] Zeile 615: Variable "hdr_crew" is not accessed
+  [Hint] Zeile 618: "cand" is not accessed
+  [Error] Zeile 618: Variable "cand" is not accessed
+  [Hint] Zeile 619: "card_box" is not accessed
+  [Error] Zeile 619: Variable "card_box" is not accessed
+  [Hint] Zeile 623: "spec_color" is not accessed
+  [Error] Zeile 623: Variable "spec_color" is not accessed
+  [Hint] Zeile 628: "btn_buy_c" is not accessed
+  [Error] Zeile 628: Variable "btn_buy_c" is not accessed
+  [Hint] Zeile 629: "is_c_hov" is not accessed
+  [Error] Zeile 629: Variable "is_c_hov" is not accessed
+  [Hint] Zeile 632: "c_btn_lbl" is not accessed
+  [Error] Zeile 632: Variable "c_btn_lbl" is not accessed
+  [Hint] Zeile 636: "hdr_curr" is not accessed
+  [Error] Zeile 636: Variable "hdr_curr" is not accessed
+  [Hint] Zeile 638: "c" is not accessed
+  [Error] Zeile 638: Variable "c" is not accessed
+  [Hint] Zeile 639: "c_rect" is not accessed
+  [Error] Zeile 639: Variable "c_rect" is not accessed
+  [Hint] Zeile 642: "s_col" is not accessed
+  [Error] Zeile 642: Variable "s_col" is not accessed
+  [Hint] Zeile 650: "SYSTEM_ROOM_CATALOG" is not accessed
+  [Error] Zeile 650: Import "SYSTEM_ROOM_CATALOG" is not accessed
+  [Hint] Zeile 650: "PROTECTED_CORE_SYSTEMS" is not accessed
+  [Error] Zeile 650: Import "PROTECTED_CORE_SYSTEMS" is not accessed
+  [Hint] Zeile 652: "hdr_buy_sys" is not accessed
+  [Error] Zeile 652: Variable "hdr_buy_sys" is not accessed
+  [Hint] Zeile 655: "sys_item" is not accessed
+  [Error] Zeile 655: Variable "sys_item" is not accessed
+  [Hint] Zeile 656: "buy_btn" is not accessed
+  [Error] Zeile 656: Variable "buy_btn" is not accessed
+  [Hint] Zeile 661: "name_l" is not accessed
+  [Error] Zeile 661: Variable "name_l" is not accessed
+  [Hint] Zeile 662: "desc_l" is not accessed
+  [Error] Zeile 662: Variable "desc_l" is not accessed
+  [Hint] Zeile 666: "hdr_sell_sys" is not accessed
+  [Error] Zeile 666: Variable "hdr_sell_sys" is not accessed
+  [Hint] Zeile 669: "empty_or_optional_rooms" is not accessed
+  [Error] Zeile 669: Variable "empty_or_optional_rooms" is not accessed
+  [Hint] Zeile 677: "r" is not accessed
+  [Error] Zeile 677: Variable "r" is not accessed
+  [Hint] Zeile 741: "r" is not accessed
+  [Error] Zeile 741: Variable "r" is not accessed
+  [Hint] Zeile 753: "r" is not accessed
+  [Error] Zeile 753: Variable "r" is not accessed
+  [Hint] Zeile 683: "cat_info" is not accessed
+  [Error] Zeile 683: Variable "cat_info" is not accessed
+  [Hint] Zeile 685: "r_lbl" is not accessed
+  [Error] Zeile 685: Variable "r_lbl" is not accessed
+  [Hint] Zeile 686: "p_lbl" is not accessed
+  [Error] Zeile 686: Variable "p_lbl" is not accessed
+  [Hint] Zeile 691: "btn_leave" is not accessed
+  [Error] Zeile 691: Variable "btn_leave" is not accessed
+  [Hint] Zeile 700: "is_swap_mode" is not accessed
+  [Error] Zeile 700: Variable "is_swap_mode" is not accessed
+  [Hint] Zeile 704: "overlay" is not accessed
+  [Error] Zeile 704: Variable "overlay" is not accessed
+  [Hint] Zeile 796: "overlay" is not accessed
+  [Error] Zeile 796: Variable "overlay" is not accessed
+  [Hint] Zeile 708: "swap_type" is not accessed
+  [Error] Zeile 708: Variable "swap_type" is not accessed
+  [Hint] Zeile 709: "first_sel" is not accessed
+  [Error] Zeile 709: Variable "first_sel" is not accessed
+  [Hint] Zeile 712: "tab_rooms" is not accessed
+  [Error] Zeile 712: Variable "tab_rooms" is not accessed
+  [Hint] Zeile 713: "tab_weapons" is not accessed
+  [Error] Zeile 713: Variable "tab_weapons" is not accessed
+  [Hint] Zeile 715: "col_r_fill" is not accessed
+  [Error] Zeile 715: Variable "col_r_fill" is not accessed
+  [Hint] Zeile 716: "col_r_bord" is not accessed
+  [Error] Zeile 716: Variable "col_r_bord" is not accessed
+  [Hint] Zeile 719: "lbl_tr" is not accessed
+  [Error] Zeile 719: Variable "lbl_tr" is not accessed
+  [Hint] Zeile 722: "col_w_fill" is not accessed
+  [Error] Zeile 722: Variable "col_w_fill" is not accessed
+  [Hint] Zeile 723: "col_w_bord" is not accessed
+  [Error] Zeile 723: Variable "col_w_bord" is not accessed
+  [Hint] Zeile 726: "lbl_tw" is not accessed
+  [Error] Zeile 726: Variable "lbl_tw" is not accessed
+  [Hint] Zeile 730: "first_r_name" is not accessed
+  [Error] Zeile 730: Variable "first_r_name" is not accessed
+  [Hint] Zeile 731: "subtitle_txt" is not accessed
+  [Error] Zeile 731: Variable "subtitle_txt" is not accessed
+  [Hint] Zeile 734: "subtitle_txt" is not accessed
+  [Error] Zeile 734: Variable "subtitle_txt" is not accessed
+  [Hint] Zeile 733: "s1_num" is not accessed
+  [Error] Zeile 733: Variable "s1_num" is not accessed
+  [Hint] Zeile 742: "is_first" is not accessed
+  [Error] Zeile 742: Variable "is_first" is not accessed
+  [Hint] Zeile 765: "is_first" is not accessed
+  [Error] Zeile 765: Variable "is_first" is not accessed
+  [Hint] Zeile 743: "border_color" is not accessed
+  [Error] Zeile 743: Variable "border_color" is not accessed
+  [Hint] Zeile 744: "fill_color" is not accessed
+  [Error] Zeile 744: Variable "fill_color" is not accessed
+  [Hint] Zeile 749: "lbl_r" is not accessed
+  [Error] Zeile 749: Variable "lbl_r" is not accessed
+  [Hint] Zeile 759: "small_font" is not accessed
+  [Error] Zeile 759: Variable "small_font" is not accessed
+  [Hint] Zeile 760: "slot" is not accessed
+  [Error] Zeile 760: Variable "slot" is not accessed
+  [Hint] Zeile 761: "pos" is not accessed
+  [Error] Zeile 761: Variable "pos" is not accessed
+  [Hint] Zeile 763: "hx" is not accessed
+  [Error] Zeile 763: Variable "hx" is not accessed
+  [Hint] Zeile 763: "hy" is not accessed
+  [Error] Zeile 763: Variable "hy" is not accessed
+  [Hint] Zeile 764: "slot_rect" is not accessed
+  [Error] Zeile 764: Variable "slot_rect" is not accessed
+  [Hint] Zeile 767: "b_fill" is not accessed
+  [Error] Zeile 767: Variable "b_fill" is not accessed
+  [Hint] Zeile 768: "b_bord" is not accessed
+  [Error] Zeile 768: Variable "b_bord" is not accessed
+  [Hint] Zeile 774: "allowed_str" is not accessed
+  [Error] Zeile 774: Variable "allowed_str" is not accessed
+  [Hint] Zeile 775: "tmp_w" is not accessed
+  [Error] Zeile 775: Variable "tmp_w" is not accessed
+  [Hint] Zeile 777: "w_name" is not accessed
+  [Error] Zeile 777: Variable "w_name" is not accessed
+  [Hint] Zeile 779: "lbl_title" is not accessed
+  [Error] Zeile 779: Variable "lbl_title" is not accessed
+  [Hint] Zeile 780: "lbl_type" is not accessed
+  [Error] Zeile 780: Variable "lbl_type" is not accessed
+  [Hint] Zeile 781: "lbl_weap" is not accessed
+  [Error] Zeile 781: Variable "lbl_weap" is not accessed
+  [Hint] Zeile 787: "cancel_btn" is not accessed
+  [Error] Zeile 787: Variable "cancel_btn" is not accessed
+  [Hint] Zeile 830: "cancel_btn" is not accessed
+  [Error] Zeile 830: Variable "cancel_btn" is not accessed
+  [Hint] Zeile 790: "c_lbl" is not accessed
+  [Error] Zeile 790: Variable "c_lbl" is not accessed
+  [Hint] Zeile 833: "c_lbl" is not accessed
+  [Error] Zeile 833: Variable "c_lbl" is not accessed
+  [Hint] Zeile 794: "sel_item" is not accessed
+  [Error] Zeile 794: Variable "sel_item" is not accessed
+  [Hint] Zeile 800: "dialog" is not accessed
+  [Error] Zeile 800: Variable "dialog" is not accessed
+  [Hint] Zeile 804: "title" is not accessed
+  [Error] Zeile 804: Variable "title" is not accessed
+  [Hint] Zeile 808: "slot_i" is not accessed
+  [Error] Zeile 808: Variable "slot_i" is not accessed
+  [Hint] Zeile 809: "s_btn" is not accessed
+  [Error] Zeile 809: Variable "s_btn" is not accessed
+  [Hint] Zeile 815: "al_str" is not accessed
+  [Error] Zeile 815: Variable "al_str" is not accessed
+  [Hint] Zeile 817: "has_w" is not accessed
+  [Error] Zeile 817: Variable "has_w" is not accessed
+  [Hint] Zeile 818: "w_obj" is not accessed
+  [Error] Zeile 818: Variable "w_obj" is not accessed
+  [Hint] Zeile 821: "status_str" is not accessed
+  [Error] Zeile 821: Variable "status_str" is not accessed
+  [Hint] Zeile 823: "status_str" is not accessed
+  [Error] Zeile 823: Variable "status_str" is not accessed
+  [Hint] Zeile 825: "status_str" is not accessed
+  [Error] Zeile 825: Variable "status_str" is not accessed
+  [Hint] Zeile 827: "txt1" is not accessed
+  [Error] Zeile 827: Variable "txt1" is not accessed
+  [Hint] Zeile 836: "self" is not accessed
+  [Hint] Zeile 838: "panel_rect" is not accessed
+  [Error] Zeile 838: Variable "panel_rect" is not accessed
+  [Hint] Zeile 842: "title_lbl" is not accessed
+  [Error] Zeile 842: Variable "title_lbl" is not accessed
+  [Hint] Zeile 843: "scrap_lbl" is not accessed
+  [Error] Zeile 843: Variable "scrap_lbl" is not accessed
+  [Hint] Zeile 847: "tiny_font" is not accessed
+  [Error] Zeile 847: Variable "tiny_font" is not accessed
+  [Hint] Zeile 849: "skills" is not accessed
+  [Error] Zeile 849: Variable "skills" is not accessed
+  [Hint] Zeile 856: "c_idx" is not accessed
+  [Error] Zeile 856: Variable "c_idx" is not accessed
+  [Hint] Zeile 856: "crew" is not accessed
+  [Error] Zeile 856: Variable "crew" is not accessed
+  [Hint] Zeile 857: "card_y" is not accessed
+  [Error] Zeile 857: Variable "card_y" is not accessed
+  [Hint] Zeile 858: "card_rect" is not accessed
+  [Error] Zeile 858: Variable "card_rect" is not accessed
+  [Hint] Zeile 863: "c_color" is not accessed
+  [Error] Zeile 863: Variable "c_color" is not accessed
+  [Hint] Zeile 865: "b_lbl" is not accessed
+  [Error] Zeile 865: Variable "b_lbl" is not accessed
+  [Hint] Zeile 868: "name_txt" is not accessed
+  [Error] Zeile 868: Variable "name_txt" is not accessed
+  [Hint] Zeile 869: "hp_txt" is not accessed
+  [Error] Zeile 869: Variable "hp_txt" is not accessed
+  [Hint] Zeile 874: "s_idx" is not accessed
+  [Error] Zeile 874: Variable "s_idx" is not accessed
+  [Hint] Zeile 874: "s_key" is not accessed
+  [Error] Zeile 874: Variable "s_key" is not accessed
+  [Hint] Zeile 874: "s_name" is not accessed
+  [Error] Zeile 874: Variable "s_name" is not accessed
+  [Hint] Zeile 875: "s_box" is not accessed
+  [Error] Zeile 875: Variable "s_box" is not accessed
+  [Hint] Zeile 879: "cur_lvl" is not accessed
+  [Error] Zeile 879: Variable "cur_lvl" is not accessed
+  [Hint] Zeile 880: "lvl_str" is not accessed
+  [Error] Zeile 880: Variable "lvl_str" is not accessed
+  [Hint] Zeile 882: "lbl_sname" is not accessed
+  [Error] Zeile 882: Variable "lbl_sname" is not accessed
+  [Hint] Zeile 883: "lbl_sdesc" is not accessed
+  [Error] Zeile 883: Variable "lbl_sdesc" is not accessed
+  [Hint] Zeile 887: "upg_btn" is not accessed
+  [Error] Zeile 887: Variable "upg_btn" is not accessed
+  [Hint] Zeile 888: "b_col" is not accessed
+  [Error] Zeile 888: Variable "b_col" is not accessed
+  [Hint] Zeile 892: "btn_txt_str" is not accessed
+  [Error] Zeile 892: Variable "btn_txt_str" is not accessed
+  [Hint] Zeile 893: "upg_lbl" is not accessed
+  [Error] Zeile 893: Variable "upg_lbl" is not accessed
+  [Hint] Zeile 897: "btn_leave" is not accessed
+  [Error] Zeile 897: Variable "btn_leave" is not accessed
+  [Hint] Zeile 900: "l_lbl" is not accessed
+  [Error] Zeile 900: Variable "l_lbl" is not accessed
+  [Hint] Zeile 910: "r" is not accessed
+  [Error] Zeile 910: Variable "r" is not accessed
+  [Hint] Zeile 911: "r" is not accessed
+  [Error] Zeile 911: Variable "r" is not accessed
+  [Hint] Zeile 916: "r" is not accessed
+  [Error] Zeile 916: Variable "r" is not accessed
+  [Hint] Zeile 917: "r" is not accessed
+  [Error] Zeile 917: Variable "r" is not accessed
+  [Hint] Zeile 962: "c" is not accessed
+  [Error] Zeile 962: Variable "c" is not accessed
+  [Hint] Zeile 969: "r" is not accessed
+  [Error] Zeile 969: Variable "r" is not accessed
+  [Hint] Zeile 983: "r" is not accessed
+  [Error] Zeile 983: Variable "r" is not accessed
+  [Hint] Zeile 1019: "r" is not accessed
+  [Error] Zeile 1019: Variable "r" is not accessed
+  [Hint] Zeile 1019: "r" is not accessed
+  [Error] Zeile 1019: Variable "r" is not accessed
+  [Hint] Zeile 1020: "r" is not accessed
+  [Error] Zeile 1020: Variable "r" is not accessed
+  [Hint] Zeile 1020: "r" is not accessed
+  [Error] Zeile 1020: Variable "r" is not accessed
+  [Hint] Zeile 1023: "r" is not accessed
+  [Error] Zeile 1023: Variable "r" is not accessed
+  [Hint] Zeile 1023: "r" is not accessed
+  [Error] Zeile 1023: Variable "r" is not accessed
+  [Hint] Zeile 1024: "r" is not accessed
+  [Error] Zeile 1024: Variable "r" is not accessed
+  [Hint] Zeile 1024: "r" is not accessed
+  [Error] Zeile 1024: Variable "r" is not accessed
+  [Hint] Zeile 903: "self" is not accessed
+  [Hint] Zeile 905: "is_enemy_destroyed" is not accessed
+  [Error] Zeile 905: Variable "is_enemy_destroyed" is not accessed
+  [Hint] Zeile 909: "p_rooms" is not accessed
+  [Error] Zeile 909: Variable "p_rooms" is not accessed
+  [Hint] Zeile 1018: "p_rooms" is not accessed
+  [Error] Zeile 1018: Variable "p_rooms" is not accessed
+  [Hint] Zeile 910: "min_x" is not accessed
+  [Error] Zeile 910: Variable "min_x" is not accessed
+  [Hint] Zeile 916: "min_x" is not accessed
+  [Error] Zeile 916: Variable "min_x" is not accessed
+  [Hint] Zeile 911: "min_y" is not accessed
+  [Error] Zeile 911: Variable "min_y" is not accessed
+  [Hint] Zeile 917: "min_y" is not accessed
+  [Error] Zeile 917: Variable "min_y" is not accessed
+  [Hint] Zeile 915: "e_rooms" is not accessed
+  [Error] Zeile 915: Variable "e_rooms" is not accessed
+  [Hint] Zeile 1022: "e_rooms" is not accessed
+  [Error] Zeile 1022: Variable "e_rooms" is not accessed
+  [Hint] Zeile 924: "small_font" is not accessed
+  [Error] Zeile 924: Variable "small_font" is not accessed
+  [Hint] Zeile 990: "small_font" is not accessed
+  [Error] Zeile 990: Variable "small_font" is not accessed
+  [Hint] Zeile 926: "p_box" is not accessed
+  [Error] Zeile 926: Variable "p_box" is not accessed
+  [Hint] Zeile 927: "p_surf" is not accessed
+  [Error] Zeile 927: Variable "p_surf" is not accessed
+  [Hint] Zeile 933: "evade_val" is not accessed
+  [Error] Zeile 933: Variable "evade_val" is not accessed
+  [Hint] Zeile 935: "evade_val" is not accessed
+  [Error] Zeile 935: Variable "evade_val" is not accessed
+  [Hint] Zeile 936: "p_lbl" is not accessed
+  [Error] Zeile 936: Variable "p_lbl" is not accessed
+  [Hint] Zeile 940: "e_box" is not accessed
+  [Error] Zeile 940: Variable "e_box" is not accessed
+  [Hint] Zeile 941: "e_surf" is not accessed
+  [Error] Zeile 941: Variable "e_surf" is not accessed
+  [Hint] Zeile 946: "e_name" is not accessed
+  [Error] Zeile 946: Variable "e_name" is not accessed
+  [Hint] Zeile 947: "e_disp" is not accessed
+  [Error] Zeile 947: Variable "e_disp" is not accessed
+  [Hint] Zeile 948: "e_lbl" is not accessed
+  [Error] Zeile 948: Variable "e_lbl" is not accessed
+  [Hint] Zeile 952: "cloak_active" is not accessed
+  [Error] Zeile 952: Variable "cloak_active" is not accessed
+  [Hint] Zeile 954: "s_overlay" is not accessed
+  [Error] Zeile 954: Variable "s_overlay" is not accessed
+  [Hint] Zeile 959: "manned_font" is not accessed
+  [Error] Zeile 959: Variable "manned_font" is not accessed
+  [Hint] Zeile 960: "r" is not accessed
+  [Error] Zeile 960: Variable "r" is not accessed
+  [Hint] Zeile 973: "r" is not accessed
+  [Error] Zeile 973: Variable "r" is not accessed
+  [Hint] Zeile 962: "m_count" is not accessed
+  [Error] Zeile 962: Variable "m_count" is not accessed
+  [Hint] Zeile 964: "badge_str" is not accessed
+  [Error] Zeile 964: Variable "badge_str" is not accessed
+  [Hint] Zeile 965: "lbl_m" is not accessed
+  [Error] Zeile 965: Variable "lbl_m" is not accessed
+  [Hint] Zeile 969: "sens_room" is not accessed
+  [Error] Zeile 969: Variable "sens_room" is not accessed
+  [Hint] Zeile 970: "sensor_power" is not accessed
+  [Error] Zeile 970: Variable "sensor_power" is not accessed
+  [Hint] Zeile 979: "f_font" is not accessed
+  [Error] Zeile 979: Variable "f_font" is not accessed
+  [Hint] Zeile 980: "lbl" is not accessed
+  [Error] Zeile 980: Variable "lbl" is not accessed
+  [Hint] Zeile 996: "lbl" is not accessed
+  [Error] Zeile 996: Variable "lbl" is not accessed
+  [Hint] Zeile 983: "door_room" is not accessed
+  [Error] Zeile 983: Variable "door_room" is not accessed
+  [Hint] Zeile 984: "door_level" is not accessed
+  [Error] Zeile 984: Variable "door_level" is not accessed
+  [Hint] Zeile 991: "s_idx" is not accessed
+  [Error] Zeile 991: Variable "s_idx" is not accessed
+  [Hint] Zeile 1000: "s_idx" is not accessed
+  [Error] Zeile 1000: Variable "s_idx" is not accessed
+  [Hint] Zeile 991: "slot" is not accessed
+  [Error] Zeile 991: Variable "slot" is not accessed
+  [Hint] Zeile 1000: "slot" is not accessed
+  [Error] Zeile 1000: Variable "slot" is not accessed
+  [Hint] Zeile 992: "hx" is not accessed
+  [Error] Zeile 992: Variable "hx" is not accessed
+  [Hint] Zeile 1001: "hx" is not accessed
+  [Error] Zeile 1001: Variable "hx" is not accessed
+  [Hint] Zeile 992: "hy" is not accessed
+  [Error] Zeile 992: Variable "hy" is not accessed
+  [Hint] Zeile 1001: "hy" is not accessed
+  [Error] Zeile 1001: Variable "hy" is not accessed
+  [Hint] Zeile 1007: "c" is not accessed
+  [Error] Zeile 1007: Variable "c" is not accessed
+  [Hint] Zeile 1013: "c" is not accessed
+  [Error] Zeile 1013: Variable "c" is not accessed
+  [Error] Zeile 1017: Import "math" is not accessed
+  [Hint] Zeile 1017: "math" is not accessed
+  [Hint] Zeile 1019: "p_cx" is not accessed
+  [Error] Zeile 1019: Variable "p_cx" is not accessed
+  [Hint] Zeile 1020: "p_cy" is not accessed
+  [Error] Zeile 1020: Variable "p_cy" is not accessed
+  [Hint] Zeile 1023: "e_cx" is not accessed
+  [Error] Zeile 1023: Variable "e_cx" is not accessed
+  [Hint] Zeile 1024: "e_cy" is not accessed
+  [Error] Zeile 1024: Variable "e_cy" is not accessed
+  [Hint] Zeile 1027: "ang" is not accessed
+  [Error] Zeile 1027: Variable "ang" is not accessed
+  [Hint] Zeile 1043: "ang" is not accessed
+  [Error] Zeile 1043: Variable "ang" is not accessed
+  [Hint] Zeile 1028: "d_x" is not accessed
+  [Error] Zeile 1028: Variable "d_x" is not accessed
+  [Hint] Zeile 1044: "d_x" is not accessed
+  [Error] Zeile 1044: Variable "d_x" is not accessed
+  [Hint] Zeile 1029: "d_y" is not accessed
+  [Error] Zeile 1029: Variable "d_y" is not accessed
+  [Hint] Zeile 1045: "d_y" is not accessed
+  [Error] Zeile 1045: Variable "d_y" is not accessed
+  [Hint] Zeile 1032: "d_lbl" is not accessed
+  [Error] Zeile 1032: Variable "d_lbl" is not accessed
+  [Hint] Zeile 1036: "rx" is not accessed
+  [Error] Zeile 1036: Variable "rx" is not accessed
+  [Hint] Zeile 1036: "ry" is not accessed
+  [Error] Zeile 1036: Variable "ry" is not accessed
+  [Hint] Zeile 1039: "r_lbl" is not accessed
+  [Error] Zeile 1039: Variable "r_lbl" is not accessed
+  [Hint] Zeile 1048: "def_lbl" is not accessed
+  [Error] Zeile 1048: Variable "def_lbl" is not accessed
+  [Hint] Zeile 1052: "d_beam" is not accessed
+  [Error] Zeile 1052: Variable "d_beam" is not accessed
+  [Hint] Zeile 1058: "s_room" is not accessed
+  [Error] Zeile 1058: Variable "s_room" is not accessed
+  [Hint] Zeile 1059: "cx" is not accessed
+  [Error] Zeile 1059: Variable "cx" is not accessed
+  [Hint] Zeile 1059: "cy" is not accessed
+  [Error] Zeile 1059: Variable "cy" is not accessed
+  [Hint] Zeile 1062: "sc_lbl" is not accessed
+  [Error] Zeile 1062: Variable "sc_lbl" is not accessed
+  [Hint] Zeile 1066: "ap_x" is not accessed
+  [Error] Zeile 1066: Variable "ap_x" is not accessed
+  [Hint] Zeile 1066: "ap_y" is not accessed
+  [Error] Zeile 1066: Variable "ap_y" is not accessed
+  [Hint] Zeile 1069: "ap_lbl" is not accessed
+  [Error] Zeile 1069: Variable "ap_lbl" is not accessed
+  [Hint] Zeile 1073: "zoltan_hp" is not accessed
+  [Error] Zeile 1073: Variable "zoltan_hp" is not accessed
+  [Hint] Zeile 1076: "z_font" is not accessed
+  [Error] Zeile 1076: Variable "z_font" is not accessed
+  [Hint] Zeile 1077: "z_lbl" is not accessed
+  [Error] Zeile 1077: Variable "z_lbl" is not accessed
+  [Hint] Zeile 1082: "e_w" is not accessed
+  [Error] Zeile 1082: Variable "e_w" is not accessed
+  [Hint] Zeile 1083: "w_ratio" is not accessed
+  [Error] Zeile 1083: Variable "w_ratio" is not accessed
+  [Hint] Zeile 1087: "w_lbl" is not accessed
+  [Error] Zeile 1087: Variable "w_lbl" is not accessed
+  [Hint] Zeile 1093: "r" is not accessed
+  [Error] Zeile 1093: Variable "r" is not accessed
+  [Hint] Zeile 1093: "r" is not accessed
+  [Error] Zeile 1093: Variable "r" is not accessed
+  [Hint] Zeile 1094: "r" is not accessed
+  [Error] Zeile 1094: Variable "r" is not accessed
+  [Hint] Zeile 1094: "r" is not accessed
+  [Error] Zeile 1094: Variable "r" is not accessed
+  [Hint] Zeile 1101: "r" is not accessed
+  [Error] Zeile 1101: Variable "r" is not accessed
+  [Hint] Zeile 1101: "r" is not accessed
+  [Error] Zeile 1101: Variable "r" is not accessed
+  [Hint] Zeile 1102: "r" is not accessed
+  [Error] Zeile 1102: Variable "r" is not accessed
+  [Hint] Zeile 1102: "r" is not accessed
+  [Error] Zeile 1102: Variable "r" is not accessed
+  [Hint] Zeile 1090: "self" is not accessed
+  [Hint] Zeile 1092: "p_rooms" is not accessed
+  [Error] Zeile 1092: Variable "p_rooms" is not accessed
+  [Hint] Zeile 1093: "p_cx" is not accessed
+  [Error] Zeile 1093: Variable "p_cx" is not accessed
+  [Hint] Zeile 1094: "p_cy" is not accessed
+  [Error] Zeile 1094: Variable "p_cy" is not accessed
+  [Hint] Zeile 1098: "is_enemy_destroyed" is not accessed
+  [Error] Zeile 1098: Variable "is_enemy_destroyed" is not accessed
+  [Hint] Zeile 1100: "e_rooms" is not accessed
+  [Error] Zeile 1100: Variable "e_rooms" is not accessed
+  [Hint] Zeile 1101: "e_cx" is not accessed
+  [Error] Zeile 1101: Variable "e_cx" is not accessed
+  [Hint] Zeile 1102: "e_cy" is not accessed
+  [Error] Zeile 1102: Variable "e_cy" is not accessed
+  [Hint] Zeile 1105: "self" is not accessed
+  [Hint] Zeile 1106: "p" is not accessed
+  [Error] Zeile 1106: Variable "p" is not accessed
+  [Hint] Zeile 1109: "self" is not accessed
+  [Hint] Zeile 1110: "raw_mx" is not accessed
+  [Error] Zeile 1110: Variable "raw_mx" is not accessed
+  [Hint] Zeile 1110: "raw_my" is not accessed
+  [Error] Zeile 1110: Variable "raw_my" is not accessed
+  [Hint] Zeile 1111: "game_ref" is not accessed
+  [Error] Zeile 1111: Variable "game_ref" is not accessed
+  [Hint] Zeile 1191: "c" is not accessed
+  [Error] Zeile 1191: Variable "c" is not accessed
+  [Hint] Zeile 1194: "r" is not accessed
+  [Error] Zeile 1194: Variable "r" is not accessed
+  [Hint] Zeile 1200: "r" is not accessed
+  [Error] Zeile 1200: Variable "r" is not accessed
+  [Hint] Zeile 1116: "self" is not accessed
+  [Hint] Zeile 1118: "is_enemy_destroyed" is not accessed
+  [Error] Zeile 1118: Variable "is_enemy_destroyed" is not accessed
+  [Hint] Zeile 1121: "idx" is not accessed
+  [Error] Zeile 1121: Variable "idx" is not accessed
+  [Hint] Zeile 1121: "start_p" is not accessed
+  [Error] Zeile 1121: Variable "start_p" is not accessed
+  [Hint] Zeile 1121: "end_p" is not accessed
+  [Error] Zeile 1121: Variable "end_p" is not accessed
+  [Hint] Zeile 1122: "color_line" is not accessed
+  [Error] Zeile 1122: Variable "color_line" is not accessed
+  [Hint] Zeile 1132: "color_line" is not accessed
+  [Error] Zeile 1132: Variable "color_line" is not accessed
+  [Hint] Zeile 1125: "w_badge" is not accessed
+  [Error] Zeile 1125: Variable "w_badge" is not accessed
+  [Hint] Zeile 1158: "w_badge" is not accessed
+  [Error] Zeile 1158: Variable "w_badge" is not accessed
+  [Hint] Zeile 1130: "mx" is not accessed
+  [Error] Zeile 1130: Variable "mx" is not accessed
+  [Hint] Zeile 1187: "mx" is not accessed
+  [Error] Zeile 1187: Variable "mx" is not accessed
+  [Hint] Zeile 1130: "my" is not accessed
+  [Error] Zeile 1130: Variable "my" is not accessed
+  [Hint] Zeile 1187: "my" is not accessed
+  [Error] Zeile 1187: Variable "my" is not accessed
+  [Hint] Zeile 1131: "t_idx" is not accessed
+  [Error] Zeile 1131: Variable "t_idx" is not accessed
+  [Hint] Zeile 1133: "start" is not accessed
+  [Error] Zeile 1133: Variable "start" is not accessed
+  [Hint] Zeile 1136: "weapon" is not accessed
+  [Error] Zeile 1136: Variable "weapon" is not accessed
+  [Hint] Zeile 1138: "weapon" is not accessed
+  [Error] Zeile 1138: Variable "weapon" is not accessed
+  [Hint] Zeile 1141: "range_surf" is not accessed
+  [Error] Zeile 1141: Variable "range_surf" is not accessed
+  [Hint] Zeile 1145: "dist_to_mouse" is not accessed
+  [Error] Zeile 1145: Variable "dist_to_mouse" is not accessed
+  [Hint] Zeile 1150: "oor_lbl" is not accessed
+  [Error] Zeile 1150: Variable "oor_lbl" is not accessed
+  [Hint] Zeile 1162: "weapon_ui_y" is not accessed
+  [Error] Zeile 1162: Variable "weapon_ui_y" is not accessed
+  [Hint] Zeile 1164: "small_font" is not accessed
+  [Error] Zeile 1164: Variable "small_font" is not accessed
+  [Hint] Zeile 1277: "small_font" is not accessed
+  [Error] Zeile 1277: Variable "small_font" is not accessed
+  [Hint] Zeile 1165: "i" is not accessed
+  [Error] Zeile 1165: Variable "i" is not accessed
+  [Hint] Zeile 1165: "w" is not accessed
+  [Error] Zeile 1165: Variable "w" is not accessed
+  [Hint] Zeile 1167: "bar_x" is not accessed
+  [Error] Zeile 1167: Variable "bar_x" is not accessed
+  [Hint] Zeile 1167: "bar_y" is not accessed
+  [Error] Zeile 1167: Variable "bar_y" is not accessed
+  [Hint] Zeile 1168: "charge_ratio" is not accessed
+  [Error] Zeile 1168: Variable "charge_ratio" is not accessed
+  [Hint] Zeile 1170: "bar_color" is not accessed
+  [Error] Zeile 1170: Variable "bar_color" is not accessed
+  [Hint] Zeile 1174: "w_color" is not accessed
+  [Error] Zeile 1174: Variable "w_color" is not accessed
+  [Hint] Zeile 1175: "target_indicator" is not accessed
+  [Error] Zeile 1175: Variable "target_indicator" is not accessed
+  [Hint] Zeile 1176: "lbl_color" is not accessed
+  [Error] Zeile 1176: Variable "lbl_color" is not accessed
+  [Hint] Zeile 1177: "disp_name" is not accessed
+  [Error] Zeile 1177: Variable "disp_name" is not accessed
+  [Hint] Zeile 1178: "lbl" is not accessed
+  [Error] Zeile 1178: Variable "lbl" is not accessed
+  [Hint] Zeile 1183: "range_lbl" is not accessed
+  [Error] Zeile 1183: Variable "range_lbl" is not accessed
+  [Hint] Zeile 1189: "tp_cd" is not accessed
+  [Error] Zeile 1189: Variable "tp_cd" is not accessed
+  [Hint] Zeile 1190: "is_tp_target" is not accessed
+  [Error] Zeile 1190: Variable "is_tp_target" is not accessed
+  [Hint] Zeile 1191: "has_boarders" is not accessed
+  [Error] Zeile 1191: Variable "has_boarders" is not accessed
+  [Hint] Zeile 1192: "tp_label" is not accessed
+  [Error] Zeile 1192: Variable "tp_label" is not accessed
+  [Hint] Zeile 1194: "cloak_room" is not accessed
+  [Error] Zeile 1194: Variable "cloak_room" is not accessed
+  [Hint] Zeile 1195: "cloak_active" is not accessed
+  [Error] Zeile 1195: Variable "cloak_active" is not accessed
+  [Hint] Zeile 1196: "cloak_cd" is not accessed
+  [Error] Zeile 1196: Variable "cloak_cd" is not accessed
+  [Hint] Zeile 1197: "cloak_ready" is not accessed
+  [Error] Zeile 1197: Variable "cloak_ready" is not accessed
+  [Hint] Zeile 1198: "cloak_lbl" is not accessed
+  [Error] Zeile 1198: Variable "cloak_lbl" is not accessed
+  [Hint] Zeile 1200: "drone_room" is not accessed
+  [Error] Zeile 1200: Variable "drone_room" is not accessed
+  [Hint] Zeile 1201: "drone_power" is not accessed
+  [Error] Zeile 1201: Variable "drone_power" is not accessed
+  [Hint] Zeile 1202: "c_active" is not accessed
+  [Error] Zeile 1202: Variable "c_active" is not accessed
+  [Hint] Zeile 1203: "r_active" is not accessed
+  [Error] Zeile 1203: Variable "r_active" is not accessed
+  [Hint] Zeile 1205: "c_drone_lbl" is not accessed
+  [Error] Zeile 1205: Variable "c_drone_lbl" is not accessed
+  [Hint] Zeile 1206: "r_drone_lbl" is not accessed
+  [Error] Zeile 1206: Variable "r_drone_lbl" is not accessed
+  [Hint] Zeile 1233: "combat_won" is not accessed
+  [Error] Zeile 1233: Variable "combat_won" is not accessed
+  [Hint] Zeile 1234: "ftl_timer" is not accessed
+  [Error] Zeile 1234: Variable "ftl_timer" is not accessed
+  [Hint] Zeile 1235: "ftl_ready" is not accessed
+  [Error] Zeile 1235: Variable "ftl_ready" is not accessed
+  [Hint] Zeile 1236: "ftl_pct" is not accessed
+  [Error] Zeile 1236: Variable "ftl_pct" is not accessed
+  [Hint] Zeile 1238: "ftl_lbl" is not accessed
+  [Error] Zeile 1238: Variable "ftl_lbl" is not accessed
+  [Hint] Zeile 1240: "ftl_lbl" is not accessed
+  [Error] Zeile 1240: Variable "ftl_lbl" is not accessed
+  [Hint] Zeile 1242: "ftl_lbl" is not accessed
+  [Error] Zeile 1242: Variable "ftl_lbl" is not accessed
+  [Hint] Zeile 1275: "augments" is not accessed
+  [Error] Zeile 1275: Variable "augments" is not accessed
+  [Hint] Zeile 1278: "a_idx" is not accessed
+  [Error] Zeile 1278: Variable "a_idx" is not accessed
+  [Hint] Zeile 1278: "aug_name" is not accessed
+  [Error] Zeile 1278: Variable "aug_name" is not accessed
+  [Hint] Zeile 1279: "a_rect" is not accessed
+  [Error] Zeile 1279: Variable "a_rect" is not accessed
+  [Hint] Zeile 1282: "a_lbl" is not accessed
+  [Error] Zeile 1282: Variable "a_lbl" is not accessed
+  [Hint] Zeile 1285: "self" is not accessed
+  [Hint] Zeile 1288: "b_phase" is not accessed
+  [Error] Zeile 1288: Variable "b_phase" is not accessed
+  [Hint] Zeile 1289: "b_lbl" is not accessed
+  [Error] Zeile 1289: Variable "b_lbl" is not accessed
+  [Hint] Zeile 1293: "current_node" is not accessed
+  [Error] Zeile 1293: Variable "current_node" is not accessed
+  [Hint] Zeile 1294: "hazard" is not accessed
+  [Error] Zeile 1294: Variable "hazard" is not accessed
+  [Hint] Zeile 1296: "sf_timer" is not accessed
+  [Error] Zeile 1296: Variable "sf_timer" is not accessed
+  [Hint] Zeile 1297: "h_lbl" is not accessed
+  [Error] Zeile 1297: Variable "h_lbl" is not accessed
+  [Hint] Zeile 1300: "h_lbl" is not accessed
+  [Error] Zeile 1300: Variable "h_lbl" is not accessed
+  [Hint] Zeile 1303: "h_lbl" is not accessed
+  [Error] Zeile 1303: Variable "h_lbl" is not accessed
+  [Hint] Zeile 1307: "h_lbl" is not accessed
+  [Error] Zeile 1307: Variable "h_lbl" is not accessed
+  [Hint] Zeile 1306: "pulsar_t" is not accessed
+  [Error] Zeile 1306: Variable "pulsar_t" is not accessed
+  [Hint] Zeile 1312: "msg_txt" is not accessed
+  [Error] Zeile 1312: Variable "msg_txt" is not accessed
+  [Hint] Zeile 1313: "msg_box" is not accessed
+  [Error] Zeile 1313: Variable "msg_box" is not accessed
+  [Hint] Zeile 1318: "self" is not accessed
+  [Hint] Zeile 1320: "overlay" is not accessed
+  [Error] Zeile 1320: Variable "overlay" is not accessed
+  [Hint] Zeile 1327: "title_font" is not accessed
+  [Error] Zeile 1327: Variable "title_font" is not accessed
+  [Hint] Zeile 1328: "title_txt" is not accessed
+  [Error] Zeile 1328: Variable "title_txt" is not accessed
+  [Hint] Zeile 1331: "buttons" is not accessed
+  [Error] Zeile 1331: Variable "buttons" is not accessed
+  [Hint] Zeile 1339: "btn" is not accessed
+  [Error] Zeile 1339: Variable "btn" is not accessed
+  [Hint] Zeile 1339: "text" is not accessed
+  [Error] Zeile 1339: Variable "text" is not accessed
+  [Hint] Zeile 1339: "bg_col" is not accessed
+  [Error] Zeile 1339: Variable "bg_col" is not accessed
+  [Hint] Zeile 1339: "border_col" is not accessed
+  [Error] Zeile 1339: Variable "border_col" is not accessed
+  [Hint] Zeile 1342: "txt_surf" is not accessed
+  [Error] Zeile 1342: Variable "txt_surf" is not accessed
+  [Hint] Zeile 1345: "self" is not accessed
+  [Hint] Zeile 1346: "shop_mgr" is not accessed
+  [Error] Zeile 1346: Variable "shop_mgr" is not accessed
+  [Hint] Zeile 1347: "is_shop_modal" is not accessed
+  [Error] Zeile 1347: Variable "is_shop_modal" is not accessed
+  [Hint] Zeile 1360: "self" is not accessed
+  [Hint] Zeile 1361: "rect" is not accessed
+  [Hint] Zeile 1362: "text" is not accessed
+  [Hint] Zeile 1363: "is_active" is not accessed
+  [Hint] Zeile 1364: "is_hovered" is not accessed
+  [Hint] Zeile 1369: "is_hovered" is not accessed
+  [Error] Zeile 1369: Variable "is_hovered" is not accessed
+  [Hint] Zeile 1365: "primary_color" is not accessed
+  [Hint] Zeile 1366: "enabled" is not accessed
+  [Hint] Zeile 1371: "s" is not accessed
+  [Error] Zeile 1371: Variable "s" is not accessed
+  [Hint] Zeile 1373: "bg_col" is not accessed
+  [Error] Zeile 1373: Variable "bg_col" is not accessed
+  [Hint] Zeile 1377: "bg_col" is not accessed
+  [Error] Zeile 1377: Variable "bg_col" is not accessed
+  [Hint] Zeile 1381: "bg_col" is not accessed
+  [Error] Zeile 1381: Variable "bg_col" is not accessed
+  [Hint] Zeile 1374: "border_col" is not accessed
+  [Error] Zeile 1374: Variable "border_col" is not accessed
+  [Hint] Zeile 1378: "border_col" is not accessed
+  [Error] Zeile 1378: Variable "border_col" is not accessed
+  [Hint] Zeile 1382: "border_col" is not accessed
+  [Error] Zeile 1382: Variable "border_col" is not accessed
+  [Hint] Zeile 1375: "text_col" is not accessed
+  [Error] Zeile 1375: Variable "text_col" is not accessed
+  [Hint] Zeile 1379: "text_col" is not accessed
+  [Error] Zeile 1379: Variable "text_col" is not accessed
+  [Hint] Zeile 1383: "text_col" is not accessed
+  [Error] Zeile 1383: Variable "text_col" is not accessed
+  [Hint] Zeile 1388: "b_width" is not accessed
+  [Error] Zeile 1388: Variable "b_width" is not accessed
+  [Hint] Zeile 1392: "hl_color" is not accessed
+  [Error] Zeile 1392: Variable "hl_color" is not accessed
+  [Hint] Zeile 1393: "hl_surf" is not accessed
+  [Error] Zeile 1393: Variable "hl_surf" is not accessed
+  [Hint] Zeile 1397: "btn_font" is not accessed
+  [Error] Zeile 1397: Variable "btn_font" is not accessed
+  [Hint] Zeile 1398: "txt_surf" is not accessed
+  [Error] Zeile 1398: Variable "txt_surf" is not accessed
+  [Hint] Zeile 1529: "r" is not accessed
+  [Error] Zeile 1529: Variable "r" is not accessed
+  [Hint] Zeile 1404: "self" is not accessed
+  [Hint] Zeile 1411: "mx" is not accessed
+  [Error] Zeile 1411: Variable "mx" is not accessed
+  [Hint] Zeile 1411: "my" is not accessed
+  [Error] Zeile 1411: Variable "my" is not accessed
+  [Hint] Zeile 1414: "banner_rect" is not accessed
+  [Error] Zeile 1414: Variable "banner_rect" is not accessed
+  [Hint] Zeile 1415: "b_surf" is not accessed
+  [Error] Zeile 1415: Variable "b_surf" is not accessed
+  [Hint] Zeile 1420: "title_font" is not accessed
+  [Error] Zeile 1420: Variable "title_font" is not accessed
+  [Hint] Zeile 1421: "title_txt" is not accessed
+  [Error] Zeile 1421: Variable "title_txt" is not accessed
+  [Hint] Zeile 1427: "SHIP_BLUEPRINTS" is not accessed
+  [Error] Zeile 1427: Import "SHIP_BLUEPRINTS" is not accessed
+  [Hint] Zeile 1427: "SHIP_STARTING_SPECS" is not accessed
+  [Error] Zeile 1427: Import "SHIP_STARTING_SPECS" is not accessed
+  [Hint] Zeile 1427: "PLAYER_SHIP" is not accessed
+  [Error] Zeile 1427: Import "PLAYER_SHIP" is not accessed
+  [Hint] Zeile 1428: "SaveManager" is not accessed
+  [Error] Zeile 1428: Import "SaveManager" is not accessed
+  [Hint] Zeile 1430: "selected_name" is not accessed
+  [Error] Zeile 1430: Variable "selected_name" is not accessed
+  [Hint] Zeile 1431: "unlocked" is not accessed
+  [Error] Zeile 1431: Variable "unlocked" is not accessed
+  [Hint] Zeile 1433: "col_x" is not accessed
+  [Error] Zeile 1433: Variable "col_x" is not accessed
+  [Hint] Zeile 1434: "row_y" is not accessed
+  [Error] Zeile 1434: Variable "row_y" is not accessed
+  [Hint] Zeile 1435: "ship_list" is not accessed
+  [Error] Zeile 1435: Variable "ship_list" is not accessed
+  [Hint] Zeile 1437: "hovered_ship_tuple" is not accessed
+  [Error] Zeile 1437: Variable "hovered_ship_tuple" is not accessed
+  [Hint] Zeile 1451: "hovered_ship_tuple" is not accessed
+  [Error] Zeile 1451: Variable "hovered_ship_tuple" is not accessed
+  [Hint] Zeile 1439: "idx" is not accessed
+  [Error] Zeile 1439: Variable "idx" is not accessed
+  [Hint] Zeile 1536: "idx" is not accessed
+  [Error] Zeile 1536: Variable "idx" is not accessed
+  [Hint] Zeile 1439: "name" is not accessed
+  [Error] Zeile 1439: Variable "name" is not accessed
+  [Hint] Zeile 1439: "ship_obj" is not accessed
+  [Error] Zeile 1439: Variable "ship_obj" is not accessed
+  [Hint] Zeile 1440: "r_idx" is not accessed
+  [Error] Zeile 1440: Variable "r_idx" is not accessed
+  [Hint] Zeile 1441: "c_idx" is not accessed
+  [Error] Zeile 1441: Variable "c_idx" is not accessed
+  [Hint] Zeile 1445: "btn" is not accessed
+  [Error] Zeile 1445: Variable "btn" is not accessed
+  [Hint] Zeile 1446: "is_sel" is not accessed
+  [Error] Zeile 1446: Variable "is_sel" is not accessed
+  [Hint] Zeile 1447: "is_unlocked" is not accessed
+  [Error] Zeile 1447: Variable "is_unlocked" is not accessed
+  [Hint] Zeile 1448: "is_hov" is not accessed
+  [Error] Zeile 1448: Variable "is_hov" is not accessed
+  [Hint] Zeile 1453: "c_surf" is not accessed
+  [Error] Zeile 1453: Variable "c_surf" is not accessed
+  [Hint] Zeile 1456: "border_col" is not accessed
+  [Error] Zeile 1456: Variable "border_col" is not accessed
+  [Hint] Zeile 1459: "border_col" is not accessed
+  [Error] Zeile 1459: Variable "border_col" is not accessed
+  [Hint] Zeile 1462: "border_col" is not accessed
+  [Error] Zeile 1462: Variable "border_col" is not accessed
+  [Hint] Zeile 1467: "name_disp" is not accessed
+  [Error] Zeile 1467: Variable "name_disp" is not accessed
+  [Hint] Zeile 1468: "name_txt" is not accessed
+  [Error] Zeile 1468: Variable "name_txt" is not accessed
+  [Hint] Zeile 1475: "stat_font" is not accessed
+  [Error] Zeile 1475: Variable "stat_font" is not accessed
+  [Hint] Zeile 1476: "stats_str" is not accessed
+  [Error] Zeile 1476: Variable "stats_str" is not accessed
+  [Hint] Zeile 1477: "stats_txt" is not accessed
+  [Error] Zeile 1477: Variable "stats_txt" is not accessed
+  [Hint] Zeile 1481: "rooms_count" is not accessed
+  [Error] Zeile 1481: Variable "rooms_count" is not accessed
+  [Hint] Zeile 1482: "r" is not accessed
+  [Error] Zeile 1482: Variable "r" is not accessed
+  [Hint] Zeile 1483: "rx" is not accessed
+  [Error] Zeile 1483: Variable "rx" is not accessed
+  [Hint] Zeile 1484: "ry" is not accessed
+  [Error] Zeile 1484: Variable "ry" is not accessed
+  [Hint] Zeile 1485: "r_name" is not accessed
+  [Error] Zeile 1485: Variable "r_name" is not accessed
+  [Hint] Zeile 1486: "r_initial" is not accessed
+  [Error] Zeile 1486: Variable "r_initial" is not accessed
+  [Hint] Zeile 1488: "r_border" is not accessed
+  [Error] Zeile 1488: Variable "r_border" is not accessed
+  [Hint] Zeile 1489: "r_txt_col" is not accessed
+  [Error] Zeile 1489: Variable "r_txt_col" is not accessed
+  [Hint] Zeile 1493: "init_lbl" is not accessed
+  [Error] Zeile 1493: Variable "init_lbl" is not accessed
+  [Hint] Zeile 1496: "sel_btn_rect" is not accessed
+  [Error] Zeile 1496: Variable "sel_btn_rect" is not accessed
+  [Hint] Zeile 1507: "inspector_rect" is not accessed
+  [Error] Zeile 1507: Variable "inspector_rect" is not accessed
+  [Hint] Zeile 1511: "inspect_name" is not accessed
+  [Error] Zeile 1511: Variable "inspect_name" is not accessed
+  [Hint] Zeile 1511: "inspect_ship" is not accessed
+  [Error] Zeile 1511: Variable "inspect_ship" is not accessed
+  [Hint] Zeile 1512: "specs" is not accessed
+  [Error] Zeile 1512: Variable "specs" is not accessed
+  [Hint] Zeile 1514: "hdr_font" is not accessed
+  [Error] Zeile 1514: Variable "hdr_font" is not accessed
+  [Hint] Zeile 1515: "body_font" is not accessed
+  [Error] Zeile 1515: Variable "body_font" is not accessed
+  [Hint] Zeile 1516: "small_font" is not accessed
+  [Error] Zeile 1516: Variable "small_font" is not accessed
+  [Hint] Zeile 1518: "insp_header" is not accessed
+  [Error] Zeile 1518: Variable "insp_header" is not accessed
+  [Hint] Zeile 1522: "line1_str" is not accessed
+  [Error] Zeile 1522: Variable "line1_str" is not accessed
+  [Hint] Zeile 1529: "rooms_str" is not accessed
+  [Error] Zeile 1529: Variable "rooms_str" is not accessed
+  [Hint] Zeile 1530: "sys_str" is not accessed
+  [Error] Zeile 1530: Variable "sys_str" is not accessed
+  [Hint] Zeile 1531: "sys_lbl" is not accessed
+  [Error] Zeile 1531: Variable "sys_lbl" is not accessed
+  [Hint] Zeile 1535: "slots_parts" is not accessed
+  [Error] Zeile 1535: Variable "slots_parts" is not accessed
+  [Hint] Zeile 1536: "slot" is not accessed
+  [Error] Zeile 1536: Variable "slot" is not accessed
+  [Hint] Zeile 1537: "raw_allowed" is not accessed
+  [Error] Zeile 1537: Variable "raw_allowed" is not accessed
+  [Hint] Zeile 1538: "allowed_str" is not accessed
+  [Error] Zeile 1538: Variable "allowed_str" is not accessed
+  [Hint] Zeile 1541: "allowed_str" is not accessed
+  [Error] Zeile 1541: Variable "allowed_str" is not accessed
+  [Hint] Zeile 1543: "slots_str" is not accessed
+  [Error] Zeile 1543: Variable "slots_str" is not accessed
+  [Hint] Zeile 1544: "slots_lbl" is not accessed
+  [Error] Zeile 1544: Variable "slots_lbl" is not accessed
+  [Hint] Zeile 1548: "legend_str" is not accessed
+  [Error] Zeile 1548: Variable "legend_str" is not accessed
+  [Hint] Zeile 1557: "has_save" is not accessed
+  [Error] Zeile 1557: Variable "has_save" is not accessed
+  [Hint] Zeile 1644: "y" is not accessed
+  [Hint] Zeile 1644: "label" is not accessed
+  [Hint] Zeile 1644: "val" is not accessed
+  [Hint] Zeile 1644: "btn_down_attr" is not accessed
+  [Hint] Zeile 1644: "btn_up_attr" is not accessed
+  [Hint] Zeile 1645: "lbl_surf" is not accessed
+  [Error] Zeile 1645: Variable "lbl_surf" is not accessed
+  [Hint] Zeile 1648: "btn_down" is not accessed
+  [Error] Zeile 1648: Variable "btn_down" is not accessed
+  [Hint] Zeile 1649: "btn_up" is not accessed
+  [Error] Zeile 1649: Variable "btn_up" is not accessed
+  [Hint] Zeile 1662: "bar_rect" is not accessed
+  [Error] Zeile 1662: Variable "bar_rect" is not accessed
+  [Hint] Zeile 1667: "fill_width" is not accessed
+  [Error] Zeile 1667: Variable "fill_width" is not accessed
+  [Hint] Zeile 1669: "fill_rect" is not accessed
+  [Error] Zeile 1669: Variable "fill_rect" is not accessed
+  [Hint] Zeile 1588: "self" is not accessed
+  [Hint] Zeile 1598: "game_ref" is not accessed
+  [Error] Zeile 1598: Variable "game_ref" is not accessed
+  [Hint] Zeile 1599: "mode_str" is not accessed
+  [Error] Zeile 1599: Variable "mode_str" is not accessed
+  [Hint] Zeile 1600: "res_idx" is not accessed
+  [Error] Zeile 1600: Variable "res_idx" is not accessed
+  [Hint] Zeile 1601: "res_list" is not accessed
+  [Error] Zeile 1601: Variable "res_list" is not accessed
+  [Hint] Zeile 1602: "cur_res" is not accessed
+  [Error] Zeile 1602: Variable "cur_res" is not accessed
+  [Hint] Zeile 1603: "sound_ref" is not accessed
+  [Error] Zeile 1603: Variable "sound_ref" is not accessed
+  [Hint] Zeile 1604: "audio_on" is not accessed
+  [Error] Zeile 1604: Variable "audio_on" is not accessed
+  [Hint] Zeile 1606: "master_v" is not accessed
+  [Error] Zeile 1606: Variable "master_v" is not accessed
+  [Hint] Zeile 1607: "music_v" is not accessed
+  [Error] Zeile 1607: Variable "music_v" is not accessed
+  [Hint] Zeile 1608: "sfx_v" is not accessed
+  [Error] Zeile 1608: Variable "sfx_v" is not accessed
+  [Hint] Zeile 1610: "mode_labels" is not accessed
+  [Error] Zeile 1610: Variable "mode_labels" is not accessed
+  [Hint] Zeile 1615: "disp_mode_label" is not accessed
+  [Error] Zeile 1615: Variable "disp_mode_label" is not accessed
+  [Hint] Zeile 1619: "m_col" is not accessed
+  [Error] Zeile 1619: Variable "m_col" is not accessed
+  [Hint] Zeile 1622: "fs_txt" is not accessed
+  [Error] Zeile 1622: Variable "fs_txt" is not accessed
+  [Hint] Zeile 1629: "res_txt" is not accessed
+  [Error] Zeile 1629: Variable "res_txt" is not accessed
+  [Hint] Zeile 1634: "aud_col" is not accessed
+  [Error] Zeile 1634: Variable "aud_col" is not accessed
+  [Hint] Zeile 1637: "aud_label" is not accessed
+  [Error] Zeile 1637: Variable "aud_label" is not accessed
+  [Hint] Zeile 1638: "aud_color" is not accessed
+  [Error] Zeile 1638: Variable "aud_color" is not accessed
+  [Hint] Zeile 1639: "audio_txt" is not accessed
+  [Error] Zeile 1639: Variable "audio_txt" is not accessed
+  [Hint] Zeile 1644: "draw_vol_row" is not accessed
+  [Error] Zeile 1644: Function "draw_vol_row" is not accessed
+  [Hint] Zeile 1677: "auto_save_on" is not accessed
+  [Error] Zeile 1677: Variable "auto_save_on" is not accessed
+  [Hint] Zeile 1679: "as_col" is not accessed
+  [Error] Zeile 1679: Variable "as_col" is not accessed
+  [Hint] Zeile 1682: "as_label" is not accessed
+  [Error] Zeile 1682: Variable "as_label" is not accessed
+  [Hint] Zeile 1683: "as_color" is not accessed
+  [Error] Zeile 1683: Variable "as_color" is not accessed
+  [Hint] Zeile 1684: "as_txt" is not accessed
+  [Error] Zeile 1684: Variable "as_txt" is not accessed
+  [Hint] Zeile 1691: "ach_btn_txt" is not accessed
+  [Error] Zeile 1691: Variable "ach_btn_txt" is not accessed
+  [Hint] Zeile 1695: "ctrl_font" is not accessed
+  [Error] Zeile 1695: Variable "ctrl_font" is not accessed
+  [Hint] Zeile 1702: "close_txt" is not accessed
+  [Error] Zeile 1702: Variable "close_txt" is not accessed
+  [Hint] Zeile 1725: "a" is not accessed
+  [Error] Zeile 1725: Variable "a" is not accessed
+  [Hint] Zeile 1761: "a" is not accessed
+  [Error] Zeile 1761: Variable "a" is not accessed
+  [Hint] Zeile 1705: "self" is not accessed
+  [Hint] Zeile 1706: "bg_surf" is not accessed
+  [Error] Zeile 1706: Variable "bg_surf" is not accessed
+  [Hint] Zeile 1713: "title_font" is not accessed
+  [Error] Zeile 1713: Variable "title_font" is not accessed
+  [Hint] Zeile 1714: "sub_font" is not accessed
+  [Error] Zeile 1714: Variable "sub_font" is not accessed
+  [Hint] Zeile 1715: "small_font" is not accessed
+  [Error] Zeile 1715: Variable "small_font" is not accessed
+  [Hint] Zeile 1718: "t_lbl" is not accessed
+  [Error] Zeile 1718: Variable "t_lbl" is not accessed
+  [Hint] Zeile 1722: "ach_mgr" is not accessed
+  [Error] Zeile 1722: Variable "ach_mgr" is not accessed
+  [Hint] Zeile 1723: "ach_dict" is not accessed
+  [Error] Zeile 1723: Variable "ach_dict" is not accessed
+  [Hint] Zeile 1724: "total_count" is not accessed
+  [Error] Zeile 1724: Variable "total_count" is not accessed
+  [Hint] Zeile 1725: "unlocked_count" is not accessed
+  [Error] Zeile 1725: Variable "unlocked_count" is not accessed
+  [Hint] Zeile 1726: "pct" is not accessed
+  [Error] Zeile 1726: Variable "pct" is not accessed
+  [Hint] Zeile 1728: "bar_rect" is not accessed
+  [Error] Zeile 1728: Variable "bar_rect" is not accessed
+  [Hint] Zeile 1732: "fill_w" is not accessed
+  [Error] Zeile 1732: Variable "fill_w" is not accessed
+  [Hint] Zeile 1736: "prog_str" is not accessed
+  [Error] Zeile 1736: Variable "prog_str" is not accessed
+  [Hint] Zeile 1737: "prog_lbl" is not accessed
+  [Error] Zeile 1737: Variable "prog_lbl" is not accessed
+  [Hint] Zeile 1741: "categories" is not accessed
+  [Error] Zeile 1741: Variable "categories" is not accessed
+  [Hint] Zeile 1742: "cur_cat" is not accessed
+  [Error] Zeile 1742: Variable "cur_cat" is not accessed
+  [Hint] Zeile 1743: "mx" is not accessed
+  [Error] Zeile 1743: Variable "mx" is not accessed
+  [Hint] Zeile 1743: "my" is not accessed
+  [Error] Zeile 1743: Variable "my" is not accessed
+  [Hint] Zeile 1745: "idx" is not accessed
+  [Error] Zeile 1745: Variable "idx" is not accessed
+  [Hint] Zeile 1774: "idx" is not accessed
+  [Error] Zeile 1774: Variable "idx" is not accessed
+  [Hint] Zeile 1745: "cat" is not accessed
+  [Error] Zeile 1745: Variable "cat" is not accessed
+  [Hint] Zeile 1746: "btn_tab" is not accessed
+  [Error] Zeile 1746: Variable "btn_tab" is not accessed
+  [Hint] Zeile 1748: "is_sel" is not accessed
+  [Error] Zeile 1748: Variable "is_sel" is not accessed
+  [Hint] Zeile 1749: "is_hov" is not accessed
+  [Error] Zeile 1749: Variable "is_hov" is not accessed
+  [Hint] Zeile 1751: "t_bg" is not accessed
+  [Error] Zeile 1751: Variable "t_bg" is not accessed
+  [Hint] Zeile 1752: "t_border" is not accessed
+  [Error] Zeile 1752: Variable "t_border" is not accessed
+  [Hint] Zeile 1756: "t_txt" is not accessed
+  [Error] Zeile 1756: Variable "t_txt" is not accessed
+  [Hint] Zeile 1760: "filtered" is not accessed
+  [Error] Zeile 1760: Variable "filtered" is not accessed
+  [Hint] Zeile 1765: "cards_per_page" is not accessed
+  [Error] Zeile 1765: Variable "cards_per_page" is not accessed
+  [Hint] Zeile 1766: "total_pages" is not accessed
+  [Error] Zeile 1766: Variable "total_pages" is not accessed
+  [Hint] Zeile 1767: "cur_page" is not accessed
+  [Error] Zeile 1767: Variable "cur_page" is not accessed
+  [Hint] Zeile 1770: "start_idx" is not accessed
+  [Error] Zeile 1770: Variable "start_idx" is not accessed
+  [Hint] Zeile 1771: "page_items" is not accessed
+  [Error] Zeile 1771: Variable "page_items" is not accessed
+  [Hint] Zeile 1774: "a_data" is not accessed
+  [Error] Zeile 1774: Variable "a_data" is not accessed
+  [Hint] Zeile 1775: "r_idx" is not accessed
+  [Error] Zeile 1775: Variable "r_idx" is not accessed
+  [Hint] Zeile 1776: "c_idx" is not accessed
+  [Error] Zeile 1776: Variable "c_idx" is not accessed
+  [Hint] Zeile 1777: "card_x" is not accessed
+  [Error] Zeile 1777: Variable "card_x" is not accessed
+  [Hint] Zeile 1778: "card_y" is not accessed
+  [Error] Zeile 1778: Variable "card_y" is not accessed
+  [Hint] Zeile 1779: "card_rect" is not accessed
+  [Error] Zeile 1779: Variable "card_rect" is not accessed
+  [Hint] Zeile 1781: "unlocked" is not accessed
+  [Error] Zeile 1781: Variable "unlocked" is not accessed
+  [Hint] Zeile 1782: "raw_time" is not accessed
+  [Error] Zeile 1782: Variable "raw_time" is not accessed
+  [Hint] Zeile 1783: "format_german_datetime" is not accessed
+  [Error] Zeile 1783: Import "format_german_datetime" is not accessed
+  [Hint] Zeile 1784: "u_time" is not accessed
+  [Error] Zeile 1784: Variable "u_time" is not accessed
+  [Hint] Zeile 1787: "bg_col" is not accessed
+  [Error] Zeile 1787: Variable "bg_col" is not accessed
+  [Hint] Zeile 1795: "bg_col" is not accessed
+  [Error] Zeile 1795: Variable "bg_col" is not accessed
+  [Hint] Zeile 1788: "border_col" is not accessed
+  [Error] Zeile 1788: Variable "border_col" is not accessed
+  [Hint] Zeile 1796: "border_col" is not accessed
+  [Error] Zeile 1796: Variable "border_col" is not accessed
+  [Hint] Zeile 1789: "badge_bg" is not accessed
+  [Error] Zeile 1789: Variable "badge_bg" is not accessed
+  [Hint] Zeile 1797: "badge_bg" is not accessed
+  [Error] Zeile 1797: Variable "badge_bg" is not accessed
+  [Hint] Zeile 1790: "badge_txt_col" is not accessed
+  [Error] Zeile 1790: Variable "badge_txt_col" is not accessed
+  [Hint] Zeile 1798: "badge_txt_col" is not accessed
+  [Error] Zeile 1798: Variable "badge_txt_col" is not accessed
+  [Hint] Zeile 1791: "status_str" is not accessed
+  [Error] Zeile 1791: Variable "status_str" is not accessed
+  [Hint] Zeile 1799: "status_str" is not accessed
+  [Error] Zeile 1799: Variable "status_str" is not accessed
+  [Hint] Zeile 1792: "title_col" is not accessed
+  [Error] Zeile 1792: Variable "title_col" is not accessed
+  [Hint] Zeile 1800: "title_col" is not accessed
+  [Error] Zeile 1800: Variable "title_col" is not accessed
+  [Hint] Zeile 1793: "desc_col" is not accessed
+  [Error] Zeile 1793: Variable "desc_col" is not accessed
+  [Hint] Zeile 1801: "desc_col" is not accessed
+  [Error] Zeile 1801: Variable "desc_col" is not accessed
+  [Hint] Zeile 1807: "badge_rect" is not accessed
+  [Error] Zeile 1807: Variable "badge_rect" is not accessed
+  [Hint] Zeile 1810: "b_lbl" is not accessed
+  [Error] Zeile 1810: Variable "b_lbl" is not accessed
+  [Hint] Zeile 1814: "t_str" is not accessed
+  [Error] Zeile 1814: Variable "t_str" is not accessed
+  [Hint] Zeile 1815: "title_surf" is not accessed
+  [Error] Zeile 1815: Variable "title_surf" is not accessed
+  [Hint] Zeile 1819: "d_str" is not accessed
+  [Error] Zeile 1819: Variable "d_str" is not accessed
+  [Hint] Zeile 1820: "words" is not accessed
+  [Error] Zeile 1820: Variable "words" is not accessed
+  [Hint] Zeile 1821: "line1" is not accessed
+  [Error] Zeile 1821: Variable "line1" is not accessed
+  [Hint] Zeile 1824: "line1" is not accessed
+  [Error] Zeile 1824: Variable "line1" is not accessed
+  [Hint] Zeile 1821: "line2" is not accessed
+  [Error] Zeile 1821: Variable "line2" is not accessed
+  [Hint] Zeile 1826: "line2" is not accessed
+  [Error] Zeile 1826: Variable "line2" is not accessed
+  [Hint] Zeile 1822: "w" is not accessed
+  [Error] Zeile 1822: Variable "w" is not accessed
+  [Hint] Zeile 1833: "cat_tag" is not accessed
+  [Error] Zeile 1833: Variable "cat_tag" is not accessed
+  [Hint] Zeile 1839: "page_txt" is not accessed
+  [Error] Zeile 1839: Variable "page_txt" is not accessed
+  [Hint] Zeile 1852: "self" is not accessed
+  [Hint] Zeile 1854: "ev_text" is not accessed
+  [Error] Zeile 1854: Variable "ev_text" is not accessed
+  [Hint] Zeile 1855: "res_text" is not accessed
+  [Error] Zeile 1855: Variable "res_text" is not accessed
+  [Hint] Zeile 1856: "choices" is not accessed
+  [Error] Zeile 1856: Variable "choices" is not accessed
+  [Hint] Zeile 1858: "layout" is not accessed
+  [Error] Zeile 1858: Variable "layout" is not accessed
+  [Hint] Zeile 1859: "box_rect" is not accessed
+  [Error] Zeile 1859: Variable "box_rect" is not accessed
+  [Hint] Zeile 1865: "curr_y" is not accessed
+  [Error] Zeile 1865: Variable "curr_y" is not accessed
+  [Hint] Zeile 1869: "curr_y" is not accessed
+  [Error] Zeile 1869: Variable "curr_y" is not accessed
+  [Hint] Zeile 1873: "curr_y" is not accessed
+  [Error] Zeile 1873: Variable "curr_y" is not accessed
+  [Hint] Zeile 1877: "curr_y" is not accessed
+  [Error] Zeile 1877: Variable "curr_y" is not accessed
+  [Hint] Zeile 1866: "line" is not accessed
+  [Error] Zeile 1866: Variable "line" is not accessed
+  [Hint] Zeile 1874: "line" is not accessed
+  [Error] Zeile 1874: Variable "line" is not accessed
+  [Hint] Zeile 1879: "cont_btn" is not accessed
+  [Error] Zeile 1879: Variable "cont_btn" is not accessed
+  [Hint] Zeile 1887: "cont_btn" is not accessed
+  [Error] Zeile 1887: Variable "cont_btn" is not accessed
+  [Hint] Zeile 1893: "can_afford_choice" is not accessed
+  [Error] Zeile 1893: Import "can_afford_choice" is not accessed
+  [Hint] Zeile 1894: "idx" is not accessed
+  [Error] Zeile 1894: Variable "idx" is not accessed
+  [Hint] Zeile 1894: "choice" is not accessed
+  [Error] Zeile 1894: Variable "choice" is not accessed
+  [Hint] Zeile 1895: "btn" is not accessed
+  [Error] Zeile 1895: Variable "btn" is not accessed
+  [Hint] Zeile 1896: "is_blue" is not accessed
+  [Error] Zeile 1896: Variable "is_blue" is not accessed
+  [Hint] Zeile 1897: "affordable" is not accessed
+  [Error] Zeile 1897: Variable "affordable" is not accessed
+  [Hint] Zeile 1900: "bg_color" is not accessed
+  [Error] Zeile 1900: Variable "bg_color" is not accessed
+  [Hint] Zeile 1904: "bg_color" is not accessed
+  [Error] Zeile 1904: Variable "bg_color" is not accessed
+  [Hint] Zeile 1908: "bg_color" is not accessed
+  [Error] Zeile 1908: Variable "bg_color" is not accessed
+  [Hint] Zeile 1901: "border_color" is not accessed
+  [Error] Zeile 1901: Variable "border_color" is not accessed
+  [Hint] Zeile 1905: "border_color" is not accessed
+  [Error] Zeile 1905: Variable "border_color" is not accessed
+  [Hint] Zeile 1909: "border_color" is not accessed
+  [Error] Zeile 1909: Variable "border_color" is not accessed
+  [Hint] Zeile 1902: "text_color" is not accessed
+  [Error] Zeile 1902: Variable "text_color" is not accessed
+  [Hint] Zeile 1906: "text_color" is not accessed
+  [Error] Zeile 1906: Variable "text_color" is not accessed
+  [Hint] Zeile 1910: "text_color" is not accessed
+  [Error] Zeile 1910: Variable "text_color" is not accessed
+  [Hint] Zeile 1927: "self" is not accessed
+  [Hint] Zeile 1937: "self" is not accessed
+  [Hint] Zeile 1947: "newly_unlocked" is not accessed
+  [Error] Zeile 1947: Variable "newly_unlocked" is not accessed
+
+Datei: c:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\managers\shop_manager.py
+  [Hint] Zeile 1: "TYPE_CHECKING" is not accessed
+  [Error] Zeile 1: Import "TYPE_CHECKING" is not accessed
+  [Error] Zeile 4: Import "random" is not accessed
+  [Hint] Zeile 4: "random" is not accessed
+  [Hint] Zeile 5: "Any" is not accessed
+  [Error] Zeile 5: Import "Any" is not accessed
+  [Error] Zeile 6: Import "pygame" is not accessed
+  [Hint] Zeile 6: "pygame" is not accessed
+  [Hint] Zeile 8: "Crew" is not accessed
+  [Error] Zeile 8: Import "Crew" is not accessed
+  [Hint] Zeile 9: "GameData" is not accessed
+  [Error] Zeile 9: Import "GameData" is not accessed
+  [Hint] Zeile 10: "Room" is not accessed
+  [Error] Zeile 10: Import "Room" is not accessed
+  [Hint] Zeile 11: "Weapon" is not accessed
+  [Error] Zeile 11: Import "Weapon" is not accessed
+  [Hint] Zeile 15: "Game" is not accessed
+  [Error] Zeile 15: Import "Game" is not accessed
+  [Hint] Zeile 60: "self" is not accessed
+  [Hint] Zeile 60: "data" is not accessed
+  [Hint] Zeile 96: "self" is not accessed
+  [Hint] Zeile 97: "species_perks" is not accessed
+  [Error] Zeile 97: Variable "species_perks" is not accessed
+  [Hint] Zeile 104: "species" is not accessed
+  [Error] Zeile 104: Variable "species" is not accessed
+  [Hint] Zeile 105: "c_num" is not accessed
+  [Error] Zeile 105: Variable "c_num" is not accessed
+  [Hint] Zeile 113: "self" is not accessed
+  [Hint] Zeile 113: "weapon" is not accessed
+  [Hint] Zeile 115: "ship" is not accessed
+  [Error] Zeile 115: Variable "ship" is not accessed
+  [Hint] Zeile 118: "slots" is not accessed
+  [Error] Zeile 118: Variable "slots" is not accessed
+  [Hint] Zeile 121: "w_type" is not accessed
+  [Error] Zeile 121: Variable "w_type" is not accessed
+  [Hint] Zeile 122: "slot" is not accessed
+  [Error] Zeile 122: Variable "slot" is not accessed
+  [Hint] Zeile 123: "allowed" is not accessed
+  [Error] Zeile 123: Variable "allowed" is not accessed
+  [Hint] Zeile 129: "w" is not accessed
+  [Error] Zeile 129: Variable "w" is not accessed
+  [Hint] Zeile 130: "w" is not accessed
+  [Error] Zeile 130: Variable "w" is not accessed
+  [Hint] Zeile 128: "self" is not accessed
+  [Hint] Zeile 129: "compatible" is not accessed
+  [Error] Zeile 129: Variable "compatible" is not accessed
+  [Hint] Zeile 130: "incompatible" is not accessed
+  [Error] Zeile 130: Variable "incompatible" is not accessed
+  [Hint] Zeile 132: "w_sample" is not accessed
+  [Error] Zeile 132: Variable "w_sample" is not accessed
+  [Hint] Zeile 133: "avail_comp" is not accessed
+  [Error] Zeile 133: Variable "avail_comp" is not accessed
+  [Hint] Zeile 134: "avail_incomp" is not accessed
+  [Error] Zeile 134: Variable "avail_incomp" is not accessed
+  [Hint] Zeile 135: "avail_all" is not accessed
+  [Error] Zeile 135: Variable "avail_all" is not accessed
+  [Hint] Zeile 137: "target_weapon_count" is not accessed
+  [Error] Zeile 137: Variable "target_weapon_count" is not accessed
+  [Hint] Zeile 140: "use_compatible" is not accessed
+  [Error] Zeile 140: Variable "use_compatible" is not accessed
+  [Hint] Zeile 142: "w" is not accessed
+  [Error] Zeile 142: Variable "w" is not accessed
+  [Hint] Zeile 147: "w" is not accessed
+  [Error] Zeile 147: Variable "w" is not accessed
+  [Hint] Zeile 144: "pool" is not accessed
+  [Error] Zeile 144: Variable "pool" is not accessed
+  [Hint] Zeile 157: "a_sample" is not accessed
+  [Error] Zeile 157: Variable "a_sample" is not accessed
+  [Hint] Zeile 248: "r" is not accessed
+  [Error] Zeile 248: Variable "r" is not accessed
+  [Hint] Zeile 163: "self" is not accessed
+  [Hint] Zeile 163: "mx" is not accessed
+  [Hint] Zeile 163: "my" is not accessed
+  [Hint] Zeile 212: "idx" is not accessed
+  [Error] Zeile 212: Variable "idx" is not accessed
+  [Hint] Zeile 224: "idx" is not accessed
+  [Error] Zeile 224: Variable "idx" is not accessed
+  [Hint] Zeile 240: "idx" is not accessed
+  [Error] Zeile 240: Variable "idx" is not accessed
+  [Hint] Zeile 251: "idx" is not accessed
+  [Error] Zeile 251: Variable "idx" is not accessed
+  [Hint] Zeile 212: "item" is not accessed
+  [Error] Zeile 212: Variable "item" is not accessed
+  [Hint] Zeile 213: "item_btn" is not accessed
+  [Error] Zeile 213: Variable "item_btn" is not accessed
+  [Hint] Zeile 222: "max_slots" is not accessed
+  [Error] Zeile 222: Variable "max_slots" is not accessed
+  [Hint] Zeile 223: "card_w" is not accessed
+  [Error] Zeile 223: Variable "card_w" is not accessed
+  [Hint] Zeile 225: "w" is not accessed
+  [Error] Zeile 225: Variable "w" is not accessed
+  [Hint] Zeile 228: "card_x" is not accessed
+  [Error] Zeile 228: Variable "card_x" is not accessed
+  [Hint] Zeile 229: "sell_btn" is not accessed
+  [Error] Zeile 229: Variable "sell_btn" is not accessed
+  [Hint] Zeile 252: "sell_btn" is not accessed
+  [Error] Zeile 252: Variable "sell_btn" is not accessed
+  [Hint] Zeile 240: "sys_item" is not accessed
+  [Error] Zeile 240: Variable "sys_item" is not accessed
+  [Hint] Zeile 241: "buy_btn" is not accessed
+  [Error] Zeile 241: Variable "buy_btn" is not accessed
+  [Hint] Zeile 247: "empty_or_optional_rooms" is not accessed
+  [Error] Zeile 247: Variable "empty_or_optional_rooms" is not accessed
+  [Hint] Zeile 251: "r" is not accessed
+  [Error] Zeile 251: Variable "r" is not accessed
+  [Hint] Zeile 257: "self" is not accessed
+  [Hint] Zeile 268: "self" is not accessed
+  [Hint] Zeile 268: "mx" is not accessed
+  [Hint] Zeile 268: "my" is not accessed
+  [Hint] Zeile 269: "btn_cancel" is not accessed
+  [Error] Zeile 269: Variable "btn_cancel" is not accessed
+  [Hint] Zeile 276: "tab_rooms" is not accessed
+  [Error] Zeile 276: Variable "tab_rooms" is not accessed
+  [Hint] Zeile 277: "tab_weapons" is not accessed
+  [Error] Zeile 277: Variable "tab_weapons" is not accessed
+  [Hint] Zeile 292: "room" is not accessed
+  [Error] Zeile 292: Variable "room" is not accessed
+  [Hint] Zeile 300: "r1" is not accessed
+  [Error] Zeile 300: Variable "r1" is not accessed
+  [Hint] Zeile 309: "idx" is not accessed
+  [Error] Zeile 309: Variable "idx" is not accessed
+  [Hint] Zeile 309: "slot" is not accessed
+  [Error] Zeile 309: Variable "slot" is not accessed
+  [Hint] Zeile 310: "pos" is not accessed
+  [Error] Zeile 310: Variable "pos" is not accessed
+  [Hint] Zeile 311: "hx" is not accessed
+  [Error] Zeile 311: Variable "hx" is not accessed
+  [Hint] Zeile 311: "hy" is not accessed
+  [Error] Zeile 311: Variable "hy" is not accessed
+  [Hint] Zeile 312: "slot_rect" is not accessed
+  [Error] Zeile 312: Variable "slot_rect" is not accessed
+  [Hint] Zeile 319: "s1" is not accessed
+  [Error] Zeile 319: Variable "s1" is not accessed
+  [Hint] Zeile 320: "s2" is not accessed
+  [Error] Zeile 320: Variable "s2" is not accessed
+  [Hint] Zeile 330: "self" is not accessed
+  [Hint] Zeile 330: "mx" is not accessed
+  [Hint] Zeile 330: "my" is not accessed
+  [Hint] Zeile 331: "item" is not accessed
+  [Error] Zeile 331: Variable "item" is not accessed
+  [Hint] Zeile 335: "btn_cancel" is not accessed
+  [Error] Zeile 335: Variable "btn_cancel" is not accessed
+  [Hint] Zeile 340: "max_slots" is not accessed
+  [Error] Zeile 340: Variable "max_slots" is not accessed
+  [Hint] Zeile 341: "slot_idx" is not accessed
+  [Error] Zeile 341: Variable "slot_idx" is not accessed
+  [Hint] Zeile 342: "slot_btn" is not accessed
+  [Error] Zeile 342: Variable "slot_btn" is not accessed
+  [Hint] Zeile 347: "self" is not accessed
+  [Hint] Zeile 347: "item" is not accessed
+  [Hint] Zeile 347: "slot_idx" is not accessed
+  [Hint] Zeile 348: "price" is not accessed
+  [Error] Zeile 348: Variable "price" is not accessed
+  [Hint] Zeile 354: "slots" is not accessed
+  [Error] Zeile 354: Variable "slots" is not accessed
+  [Hint] Zeile 356: "allowed" is not accessed
+  [Error] Zeile 356: Variable "allowed" is not accessed
+  [Hint] Zeile 364: "cur_w" is not accessed
+  [Error] Zeile 364: Variable "cur_w" is not accessed
+  [Hint] Zeile 389: "new_w" is not accessed
+  [Error] Zeile 389: Variable "new_w" is not accessed
+  [Hint] Zeile 411: "self" is not accessed
+  [Hint] Zeile 411: "slot_idx" is not accessed
+  [Hint] Zeile 413: "w" is not accessed
+  [Error] Zeile 413: Variable "w" is not accessed
+  [Hint] Zeile 415: "refund" is not accessed
+  [Error] Zeile 415: Variable "refund" is not accessed
+  [Hint] Zeile 422: "self" is not accessed
+  [Hint] Zeile 430: "self" is not accessed
+  [Hint] Zeile 436: "self" is not accessed
+  [Hint] Zeile 442: "self" is not accessed
+  [Hint] Zeile 454: "r" is not accessed
+  [Error] Zeile 454: Variable "r" is not accessed
+  [Hint] Zeile 452: "self" is not accessed
+  [Hint] Zeile 454: "max_needed" is not accessed
+  [Error] Zeile 454: Variable "max_needed" is not accessed
+  [Hint] Zeile 469: "self" is not accessed
+  [Hint] Zeile 470: "max_c" is not accessed
+  [Error] Zeile 470: Variable "max_c" is not accessed
+  [Hint] Zeile 471: "cand" is not accessed
+  [Error] Zeile 471: Variable "cand" is not accessed
+  [Hint] Zeile 472: "price" is not accessed
+  [Error] Zeile 472: Variable "price" is not accessed
+  [Hint] Zeile 482: "spawn_room" is not accessed
+  [Error] Zeile 482: Variable "spawn_room" is not accessed
+  [Hint] Zeile 483: "species" is not accessed
+  [Error] Zeile 483: Variable "species" is not accessed
+  [Hint] Zeile 484: "name" is not accessed
+  [Error] Zeile 484: Variable "name" is not accessed
+  [Hint] Zeile 509: "r" is not accessed
+  [Error] Zeile 509: Variable "r" is not accessed
+  [Hint] Zeile 516: "r" is not accessed
+  [Error] Zeile 516: Variable "r" is not accessed
+  [Hint] Zeile 500: "self" is not accessed
+  [Hint] Zeile 500: "sys_item" is not accessed
+  [Hint] Zeile 501: "price" is not accessed
+  [Error] Zeile 501: Variable "price" is not accessed
+  [Hint] Zeile 507: "sys_name" is not accessed
+  [Error] Zeile 507: Variable "sys_name" is not accessed
+  [Hint] Zeile 509: "existing" is not accessed
+  [Error] Zeile 509: Variable "existing" is not accessed
+  [Hint] Zeile 516: "free_room" is not accessed
+  [Error] Zeile 516: Variable "free_room" is not accessed
+  [Hint] Zeile 537: "item" is not accessed
+  [Error] Zeile 537: Variable "item" is not accessed
+  [Hint] Zeile 530: "self" is not accessed
+  [Hint] Zeile 530: "room" is not accessed
+  [Hint] Zeile 537: "cat_info" is not accessed
+  [Error] Zeile 537: Variable "cat_info" is not accessed
+  [Hint] Zeile 538: "base_price" is not accessed
+  [Error] Zeile 538: Variable "base_price" is not accessed
+  [Hint] Zeile 539: "refund" is not accessed
+  [Error] Zeile 539: Variable "refund" is not accessed
+  [Hint] Zeile 546: "sold_name" is not accessed
+  [Error] Zeile 546: Variable "sold_name" is not accessed
+  [Hint] Zeile 553: "self" is not accessed
+  [Hint] Zeile 553: "item" is not accessed
+  [Hint] Zeile 554: "name" is not accessed
+  [Error] Zeile 554: Variable "name" is not accessed
+  [Hint] Zeile 555: "price" is not accessed
+  [Error] Zeile 555: Variable "price" is not accessed
+  [Hint] Zeile 556: "augments" is not accessed
+  [Error] Zeile 556: Variable "augments" is not accessed
+  [Hint] Zeile 576: "self" is not accessed
+
+Datei: c:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\managers\weapon_manager.py
+  [Error] Zeile 30: Condition will always evaluate to True since the types "Weapon" and "None" have no overlap
+  [Error] Zeile 45: Condition will always evaluate to False since the types "Weapon" and "None" have no overlap
+  [Error] Zeile 174: Condition will always evaluate to False since the types "Weapon" and "None" have no overlap
+
+Datei: c:\Users\DaniBani\Documents\VisualStudioCode Projects\py-ftl\utils.py
+  [Hint] Zeile 83: "_choice" is not accessed
