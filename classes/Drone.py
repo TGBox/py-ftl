@@ -33,6 +33,21 @@ class Drone:
         self.hp = self.max_hp
         self.cooldown = 0.0
         self.target_pos = None
+        
+    def to_str(self) -> str:
+        """Methode um eine von Menschen gut lesbare String Repräsentation dieses Drohnen Objekts zu generieren.
+
+        Returns:
+            str: Die String Repräsentation des Drohnen Objekts.
+        """
+        d_str = f"Drohne \"{self.name}\" vom Typ {self.drone_type}, Gesundheit: {self.hp} / {self.max_hp}, Stromkosten: {self.power_cost}, Desc: {self.desc}, Hotkey: {self.hotkey}, "
+        d_str += f"Position: x={self.x}, y={self.y}, Zielposition: "
+        if self.target_pos is None:
+            d_str += "Keine, "
+        else:
+            d_str += f"x={self.target_pos[0]}, y={self.target_pos[1]}, "
+        d_str += f"Cooldown: {self.cooldown}, Orbitwinkel: {self.orbit_angle}, Aktiv: {self.active}"
+        return d_str
 
 
 # Master list of all available drone blueprints

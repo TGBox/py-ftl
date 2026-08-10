@@ -140,6 +140,28 @@ class Crew:
             self.melee_multiplier += 0.3
 
         self.move_speed: float = 160.0 if self.trait == "Sprinter" else 120.0
+        
+    def to_str(self) -> str:
+        """Methode um aus dem Crew Objekt eine von Menschen gut lesbare String Repräsentation zu generieren.
+
+        Returns:
+            str: Die String Repräsentation dieses Crew Objekts.
+        """
+        c_str = f"{"Gegner" if self.is_enemy else "Spieler"} Crewmitglied \"{self.name}\" der Spezies {self.species} mit der Eigenschaft {self.trait}. Gesundheit: {self.hp} / {self.max_hp}, Position: x={self.x}, y={self.y}, Geschwindigkeit: {self.move_speed}, Radius: {self.radius}.\n"
+        c_str += f"Ausgewählt: {self.selected}, Raum: {"Keiner" if self.current_room is None else self.current_room.name}, Zielposition: "
+        if self.target_pos is None:
+            c_str += "Keine, "
+        else:
+            c_str += f"x={self.target_pos[0]}, y={self.target_pos[1]}, "
+        c_str += "Zielwegpunkte: "
+        if len(self.path_waypoints) == 0:
+            c_str += "Keine, "
+        else:
+            for i, p in enumerate(self.path_waypoints):
+                c_str += f"[{i}.) x={p[0]}, y={p[1]}], "
+        c_str += f"Variante: {self.variant_idx}, Animationstimer: {self.anim_timer}, Stuntimer: {self.stun_timer}, Boarding: {self.is_boarding}\nAbilityName: {self.ability_name}, AbilityCooldown: {self.ability_cooldown}, AbilityMaxCooldown: {self.max_ability_cooldown}, AbilityActiveTimer: {self.ability_active_timer}"
+        c_str += f"Skills - Reparatur: {self.skill_repair}, Pilot: {self.skill_piloting}, Kampf: {self.skill_combat}, Fitness: {self.skill_fitness}"
+        return c_str
 
     def activate_ability(self, data: "GameData", game: "Game", combat_mgr: "CombatManager | None" = None) -> bool:
         if self.ability_cooldown > 0.0:
