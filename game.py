@@ -1,3 +1,4 @@
+import logging
 import sys
 import pygame
 
@@ -18,6 +19,7 @@ from managers.training_manager import TrainingManager
 from managers.weapon_manager import WeaponManager
 from settings import *
 
+logger = logging.getLogger(__name__)
 
 class Game:
     def __init__(self) -> None:
@@ -214,16 +216,14 @@ class Game:
                 self.combat_manager.update(effective_dt)
                 self.render_manager.draw()
             except Exception as e:
-                import traceback
-                print(f"!!! CHIP/GAME CRASH PREVENTED: {e} !!!")
-                traceback.print_exc()
-
+                logger.exception(f"!!! CHIP/GAME CRASH PREVENTED: {e} !!!")
+                
                 # Emergency Autosave on unexpected error
                 try:
                     SaveManager.save_game(self.data, self)
-                    print("Notfall-Spielstand erfolgreich gesichert!")
+                    logger.info("Notfall-Spielstand erfolgreich gesichert!")
                 except Exception as save_err:
-                    print(f"Notfall-Speichern fehlgeschlagen: {save_err}")
+                    logger.error(f"Notfall-Speichern fehlgeschlagen: {save_err}")
 
                 if hasattr(self.data, "combat"):
                     self.data.combat.msg = f"FEHLER VERMIEDEN: {e}"

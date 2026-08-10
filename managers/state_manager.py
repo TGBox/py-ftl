@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
+import logging
 from classes.GameData import GameData
 from settings import *
 
-
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from game import Game
@@ -53,6 +54,8 @@ class StateManager:
     # --------------------------------------------------
 
     def change_state(self, new_state: str):
+        
+        logger.debug("State wechselt von " + self.current + " zu " + new_state)
 
         if self.current == new_state:
             return

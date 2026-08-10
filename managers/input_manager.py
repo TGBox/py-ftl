@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+import logging
 import math
 import pygame
 
@@ -8,9 +9,10 @@ from managers.sound_manager import SoundManager
 from settings import *
 from utils import *
 
-
 if TYPE_CHECKING:
     from game import Game
+
+logger = logging.getLogger(__name__)
 
 class InputManager:
 
@@ -608,6 +610,7 @@ class InputManager:
             for e_room in self.data.enemy.ship.rooms:
                 if e_room.rect.collidepoint(mx, my):
                     idx = self.data.combat.target_weapon_idx
+                    assert self.data.player.weapons is not None
                     if idx is not None and idx < len(self.data.player.weapons):
                         w = self.data.player.weapons[idx]
                         start = self.data.combat.start_pos
@@ -650,6 +653,7 @@ class InputManager:
 
         weapon_room = self.data.player.ship.rooms[1]
         clicked_weapon_idx: int | None = None
+        assert self.data.player.weapons is not None
         for idx, w in enumerate(self.data.player.weapons):
             bar_x = 30 + idx * 135
             bar_rect = pygame.Rect(bar_x, 500, 120, 35)
@@ -657,10 +661,10 @@ class InputManager:
                 clicked_weapon_idx = idx
                 break
 
-        assert self.data.player.weapons is not None
-        assert clicked_weapon_idx is not None
-        assert self.data.player.weapons[clicked_weapon_idx] is not None
-        if clicked_weapon_idx is not None and self.data.player.weapons[clicked_weapon_idx].is_ready(): # type: ignore
+        #assert self.data.player.weapons is not None
+        #assert clicked_weapon_idx is not None
+        #assert self.data.player.weapons[clicked_weapon_idx] is not None
+        if clicked_weapon_idx is not None and self.data.player.weapons[clicked_weapon_idx].is_ready():
             self.data.combat.is_targeting = True
             self.data.combat.target_weapon_idx = clicked_weapon_idx
             slots = getattr(self.data.player.ship, "weapon_slots", [])

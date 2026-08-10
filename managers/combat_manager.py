@@ -80,6 +80,7 @@ class CombatManager:
             center_crew_in_rooms(self.data.player.crew, self.data.player.ship.rooms)
             center_crew_in_rooms(self.enemy_crew, self.data.enemy.ship.rooms)
             if "Waffen-Vorheizer" in getattr(self.data.player, "augments", []):
+                assert self.data.player.weapons is not None
                 for w in self.data.player.weapons:
                     if w is not None:
                         w.current_charge = w.charge_time
@@ -453,7 +454,7 @@ class CombatManager:
         # Waffen-Bemannungsbonus (1 Crew: +20%, 2+ Crew: +35%)
         w_manned_count = len([c for c in self.data.player.crew if c.current_room == w_room]) if w_room else 0
         charge_mult = get_room_manning_bonus("Waffen", w_manned_count, room=w_room)["multiplier"]
-
+        assert self.data.player.weapons is not None
         for weapon in self.data.player.weapons:
             if weapon is not None:
                 weapon.update(dt * charge_mult, weapon_powered)
@@ -464,7 +465,7 @@ class CombatManager:
     def fire_autofire_weapons(self):
 
         weapon_room = self.data.player.ship.rooms[1]
-
+        assert self.data.player.weapons is not None
         for idx, weapon in enumerate(self.data.player.weapons):
             if weapon is None:
                 continue

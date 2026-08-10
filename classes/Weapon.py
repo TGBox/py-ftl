@@ -52,4 +52,14 @@ class Weapon:
     return self.current_charge >= self.charge_time
 
   def reset(self) -> None:
-    self.current_charge = 0.0
+    self.current_charge = 0.0
+
+  def to_str(self) -> str:
+    """Methode um eine String Repräsentation dieses Waffenobjekts zu erstellen, die von Menschen gut gelesen werden kann.
+
+    Returns:
+        str: Die String Repräsentation des Objekts.
+    """
+    w_str = f"Level {self.level} Waffe - \"{self.name}\" vom Typ {self.w_type} mit Subtyp {self.subtype}. Ladezeit: {self.charge_time}, Aktuelle Ladung: {self.current_charge}, Munitionskosten: {self.ammo_cost}\n"
+    w_str += f"Schaden: {self.damage}, Crew-Schaden: {self.crew_damage}, Schilddurchdringung: {self.shield_pierce}, Feuerchance: {self.fire_chance}, Hüllenbruchchance: {self.breach_chance}, Betäubungsdauer: {self.stun_duration}, Reichweite: {self.max_range}"
+    return w_str

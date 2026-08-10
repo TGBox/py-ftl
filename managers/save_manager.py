@@ -175,6 +175,7 @@ class SaveManager:
             ]
 
             # Waffen serialisieren
+            assert data.player.weapons is not None
             weapon_schemas = [
                 WeaponSaveSchema(
                     name=w.name,

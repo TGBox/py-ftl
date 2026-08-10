@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-
+import logging
 
 import copy
 import random
@@ -17,6 +17,8 @@ from settings import *
 if TYPE_CHECKING:
     from game import Game
 
+logger = logging.getLogger(__name__)
+
 class MapManager:
 
     def __init__(self, data: GameData) -> None:
@@ -25,6 +27,8 @@ class MapManager:
         self.sound: SoundManager | None = None  # Set by Game after construction
 
     def travel_to_node(self, node: Node) -> bool:
+        
+        logger.debug(f"Reise von Node {self.data.world.star_map.current_node} zu Node {node}")
 
         if self.data.player.fuel <= 0:
             self.trigger_event("DISTRESS")
