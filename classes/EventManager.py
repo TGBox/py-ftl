@@ -17,6 +17,28 @@ class EventManager:
         self.events_db: list[dict[str, Any]] = []
         self.pending_action: str | None = None
         self.load_events_json(json_path)
+        
+    def to_str(self) -> str:
+        """Methode um aus dem EventManager Objekt eine von Menschen gut lesbare String Repräsentation zu generieren.
+
+        Returns:
+            str: Die String Repräsentation des EventManager Objekts.
+        """
+        e_str = f"EventTyp: {self.current_event_type}, EventText: \"{self.current_event_text}\"\n"
+        e_str += f"Ergebnistext: \"{self.result_text}\"\n{len(self.choices)} Choices:\n"
+        for i, c in enumerate(self.choices):
+            if i != len(self.choices) -1:
+                e_str += f"{c}, "
+            else:
+                e_str += f"{c}\n"
+        e_str += f"{len(self.events_db)} EventsDB:\n"
+        for i, e in enumerate(self.events_db):
+            if i != len(self.events_db) -1:
+                e_str += f"{e}, "
+            else:
+                e_str += f"{e}\n"
+        e_str += f"Ausstehende Aktion: {self.pending_action}"
+        return e_str
 
     def load_events_json(self, json_path: str) -> None:
         paths_to_check = [json_path, "events.json", "data/events.json"]
