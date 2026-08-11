@@ -218,6 +218,8 @@ class Game:
             except Exception as e:
                 logger.exception(f"!!! CHIP/GAME CRASH PREVENTED: {e} !!!")
                 
+                logger.debug(f"\n\n=======================\n\n{self.data.__str__()}\n\n=======================\n\n")
+                
                 # Emergency Autosave on unexpected error
                 try:
                     SaveManager.save_game(self.data, self)
