@@ -47,10 +47,12 @@ class PlayerData:
 
     def __str__(self) -> str:
         w_count = len(self.weapons) if self.weapons else 0
-        return (f"PlayerData - Schrott: {self.scrap}, Treibstoff: {self.fuel}, "
+        p_str = (f"PlayerData - Schrott: {self.scrap}, Treibstoff: {self.fuel}, "
                 f"Raketen: {self.missiles}, Drohnenteile: {self.drone_parts} | "
-                f"Crew: {len(self.crew)} | Waffen: {w_count} | Godmode: {self.godmode}")
-    #TODO: Complete the string method.
+                f"Crew: {len(self.crew)} | Waffen: {w_count} | Godmode: {self.godmode}"
+                f"Augmentierungen: {", ".join(self.augments)} | Freigeschaltete Schiffe: {", ".join(self.unlocked_ships)}")
+        return p_str
+    #TODO: Complete the string method with listing the crew members and the weapons one by one. ShieldSystem to_str needs to get added, as well.
 
     @property
     def drones(self) -> int:
