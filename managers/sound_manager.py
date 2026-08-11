@@ -26,7 +26,8 @@ class SoundManager:
         self._music_channel: pygame.mixer.Channel | None = None
         self.game: "Game | None" = None   # Set by Game after construction
 
-        self._generate_all()
+        #self._generate_all()
+        self._load_all()
         self._generate_music()
 
     # ------------------------------------------------------------------
@@ -286,6 +287,62 @@ class SoundManager:
         self._cache["game_over"] = self._sound(go)
 
     # ------------------------------------------------------------------
+    # Load all game sound effects
+    # ------------------------------------------------------------------
+
+    def _load_all(self) -> None:
+        # --- Laser fire ---
+        self._cache["laser_fire"] = pygame.mixer.Sound("assets/sounds/laser_fire.wav")
+
+        # --- Missile fire ---
+        self._cache["missile_fire"] = pygame.mixer.Sound("assets/sounds/missile_fire.wav")
+
+        # --- Beam fire ---
+        self._cache["beam_fire"] = pygame.mixer.Sound("assets/sounds/beam_fire.wav")
+
+        # --- Flak fire ---
+        self._cache["flak_fire"] = pygame.mixer.Sound("assets/sounds/flak_fire.wav")
+
+        # --- Ion fire & Hit ---
+        self._cache["ion_fire"] = pygame.mixer.Sound("assets/sounds/ion_fire.wav")
+        self._cache["ion_hit"] = pygame.mixer.Sound("assets/sounds/ion_hit.wav")
+
+        # --- Teleport & Cloak ---
+        self._cache["teleport"] = pygame.mixer.Sound("assets/sounds/teleport.wav")
+        self._cache["cloak"] = pygame.mixer.Sound("assets/sounds/cloak.wav")
+
+        # --- Shield & Hull ---
+        self._cache["shield_hit"] = pygame.mixer.Sound("assets/sounds/shield_hit.wav")
+        self._cache["shield_recharge"] = pygame.mixer.Sound("assets/sounds/shield_recharge.wav")
+        self._cache["hull_hit"] = pygame.mixer.Sound("assets/sounds/hull_hit.wav")
+
+        # --- Explosion (enemy destroyed) ---
+        self._cache["explosion"] = pygame.mixer.Sound("assets/sounds/explosion.wav")
+
+        # --- Button click & Purchase ---
+        self._cache["click"] = pygame.mixer.Sound("assets/sounds/click.wav")
+        self._cache["purchase"] = pygame.mixer.Sound("assets/sounds/purchase.wav")
+
+        # --- Jump / travel ---
+        self._cache["jump"] = pygame.mixer.Sound("assets/sounds/jump.wav")
+
+        # --- Warning / alarm / Low Fuel ---
+        self._cache["alarm"] = pygame.mixer.Sound("assets/sounds/alarm.wav")
+        self._cache["low_fuel"] = pygame.mixer.Sound("assets/sounds/low_fuel.wav")
+
+        # --- Crew death & Repair ---
+        self._cache["crew_death"] = pygame.mixer.Sound("assets/sounds/crew_death.wav")
+        self._cache["repair"] = pygame.mixer.Sound("assets/sounds/repair.wav")
+        self._cache["door"] = pygame.mixer.Sound("assets/sounds/door.wav")
+
+        # --- Achievement Fanfare ---
+        self._cache["achievement"] = pygame.mixer.Sound("assets/sounds/achievement.wav")
+
+        # --- Victory & Game Over ---
+        self._cache["victory"] = pygame.mixer.Sound("assets/sounds/victory.wav")
+        self._cache["game_over"] = pygame.mixer.Sound("assets/sounds/game_over.wav")
+
+    # ------------------------------------------------------------------
     # Generate procedural background music loops (Synth BGM)
     # ------------------------------------------------------------------
 
@@ -297,7 +354,7 @@ class SoundManager:
         music_dir = "assets/music"
         os.makedirs(music_dir, exist_ok=True)
 
-        expected_tracks = ["bgm_menu", "bgm_explore", "bgm_combat", "bgm_boss"]
+        expected_tracks = ["bgm_menu", "bgm_explore", "bgm_combat", "bgm_boss", "bgm_civilian", "bgm_nebula", "bgm_pirate"]
         loaded_from_file: set[str] = set()
 
         for track in expected_tracks:
