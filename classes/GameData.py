@@ -48,12 +48,16 @@ class PlayerData:
     def __str__(self) -> str:
         w_count = len(self.weapons) if self.weapons else 0
         p_str = (f"PlayerData - Schrott: {self.scrap}, Treibstoff: {self.fuel}, "
-                f"Raketen: {self.missiles}, Drohnenteile: {self.drone_parts} | "
-                f"Crew: {len(self.crew)} | Waffen: {w_count} | Godmode: {self.godmode}"
-                f"Augmentierungen: {", ".join(self.augments)} | Freigeschaltete Schiffe: {", ".join(self.unlocked_ships)} | "
-                f"Reaktor: {self.reactor.__str__()} | Schild: {self.shield.__str__()}")
+            f"Raketen: {self.missiles}, Drohnenteile: {self.drone_parts} | "
+            f"Crew: {len(self.crew)} | Waffen: {w_count} |\nGodmode: {self.godmode}"
+            f"Augmentierungen: {", ".join(self.augments)} | Freigeschaltete Schiffe: {", ".join(self.unlocked_ships)} | "
+            f"Reaktor: {self.reactor.__str__()} |\nSchild: {self.shield.__str__()}\nWaffen:\n")
+        for w in self.weapons:
+            p_str += f"{w.__str__()}\n"
+        p_str += "Crewmitglieder:\n"
+        for c in self.crew:
+            p_str += f"{c.__str__()}\n"
         return p_str
-    #TODO: Maybe complete the string method with listing the crew members and the weapons one by one. Maybe is not needed?
 
     @property
     def drones(self) -> int:
@@ -73,7 +77,7 @@ class EnemyData:
 
     def __str__(self) -> str:
         return (f"EnemyData - Schiff: {self.ship.__str__()} | Reaktor: {self.reactor.__str__()} | "
-                f"Waffe: {self.weapon.__str__()} | Schild: {self.shield.__str__()}")
+                f"Waffe: {self.weapon.__str__()} |\nSchild: {self.shield.__str__()}")
 
 class CombatData:
 
@@ -176,11 +180,11 @@ class GameData:
 
     def __str__(self) -> str:
         return (f"GameData - Spiel läuft: {self.running} | Status: {self.current_state} | "
-            f"Pausiert: {self.paused} | Save Slot: {self.active_save_slot} | PauseMenü aktiv: {self.show_pause_menu} | "
+            f"Pausiert: {self.paused} | Save Slot: {self.active_save_slot} | PauseMenü aktiv: {self.show_pause_menu} |\n"
             f"Hilfebildschirm aktiv: {self.show_help_overlay} | Autospeichern aktiv: {self.auto_save_enabled} | "
-            f"Speicherstandfenster aktiv: {self.show_slot_modal} | Speichertoast Nachricht: {self.save_toast_text} | "
+            f"Speicherstandfenster aktiv: {self.show_slot_modal} | Speichertoast Nachricht: {self.save_toast_text} |\n"
             f"Speichertoast Timer: {self.save_toast_timer} | Errungenschaftsfilter: {self.achievement_category_filter} | "
-            f"Errungenschaftsseite: {self.achievement_page} | Speicherstandfenster Modus: {self.slot_modal_mode} | "
+            f"Errungenschaftsseite: {self.achievement_page} | Speicherstandfenster Modus: {self.slot_modal_mode} |"
             f"\n  -> {self.player}\n"
             f"  -> {self.enemy}\n"
             f"  -> {self.combat}\n"

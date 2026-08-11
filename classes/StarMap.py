@@ -21,7 +21,8 @@ class StarMap:
     Returns:
         str: Die String Repräsentation des StarMap Objekts.
     """
-    s_str = f"Karte - Sektor {self.sector} - Typ: {self.sector_type} - Position X-Achse Rebellenflotte: {self.rebel_fleet_x} - Aktive Node: {self.current_node} von insgesamt {len(self.nodes)} Knoten - Knotenpunkte:\n"
+    s_str = (f"Karte - Sektor {self.sector} - Typ: {self.sector_type} - Position X-Achse Rebellenflotte: {self.rebel_fleet_x} -\n"
+      f"Aktive Node: {self.current_node} von insgesamt {len(self.nodes)} Knoten - Knotenpunkte:\n")
     for i, n in enumerate(self.nodes):
       s_str += f"{i}: {n.__str__()}\n"
     return s_str

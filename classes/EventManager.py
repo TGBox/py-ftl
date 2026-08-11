@@ -24,7 +24,7 @@ class EventManager:
         Returns:
             str: Die String Repräsentation des EventManager Objekts.
         """
-        e_str = f"EventTyp: {self.current_event_type}, EventText: \"{self.current_event_text}\"\n"
+        e_str = f"EventTyp: {self.current_event_type} - EventText: \"{self.current_event_text}\"\n"
         e_str += f"Ergebnistext: \"{self.result_text}\"\n{len(self.choices)} Choices:\n"
         for i, c in enumerate(self.choices):
             if i != len(self.choices) -1:
@@ -34,9 +34,9 @@ class EventManager:
         e_str += f"{len(self.events_db)} EventsDB:\n"
         for i, e in enumerate(self.events_db):
             if i != len(self.events_db) -1:
-                e_str += f"{e}, "
+                e_str += f"{json.dumps(e, indent=2)}, \n"
             else:
-                e_str += f"{e}\n"
+                e_str += f"{json.dumps(e, indent=2)}\n"
         e_str += f"Ausstehende Aktion: {self.pending_action}"
         return e_str
 

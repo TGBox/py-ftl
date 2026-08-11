@@ -216,7 +216,7 @@ class Game:
                 self.combat_manager.update(effective_dt)
                 self.render_manager.draw()
             except Exception as e:
-                logger.exception(f"!!! CHIP/GAME CRASH PREVENTED: {e} !!!")
+                logger.exception(f"!!! CHIP/GAME CRASH PREVENTED: {e} !!!\n")
                 
                 logger.debug(f"\n\n=======================\n\n{self.data.__str__()}\n\n=======================\n\n")
                 

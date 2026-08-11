@@ -61,5 +61,6 @@ class Weapon:
         str: Die String Repräsentation des Objekts.
     """
     w_str = f"Level {self.level} Waffe - \"{self.name}\" vom Typ {self.w_type} mit Subtyp {self.subtype}. Ladezeit: {self.charge_time}, Aktuelle Ladung: {self.current_charge}, Munitionskosten: {self.ammo_cost}\n"
-    w_str += f"Schaden: {self.damage}, Crew-Schaden: {self.crew_damage}, Schilddurchdringung: {self.shield_pierce}, Feuerchance: {self.fire_chance}, Hüllenbruchchance: {self.breach_chance}, Betäubungsdauer: {self.stun_duration}, Reichweite: {self.max_range}"
+    w_str += f"Schaden: {self.damage}, Crew-Schaden: {self.crew_damage}, Schilddurchdringung: {self.shield_pierce}\n"
+    w_str += f"Feuerchance: {self.fire_chance}, Hüllenbruchchance: {self.breach_chance}, Betäubungsdauer: {self.stun_duration}, Reichweite: {self.max_range}"
     return w_str
