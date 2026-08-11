@@ -37,6 +37,17 @@ class ShipModel:
         self.generate_doors()
         if not self.weapon_slots:
             self.generate_default_weapon_slots()
+            
+    def to_str(self) -> str:
+        """Methode um aus dem ShipModel Objekt einen wohlgeformten und von Menschen gut lesbaren String zu generieren.
+
+        Returns:
+            str: Die String Repräsentation des ShipModels.
+        """
+        s_str = (f"{"Gegnerisches " if self.is_enemy else "Spieler "}Schiff: \"{self.name}\" | "
+                 f"Gesundheit: {self.hp} / {self.max_hp} | {len(self.rooms)} Räume | Maximale Crew: "
+                 f"{self.max_crew} Mitglieder | Maximale Anzahl Waffen: {len(self.weapon_slots)} | {len(self.doors)} Türen")
+        return s_str
 
     def generate_default_weapon_slots(self) -> None:
         self.weapon_slots = []
