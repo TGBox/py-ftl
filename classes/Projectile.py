@@ -51,6 +51,23 @@ class Projectile:
     speed = 650.0 if w_type in ("BEAM", "BIO_BEAM") else (550.0 if w_type == "FLAK" else 400.0)
     self.vx: float = (dx / dist) * speed if dist != 0 else 0.0
     self.vy: float = (dy / dist) * speed if dist != 0 else 0.0
+    
+  def to_str(self) -> str:
+    """Methode um eine String Repräsentation dieses Projectile Objekts zu generieren.
+
+    Returns:
+        str: Die String Repräsentation des Projectile Objekts.
+    """
+    p_str = (f"{"Spieler" if self.is_player_shot else "Gegnerisches"} Projektil von {self.w_type} "
+             f"- {self.subtype} | Start: x={self.start_x}, y={self.start_y} | Ziel: {self.target_room.name} "
+             f"bei x={self.target_x}, y={self.target_y} | Position: x={self.x}, y={self.y} | "
+             f"Bisherige Flugdistanz: {self.distance_traveled} | Schaden: {self.damage} | "
+             f"Schilddurchstoß: {self.shield_pierce} | Feuerchance: {self.fire_chance} % | "
+             f"Hüllenbruchchance: {self.breach_chance} % | Betäubungsdauer: {self.stun_duration} | "
+             f"Crewschaden: {self.crew_damage} | Maximale Reichweite: {self.max_range} | "
+             f"Ausser Reichweite: {self.out_of_range} | Aktiv: {self.alive}")
+    return p_str
+  # TODO: Hier vielleicht noch die abhängigen Variablen der Klasse mit ausgeben? (dx, dy, speed, dist, ...)
 
   def update(self, dt: float) -> None:
     step_x = self.vx * dt
