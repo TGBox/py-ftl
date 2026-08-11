@@ -53,7 +53,7 @@ class PlayerData:
                 f"Augmentierungen: {", ".join(self.augments)} | Freigeschaltete Schiffe: {", ".join(self.unlocked_ships)} | "
                 f"Reaktor: {self.reactor.__str__()} | Schild: {self.shield.__str__()}")
         return p_str
-    #TODO: Complete the string method with listing the crew members and the weapons one by one.
+    #TODO: Maybe complete the string method with listing the crew members and the weapons one by one. Maybe is not needed?
 
     @property
     def drones(self) -> int:
@@ -113,9 +113,33 @@ class CombatData:
         self.combat_won: bool = False
 
     def __str__(self) -> str:
-        return (f"CombatData - Kampf gewonnen: {self.combat_won} | Autofire: {self.autofire_enabled} | "
-                f"FTL bereit: {self.ftl_ready} | Boss Phase: {self.boss_phase}")
-#TODO: Add the other values of this object.
+        """Methode um einen (halbwegs) gut lesbaren String aus den Werten dieses Objekts zu generieren.
+
+        Returns:
+            str: Das Objekt als String.
+        """
+        c_str = (f"CombatData - Kampf gewonnen: {self.combat_won} | Zielt gerade: {self.is_targeting} | Autofire: {self.autofire_enabled} | "
+            f"FTL bereit: {self.ftl_ready} | Boss Phase: {self.boss_phase} | Ziel Waffe: {"Keine" if None else self.target_weapon_idx} | "
+            f"Start: x={self.start_pos[0]}, y={self.start_pos[1]} | Nachricht: \"{self.msg}\" | Nachrichtentimer: {self.msg_timer} | "
+            f"Waffenziele: {len(self.weapon_targets.items())} Stück | Teleporter Cooldown: {self.teleport_cooldown} | "
+            f"Zielt Teleporter gerade: {self.is_teleport_targeting} | Aktiver Tarntimer: {self.cloak_active_timer} | "
+            f"Tarnung Cooldown: {self.cloak_cooldown} | Sonneneruptionstimer: {self.solar_flare_timer} | "
+            f"Sonneneruptionsblitz: {self.solar_flare_flash} | Asteroidentimer: {self.asteroid_timer} | "
+            f"Kampfdrohne aktiv: {self.combat_drone_active} | Reparaturdrohne aktiv: {self.repair_drone_active} | "
+            f"Verteidigungsdrohne aktiv: {self.defense_drone_active} | Schildauflader aktiv: {self.shield_charger_active} | "
+            f"Anti-PersonenSystem aktiv: {self.anti_personnel_active} | Winkel Drohnenorbit: {self.drone_orbit_angle} | "
+            f"Drohnenfeuertimer: {self.drone_fire_timer} | Pulsar Timer: {self.pulsar_timer} | "
+            f"Reparaturdrohne Position: x={self.repair_drone_pos[0]}, y={self.repair_drone_pos[1]} | "
+            f"Anti-PersonenSystem Position: x={self.anti_personnel_pos[0]}, y={self.anti_personnel_pos[1]} | ")
+        if self.defense_laser_beam is None:
+            c_str += "Verteidigungslaser - Inaktiv | "
+        else:
+            c_str += (f"Verteidigungslaser - Start: x={self.defense_laser_beam[0][0]}, y={self.defense_laser_beam[0][1]} - "
+                f"Ziel: x={self.defense_laser_beam[1][0]}, y={self.defense_laser_beam[1][1]} - Timer: {self.defense_laser_beam[2]}")
+        c_str += (f"Überschild Gesundheit: {self.overshield_hp} | Zoltan Schild Gesundheit: {self.zoltan_shield_hp} | "
+            f"Drohnen Ladezeit: {self.drone_surge_timer} | Boss Teleport Timer: {self.boss_teleport_timer} | "
+            f"FTL Ladetimer: {self.ftl_charge_timer}")
+        return c_str
 
 
 class WorldData:
@@ -151,8 +175,13 @@ class GameData:
         self.world: WorldData = WorldData()
 
     def __str__(self) -> str:
-        return (f"GameData - Status: {self.current_state} | Pausiert: {self.paused} | Save Slot: {self.active_save_slot}\n"
-            f"  -> {self.player}\n"
+        return (f"GameData - Spiel läuft: {self.running} | Status: {self.current_state} | "
+            f"Pausiert: {self.paused} | Save Slot: {self.active_save_slot} | PauseMenü aktiv: {self.show_pause_menu} | "
+            f"Hilfebildschirm aktiv: {self.show_help_overlay} | Autospeichern aktiv: {self.auto_save_enabled} | "
+            f"Speicherstandfenster aktiv: {self.show_slot_modal} | Speichertoast Nachricht: {self.save_toast_text} | "
+            f"Speichertoast Timer: {self.save_toast_timer} | Errungenschaftsfilter: {self.achievement_category_filter} | "
+            f"Errungenschaftsseite: {self.achievement_page} | Speicherstandfenster Modus: {self.slot_modal_mode} | "
+            f"\n  -> {self.player}\n"
             f"  -> {self.enemy}\n"
-            f"  -> {self.combat}")
-#TODO: Add the other values of this object.
+            f"  -> {self.combat}\n"
+            f"  -> {self.world}")
