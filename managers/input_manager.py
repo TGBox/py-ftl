@@ -667,15 +667,18 @@ class InputManager:
         #assert self.data.player.weapons is not None
         #assert clicked_weapon_idx is not None
         #assert self.data.player.weapons[clicked_weapon_idx] is not None
-        if clicked_weapon_idx is not None and self.data.player.weapons[clicked_weapon_idx].is_ready():
-            self.data.combat.is_targeting = True
-            self.data.combat.target_weapon_idx = clicked_weapon_idx
-            slots = getattr(self.data.player.ship, "weapon_slots", [])
-            if slots and clicked_weapon_idx < len(slots):
-                self.data.combat.start_pos = slots[clicked_weapon_idx]["pos"]
-            else:
-                self.data.combat.start_pos = weapon_room.rect.center
-            return
+        # Guard against missing weapon entries (None) before calling is_ready
+        if clicked_weapon_idx is not None:
+            weapon_obj = self.data.player.weapons[clicked_weapon_idx]
+            if weapon_obj is not None and weapon_obj.is_ready():
+                self.data.combat.is_targeting = True
+                self.data.combat.target_weapon_idx = clicked_weapon_idx
+                slots = getattr(self.data.player.ship, "weapon_slots", [])
+                if slots and clicked_weapon_idx < len(slots):
+                    self.data.combat.start_pos = slots[clicked_weapon_idx]["pos"]
+                else:
+                    self.data.combat.start_pos = weapon_room.rect.center
+                return
 
         clicked_crew = False
         for c in self.data.player.crew:
