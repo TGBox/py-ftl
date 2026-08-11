@@ -71,8 +71,8 @@ class EnemyData:
         self.weapon: Weapon = Weapon("Laser", charge_time=4.5, w_type="LASER")
 
     def __str__(self) -> str:
-        return (f"EnemyData - Schiff: {self.ship.name} | Reaktor-Energie: {self.reactor.available_power} / {self.reactor.total_power} | "
-                f"Waffe: {self.weapon.name} vom Typ {self.weapon.w_type} mit Ladezeit von {self.weapon.charge_time} | Schild: ") #TODO: Add the Schild.to_str() method here!
+        return (f"EnemyData - Schiff: {self.ship.__str__()} | Reaktor: {self.reactor.to_str()} | "
+                f"Waffe: {self.weapon.to_str()} | Schild: {self.shield.to_str()}")
 
 class CombatData:
 
@@ -125,8 +125,7 @@ class WorldData:
         self.event_manager: EventManager = EventManager()
 
     def __str__(self) -> str:
-        return "WorldData - (Sternenkarte und Event-Manager sind geladen)"
-#TODO: Add the other values of this object.
+        return f"WorldData - Sternenkarte:\n{self.star_map.to_str()}, EventManager: {self.event_manager.to_str()}"
 
 class GameData:
 
