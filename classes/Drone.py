@@ -34,7 +34,7 @@ class Drone:
         self.cooldown = 0.0
         self.target_pos = None
         
-    def to_str(self) -> str:
+    def __str__(self) -> str:
         """Methode um eine von Menschen gut lesbare String Repräsentation dieses Drohnen Objekts zu generieren.
 
         Returns:

@@ -10,7 +10,7 @@ class ShieldSystem:
     self.hit_delay: float = hit_delay
     self.lock_timer: float = 0.0
     
-  def to_str(self) -> str:
+  def __str__(self) -> str:
     """Methode um einen von Menschen gut lesbaren String zu generieren, der dieses Schild Objekt repräsentiert.
 
     Returns:

@@ -55,7 +55,7 @@ class Door:
         if not self.is_open and door_level >= 3:
             pygame.draw.circle(surface, (255, 220, 80), self.rect.center, 3)
 
-    def to_str(self) -> str:
+    def __str__(self) -> str:
         """Methode um eine von Menschen gut lesbare String Repräsentation dieses Tür Objektes zu generieren.
 
         Returns:

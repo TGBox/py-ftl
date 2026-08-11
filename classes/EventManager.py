@@ -18,7 +18,7 @@ class EventManager:
         self.pending_action: str | None = None
         self.load_events_json(json_path)
         
-    def to_str(self) -> str:
+    def __str__(self) -> str:
         """Methode um aus dem EventManager Objekt eine von Menschen gut lesbare String Repräsentation zu generieren.
 
         Returns:

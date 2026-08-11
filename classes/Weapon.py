@@ -54,7 +54,7 @@ class Weapon:
   def reset(self) -> None:
     self.current_charge = 0.0
 
-  def to_str(self) -> str:
+  def __str__(self) -> str:
     """Methode um eine String Repräsentation dieses Waffenobjekts zu erstellen, die von Menschen gut gelesen werden kann.
 
     Returns:

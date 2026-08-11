@@ -21,7 +21,7 @@ class Reactor:
       color = COLOR_REACTOR if i < self.available_power else COLOR_POWER_OFF
       pygame.draw.rect(surface, color, (x + i * 18, y + 25, 14, 25))
       
-  def to_str(self) -> str:
+  def __str__(self) -> str:
     """Methode um eine gut lesbare String Repräsentation dieses Objektes zu erstellen.
 
     Returns:

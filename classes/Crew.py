@@ -141,7 +141,7 @@ class Crew:
 
         self.move_speed: float = 160.0 if self.trait == "Sprinter" else 120.0
         
-    def to_str(self) -> str:
+    def __str__(self) -> str:
         """Methode um aus dem Crew Objekt eine von Menschen gut lesbare String Repräsentation zu generieren.
 
         Returns:

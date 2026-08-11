@@ -28,7 +28,7 @@ class Room:
     self.ion_timer: float = 0.0  # Ion-Sperre (Sekunden)
     self.was_destroyed: bool = False  # Komplett zerstört (0 HP)
     
-  def to_str(self) -> str:
+  def __str__(self) -> str:
     """Methode um eine String Repräsentation des Raum Objektes zu generieren, welche von Menschen gut gelesen werden kann.
 
     Returns:

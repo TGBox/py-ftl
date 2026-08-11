@@ -52,7 +52,7 @@ class Projectile:
     self.vx: float = (dx / dist) * speed if dist != 0 else 0.0
     self.vy: float = (dy / dist) * speed if dist != 0 else 0.0
     
-  def to_str(self) -> str:
+  def __str__(self) -> str:
     """Methode um eine String Repräsentation dieses Projectile Objekts zu generieren.
 
     Returns:

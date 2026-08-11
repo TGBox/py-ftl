@@ -38,7 +38,7 @@ class ShipModel:
         if not self.weapon_slots:
             self.generate_default_weapon_slots()
             
-    def to_str(self) -> str:
+    def __str__(self) -> str:
         """Methode um aus dem ShipModel Objekt einen wohlgeformten und von Menschen gut lesbaren String zu generieren.
 
         Returns:

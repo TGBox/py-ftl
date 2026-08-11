@@ -50,9 +50,10 @@ class PlayerData:
         p_str = (f"PlayerData - Schrott: {self.scrap}, Treibstoff: {self.fuel}, "
                 f"Raketen: {self.missiles}, Drohnenteile: {self.drone_parts} | "
                 f"Crew: {len(self.crew)} | Waffen: {w_count} | Godmode: {self.godmode}"
-                f"Augmentierungen: {", ".join(self.augments)} | Freigeschaltete Schiffe: {", ".join(self.unlocked_ships)}")
+                f"Augmentierungen: {", ".join(self.augments)} | Freigeschaltete Schiffe: {", ".join(self.unlocked_ships)} | "
+                f"Reaktor: {self.reactor.__str__()} | Schild: {self.shield.__str__()}")
         return p_str
-    #TODO: Complete the string method with listing the crew members and the weapons one by one. ShieldSystem to_str needs to get added, as well.
+    #TODO: Complete the string method with listing the crew members and the weapons one by one.
 
     @property
     def drones(self) -> int:
@@ -71,8 +72,8 @@ class EnemyData:
         self.weapon: Weapon = Weapon("Laser", charge_time=4.5, w_type="LASER")
 
     def __str__(self) -> str:
-        return (f"EnemyData - Schiff: {self.ship.__str__()} | Reaktor: {self.reactor.to_str()} | "
-                f"Waffe: {self.weapon.to_str()} | Schild: {self.shield.to_str()}")
+        return (f"EnemyData - Schiff: {self.ship.__str__()} | Reaktor: {self.reactor.__str__()} | "
+                f"Waffe: {self.weapon.__str__()} | Schild: {self.shield.__str__()}")
 
 class CombatData:
 
@@ -125,7 +126,7 @@ class WorldData:
         self.event_manager: EventManager = EventManager()
 
     def __str__(self) -> str:
-        return f"WorldData - Sternenkarte:\n{self.star_map.to_str()}, EventManager: {self.event_manager.to_str()}"
+        return f"WorldData - Sternenkarte:\n{self.star_map.__str__()}, EventManager: {self.event_manager.__str__()}"
 
 class GameData:
 

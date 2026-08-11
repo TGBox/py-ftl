@@ -9,7 +9,7 @@ class Node:
     self.visited: bool = False
     self.hazard_type: str = "NONE"  # 'NONE', 'SOLAR_FLARE', 'ASTEROID_FIELD'
 
-  def to_str(self) -> str:
+  def __str__(self) -> str:
     """Methode um aus einem Node Objekt einen wohlgeformten String zu generieren, der von Menschen einfach gelesen werden kann.
 
     Returns:
