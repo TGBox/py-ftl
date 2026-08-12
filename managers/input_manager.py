@@ -463,7 +463,7 @@ class InputManager:
 
 
     def handle_right_click(self, event: pygame.event.Event):
-        logger.debug(f"Linksklick auf Position x={event.pos[0]}, y={event.pos[1]}")
+        logger.debug(f"Rechtsklick auf Position x={event.pos[0]}, y={event.pos[1]}")
         if self.data.current_state != STATE_COMBAT:
             return
         mx, my = self._logical_mouse_pos(getattr(event, "pos", None))

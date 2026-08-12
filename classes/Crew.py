@@ -83,7 +83,7 @@ class Crew:
         self.y: float = y
         self.radius: int = 12
         self.selected: bool = False
-        self.target_pos: tuple[int, int] | None = None
+        self.target_pos: tuple[float, float] | None = None
         self.path_waypoints: list[tuple[float, float]] = []
         self.species: str = species
         self.name: str = name if name else random.choice(SPECIES_NAMES.get(species, ["Crew"]))
