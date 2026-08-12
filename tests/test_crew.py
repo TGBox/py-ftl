@@ -1,7 +1,7 @@
 import os
 import sys
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pygame
 
@@ -9,7 +9,6 @@ import pygame
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from classes.Crew import Crew, find_room_path
-from classes.Room import Room
 from classes.ShipModel import PLAYER_SHIP
 
 
@@ -87,6 +86,7 @@ class TestCrew(unittest.TestCase):
 
         data = GameData()
         cm = CombatManager(data)
+        cm.game = MagicMock()
 
         medbay = next(r for r in data.player.ship.rooms if r.name == "Medbay")
         medbay.current_power = 2
@@ -101,26 +101,38 @@ class TestCrew(unittest.TestCase):
         self.assertGreater(crew.hp, 50.0, "Crew inside powered Medbay should heal over time during combat updates.")
 
 
-    def test_crew_corner_offsets_in_same_room(self):
+    @patch("pygame.mouse.get_pos")  # <- Geändert
+    def test_crew_corner_offsets_in_same_room(self, mock_get_pos):
         from classes.GameData import GameData
         from managers.input_manager import InputManager
 
         data = GameData()
         from settings import STATE_COMBAT
         data.current_state = STATE_COMBAT
-        input_mgr = InputManager(data)
-        input_mgr.game = MagicMock()
+        
+        # 1. Verhindere, dass der Klick als "Entern" auf dem Gegnerschiff gewertet wird
+        data.enemy.ship.rooms.clear()
 
+       # 2. Nutze den ersten Raum des Spielerschiffs als Ziel
         room = data.player.ship.rooms[0]
-        c1 = Crew(100, 100)
-        c2 = Crew(100, 100)
+
+        # 3. Crew in einen anderen Raum platzieren, damit das Pathfinding funktioniert
+        start_room = data.player.ship.rooms[1]
+        c1 = Crew(start_room.rect.centerx, start_room.rect.centery)
+        c2 = Crew(start_room.rect.centerx, start_room.rect.centery)
         c1.selected = True
         c2.selected = True
+        c1.is_boarding = False
+        c2.is_boarding = False
         data.player.crew = [c1, c2]
 
-        # Simulate clicking on room to move selected crew
-        input_mgr._logical_mouse_pos = lambda pos=None: (room.rect.centerx, room.rect.centery)
-        data.enemy.ship.rooms = [] # Verhindert Klick-Intercept durch das Gegnerschiff
+        input_mgr = InputManager(data)
+        # WICHTIG: Auf None belassen!
+        input_mgr.game = None  
+        
+        # 4. Pygame Mausposition mocken
+        mock_get_pos.return_value = (room.rect.centerx, room.rect.centery)
+
         input_mgr.handle_left_click(
             pygame.event.Event(
                 pygame.MOUSEBUTTONDOWN,
@@ -129,8 +141,8 @@ class TestCrew(unittest.TestCase):
             )
         )
 
-        # Verify c1 and c2 have different target_pos (opposing corner offsets)
-        self.assertIsNotNone(c1.target_pos)
+        # 5. Assertions prüfen
+        self.assertIsNotNone(c1.target_pos, "Klick kam nicht bei der Crew an!")
         self.assertIsNotNone(c2.target_pos)
         self.assertNotEqual(c1.target_pos, c2.target_pos, "Crew in same room must be assigned opposing corner offsets!")
 
@@ -146,6 +158,7 @@ class TestCrew(unittest.TestCase):
         data.combat.target_weapon_idx = 0
 
         input_mgr = InputManager(data)
+        input_mgr.game = MagicMock()
 
         # Simulate ESC key
         esc_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)
@@ -161,4 +174,3 @@ class TestCrew(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
