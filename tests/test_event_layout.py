@@ -29,7 +29,7 @@ class TestEventLayout(unittest.TestCase):
         long_ev = (
             "Sehr langer Event Text " * 15
         )
-        choices = [
+        choices: list[dict[str, str | int | bool]] = [
             {"text": "Option 1", "action": "ACTION_1"},
             {"text": "Option 2", "action": "ACTION_2"},
             {"text": "Option 3", "action": "ACTION_3"},

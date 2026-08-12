@@ -2,6 +2,8 @@ import os
 import sys
 import unittest
 
+import pygame
+
 # Path setup to ensure module resolution
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -75,16 +77,15 @@ class TestCrew(unittest.TestCase):
                     opened_door = d
 
         self.assertIsNotNone(opened_door, "Crew should automatically open doors while passing through.")
+        assert opened_door is not None
         self.assertFalse(opened_door.is_open, "Door should automatically close behind crew after moving away.")
 
     def test_room_damage_and_healing(self):
         from classes.GameData import GameData
         from managers.combat_manager import CombatManager
-        from managers.state_manager import StateManager
 
         data = GameData()
-        sm = StateManager(data)
-        cm = CombatManager(data, sm)
+        cm = CombatManager(data)
 
         medbay = next(r for r in data.player.ship.rooms if r.name == "Medbay")
         medbay.current_power = 2
@@ -102,15 +103,11 @@ class TestCrew(unittest.TestCase):
     def test_crew_corner_offsets_in_same_room(self):
         from classes.GameData import GameData
         from managers.input_manager import InputManager
-        from managers.shop_manager import ShopManager
-        from managers.map_manager import MapManager
 
         data = GameData()
         from settings import STATE_COMBAT
         data.current_state = STATE_COMBAT
-        shop_mgr = ShopManager(data)
-        map_mgr = MapManager(data)
-        input_mgr = InputManager(data, shop_mgr, map_mgr)
+        input_mgr = InputManager(data)
 
         room = data.player.ship.rooms[0]
         c1 = Crew(100, 100)
@@ -121,7 +118,13 @@ class TestCrew(unittest.TestCase):
 
         # Simulate clicking on room to move selected crew
         input_mgr._logical_mouse_pos = lambda pos=None: (room.rect.centerx, room.rect.centery)
-        input_mgr.handle_left_click(type("Event", (), {"pos": (room.rect.centerx, room.rect.centery), "button": 1})())
+        input_mgr.handle_left_click(
+            pygame.event.Event(
+                pygame.MOUSEBUTTONDOWN,
+                pos=(room.rect.centerx, room.rect.centery),
+                button=1,
+            )
+        )
 
         # Verify c1 and c2 have different target_pos (opposing corner offsets)
         self.assertIsNotNone(c1.target_pos)
@@ -131,8 +134,6 @@ class TestCrew(unittest.TestCase):
     def test_targeting_cancel_esc_and_right_click(self):
         from classes.GameData import GameData
         from managers.input_manager import InputManager
-        from managers.shop_manager import ShopManager
-        from managers.map_manager import MapManager
         from settings import STATE_COMBAT
         import pygame
 
@@ -141,9 +142,7 @@ class TestCrew(unittest.TestCase):
         data.combat.is_targeting = True
         data.combat.target_weapon_idx = 0
 
-        shop_mgr = ShopManager(data)
-        map_mgr = MapManager(data)
-        input_mgr = InputManager(data, shop_mgr, map_mgr)
+        input_mgr = InputManager(data)
 
         # Simulate ESC key
         esc_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)

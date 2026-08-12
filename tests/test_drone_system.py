@@ -16,7 +16,7 @@ class TestDroneSystem(unittest.TestCase):
     def setUp(self):
         self.data = GameData()
         self.state_mgr = StateManager(self.data)
-        self.combat_mgr = CombatManager(self.data, self.state_mgr)
+        self.combat_mgr = CombatManager(self.data)
 
         # Give player ship Drone Control room power = 4
         drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)

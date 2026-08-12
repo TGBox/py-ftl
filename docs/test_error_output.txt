@@ -1,0 +1,725 @@
+(.venv) PS C:\Users\droesch\Documents\Programmiertes\py-ftl> pytest            
+=================================================================================================== test session starts ===================================================================================================
+platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\droesch\Documents\Programmiertes\py-ftl
+configfile: pyproject.toml
+collected 115 items                                                                                                                                                                                                        
+
+tests\test_achievements.py .F..                                                                                                                                                                                      [  3%]
+tests\test_combat_manager.py FFFFFFFFFFF                                                                                                                                                                             [ 13%]
+tests\test_console_manager.py ......                                                                                                                                                                                 [ 18%]
+tests\test_crew.py .F..F.F                                                                                                                                                                                           [ 24%]
+tests\test_crew_abilities.py FFFFF                                                                                                                                                                                   [ 28%]
+tests\test_destroyed_room_repair.py ..                                                                                                                                                                               [ 30%]
+tests\test_drone_system.py FFFFF                                                                                                                                                                                     [ 34%]
+tests\test_event_layout.py ...                                                                                                                                                                                       [ 37%]
+tests\test_event_manager.py .....                                                                                                                                                                                    [ 41%]
+tests\test_map_and_choices.py .......FF                                                                                                                                                                              [ 49%]
+tests\test_particle_manager.py .....                                                                                                                                                                                 [ 53%]
+tests\test_room_manning_bonuses.py FFFF                                                                                                                                                                              [ 57%]
+tests\test_save_manager.py ....                                                                                                                                                                                      [ 60%]
+tests\test_scaling_and_hitboxes.py ...                                                                                                                                                                               [ 63%]
+tests\test_sector_hazards.py FFFF                                                                                                                                                                                    [ 66%]
+tests\test_shields_and_reactor.py ....                                                                                                                                                                               [ 70%]
+tests\test_ship_and_doors.py ....                                                                                                                                                                                    [ 73%]
+tests\test_shop_and_training.py F...........                                                                                                                                                                         [ 84%]
+tests\test_sound_manager.py .....                                                                                                                                                                                    [ 88%]
+tests\test_starmap.py ...                                                                                                                                                                                            [ 91%]
+tests\test_weapon_mechanics.py FFF                                                                                                                                                                                   [ 93%]
+tests\test_weapon_slot_swap.py .F                                                                                                                                                                                    [ 95%]
+tests\test_weapons_and_projectiles.py .....                                                                                                                                                                          [100%]
+
+======================================================================================================== FAILURES =========================================================================================================
+_______________________________________________________________________________________ TestAchievements.test_gamedata_integration ________________________________________________________________________________________
+
+self = <tests.test_achievements.TestAchievements testMethod=test_gamedata_integration>
+
+    def test_gamedata_integration(self):
+        data = GameData()
+>       self.assertIsNotNone(data.achievement_manager)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'GameData' object has no attribute 'achievement_manager'. Did you mean: 'achievement_page'?
+
+tests\test_achievements.py:57: AttributeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+______________________________________________________________________________________ TestCombatManager.test_boss_phase_transitions ______________________________________________________________________________________
+
+self = <tests.test_combat_manager.TestCombatManager testMethod=test_boss_phase_transitions>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_manager = StateManager(self.data)
+>       self.combat_manager = CombatManager(self.data, self.state_manager)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_combat_manager.py:23: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_______________________________________________________________________________ TestCombatManager.test_combat_system_reset_between_battles ________________________________________________________________________________
+
+self = <tests.test_combat_manager.TestCombatManager testMethod=test_combat_system_reset_between_battles>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_manager = StateManager(self.data)
+>       self.combat_manager = CombatManager(self.data, self.state_manager)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_combat_manager.py:23: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+__________________________________________________________________________________ TestCombatManager.test_crew_centering_at_combat_start __________________________________________________________________________________
+
+self = <tests.test_combat_manager.TestCombatManager testMethod=test_crew_centering_at_combat_start>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_manager = StateManager(self.data)
+>       self.combat_manager = CombatManager(self.data, self.state_manager)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_combat_manager.py:23: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+____________________________________________________________________________________ TestCombatManager.test_faction_enemy_ship_variety ____________________________________________________________________________________
+
+self = <tests.test_combat_manager.TestCombatManager testMethod=test_faction_enemy_ship_variety>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_manager = StateManager(self.data)
+>       self.combat_manager = CombatManager(self.data, self.state_manager)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_combat_manager.py:23: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_____________________________________________________________________________________ TestCombatManager.test_ftl_charging_and_fleeing _____________________________________________________________________________________
+
+self = <tests.test_combat_manager.TestCombatManager testMethod=test_ftl_charging_and_fleeing>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_manager = StateManager(self.data)
+>       self.combat_manager = CombatManager(self.data, self.state_manager)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_combat_manager.py:23: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+________________________________________________________________________________________ TestCombatManager.test_post_combat_phase _________________________________________________________________________________________
+
+self = <tests.test_combat_manager.TestCombatManager testMethod=test_post_combat_phase>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_manager = StateManager(self.data)
+>       self.combat_manager = CombatManager(self.data, self.state_manager)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_combat_manager.py:23: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_________________________________________________________________________ TestCombatManager.test_post_victory_update_loop_does_not_repeat_rewards _________________________________________________________________________
+
+self = <tests.test_combat_manager.TestCombatManager testMethod=test_post_victory_update_loop_does_not_repeat_rewards>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_manager = StateManager(self.data)
+>       self.combat_manager = CombatManager(self.data, self.state_manager)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_combat_manager.py:23: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+____________________________________________________________________________________ TestCombatManager.test_projectile_hits_and_damage ____________________________________________________________________________________
+
+self = <tests.test_combat_manager.TestCombatManager testMethod=test_projectile_hits_and_damage>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_manager = StateManager(self.data)
+>       self.combat_manager = CombatManager(self.data, self.state_manager)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_combat_manager.py:23: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_______________________________________________________________________________ TestCombatManager.test_repair_drone_update_zero_dt_no_crash _______________________________________________________________________________
+
+self = <tests.test_combat_manager.TestCombatManager testMethod=test_repair_drone_update_zero_dt_no_crash>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_manager = StateManager(self.data)
+>       self.combat_manager = CombatManager(self.data, self.state_manager)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_combat_manager.py:23: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+________________________________________________________________________________________ TestCombatManager.test_ship_unlock_rules _________________________________________________________________________________________
+
+self = <tests.test_combat_manager.TestCombatManager testMethod=test_ship_unlock_rules>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_manager = StateManager(self.data)
+>       self.combat_manager = CombatManager(self.data, self.state_manager)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_combat_manager.py:23: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+____________________________________________________________________________________ TestCombatManager.test_weapon_charging_and_firing ____________________________________________________________________________________
+
+self = <tests.test_combat_manager.TestCombatManager testMethod=test_weapon_charging_and_firing>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_manager = StateManager(self.data)
+>       self.combat_manager = CombatManager(self.data, self.state_manager)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_combat_manager.py:23: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_____________________________________________________________________________________ TestCrew.test_crew_corner_offsets_in_same_room ______________________________________________________________________________________
+
+self = <tests.test_crew.TestCrew testMethod=test_crew_corner_offsets_in_same_room>
+
+    def test_crew_corner_offsets_in_same_room(self):
+        from classes.GameData import GameData
+        from managers.input_manager import InputManager
+        from managers.shop_manager import ShopManager
+        from managers.map_manager import MapManager
+    
+        data = GameData()
+        from settings import STATE_COMBAT
+        data.current_state = STATE_COMBAT
+        shop_mgr = ShopManager(data)
+        map_mgr = MapManager(data)
+>       input_mgr = InputManager(data, shop_mgr, map_mgr)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: InputManager.__init__() takes 2 positional arguments but 4 were given
+
+tests\test_crew.py:113: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+__________________________________________________________________________________________ TestCrew.test_room_damage_and_healing __________________________________________________________________________________________
+
+self = <tests.test_crew.TestCrew testMethod=test_room_damage_and_healing>
+
+    def test_room_damage_and_healing(self):
+        from classes.GameData import GameData
+        from managers.combat_manager import CombatManager
+        from managers.state_manager import StateManager
+    
+        data = GameData()
+        sm = StateManager(data)
+>       cm = CombatManager(data, sm)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_crew.py:87: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+___________________________________________________________________________________ TestCrew.test_targeting_cancel_esc_and_right_click ____________________________________________________________________________________
+
+self = <tests.test_crew.TestCrew testMethod=test_targeting_cancel_esc_and_right_click>
+
+    def test_targeting_cancel_esc_and_right_click(self):
+        from classes.GameData import GameData
+        from managers.input_manager import InputManager
+        from managers.shop_manager import ShopManager
+        from managers.map_manager import MapManager
+        from settings import STATE_COMBAT
+        import pygame
+    
+        data = GameData()
+        data.current_state = STATE_COMBAT
+        data.combat.is_targeting = True
+        data.combat.target_weapon_idx = 0
+    
+        shop_mgr = ShopManager(data)
+        map_mgr = MapManager(data)
+>       input_mgr = InputManager(data, shop_mgr, map_mgr)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: InputManager.__init__() takes 2 positional arguments but 4 were given
+
+tests\test_crew.py:146: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+__________________________________________________________________________________ TestCrewAbilities.test_engi_overclock_instant_repair ___________________________________________________________________________________
+
+self = <tests.test_crew_abilities.TestCrewAbilities testMethod=test_engi_overclock_instant_repair>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_crew_abilities.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+________________________________________________________________________________ TestCrewAbilities.test_human_tactical_focus_heals_allies _________________________________________________________________________________
+
+self = <tests.test_crew_abilities.TestCrewAbilities testMethod=test_human_tactical_focus_heals_allies>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_crew_abilities.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+__________________________________________________________________________________ TestCrewAbilities.test_mantis_frenzy_melee_multiplier __________________________________________________________________________________
+
+self = <tests.test_crew_abilities.TestCrewAbilities testMethod=test_mantis_frenzy_melee_multiplier>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_crew_abilities.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+__________________________________________________________________________________ TestCrewAbilities.test_rock_earthquake_stuns_enemies ___________________________________________________________________________________
+
+self = <tests.test_crew_abilities.TestCrewAbilities testMethod=test_rock_earthquake_stuns_enemies>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_crew_abilities.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_______________________________________________________________________________________ TestCrewAbilities.test_zoltan_shield_burst ________________________________________________________________________________________
+
+self = <tests.test_crew_abilities.TestCrewAbilities testMethod=test_zoltan_shield_burst>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_crew_abilities.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_______________________________________________________________________________ TestDroneSystem.test_defense_drone_shoots_incoming_missile ________________________________________________________________________________
+
+self = <tests.test_drone_system.TestDroneSystem testMethod=test_defense_drone_shoots_incoming_missile>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_drone_system.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+________________________________________________________________________________________ TestDroneSystem.test_drone_catalog_master ________________________________________________________________________________________
+
+self = <tests.test_drone_system.TestDroneSystem testMethod=test_drone_catalog_master>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_drone_system.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+___________________________________________________________________________________ TestDroneSystem.test_drone_power_limit_enforcement ____________________________________________________________________________________
+
+self = <tests.test_drone_system.TestDroneSystem testMethod=test_drone_power_limit_enforcement>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_drone_system.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_______________________________________________________________________________________ TestDroneSystem.test_drones_property_alias ________________________________________________________________________________________
+
+self = <tests.test_drone_system.TestDroneSystem testMethod=test_drones_property_alias>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_drone_system.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_________________________________________________________________________________ TestDroneSystem.test_toggle_drones_resource_consumption _________________________________________________________________________________
+
+self = <tests.test_drone_system.TestDroneSystem testMethod=test_toggle_drones_resource_consumption>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_drone_system.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_________________________________________________________________________________ TestMapAndChoices.test_travel_to_node_fuel_consumption __________________________________________________________________________________
+
+self = <tests.test_map_and_choices.TestMapAndChoices testMethod=test_travel_to_node_fuel_consumption>
+
+    def test_travel_to_node_fuel_consumption(self):
+        self.data.player.fuel = 5
+        start_node = self.data.world.star_map.current_node
+        self.assertIsNotNone(start_node)
+        self.assertGreater(len(start_node.connections), 0)
+    
+        target_node = start_node.connections[0]
+>       success = self.map_manager.travel_to_node(target_node)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_map_and_choices.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+managers\map_manager.py:57: in travel_to_node
+    self.handle_node_event(node)
+managers\map_manager.py:75: in handle_node_event
+    self.trigger_event(node.event_type)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <managers.map_manager.MapManager object at 0x0000025364989E50>, event_type = 'RESOURCE'
+
+    def trigger_event(self, event_type: str) -> None:
+        if self.data.player.fuel <= 0 and event_type == "DISTRESS" and hasattr(self.data, "achievements"):
+            assert self.game is not None
+            self.game.achievement_manager.unlock("survivor")
+    
+>       assert self.game is not None
+               ^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+managers\map_manager.py:146: AssertionError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+__________________________________________________________________________________ TestMapAndChoices.test_travel_to_node_no_fuel_trigger __________________________________________________________________________________
+
+self = <tests.test_map_and_choices.TestMapAndChoices testMethod=test_travel_to_node_no_fuel_trigger>
+
+    def test_travel_to_node_no_fuel_trigger(self):
+        self.data.player.fuel = 0
+        start_node = self.data.world.star_map.current_node
+        target_node = start_node.connections[0]
+    
+>       success = self.map_manager.travel_to_node(target_node)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_map_and_choices.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+managers\map_manager.py:34: in travel_to_node
+    self.trigger_event("DISTRESS")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <managers.map_manager.MapManager object at 0x00000253649732F0>, event_type = 'DISTRESS'
+
+    def trigger_event(self, event_type: str) -> None:
+        if self.data.player.fuel <= 0 and event_type == "DISTRESS" and hasattr(self.data, "achievements"):
+            assert self.game is not None
+            self.game.achievement_manager.unlock("survivor")
+    
+>       assert self.game is not None
+               ^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+managers\map_manager.py:146: AssertionError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+___________________________________________________________________________________ TestRoomManningBonuses.test_evasion_manning_levels ____________________________________________________________________________________
+
+self = <tests.test_room_manning_bonuses.TestRoomManningBonuses testMethod=test_evasion_manning_levels>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_room_manning_bonuses.py:16: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+____________________________________________________________________________________ TestRoomManningBonuses.test_manning_bonus_helper _____________________________________________________________________________________
+
+self = <tests.test_room_manning_bonuses.TestRoomManningBonuses testMethod=test_manning_bonus_helper>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_room_manning_bonuses.py:16: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_____________________________________________________________________________________ TestRoomManningBonuses.test_power_ratio_scaling _____________________________________________________________________________________
+
+self = <tests.test_room_manning_bonuses.TestRoomManningBonuses testMethod=test_power_ratio_scaling>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_room_manning_bonuses.py:16: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+________________________________________________________________________________ TestRoomManningBonuses.test_weapon_charge_manning_levels _________________________________________________________________________________
+
+self = <tests.test_room_manning_bonuses.TestRoomManningBonuses testMethod=test_weapon_charge_manning_levels>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_room_manning_bonuses.py:16: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+____________________________________________________________________________________ TestSectorHazards.test_hazard_distribution_on_map ____________________________________________________________________________________
+
+self = <tests.test_sector_hazards.TestSectorHazards testMethod=test_hazard_distribution_on_map>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_sector_hazards.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+______________________________________________________________________________ TestSectorHazards.test_nebula_ion_storm_halves_reactor_power _______________________________________________________________________________
+
+self = <tests.test_sector_hazards.TestSectorHazards testMethod=test_nebula_ion_storm_halves_reactor_power>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_sector_hazards.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+__________________________________________________________________________________ TestSectorHazards.test_pulsar_radiation_ionizes_rooms __________________________________________________________________________________
+
+self = <tests.test_sector_hazards.TestSectorHazards testMethod=test_pulsar_radiation_ionizes_rooms>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_sector_hazards.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_____________________________________________________________________________________ TestSectorHazards.test_sector_types_generation ______________________________________________________________________________________
+
+self = <tests.test_sector_hazards.TestSectorHazards testMethod=test_sector_types_generation>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_sector_hazards.py:19: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+_________________________________________________________________________ TestShopAndTraining.test_empty_weapon_slot_rendering_and_save_handling __________________________________________________________________________
+
+self = <tests.test_shop_and_training.TestShopAndTraining testMethod=test_empty_weapon_slot_rendering_and_save_handling>
+
+    def test_empty_weapon_slot_rendering_and_save_handling(self):
+        from managers.save_manager import SaveManager
+        from managers.render_manager import RenderManager
+        import pygame
+    
+        self.data.player.weapons = [None, None]
+        self.shop_manager.selecting_slot_item = {"name": "Laser I", "w_type": "LASER"}
+    
+        screen = pygame.Surface((960, 540))
+        render_mgr = RenderManager(screen, self.data)
+    
+        # Must render slot selection without throwing AttributeError on NoneType
+>       render_mgr.draw_shop()
+
+tests\test_shop_and_training.py:148: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <managers.render_manager.RenderManager object at 0x00000253637A6270>
+
+    def draw_shop(self):
+>       assert self.game is not None
+               ^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+managers\render_manager.py:447: AssertionError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+____________________________________________________________________________ TestWeaponMechanics.test_beam_weapon_line_hits_all_rooms_and_crew ____________________________________________________________________________
+
+self = <tests.test_weapon_mechanics.TestWeaponMechanics testMethod=test_beam_weapon_line_hits_all_rooms_and_crew>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_weapon_mechanics.py:18: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+________________________________________________________________________________ TestWeaponMechanics.test_limited_weapon_range_dissipates _________________________________________________________________________________
+
+self = <tests.test_weapon_mechanics.TestWeaponMechanics testMethod=test_limited_weapon_range_dissipates>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_weapon_mechanics.py:18: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+___________________________________________________________________________________ TestWeaponMechanics.test_missile_causes_crew_damage ___________________________________________________________________________________
+
+self = <tests.test_weapon_mechanics.TestWeaponMechanics testMethod=test_missile_causes_crew_damage>
+
+    def setUp(self):
+        self.data = GameData()
+        self.state_mgr = StateManager(self.data)
+>       self.combat_mgr = CombatManager(self.data, self.state_mgr)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+
+tests\test_weapon_mechanics.py:18: TypeError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+________________________________________________________________________________________ TestWeaponSlotSwap.test_swap_weapon_slots ________________________________________________________________________________________
+
+self = <tests.test_weapon_slot_swap.TestWeaponSlotSwap testMethod=test_swap_weapon_slots>
+
+    def test_swap_weapon_slots(self):
+        ship = self.data.player.ship
+        self.assertGreaterEqual(len(ship.weapon_slots), 2)
+    
+        # Set specific allowed_types for slots
+        ship.weapon_slots[0]["allowed_types"] = ["LASER", "BEAM"]
+        ship.weapon_slots[1]["allowed_types"] = ["MISSILE"]
+    
+        w1 = Weapon("Burst Laser", charge_time=8.0, w_type="LASER", damage=25.0, ammo_cost=0)
+        w2 = Weapon("Artemis Missile", charge_time=10.0, w_type="MISSILE", damage=35.0, ammo_cost=1)
+        self.data.player.weapons = [w1, w2]
+    
+        # Perform weapon slot swap
+        success = ship.swap_weapon_slots(0, 1, self.data.player.weapons)
+>       self.assertTrue(success)
+E       AssertionError: None is not true
+
+tests\test_weapon_slot_swap.py:28: AssertionError
+-------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
+Geladene Events: 18
+================================================================================================= short test summary info =================================================================================================
+FAILED tests/test_achievements.py::TestAchievements::test_gamedata_integration - AttributeError: 'GameData' object has no attribute 'achievement_manager'. Did you mean: 'achievement_page'?
+FAILED tests/test_combat_manager.py::TestCombatManager::test_boss_phase_transitions - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_combat_manager.py::TestCombatManager::test_combat_system_reset_between_battles - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_combat_manager.py::TestCombatManager::test_crew_centering_at_combat_start - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_combat_manager.py::TestCombatManager::test_faction_enemy_ship_variety - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_combat_manager.py::TestCombatManager::test_ftl_charging_and_fleeing - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_combat_manager.py::TestCombatManager::test_post_combat_phase - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_combat_manager.py::TestCombatManager::test_post_victory_update_loop_does_not_repeat_rewards - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_combat_manager.py::TestCombatManager::test_projectile_hits_and_damage - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_combat_manager.py::TestCombatManager::test_repair_drone_update_zero_dt_no_crash - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_combat_manager.py::TestCombatManager::test_ship_unlock_rules - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_combat_manager.py::TestCombatManager::test_weapon_charging_and_firing - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_crew.py::TestCrew::test_crew_corner_offsets_in_same_room - TypeError: InputManager.__init__() takes 2 positional arguments but 4 were given
+FAILED tests/test_crew.py::TestCrew::test_room_damage_and_healing - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_crew.py::TestCrew::test_targeting_cancel_esc_and_right_click - TypeError: InputManager.__init__() takes 2 positional arguments but 4 were given
+FAILED tests/test_crew_abilities.py::TestCrewAbilities::test_engi_overclock_instant_repair - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_crew_abilities.py::TestCrewAbilities::test_human_tactical_focus_heals_allies - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_crew_abilities.py::TestCrewAbilities::test_mantis_frenzy_melee_multiplier - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_crew_abilities.py::TestCrewAbilities::test_rock_earthquake_stuns_enemies - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_crew_abilities.py::TestCrewAbilities::test_zoltan_shield_burst - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_drone_system.py::TestDroneSystem::test_defense_drone_shoots_incoming_missile - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_drone_system.py::TestDroneSystem::test_drone_catalog_master - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_drone_system.py::TestDroneSystem::test_drone_power_limit_enforcement - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_drone_system.py::TestDroneSystem::test_drones_property_alias - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_drone_system.py::TestDroneSystem::test_toggle_drones_resource_consumption - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_map_and_choices.py::TestMapAndChoices::test_travel_to_node_fuel_consumption - AssertionError
+FAILED tests/test_map_and_choices.py::TestMapAndChoices::test_travel_to_node_no_fuel_trigger - AssertionError
+FAILED tests/test_room_manning_bonuses.py::TestRoomManningBonuses::test_evasion_manning_levels - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_room_manning_bonuses.py::TestRoomManningBonuses::test_manning_bonus_helper - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_room_manning_bonuses.py::TestRoomManningBonuses::test_power_ratio_scaling - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_room_manning_bonuses.py::TestRoomManningBonuses::test_weapon_charge_manning_levels - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_sector_hazards.py::TestSectorHazards::test_hazard_distribution_on_map - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_sector_hazards.py::TestSectorHazards::test_nebula_ion_storm_halves_reactor_power - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_sector_hazards.py::TestSectorHazards::test_pulsar_radiation_ionizes_rooms - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_sector_hazards.py::TestSectorHazards::test_sector_types_generation - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_shop_and_training.py::TestShopAndTraining::test_empty_weapon_slot_rendering_and_save_handling - AssertionError
+FAILED tests/test_weapon_mechanics.py::TestWeaponMechanics::test_beam_weapon_line_hits_all_rooms_and_crew - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_weapon_mechanics.py::TestWeaponMechanics::test_limited_weapon_range_dissipates - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_weapon_mechanics.py::TestWeaponMechanics::test_missile_causes_crew_damage - TypeError: CombatManager.__init__() takes 2 positional arguments but 3 were given
+FAILED tests/test_weapon_slot_swap.py::TestWeaponSlotSwap::test_swap_weapon_slots - AssertionError: None is not true
+============================================================================================= 40 failed, 75 passed in 26.55s ==============================================================================================
+(.venv) PS C:\Users\droesch\Documents\Programmiertes\py-ftl> 

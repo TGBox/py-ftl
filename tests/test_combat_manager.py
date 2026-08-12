@@ -20,7 +20,7 @@ class TestCombatManager(unittest.TestCase):
     def setUp(self):
         self.data = GameData()
         self.state_manager = StateManager(self.data)
-        self.combat_manager = CombatManager(self.data, self.state_manager)
+        self.combat_manager = CombatManager(self.data)
 
     def test_crew_centering_at_combat_start(self):
         tarnung = self.data.player.ship.rooms[5]
@@ -115,6 +115,7 @@ class TestCombatManager(unittest.TestCase):
         self.data.current_state = STATE_COMBAT
         b_room = next((r for r in self.data.player.ship.rooms if r.name == "Brücke"), None)
         self.assertIsNotNone(b_room)
+        assert b_room is not None
         b_room.max_power = 1
         b_room.current_power = 1
         b_room.health = 100.0

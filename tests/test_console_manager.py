@@ -47,6 +47,7 @@ class TestConsoleManager(unittest.TestCase):
         self.data.player.weapons = [w]
 
         self.console.execute_command("waffen5")
+        assert self.data.player.weapons is not None and self.data.player.weapons[0] is not None
         self.assertEqual(self.data.player.weapons[0].level, 5)
         self.assertIn("MK V", self.data.player.weapons[0].name)
 
