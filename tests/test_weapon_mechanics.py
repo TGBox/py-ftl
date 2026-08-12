@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from classes.Crew import Crew
 from classes.GameData import GameData
@@ -16,6 +16,8 @@ class TestWeaponMechanics(unittest.TestCase):
         self.data = GameData()
         self.state_mgr = StateManager(self.data)
         self.combat_mgr = CombatManager(self.data)
+        self.state_mgr.game = MagicMock()
+        self.combat_mgr.game = MagicMock()
 
     def test_limited_weapon_range_dissipates(self):
         # Create a projectile with limited max_range of 100.0

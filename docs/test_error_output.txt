@@ -1,4 +1,14 @@
-(.venv) PS C:\Users\droesch\Documents\Programmiertes\py-ftl> pytest                                                      
+(.venv) PS C:\Users\droesch\Documents\Programmiertes\py-ftl> git push 
+Enumerating objects: 28, done.
+Counting objects: 100% (28/28), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (17/17), done.
+Writing objects: 100% (17/17), 3.19 KiB | 1.06 MiB/s, done.
+Total 17 (delta 14), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (14/14), completed with 11 local objects.
+To https://github.com/TGBox/py-ftl.git
+   b717cf1..835f903  agentic-todos -> agentic-todos
+(.venv) PS C:\Users\droesch\Documents\Programmiertes\py-ftl> pytest                                                                                                                 
 =================================================================================================== test session starts ===================================================================================================
 platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0
 rootdir: C:\Users\droesch\Documents\Programmiertes\py-ftl
@@ -25,7 +35,7 @@ tests\test_ship_and_doors.py ....                                               
 tests\test_shop_and_training.py F...........                                                                                                                                                                         [ 84%]
 tests\test_sound_manager.py .....                                                                                                                                                                                    [ 88%]
 tests\test_starmap.py ...                                                                                                                                                                                            [ 91%]
-tests\test_weapon_mechanics.py F.F                                                                                                                                                                                   [ 93%]
+tests\test_weapon_mechanics.py ...                                                                                                                                                                                   [ 93%]
 tests\test_weapon_slot_swap.py ..                                                                                                                                                                                    [ 95%]
 tests\test_weapons_and_projectiles.py .....                                                                                                                                                                          [100%]
 
@@ -101,21 +111,42 @@ self = <tests.test_shop_and_training.TestShopAndTraining testMethod=test_empty_w
     
         screen = pygame.Surface((960, 540))
         render_mgr = RenderManager(screen, self.data)
+        render_mgr.game = MagicMock()
     
         # Must render slot selection without throwing AttributeError on NoneType
 >       render_mgr.draw_shop()
 
-tests\test_shop_and_training.py:156: 
+tests\test_shop_and_training.py:157: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = <managers.render_manager.RenderManager object at 0x00000294C9903B60>
+self = <managers.render_manager.RenderManager object at 0x0000026A65DD3CB0>
 
     def draw_shop(self):
->       assert self.game is not None
-               ^^^^^^^^^^^^^^^^^^^^^
-E       AssertionError
+        assert self.game is not None
+        shop_mgr = getattr(self.game, "shop_manager", None) or getattr(self.data, "shop_manager", None)
+        pygame.draw.rect(self.screen, (16, 24, 38), (60, 45, 780, 510))
+        pygame.draw.rect(self.screen, COLOR_SHOP_NODE, (60, 45, 780, 510), 2)
+    
+        # 1. Titel & Statusleiste oben (sauber getrennt ohne Überlappungen)
+        title_font = pygame.font.SysFont(None, 24, bold=True)
+        sub_font = pygame.font.SysFont(None, 16)
+        tiny_font = pygame.font.SysFont(None, 14)
+    
+        t_lbl = title_font.render("--- HÄNDLER-STATION ---", True, COLOR_SHOP_NODE)
+        self.screen.blit(t_lbl, (LOGICAL_WIDTH // 2 - t_lbl.get_width() // 2, 50))
+    
+        p_hp = self.data.player.ship.hp
+        p_max_hp = self.data.player.ship.max_hp
+        p_drones = getattr(self.data.player, "drone_parts", 5)
+        status_txt = f"Dein Scrap: {self.data.player.scrap} Scrap  |  Hülle: {p_hp}/{p_max_hp} HP  |  Fuel: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  Drohnen: {p_drones}"
+        st_lbl = sub_font.render(status_txt, True, (255, 220, 100))
+        self.screen.blit(st_lbl, (LOGICAL_WIDTH // 2 - st_lbl.get_width() // 2, 72))
+    
+>       mx, my = self._logical_mouse_pos()
+        ^^^^^^
+E       ValueError: not enough values to unpack (expected 2, got 0)
 
-managers\render_manager.py:447: AssertionError
+managers\render_manager.py:467: ValueError
 -------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
 Geladene Events: 18
 Geladene Events: 18
@@ -127,188 +158,8 @@ Musik erfolgreich geladen aus assets/music\bgm_boss.ogg
 Musik erfolgreich geladen aus assets/music\bgm_civilian.ogg
 Musik erfolgreich geladen aus assets/music\bgm_nebula.ogg
 Musik erfolgreich geladen aus assets/music\bgm_pirate.ogg
-____________________________________________________________________________ TestWeaponMechanics.test_beam_weapon_line_hits_all_rooms_and_crew ____________________________________________________________________________
-
-self = <tests.test_weapon_mechanics.TestWeaponMechanics testMethod=test_beam_weapon_line_hits_all_rooms_and_crew>, mock_random = <MagicMock name='random' id='2838060087152'>
-
-    @patch("random.random", return_value=0.99)
-    def test_beam_weapon_line_hits_all_rooms_and_crew(self, mock_random):
-        r1 = Room("Waffen", (100, 100, 80, 80), is_enemy=True)
-        r2 = Room("Schild", (190, 100, 80, 80), is_enemy=True)
-        self.data.enemy.ship.rooms = [r1, r2]
-    
-        c1 = Crew(140, 140, name="Enemy1", is_enemy=True)
-        c1.current_room = r1
-        c2 = Crew(230, 140, name="Enemy2", is_enemy=True)
-        c2.current_room = r2
-        self.combat_mgr.enemy_crew = [c1, c2]
-    
-        # Beam firing line passing through r1 (100, 100) to r2 (250, 100)
-        proj = Projectile(
-            (110.0, 140.0),
-            (250.0, 140.0),
-            target_room=r1,
-            is_player_shot=True,
-            w_type="BEAM",
-            damage=30.0,
-            crew_damage=40.0,
-        )
-    
-        # Move beam tip to target position to represent full beam length
-        proj.x = proj.target_x
-        proj.y = proj.target_y
-    
-        intersected = proj.get_intersected_rooms(self.data.enemy.ship.rooms)
-        self.assertIn(r1, intersected)
-        self.assertIn(r2, intersected)
-    
-        init_c1_hp = c1.hp
-        init_c2_hp = c2.hp
-    
-        # Process hit
->       self.combat_mgr.handle_player_hit(proj)
-
-tests\test_weapon_mechanics.py:76: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <managers.combat_manager.CombatManager object at 0x00000294CE7678C0>, projectile = <classes.Projectile.Projectile object at 0x00000294C99DF9D0>
-
-    def handle_player_hit(self, projectile: Projectile):
-        if getattr(self.data.combat, "zoltan_shield_hp", 0) > 0:
-            self.data.combat.zoltan_shield_hp = max(0, self.data.combat.zoltan_shield_hp - 1)
-            if self.sound: self.sound.play("shield_hit")
-            self.show_message(f"ZOLTAN SUPER-SCHILD ABSORBIERT TREFFER! ({self.data.combat.zoltan_shield_hp} HP übrig)")
-            return
-    
-        # SRS 6.2 Evasion Berechnung
-        base_engine = self.data.enemy.ship.rooms[2].current_power * 0.10 if len(self.data.enemy.ship.rooms) > 2 else 0.10
-        enemy_evade = base_engine
-    
-        if random.random() < enemy_evade:
-            self.show_message("FEIND IST AUSGEWICHEN!")
-        else:
-            hit_successful = False
-            if projectile.w_type in ("MISSILE", "BOMB"):
-                hit_successful = True
-            elif projectile.w_type == "ION":
-                if self.data.enemy.shield.current_layers > 0:
-                    self.data.enemy.shield.attempt_block()
-                    self.data.enemy.shield.lock_timer = 5.0
-                    self.show_message("GEGNERISCHES SCHILD IONISIERT (Sperre 5s)!")
-                else:
-                    projectile.target_room.ion_timer = 6.0
-                    self.show_message(f"GEGNER-RAUM {projectile.target_room.name.upper()} IONISIERT (Sperre 6s)!")
-            elif projectile.w_type == "BEAM":
-                if self.data.enemy.shield.current_layers <= projectile.shield_pierce:
-                    hit_successful = True
-                else:
-                    self.data.enemy.shield.attempt_block()
-                    if self.sound: self.sound.play("shield_hit")
-                    assert self.game is not None
-                    self.game.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
-            else:
-                if not self.data.enemy.shield.attempt_block():
-                    hit_successful = True
-                else:
-                    if self.sound: self.sound.play("shield_hit")
-                    assert self.game is not None
-                    self.game.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
-    
-            if hit_successful:
-                if self.sound: self.sound.play("hull_hit")
->               assert self.game is not None
-                       ^^^^^^^^^^^^^^^^^^^^^
-E               AssertionError
-
-managers\combat_manager.py:670: AssertionError
--------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
-Geladene Events: 18
-___________________________________________________________________________________ TestWeaponMechanics.test_missile_causes_crew_damage ___________________________________________________________________________________
-
-self = <tests.test_weapon_mechanics.TestWeaponMechanics testMethod=test_missile_causes_crew_damage>
-
-    def test_missile_causes_crew_damage(self):
-        from unittest.mock import patch
-        r1 = Room("Waffen", (100, 100, 80, 80), is_enemy=True)
-        self.data.enemy.ship.rooms = [r1]
-    
-        c1 = Crew(140, 140, name="Enemy1", is_enemy=True)
-        c1.current_room = r1
-        self.combat_mgr.enemy_crew = [c1]
-    
-        proj = Projectile(
-            (10.0, 140.0),
-            (140.0, 140.0),
-            target_room=r1,
-            is_player_shot=True,
-            w_type="MISSILE",
-            damage=40.0,
-            crew_damage=35.0,
-        )
-    
-        init_hp = c1.hp
-        with patch("random.random", return_value=0.99):
->           self.combat_mgr.handle_player_hit(proj)
-
-tests\test_weapon_mechanics.py:107: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <managers.combat_manager.CombatManager object at 0x00000294D4E93460>, projectile = <classes.Projectile.Projectile object at 0x00000294C9A4AEA0>
-
-    def handle_player_hit(self, projectile: Projectile):
-        if getattr(self.data.combat, "zoltan_shield_hp", 0) > 0:
-            self.data.combat.zoltan_shield_hp = max(0, self.data.combat.zoltan_shield_hp - 1)
-            if self.sound: self.sound.play("shield_hit")
-            self.show_message(f"ZOLTAN SUPER-SCHILD ABSORBIERT TREFFER! ({self.data.combat.zoltan_shield_hp} HP übrig)")
-            return
-    
-        # SRS 6.2 Evasion Berechnung
-        base_engine = self.data.enemy.ship.rooms[2].current_power * 0.10 if len(self.data.enemy.ship.rooms) > 2 else 0.10
-        enemy_evade = base_engine
-    
-        if random.random() < enemy_evade:
-            self.show_message("FEIND IST AUSGEWICHEN!")
-        else:
-            hit_successful = False
-            if projectile.w_type in ("MISSILE", "BOMB"):
-                hit_successful = True
-            elif projectile.w_type == "ION":
-                if self.data.enemy.shield.current_layers > 0:
-                    self.data.enemy.shield.attempt_block()
-                    self.data.enemy.shield.lock_timer = 5.0
-                    self.show_message("GEGNERISCHES SCHILD IONISIERT (Sperre 5s)!")
-                else:
-                    projectile.target_room.ion_timer = 6.0
-                    self.show_message(f"GEGNER-RAUM {projectile.target_room.name.upper()} IONISIERT (Sperre 6s)!")
-            elif projectile.w_type == "BEAM":
-                if self.data.enemy.shield.current_layers <= projectile.shield_pierce:
-                    hit_successful = True
-                else:
-                    self.data.enemy.shield.attempt_block()
-                    if self.sound: self.sound.play("shield_hit")
-                    assert self.game is not None
-                    self.game.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
-            else:
-                if not self.data.enemy.shield.attempt_block():
-                    hit_successful = True
-                else:
-                    if self.sound: self.sound.play("shield_hit")
-                    assert self.game is not None
-                    self.game.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
-    
-            if hit_successful:
-                if self.sound: self.sound.play("hull_hit")
->               assert self.game is not None
-                       ^^^^^^^^^^^^^^^^^^^^^
-E               AssertionError
-
-managers\combat_manager.py:670: AssertionError
--------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
-Geladene Events: 18
 ================================================================================================= short test summary info =================================================================================================
 FAILED tests/test_crew.py::TestCrew::test_crew_corner_offsets_in_same_room - AssertionError: unexpectedly None
 FAILED tests/test_map_and_choices.py::TestMapAndChoices::test_travel_to_node_no_fuel_trigger - AssertionError: 'KEIN TREIBSTOFF MEHR' not found in ''
-FAILED tests/test_shop_and_training.py::TestShopAndTraining::test_empty_weapon_slot_rendering_and_save_handling - AssertionError
-FAILED tests/test_weapon_mechanics.py::TestWeaponMechanics::test_beam_weapon_line_hits_all_rooms_and_crew - AssertionError
-FAILED tests/test_weapon_mechanics.py::TestWeaponMechanics::test_missile_causes_crew_damage - AssertionError
-======================================================================================== 5 failed, 109 passed in 66.97s (0:01:06) =========================================================================================
+FAILED tests/test_shop_and_training.py::TestShopAndTraining::test_empty_weapon_slot_rendering_and_save_handling - ValueError: not enough values to unpack (expected 2, got 0)
+======================================================================================== 3 failed, 111 passed in 70.64s (0:01:10) =========================================================================================
