@@ -151,7 +151,8 @@ class TestShopAndTraining(unittest.TestCase):
 
         screen = pygame.Surface((960, 540))
         render_mgr = RenderManager(screen, self.data)
-        render_mgr.game = MagicMock()
+        render_mgr.game = game
+        #render_mgr.game.screen_to_logical.return_value = (0, 0)
 
         # Must render slot selection without throwing AttributeError on NoneType
         render_mgr.draw_shop()

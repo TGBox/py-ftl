@@ -1,43 +1,125 @@
-(.venv) PS C:\Users\droesch\Documents\Programmiertes\py-ftl> git push 
-Enumerating objects: 28, done.
-Counting objects: 100% (28/28), done.
-Delta compression using up to 16 threads
-Compressing objects: 100% (17/17), done.
-Writing objects: 100% (17/17), 3.19 KiB | 1.06 MiB/s, done.
-Total 17 (delta 14), reused 0 (delta 0), pack-reused 0 (from 0)
-remote: Resolving deltas: 100% (14/14), completed with 11 local objects.
-To https://github.com/TGBox/py-ftl.git
-   b717cf1..835f903  agentic-todos -> agentic-todos
-(.venv) PS C:\Users\droesch\Documents\Programmiertes\py-ftl> pytest                                                                                                                 
+(.venv) PS C:\Users\droesch\Documents\Programmiertes\py-ftl> pytest -vv     
 =================================================================================================== test session starts ===================================================================================================
-platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0
+platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\droesch\Documents\Programmiertes\py-ftl\.venv\Scripts\python.exe
+cachedir: .pytest_cache
 rootdir: C:\Users\droesch\Documents\Programmiertes\py-ftl
 configfile: pyproject.toml
 collected 114 items                                                                                                                                                                                                        
 
-tests\test_achievements.py ...                                                                                                                                                                                       [  2%]
-tests\test_combat_manager.py ...........                                                                                                                                                                             [ 12%]
-tests\test_console_manager.py ......                                                                                                                                                                                 [ 17%]
-tests\test_crew.py .F.....                                                                                                                                                                                           [ 23%]
-tests\test_crew_abilities.py .....                                                                                                                                                                                   [ 28%]
-tests\test_destroyed_room_repair.py ..                                                                                                                                                                               [ 29%]
-tests\test_drone_system.py .....                                                                                                                                                                                     [ 34%]
-tests\test_event_layout.py ...                                                                                                                                                                                       [ 36%]
-tests\test_event_manager.py .....                                                                                                                                                                                    [ 41%]
-tests\test_map_and_choices.py ........F                                                                                                                                                                              [ 49%]
-tests\test_particle_manager.py .....                                                                                                                                                                                 [ 53%]
-tests\test_room_manning_bonuses.py ....                                                                                                                                                                              [ 57%]
-tests\test_save_manager.py ....                                                                                                                                                                                      [ 60%]
-tests\test_scaling_and_hitboxes.py ...                                                                                                                                                                               [ 63%]
-tests\test_sector_hazards.py ....                                                                                                                                                                                    [ 66%]
-tests\test_shields_and_reactor.py ....                                                                                                                                                                               [ 70%]
-tests\test_ship_and_doors.py ....                                                                                                                                                                                    [ 73%]
-tests\test_shop_and_training.py F...........                                                                                                                                                                         [ 84%]
-tests\test_sound_manager.py .....                                                                                                                                                                                    [ 88%]
-tests\test_starmap.py ...                                                                                                                                                                                            [ 91%]
-tests\test_weapon_mechanics.py ...                                                                                                                                                                                   [ 93%]
-tests\test_weapon_slot_swap.py ..                                                                                                                                                                                    [ 95%]
-tests\test_weapons_and_projectiles.py .....                                                                                                                                                                          [100%]
+tests/test_achievements.py::TestAchievements::test_achievement_initialization PASSED                                                                                                                                 [  0%]
+tests/test_achievements.py::TestAchievements::test_toast_notifications PASSED                                                                                                                                        [  1%]
+tests/test_achievements.py::TestAchievements::test_unlock_and_persistence PASSED                                                                                                                                     [  2%]
+tests/test_combat_manager.py::TestCombatManager::test_boss_phase_transitions PASSED                                                                                                                                  [  3%]
+tests/test_combat_manager.py::TestCombatManager::test_combat_system_reset_between_battles PASSED                                                                                                                     [  4%]
+tests/test_combat_manager.py::TestCombatManager::test_crew_centering_at_combat_start PASSED                                                                                                                          [  5%]
+tests/test_combat_manager.py::TestCombatManager::test_faction_enemy_ship_variety PASSED                                                                                                                              [  6%]
+tests/test_combat_manager.py::TestCombatManager::test_ftl_charging_and_fleeing PASSED                                                                                                                                [  7%]
+tests/test_combat_manager.py::TestCombatManager::test_post_combat_phase PASSED                                                                                                                                       [  7%]
+tests/test_combat_manager.py::TestCombatManager::test_post_victory_update_loop_does_not_repeat_rewards PASSED                                                                                                        [  8%]
+tests/test_combat_manager.py::TestCombatManager::test_projectile_hits_and_damage PASSED                                                                                                                              [  9%]
+tests/test_combat_manager.py::TestCombatManager::test_repair_drone_update_zero_dt_no_crash PASSED                                                                                                                    [ 10%]
+tests/test_combat_manager.py::TestCombatManager::test_ship_unlock_rules PASSED                                                                                                                                       [ 11%]
+tests/test_combat_manager.py::TestCombatManager::test_weapon_charging_and_firing PASSED                                                                                                                              [ 12%]
+tests/test_console_manager.py::TestConsoleManager::test_cheat_godmode_and_heal PASSED                                                                                                                                [ 13%]
+tests/test_console_manager.py::TestConsoleManager::test_cheat_resource_commands PASSED                                                                                                                               [ 14%]
+tests/test_console_manager.py::TestConsoleManager::test_cheat_unlock_all PASSED                                                                                                                                      [ 14%]
+tests/test_console_manager.py::TestConsoleManager::test_cheat_weapon_upgrade_level5 PASSED                                                                                                                           [ 15%]
+tests/test_console_manager.py::TestConsoleManager::test_console_toggle PASSED                                                                                                                                        [ 16%]
+tests/test_console_manager.py::TestConsoleManager::test_fun_cheats PASSED                                                                                                                                            [ 17%]
+tests/test_crew.py::TestCrew::test_bfs_pathfinding PASSED                                                                                                                                                            [ 18%]
+tests/test_crew.py::TestCrew::test_crew_corner_offsets_in_same_room FAILED                                                                                                                                           [ 19%]
+tests/test_crew.py::TestCrew::test_crew_initialization_and_species_traits PASSED                                                                                                                                     [ 20%]
+tests/test_crew.py::TestCrew::test_door_auto_open_and_close PASSED                                                                                                                                                   [ 21%]
+tests/test_crew.py::TestCrew::test_room_damage_and_healing PASSED                                                                                                                                                    [ 21%]
+tests/test_crew.py::TestCrew::test_skill_training PASSED                                                                                                                                                             [ 22%]
+tests/test_crew.py::TestCrew::test_targeting_cancel_esc_and_right_click PASSED                                                                                                                                       [ 23%]
+tests/test_crew_abilities.py::TestCrewAbilities::test_engi_overclock_instant_repair PASSED                                                                                                                           [ 24%]
+tests/test_crew_abilities.py::TestCrewAbilities::test_human_tactical_focus_heals_allies PASSED                                                                                                                       [ 25%]
+tests/test_crew_abilities.py::TestCrewAbilities::test_mantis_frenzy_melee_multiplier PASSED                                                                                                                          [ 26%]
+tests/test_crew_abilities.py::TestCrewAbilities::test_rock_earthquake_stuns_enemies PASSED                                                                                                                           [ 27%]
+tests/test_crew_abilities.py::TestCrewAbilities::test_zoltan_shield_burst PASSED                                                                                                                                     [ 28%]
+tests/test_destroyed_room_repair.py::TestDestroyedRoomRepair::test_enemy_destroyed_room_5x_repair_penalty PASSED                                                                                                     [ 28%]
+tests/test_destroyed_room_repair.py::TestDestroyedRoomRepair::test_player_room_normal_repair PASSED                                                                                                                  [ 29%]
+tests/test_drone_system.py::TestDroneSystem::test_defense_drone_shoots_incoming_missile PASSED                                                                                                                       [ 30%]
+tests/test_drone_system.py::TestDroneSystem::test_drone_catalog_master PASSED                                                                                                                                        [ 31%]
+tests/test_drone_system.py::TestDroneSystem::test_drone_power_limit_enforcement PASSED                                                                                                                               [ 32%]
+tests/test_drone_system.py::TestDroneSystem::test_drones_property_alias PASSED                                                                                                                                       [ 33%]
+tests/test_drone_system.py::TestDroneSystem::test_toggle_drones_resource_consumption PASSED                                                                                                                          [ 34%]
+tests/test_event_layout.py::TestEventLayout::test_calculate_event_layout_dynamic_box PASSED                                                                                                                          [ 35%]
+tests/test_event_layout.py::TestEventLayout::test_wrap_long_text PASSED                                                                                                                                              [ 35%]
+tests/test_event_layout.py::TestEventLayout::test_wrap_short_text PASSED                                                                                                                                             [ 36%]
+tests/test_event_manager.py::TestEventManager::test_all_event_types PASSED                                                                                                                                           [ 37%]
+tests/test_event_manager.py::TestEventManager::test_blue_choices_filtering PASSED                                                                                                                                    [ 38%]
+tests/test_event_manager.py::TestEventManager::test_distress_out_of_fuel PASSED                                                                                                                                      [ 39%]
+tests/test_event_manager.py::TestEventManager::test_distress_with_fuel PASSED                                                                                                                                        [ 40%]
+tests/test_event_manager.py::TestEventManager::test_events_json_loading PASSED                                                                                                                                       [ 41%]
+tests/test_map_and_choices.py::TestMapAndChoices::test_can_afford_choice PASSED                                                                                                                                      [ 42%]
+tests/test_map_and_choices.py::TestMapAndChoices::test_handle_choice_buy_fuel PASSED                                                                                                                                 [ 42%]
+tests/test_map_and_choices.py::TestMapAndChoices::test_handle_choice_claim_resources PASSED                                                                                                                          [ 43%]
+tests/test_map_and_choices.py::TestMapAndChoices::test_handle_choice_flee_outcomes PASSED                                                                                                                            [ 44%]
+tests/test_map_and_choices.py::TestMapAndChoices::test_handle_choice_start_combat PASSED                                                                                                                             [ 45%]
+tests/test_map_and_choices.py::TestMapAndChoices::test_handle_choice_take_damage PASSED                                                                                                                              [ 46%]
+tests/test_map_and_choices.py::TestMapAndChoices::test_non_negative_resource_clamping PASSED                                                                                                                         [ 47%]
+tests/test_map_and_choices.py::TestMapAndChoices::test_travel_to_node_fuel_consumption PASSED                                                                                                                        [ 48%]
+tests/test_map_and_choices.py::TestMapAndChoices::test_travel_to_node_no_fuel_trigger PASSED                                                                                                                         [ 49%]
+tests/test_particle_manager.py::TestParticleManager::test_emit_explosion PASSED                                                                                                                                      [ 50%]
+tests/test_particle_manager.py::TestParticleManager::test_emit_shield_ripple PASSED                                                                                                                                  [ 50%]
+tests/test_particle_manager.py::TestParticleManager::test_emit_sparks_and_thruster PASSED                                                                                                                            [ 51%]
+tests/test_particle_manager.py::TestParticleManager::test_particle_draw_does_not_crash PASSED                                                                                                                        [ 52%]
+tests/test_particle_manager.py::TestParticleManager::test_particle_physics_and_decay PASSED                                                                                                                          [ 53%]
+tests/test_room_manning_bonuses.py::TestRoomManningBonuses::test_evasion_manning_levels PASSED                                                                                                                       [ 54%]
+tests/test_room_manning_bonuses.py::TestRoomManningBonuses::test_manning_bonus_helper PASSED                                                                                                                         [ 55%]
+tests/test_room_manning_bonuses.py::TestRoomManningBonuses::test_power_ratio_scaling PASSED                                                                                                                          [ 56%]
+tests/test_room_manning_bonuses.py::TestRoomManningBonuses::test_weapon_charge_manning_levels PASSED                                                                                                                 [ 57%]
+tests/test_save_manager.py::TestSaveManager::test_auto_save_setting_roundtrip PASSED                                                                                                                                 [ 57%]
+tests/test_save_manager.py::TestSaveManager::test_save_and_load_game_roundtrip PASSED                                                                                                                                [ 58%]
+tests/test_save_manager.py::TestSaveManager::test_save_and_load_unlocks PASSED                                                                                                                                       [ 59%]
+tests/test_save_manager.py::TestSaveManager::test_tampered_save_rejection PASSED                                                                                                                                     [ 60%]
+tests/test_scaling_and_hitboxes.py::TestScalingAndHitboxes::test_render_manager_uses_logical_coordinates PASSED                                                                                                      [ 61%]
+tests/test_scaling_and_hitboxes.py::TestScalingAndHitboxes::test_screen_to_logical_1920x1080 PASSED                                                                                                                  [ 62%]
+tests/test_scaling_and_hitboxes.py::TestScalingAndHitboxes::test_screen_to_logical_ultrawide PASSED                                                                                                                  [ 63%]
+tests/test_sector_hazards.py::TestSectorHazards::test_hazard_distribution_on_map PASSED                                                                                                                              [ 64%]
+tests/test_sector_hazards.py::TestSectorHazards::test_nebula_ion_storm_halves_reactor_power PASSED                                                                                                                   [ 64%]
+tests/test_sector_hazards.py::TestSectorHazards::test_pulsar_radiation_ionizes_rooms PASSED                                                                                                                          [ 65%]
+tests/test_sector_hazards.py::TestSectorHazards::test_sector_types_generation PASSED                                                                                                                                 [ 66%]
+tests/test_shields_and_reactor.py::TestShieldsAndReactor::test_effective_max_power PASSED                                                                                                                            [ 67%]
+tests/test_shields_and_reactor.py::TestShieldsAndReactor::test_reactor_power_management PASSED                                                                                                                       [ 68%]
+tests/test_shields_and_reactor.py::TestShieldsAndReactor::test_shield_ion_lock PASSED                                                                                                                                [ 69%]
+tests/test_shields_and_reactor.py::TestShieldsAndReactor::test_shield_recharge_and_blocking PASSED                                                                                                                   [ 70%]
+tests/test_ship_and_doors.py::TestShipAndDoors::test_all_ship_blueprints PASSED                                                                                                                                      [ 71%]
+tests/test_ship_and_doors.py::TestShipAndDoors::test_door_generation PASSED                                                                                                                                          [ 71%]
+tests/test_ship_and_doors.py::TestShipAndDoors::test_door_toggling PASSED                                                                                                                                            [ 72%]
+tests/test_ship_and_doors.py::TestShipAndDoors::test_swap_room_systems PASSED                                                                                                                                        [ 73%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_empty_weapon_slot_rendering_and_save_handling PASSED                                                                                                      [ 74%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_shop_buy_drone_parts PASSED                                                                                                                               [ 75%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_shop_buy_fuel_and_missiles PASSED                                                                                                                         [ 76%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_shop_buy_hull_repair PASSED                                                                                                                               [ 77%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_shop_catalog_generation PASSED                                                                                                                            [ 78%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_shop_compatible_weapons_weighting PASSED                                                                                                                  [ 78%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_shop_crew_candidate_preview_and_purchase PASSED                                                                                                           [ 79%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_shop_insufficient_scrap PASSED                                                                                                                            [ 80%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_shop_reactor_upgrade_capping PASSED                                                                                                                       [ 81%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_shop_room_trading PASSED                                                                                                                                  [ 82%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_shop_weapon_overwrite_prevention PASSED                                                                                                                   [ 83%]
+tests/test_shop_and_training.py::TestShopAndTraining::test_training_manager_skill_upgrade PASSED                                                                                                                     [ 84%]
+tests/test_sound_manager.py::TestSoundManager::test_music_tracks_generation PASSED                                                                                                                                   [ 85%]
+tests/test_sound_manager.py::TestSoundManager::test_play_and_stop_music PASSED                                                                                                                                       [ 85%]
+tests/test_sound_manager.py::TestSoundManager::test_sfx_cache_completeness PASSED                                                                                                                                    [ 86%]
+tests/test_sound_manager.py::TestSoundManager::test_toggle_audio_and_music PASSED                                                                                                                                    [ 87%]
+tests/test_sound_manager.py::TestSoundManager::test_volume_controls PASSED                                                                                                                                           [ 88%]
+tests/test_starmap.py::TestStarMap::test_node_connectivity PASSED                                                                                                                                                    [ 89%]
+tests/test_starmap.py::TestStarMap::test_rebel_fleet_advancement PASSED                                                                                                                                              [ 90%]
+tests/test_starmap.py::TestStarMap::test_starmap_generation PASSED                                                                                                                                                   [ 91%]
+tests/test_weapon_mechanics.py::TestWeaponMechanics::test_beam_weapon_line_hits_all_rooms_and_crew PASSED                                                                                                            [ 92%]
+tests/test_weapon_mechanics.py::TestWeaponMechanics::test_limited_weapon_range_dissipates PASSED                                                                                                                     [ 92%]
+tests/test_weapon_mechanics.py::TestWeaponMechanics::test_missile_causes_crew_damage PASSED                                                                                                                          [ 93%]
+tests/test_weapon_slot_swap.py::TestWeaponSlotSwap::test_layout_swap_mode_toggle PASSED                                                                                                                              [ 94%]
+tests/test_weapon_slot_swap.py::TestWeaponSlotSwap::test_swap_weapon_slots PASSED                                                                                                                                    [ 95%]
+tests/test_weapons_and_projectiles.py::TestWeaponsAndProjectiles::test_beam_intersected_rooms PASSED                                                                                                                 [ 96%]
+tests/test_weapons_and_projectiles.py::TestWeaponsAndProjectiles::test_projectile_movement PASSED                                                                                                                    [ 97%]
+tests/test_weapons_and_projectiles.py::TestWeaponsAndProjectiles::test_projectile_status_effects PASSED                                                                                                              [ 98%]
+tests/test_weapons_and_projectiles.py::TestWeaponsAndProjectiles::test_weapon_ammo_cost PASSED                                                                                                                       [ 99%]
+tests/test_weapons_and_projectiles.py::TestWeaponsAndProjectiles::test_weapon_properties PASSED                                                                                                                      [100%]
 
 ======================================================================================================== FAILURES =========================================================================================================
 _____________________________________________________________________________________ TestCrew.test_crew_corner_offsets_in_same_room ______________________________________________________________________________________
@@ -52,6 +134,7 @@ self = <tests.test_crew.TestCrew testMethod=test_crew_corner_offsets_in_same_roo
         from settings import STATE_COMBAT
         data.current_state = STATE_COMBAT
         input_mgr = InputManager(data)
+        input_mgr.game = MagicMock()
     
         room = data.player.ship.rooms[0]
         c1 = Crew(100, 100)
@@ -62,6 +145,7 @@ self = <tests.test_crew.TestCrew testMethod=test_crew_corner_offsets_in_same_roo
     
         # Simulate clicking on room to move selected crew
         input_mgr._logical_mouse_pos = lambda pos=None: (room.rect.centerx, room.rect.centery)
+        data.enemy.ship.rooms = [] # Verhindert Klick-Intercept durch das Gegnerschiff
         input_mgr.handle_left_click(
             pygame.event.Event(
                 pygame.MOUSEBUTTONDOWN,
@@ -74,92 +158,9 @@ self = <tests.test_crew.TestCrew testMethod=test_crew_corner_offsets_in_same_roo
 >       self.assertIsNotNone(c1.target_pos)
 E       AssertionError: unexpectedly None
 
-tests\test_crew.py:130: AssertionError
+tests\test_crew.py:133: AssertionError
 -------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
 Geladene Events: 18
-__________________________________________________________________________________ TestMapAndChoices.test_travel_to_node_no_fuel_trigger __________________________________________________________________________________
-
-self = <tests.test_map_and_choices.TestMapAndChoices testMethod=test_travel_to_node_no_fuel_trigger>
-
-    def test_travel_to_node_no_fuel_trigger(self):
-        self.data.player.fuel = 0
-        start_node = self.data.world.star_map.current_node
-        assert start_node is not None
-        target_node = start_node.connections[0]
-    
-        success = self.map_manager.travel_to_node(target_node)
-        self.assertFalse(success)
-        self.assertEqual(self.data.current_state, STATE_EVENT)
->       self.assertIn("KEIN TREIBSTOFF MEHR", self.data.world.event_manager.current_event_text)
-E       AssertionError: 'KEIN TREIBSTOFF MEHR' not found in ''
-
-tests\test_map_and_choices.py:43: AssertionError
--------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
-Geladene Events: 18
-_________________________________________________________________________ TestShopAndTraining.test_empty_weapon_slot_rendering_and_save_handling __________________________________________________________________________
-
-self = <tests.test_shop_and_training.TestShopAndTraining testMethod=test_empty_weapon_slot_rendering_and_save_handling>
-
-    def test_empty_weapon_slot_rendering_and_save_handling(self):
-        from managers.save_manager import SaveManager
-        from managers.render_manager import RenderManager
-        import pygame
-    
-        game = Game()
-        self.data.player.weapons = [None, None]
-        self.shop_manager.selecting_slot_item = {"name": "Laser I", "w_type": "LASER"}
-    
-        screen = pygame.Surface((960, 540))
-        render_mgr = RenderManager(screen, self.data)
-        render_mgr.game = MagicMock()
-    
-        # Must render slot selection without throwing AttributeError on NoneType
->       render_mgr.draw_shop()
-
-tests\test_shop_and_training.py:157: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <managers.render_manager.RenderManager object at 0x0000026A65DD3CB0>
-
-    def draw_shop(self):
-        assert self.game is not None
-        shop_mgr = getattr(self.game, "shop_manager", None) or getattr(self.data, "shop_manager", None)
-        pygame.draw.rect(self.screen, (16, 24, 38), (60, 45, 780, 510))
-        pygame.draw.rect(self.screen, COLOR_SHOP_NODE, (60, 45, 780, 510), 2)
-    
-        # 1. Titel & Statusleiste oben (sauber getrennt ohne Überlappungen)
-        title_font = pygame.font.SysFont(None, 24, bold=True)
-        sub_font = pygame.font.SysFont(None, 16)
-        tiny_font = pygame.font.SysFont(None, 14)
-    
-        t_lbl = title_font.render("--- HÄNDLER-STATION ---", True, COLOR_SHOP_NODE)
-        self.screen.blit(t_lbl, (LOGICAL_WIDTH // 2 - t_lbl.get_width() // 2, 50))
-    
-        p_hp = self.data.player.ship.hp
-        p_max_hp = self.data.player.ship.max_hp
-        p_drones = getattr(self.data.player, "drone_parts", 5)
-        status_txt = f"Dein Scrap: {self.data.player.scrap} Scrap  |  Hülle: {p_hp}/{p_max_hp} HP  |  Fuel: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  Drohnen: {p_drones}"
-        st_lbl = sub_font.render(status_txt, True, (255, 220, 100))
-        self.screen.blit(st_lbl, (LOGICAL_WIDTH // 2 - st_lbl.get_width() // 2, 72))
-    
->       mx, my = self._logical_mouse_pos()
-        ^^^^^^
-E       ValueError: not enough values to unpack (expected 2, got 0)
-
-managers\render_manager.py:467: ValueError
--------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
-Geladene Events: 18
-Geladene Events: 18
-Geladene Events: 18
-Musik erfolgreich geladen aus assets/music\bgm_menu.ogg
-Musik erfolgreich geladen aus assets/music\bgm_explore.ogg
-Musik erfolgreich geladen aus assets/music\bgm_combat.ogg
-Musik erfolgreich geladen aus assets/music\bgm_boss.ogg
-Musik erfolgreich geladen aus assets/music\bgm_civilian.ogg
-Musik erfolgreich geladen aus assets/music\bgm_nebula.ogg
-Musik erfolgreich geladen aus assets/music\bgm_pirate.ogg
 ================================================================================================= short test summary info =================================================================================================
 FAILED tests/test_crew.py::TestCrew::test_crew_corner_offsets_in_same_room - AssertionError: unexpectedly None
-FAILED tests/test_map_and_choices.py::TestMapAndChoices::test_travel_to_node_no_fuel_trigger - AssertionError: 'KEIN TREIBSTOFF MEHR' not found in ''
-FAILED tests/test_shop_and_training.py::TestShopAndTraining::test_empty_weapon_slot_rendering_and_save_handling - ValueError: not enough values to unpack (expected 2, got 0)
-======================================================================================== 3 failed, 111 passed in 70.64s (0:01:10) =========================================================================================
+======================================================================================== 1 failed, 113 passed in 98.10s (0:01:38) =========================================================================================

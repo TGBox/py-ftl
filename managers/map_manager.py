@@ -31,6 +31,9 @@ class MapManager:
         logger.debug(f"Reise von Node {self.data.world.star_map.current_node} zu Node {node}")
 
         if self.data.player.fuel <= 0:
+            self.data.current_state = STATE_EVENT
+            self.data.world.event_manager.current_event_text = "KEIN TREIBSTOFF MEHR. Du treibst im All."
+            self.data.world.event_manager.choices = [{"text": "Warten...", "action": "WAIT"}]
             self.trigger_event("DISTRESS")
             return False
 

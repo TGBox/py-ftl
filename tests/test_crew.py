@@ -1,6 +1,7 @@
 import os
 import sys
 import unittest
+from unittest.mock import MagicMock
 
 import pygame
 
@@ -108,6 +109,7 @@ class TestCrew(unittest.TestCase):
         from settings import STATE_COMBAT
         data.current_state = STATE_COMBAT
         input_mgr = InputManager(data)
+        input_mgr.game = MagicMock()
 
         room = data.player.ship.rooms[0]
         c1 = Crew(100, 100)
@@ -118,6 +120,7 @@ class TestCrew(unittest.TestCase):
 
         # Simulate clicking on room to move selected crew
         input_mgr._logical_mouse_pos = lambda pos=None: (room.rect.centerx, room.rect.centery)
+        data.enemy.ship.rooms = [] # Verhindert Klick-Intercept durch das Gegnerschiff
         input_mgr.handle_left_click(
             pygame.event.Event(
                 pygame.MOUSEBUTTONDOWN,
