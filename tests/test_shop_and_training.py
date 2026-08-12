@@ -1,6 +1,7 @@
 import os
 import sys
 import unittest
+from unittest.mock import MagicMock
 
 from game import Game
 
@@ -18,6 +19,8 @@ class TestShopAndTraining(unittest.TestCase):
         self.data = GameData()
         self.shop_manager = ShopManager(self.data)
         self.training_manager = TrainingManager(self.data)
+        self.shop_manager.game = MagicMock()
+        self.training_manager.game = MagicMock()
 
     def test_shop_catalog_generation(self):
         self.shop_manager.refresh_catalog()

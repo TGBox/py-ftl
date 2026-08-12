@@ -88,12 +88,19 @@ class ShipModel:
         # Türen & Luftschleusen neu berechnen
         self.generate_doors()
 
-    def swap_weapon_slots(self, s1: int, s2: int, player_weapons: list[Weapon | None]) -> bool:
-        if 0 <= s1 < len(player_weapons) and 0 <= s2 < len(player_weapons):
-            player_weapons[s1], player_weapons[s2] = player_weapons[s2], player_weapons[s1]
-            return True
-        else:
+    def swap_weapon_slots(self, idx1: int, idx2: int, weapons_list: list) -> bool:
+        # Optional: Prüfen, ob die Indizes im gültigen Bereich liegen
+        if not (0 <= idx1 < len(self.weapon_slots) and 0 <= idx2 < len(self.weapon_slots)):
             return False
+
+        # 1. Die Waffen in der übergebenen Inventarliste tauschen
+        if 0 <= idx1 < len(weapons_list) and 0 <= idx2 < len(weapons_list):
+            weapons_list[idx1], weapons_list[idx2] = weapons_list[idx2], weapons_list[idx1]
+            
+        # 2. Die Eigenschaften der Slots im Schiff tauschen
+        self.weapon_slots[idx1], self.weapon_slots[idx2] = self.weapon_slots[idx2], self.weapon_slots[idx1]
+        
+        return True
 
     def generate_doors(self) -> None:
         self.doors.clear()

@@ -1,6 +1,7 @@
 import os
 import sys
 import unittest
+from unittest.mock import MagicMock
 
 from game import Game
 
@@ -24,6 +25,8 @@ class TestCombatManager(unittest.TestCase):
         self.data = self.game.data
         self.state_manager = StateManager(self.data)
         self.combat_manager = CombatManager(self.data)
+        self.combat_manager.game = MagicMock()
+        self.state_manager.game = MagicMock()
 
     def test_crew_centering_at_combat_start(self):
         tarnung = self.data.player.ship.rooms[5]

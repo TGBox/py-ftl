@@ -1,4 +1,4 @@
-(.venv) PS C:\Users\droesch\Documents\Programmiertes\py-ftl> pytest                  
+(.venv) PS C:\Users\droesch\Documents\Programmiertes\py-ftl> pytest                                                      
 =================================================================================================== test session starts ===================================================================================================
 platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0
 rootdir: C:\Users\droesch\Documents\Programmiertes\py-ftl
@@ -6,15 +6,15 @@ configfile: pyproject.toml
 collected 114 items                                                                                                                                                                                                        
 
 tests\test_achievements.py ...                                                                                                                                                                                       [  2%]
-tests\test_combat_manager.py .......F...                                                                                                                                                                             [ 12%]
+tests\test_combat_manager.py ...........                                                                                                                                                                             [ 12%]
 tests\test_console_manager.py ......                                                                                                                                                                                 [ 17%]
-tests\test_crew.py .F....F                                                                                                                                                                                           [ 23%]
+tests\test_crew.py .F.....                                                                                                                                                                                           [ 23%]
 tests\test_crew_abilities.py .....                                                                                                                                                                                   [ 28%]
 tests\test_destroyed_room_repair.py ..                                                                                                                                                                               [ 29%]
 tests\test_drone_system.py .....                                                                                                                                                                                     [ 34%]
 tests\test_event_layout.py ...                                                                                                                                                                                       [ 36%]
 tests\test_event_manager.py .....                                                                                                                                                                                    [ 41%]
-tests\test_map_and_choices.py .......FF                                                                                                                                                                              [ 49%]
+tests\test_map_and_choices.py ........F                                                                                                                                                                              [ 49%]
 tests\test_particle_manager.py .....                                                                                                                                                                                 [ 53%]
 tests\test_room_manning_bonuses.py ....                                                                                                                                                                              [ 57%]
 tests\test_save_manager.py ....                                                                                                                                                                                      [ 60%]
@@ -26,87 +26,10 @@ tests\test_shop_and_training.py F...........                                    
 tests\test_sound_manager.py .....                                                                                                                                                                                    [ 88%]
 tests\test_starmap.py ...                                                                                                                                                                                            [ 91%]
 tests\test_weapon_mechanics.py F.F                                                                                                                                                                                   [ 93%]
-tests\test_weapon_slot_swap.py .F                                                                                                                                                                                    [ 95%]
+tests\test_weapon_slot_swap.py ..                                                                                                                                                                                    [ 95%]
 tests\test_weapons_and_projectiles.py .....                                                                                                                                                                          [100%]
 
 ======================================================================================================== FAILURES =========================================================================================================
-____________________________________________________________________________________ TestCombatManager.test_projectile_hits_and_damage ____________________________________________________________________________________
-
-self = <tests.test_combat_manager.TestCombatManager testMethod=test_projectile_hits_and_damage>
-
-    def test_projectile_hits_and_damage(self):
-        room = self.data.enemy.ship.rooms[0]
-        init_hp = self.data.enemy.ship.hp
-        room_init_hp = room.health
-    
-        proj = Projectile((100, 100), room.rect.center, target_room=room, is_player_shot=True, damage=25.0)
-    
-        # Force hit processing
->       self.combat_manager.handle_player_hit(proj)
-
-tests\test_combat_manager.py:56: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <managers.combat_manager.CombatManager object at 0x0000027E8CBED310>, projectile = <classes.Projectile.Projectile object at 0x0000027E918541A0>
-
-    def handle_player_hit(self, projectile: Projectile):
-        if getattr(self.data.combat, "zoltan_shield_hp", 0) > 0:
-            self.data.combat.zoltan_shield_hp = max(0, self.data.combat.zoltan_shield_hp - 1)
-            if self.sound: self.sound.play("shield_hit")
-            self.show_message(f"ZOLTAN SUPER-SCHILD ABSORBIERT TREFFER! ({self.data.combat.zoltan_shield_hp} HP übrig)")
-            return
-    
-        # SRS 6.2 Evasion Berechnung
-        base_engine = self.data.enemy.ship.rooms[2].current_power * 0.10 if len(self.data.enemy.ship.rooms) > 2 else 0.10
-        enemy_evade = base_engine
-    
-        if random.random() < enemy_evade:
-            self.show_message("FEIND IST AUSGEWICHEN!")
-        else:
-            hit_successful = False
-            if projectile.w_type in ("MISSILE", "BOMB"):
-                hit_successful = True
-            elif projectile.w_type == "ION":
-                if self.data.enemy.shield.current_layers > 0:
-                    self.data.enemy.shield.attempt_block()
-                    self.data.enemy.shield.lock_timer = 5.0
-                    self.show_message("GEGNERISCHES SCHILD IONISIERT (Sperre 5s)!")
-                else:
-                    projectile.target_room.ion_timer = 6.0
-                    self.show_message(f"GEGNER-RAUM {projectile.target_room.name.upper()} IONISIERT (Sperre 6s)!")
-            elif projectile.w_type == "BEAM":
-                if self.data.enemy.shield.current_layers <= projectile.shield_pierce:
-                    hit_successful = True
-                else:
-                    self.data.enemy.shield.attempt_block()
-                    if self.sound: self.sound.play("shield_hit")
-                    assert self.game is not None
-                    self.game.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
-            else:
-                if not self.data.enemy.shield.attempt_block():
-                    hit_successful = True
-                else:
-                    if self.sound: self.sound.play("shield_hit")
-                    assert self.game is not None
-                    self.game.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
-    
-            if hit_successful:
-                if self.sound: self.sound.play("hull_hit")
->               assert self.game is not None
-                       ^^^^^^^^^^^^^^^^^^^^^
-E               AssertionError
-
-managers\combat_manager.py:670: AssertionError
--------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
-Geladene Events: 18
-Geladene Events: 18
-Musik erfolgreich geladen aus assets/music\bgm_menu.ogg
-Musik erfolgreich geladen aus assets/music\bgm_explore.ogg
-Musik erfolgreich geladen aus assets/music\bgm_combat.ogg
-Musik erfolgreich geladen aus assets/music\bgm_boss.ogg
-Musik erfolgreich geladen aus assets/music\bgm_civilian.ogg
-Musik erfolgreich geladen aus assets/music\bgm_nebula.ogg
-Musik erfolgreich geladen aus assets/music\bgm_pirate.ogg
 _____________________________________________________________________________________ TestCrew.test_crew_corner_offsets_in_same_room ______________________________________________________________________________________
 
 self = <tests.test_crew.TestCrew testMethod=test_crew_corner_offsets_in_same_room>
@@ -129,102 +52,19 @@ self = <tests.test_crew.TestCrew testMethod=test_crew_corner_offsets_in_same_roo
     
         # Simulate clicking on room to move selected crew
         input_mgr._logical_mouse_pos = lambda pos=None: (room.rect.centerx, room.rect.centery)
->       input_mgr.handle_left_click(
+        input_mgr.handle_left_click(
             pygame.event.Event(
                 pygame.MOUSEBUTTONDOWN,
                 pos=(room.rect.centerx, room.rect.centery),
                 button=1,
             )
         )
-
-tests\test_crew.py:121: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <managers.input_manager.InputManager object at 0x0000027E9192D220>, event = <Event(1025-MouseButtonDown {'pos': (105, 290), 'button': 1})>
-
-    def handle_left_click(self, event: pygame.event.Event):
->       logger.debug(f"Linksklick auf Position x={event.pos[0]}, y={event.pos[1]}, Ziel: {event.target}")
-                                                                                          ^^^^^^^^^^^^
-E       AttributeError: 'pygame.event.Event' object has no attribute 'target'
-
-managers\input_manager.py:164: AttributeError
--------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
-Geladene Events: 18
-___________________________________________________________________________________ TestCrew.test_targeting_cancel_esc_and_right_click ____________________________________________________________________________________
-
-self = <tests.test_crew.TestCrew testMethod=test_targeting_cancel_esc_and_right_click>
-
-    def test_targeting_cancel_esc_and_right_click(self):
-        from classes.GameData import GameData
-        from managers.input_manager import InputManager
-        from settings import STATE_COMBAT
-        import pygame
     
-        data = GameData()
-        data.current_state = STATE_COMBAT
-        data.combat.is_targeting = True
-        data.combat.target_weapon_idx = 0
-    
-        input_mgr = InputManager(data)
-    
-        # Simulate ESC key
-        esc_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)
-        input_mgr.handle_keydown(esc_event)
-        self.assertFalse(data.combat.is_targeting, "ESC must cancel weapon targeting mode.")
-    
-        # Simulate Right-Click
-        data.combat.is_targeting = True
-        rc_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=3, pos=(100, 100))
->       input_mgr.handle_right_click(rc_event)
+        # Verify c1 and c2 have different target_pos (opposing corner offsets)
+>       self.assertIsNotNone(c1.target_pos)
+E       AssertionError: unexpectedly None
 
-tests\test_crew.py:155: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <managers.input_manager.InputManager object at 0x0000027E8CBA3BD0>, event = <Event(1025-MouseButtonDown {'button': 3, 'pos': (100, 100)})>
-
-    def handle_right_click(self, event: pygame.event.Event):
->       logger.debug(f"Linksklick auf Position x={event.pos[0]}, y={event.pos[1]}, Ziel: {event.target}")
-                                                                                          ^^^^^^^^^^^^
-E       AttributeError: 'pygame.event.Event' object has no attribute 'target'
-
-managers\input_manager.py:466: AttributeError
--------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
-Geladene Events: 18
-_________________________________________________________________________________ TestMapAndChoices.test_travel_to_node_fuel_consumption __________________________________________________________________________________
-
-self = <tests.test_map_and_choices.TestMapAndChoices testMethod=test_travel_to_node_fuel_consumption>
-
-    def test_travel_to_node_fuel_consumption(self):
-        self.data.player.fuel = 5
-        start_node = self.data.world.star_map.current_node
-        self.assertIsNotNone(start_node)
-        assert start_node is not None
-        self.assertGreater(len(start_node.connections), 0)
-    
-        target_node = start_node.connections[0]
->       success = self.map_manager.travel_to_node(target_node)
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-tests\test_map_and_choices.py:26: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-managers\map_manager.py:57: in travel_to_node
-    self.handle_node_event(node)
-managers\map_manager.py:75: in handle_node_event
-    self.trigger_event(node.event_type)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <managers.map_manager.MapManager object at 0x0000027E918B7540>, event_type = 'EMPTY'
-
-    def trigger_event(self, event_type: str) -> None:
-        if self.data.player.fuel <= 0 and event_type == "DISTRESS" and hasattr(self.data, "achievements"):
-            assert self.game is not None
-            self.game.achievement_manager.unlock("survivor")
-    
->       assert self.game is not None
-               ^^^^^^^^^^^^^^^^^^^^^
-E       AssertionError
-
-managers\map_manager.py:146: AssertionError
+tests\test_crew.py:130: AssertionError
 -------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
 Geladene Events: 18
 __________________________________________________________________________________ TestMapAndChoices.test_travel_to_node_no_fuel_trigger __________________________________________________________________________________
@@ -237,27 +77,13 @@ self = <tests.test_map_and_choices.TestMapAndChoices testMethod=test_travel_to_n
         assert start_node is not None
         target_node = start_node.connections[0]
     
->       success = self.map_manager.travel_to_node(target_node)
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        success = self.map_manager.travel_to_node(target_node)
+        self.assertFalse(success)
+        self.assertEqual(self.data.current_state, STATE_EVENT)
+>       self.assertIn("KEIN TREIBSTOFF MEHR", self.data.world.event_manager.current_event_text)
+E       AssertionError: 'KEIN TREIBSTOFF MEHR' not found in ''
 
-tests\test_map_and_choices.py:38: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-managers\map_manager.py:34: in travel_to_node
-    self.trigger_event("DISTRESS")
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <managers.map_manager.MapManager object at 0x0000027E8CB84590>, event_type = 'DISTRESS'
-
-    def trigger_event(self, event_type: str) -> None:
-        if self.data.player.fuel <= 0 and event_type == "DISTRESS" and hasattr(self.data, "achievements"):
-            assert self.game is not None
-            self.game.achievement_manager.unlock("survivor")
-    
->       assert self.game is not None
-               ^^^^^^^^^^^^^^^^^^^^^
-E       AssertionError
-
-managers\map_manager.py:146: AssertionError
+tests\test_map_and_choices.py:43: AssertionError
 -------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
 Geladene Events: 18
 _________________________________________________________________________ TestShopAndTraining.test_empty_weapon_slot_rendering_and_save_handling __________________________________________________________________________
@@ -279,10 +105,10 @@ self = <tests.test_shop_and_training.TestShopAndTraining testMethod=test_empty_w
         # Must render slot selection without throwing AttributeError on NoneType
 >       render_mgr.draw_shop()
 
-tests\test_shop_and_training.py:153: 
+tests\test_shop_and_training.py:156: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = <managers.render_manager.RenderManager object at 0x0000027E8CAC3770>
+self = <managers.render_manager.RenderManager object at 0x00000294C9903B60>
 
     def draw_shop(self):
 >       assert self.game is not None
@@ -303,7 +129,7 @@ Musik erfolgreich geladen aus assets/music\bgm_nebula.ogg
 Musik erfolgreich geladen aus assets/music\bgm_pirate.ogg
 ____________________________________________________________________________ TestWeaponMechanics.test_beam_weapon_line_hits_all_rooms_and_crew ____________________________________________________________________________
 
-self = <tests.test_weapon_mechanics.TestWeaponMechanics testMethod=test_beam_weapon_line_hits_all_rooms_and_crew>, mock_random = <MagicMock name='random' id='2742549226768'>
+self = <tests.test_weapon_mechanics.TestWeaponMechanics testMethod=test_beam_weapon_line_hits_all_rooms_and_crew>, mock_random = <MagicMock name='random' id='2838060087152'>
 
     @patch("random.random", return_value=0.99)
     def test_beam_weapon_line_hits_all_rooms_and_crew(self, mock_random):
@@ -345,7 +171,7 @@ self = <tests.test_weapon_mechanics.TestWeaponMechanics testMethod=test_beam_wea
 tests\test_weapon_mechanics.py:76: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = <managers.combat_manager.CombatManager object at 0x0000027E983A84B0>, projectile = <classes.Projectile.Projectile object at 0x0000027E8CB8F4D0>
+self = <managers.combat_manager.CombatManager object at 0x00000294CE7678C0>, projectile = <classes.Projectile.Projectile object at 0x00000294C99DF9D0>
 
     def handle_player_hit(self, projectile: Projectile):
         if getattr(self.data.combat, "zoltan_shield_hp", 0) > 0:
@@ -427,7 +253,7 @@ self = <tests.test_weapon_mechanics.TestWeaponMechanics testMethod=test_missile_
 tests\test_weapon_mechanics.py:107: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = <managers.combat_manager.CombatManager object at 0x0000027E983A8B40>, projectile = <classes.Projectile.Projectile object at 0x0000027E8CC088A0>
+self = <managers.combat_manager.CombatManager object at 0x00000294D4E93460>, projectile = <classes.Projectile.Projectile object at 0x00000294C9A4AEA0>
 
     def handle_player_hit(self, projectile: Projectile):
         if getattr(self.data.combat, "zoltan_shield_hp", 0) > 0:
@@ -479,52 +305,10 @@ E               AssertionError
 managers\combat_manager.py:670: AssertionError
 -------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
 Geladene Events: 18
-________________________________________________________________________________________ TestWeaponSlotSwap.test_swap_weapon_slots ________________________________________________________________________________________
-
-self = <tests.test_weapon_slot_swap.TestWeaponSlotSwap testMethod=test_swap_weapon_slots>
-
-    def test_swap_weapon_slots(self):
-        ship = self.data.player.ship
-        self.assertGreaterEqual(len(ship.weapon_slots), 2)
-    
-        # Set specific allowed_types for slots
-        ship.weapon_slots[0]["allowed_types"] = ["LASER", "BEAM"]
-        ship.weapon_slots[1]["allowed_types"] = ["MISSILE"]
-    
-        w1 = Weapon("Burst Laser", charge_time=8.0, w_type="LASER", damage=25.0, ammo_cost=0)
-        w2 = Weapon("Artemis Missile", charge_time=10.0, w_type="MISSILE", damage=35.0, ammo_cost=1)
-        self.data.player.weapons = [w1, w2]
-    
-        # Perform weapon slot swap
-        success = ship.swap_weapon_slots(0, 1, self.data.player.weapons)
-        self.assertTrue(success)
-    
-        # Verify allowed_types swapped
->       self.assertEqual(ship.weapon_slots[0]["allowed_types"], ["MISSILE"])
-E       AssertionError: Lists differ: ['LASER', 'BEAM'] != ['MISSILE']
-E       
-E       First differing element 0:
-E       'LASER'
-E       'MISSILE'
-E       
-E       First list contains 1 additional elements.
-E       First extra element 1:
-E       'BEAM'
-E       
-E       - ['LASER', 'BEAM']
-E       + ['MISSILE']
-
-tests\test_weapon_slot_swap.py:31: AssertionError
--------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------
-Geladene Events: 18
 ================================================================================================= short test summary info =================================================================================================
-FAILED tests/test_combat_manager.py::TestCombatManager::test_projectile_hits_and_damage - AssertionError
-FAILED tests/test_crew.py::TestCrew::test_crew_corner_offsets_in_same_room - AttributeError: 'pygame.event.Event' object has no attribute 'target'
-FAILED tests/test_crew.py::TestCrew::test_targeting_cancel_esc_and_right_click - AttributeError: 'pygame.event.Event' object has no attribute 'target'
-FAILED tests/test_map_and_choices.py::TestMapAndChoices::test_travel_to_node_fuel_consumption - AssertionError
-FAILED tests/test_map_and_choices.py::TestMapAndChoices::test_travel_to_node_no_fuel_trigger - AssertionError
+FAILED tests/test_crew.py::TestCrew::test_crew_corner_offsets_in_same_room - AssertionError: unexpectedly None
+FAILED tests/test_map_and_choices.py::TestMapAndChoices::test_travel_to_node_no_fuel_trigger - AssertionError: 'KEIN TREIBSTOFF MEHR' not found in ''
 FAILED tests/test_shop_and_training.py::TestShopAndTraining::test_empty_weapon_slot_rendering_and_save_handling - AssertionError
 FAILED tests/test_weapon_mechanics.py::TestWeaponMechanics::test_beam_weapon_line_hits_all_rooms_and_crew - AssertionError
 FAILED tests/test_weapon_mechanics.py::TestWeaponMechanics::test_missile_causes_crew_damage - AssertionError
-FAILED tests/test_weapon_slot_swap.py::TestWeaponSlotSwap::test_swap_weapon_slots - AssertionError: Lists differ: ['LASER', 'BEAM'] != ['MISSILE']
-======================================================================================== 9 failed, 105 passed in 80.48s (0:01:20) =========================================================================================
+======================================================================================== 5 failed, 109 passed in 66.97s (0:01:06) =========================================================================================

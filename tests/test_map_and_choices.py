@@ -1,6 +1,7 @@
 import os
 import sys
 import unittest
+from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -14,6 +15,7 @@ class TestMapAndChoices(unittest.TestCase):
     def setUp(self):
         self.data = GameData()
         self.map_manager = MapManager(self.data)
+        self.map_manager.game = MagicMock()
 
     def test_travel_to_node_fuel_consumption(self):
         self.data.player.fuel = 5
