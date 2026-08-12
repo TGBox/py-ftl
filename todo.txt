@@ -25,3 +25,4 @@
 (E) 2026-08-10 In der Crew Klasse gibt es noch Speziesnamen und Spezialfähigkeiten die als Enum abgespeichert werden können. +Refactoring @code
 (E) 2026-08-10 In der Drone Klasse gibt es noch Strings die als Enum abgespeichert werden können. +Refactoring @code
 (E) 2026-08-10 In der ShipModel Klasse gibt es noch seehr viele Strings und dicts die als Enum abgespeichert werden können. +Refactoring @code
+(E) 2026-08-12 Wenn man im OptionenMenü den Sound stumm schaltet, wird die Anzeige des Buttons nicht mehr geändert. Dieser bleibt durchgehend grün und zeigt, dass der Sound auch weiterhin an sei. Obwohl dies nicht der Fall ist. +Refactoring @code
