@@ -2,6 +2,8 @@ import os
 import sys
 import unittest
 
+from game import Game
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from classes.Crew import Crew
@@ -18,7 +20,8 @@ from settings import STATE_COMBAT, STATE_VICTORY
 class TestCombatManager(unittest.TestCase):
 
     def setUp(self):
-        self.data = GameData()
+        self.game = Game()
+        self.data = self.game.data
         self.state_manager = StateManager(self.data)
         self.combat_manager = CombatManager(self.data)
 

@@ -161,7 +161,7 @@ class InputManager:
                 if self.sound: self.sound.play("click")
 
     def handle_left_click(self, event: pygame.event.Event):
-        logger.debug(f"Linksklick auf Position x={event.x}, y={event.y}, Ziel: {event.target}")
+        logger.debug(f"Linksklick auf Position x={event.pos[0]}, y={event.pos[1]}, Ziel: {event.target}")
 
         mx, my = self._logical_mouse_pos(getattr(event, "pos", None))        # 1. 3 Save Slots Modal Interaction
         if getattr(self.data, "show_slot_modal", False):
@@ -463,7 +463,7 @@ class InputManager:
 
 
     def handle_right_click(self, event: pygame.event.Event):
-        logger.debug(f"Linksklick auf Position x={event.x}, y={event.y}, Ziel: {event.target}")
+        logger.debug(f"Linksklick auf Position x={event.pos[0]}, y={event.pos[1]}, Ziel: {event.target}")
         if self.data.current_state != STATE_COMBAT:
             return
         mx, my = self._logical_mouse_pos(getattr(event, "pos", None))
