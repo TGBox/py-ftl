@@ -19,6 +19,7 @@ class TestMapAndChoices(unittest.TestCase):
         self.data.player.fuel = 5
         start_node = self.data.world.star_map.current_node
         self.assertIsNotNone(start_node)
+        assert start_node is not None
         self.assertGreater(len(start_node.connections), 0)
 
         target_node = start_node.connections[0]
@@ -31,6 +32,7 @@ class TestMapAndChoices(unittest.TestCase):
     def test_travel_to_node_no_fuel_trigger(self):
         self.data.player.fuel = 0
         start_node = self.data.world.star_map.current_node
+        assert start_node is not None
         target_node = start_node.connections[0]
 
         success = self.map_manager.travel_to_node(target_node)

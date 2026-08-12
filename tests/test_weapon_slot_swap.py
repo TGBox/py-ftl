@@ -32,7 +32,9 @@ class TestWeaponSlotSwap(unittest.TestCase):
         self.assertEqual(ship.weapon_slots[1]["allowed_types"], ["LASER", "BEAM"])
 
         # Verify equipped weapons swapped
+        assert self.data.player.weapons[0] is not None
         self.assertEqual(self.data.player.weapons[0].name, "Artemis Missile")
+        assert self.data.player.weapons[1] is not None
         self.assertEqual(self.data.player.weapons[1].name, "Burst Laser")
 
     def test_layout_swap_mode_toggle(self):

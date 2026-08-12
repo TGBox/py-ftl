@@ -13,7 +13,7 @@ class TestRoomManningBonuses(unittest.TestCase):
     def setUp(self):
         self.data = GameData()
         self.state_mgr = StateManager(self.data)
-        self.combat_mgr = CombatManager(self.data, self.state_mgr)
+        self.combat_mgr = CombatManager(self.data)
 
     def test_manning_bonus_helper(self):
         # Unmanned
@@ -87,6 +87,7 @@ class TestRoomManningBonuses(unittest.TestCase):
 
     def test_power_ratio_scaling(self):
         w_room = next((r for r in self.data.player.ship.rooms if r.name == "Waffen"), None)
+        assert w_room is not None
         w_room.max_power = 4
         w_room.current_power = 2  # 50% power
 

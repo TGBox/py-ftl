@@ -15,6 +15,7 @@ class TestStarMap(unittest.TestCase):
     def test_starmap_generation(self):
         self.assertGreater(len(self.star_map.nodes), 0)
         self.assertIsNotNone(self.star_map.current_node)
+        assert self.star_map.current_node is not None
         self.assertEqual(self.star_map.current_node.event_type, "EMPTY")
 
         exit_nodes = [n for n in self.star_map.nodes if n.event_type == "EXIT"]

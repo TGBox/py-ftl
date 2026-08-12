@@ -16,7 +16,7 @@ class TestSectorHazards(unittest.TestCase):
     def setUp(self):
         self.data = GameData()
         self.state_mgr = StateManager(self.data)
-        self.combat_mgr = CombatManager(self.data, self.state_mgr)
+        self.combat_mgr = CombatManager(self.data)
 
     def test_sector_types_generation(self):
         starmap = StarMap()
@@ -47,7 +47,8 @@ class TestSectorHazards(unittest.TestCase):
         self.combat_mgr.update(0.1)
 
         expected_power = max(1, initial_power // 2)
-        self.assertEqual(self.data.player.reactor.max_power, expected_power, "Ion storm should halve reactor max power.")
+        assert self.data is not None
+        self.assertEqual(self.data.player.reactor.total_power, expected_power, "Ion storm should halve reactor max power.")
 
     def test_pulsar_radiation_ionizes_rooms(self):
         node = self.data.world.star_map.nodes[1]

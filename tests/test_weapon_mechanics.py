@@ -15,7 +15,7 @@ class TestWeaponMechanics(unittest.TestCase):
     def setUp(self):
         self.data = GameData()
         self.state_mgr = StateManager(self.data)
-        self.combat_mgr = CombatManager(self.data, self.state_mgr)
+        self.combat_mgr = CombatManager(self.data)
 
     def test_limited_weapon_range_dissipates(self):
         # Create a projectile with limited max_range of 100.0
