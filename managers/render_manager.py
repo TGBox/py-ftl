@@ -147,8 +147,7 @@ class RenderManager:
             self.draw_crew_menu()
 
         # Toast Notifications
-        if hasattr(self.data, "achievements"):
-            assert self.game is not None
+        if self.game is not None:
             self.game.achievement_manager.update_toasts(0.016)
             self.game.achievement_manager.draw_toasts(self.screen, self.font)
 
@@ -411,7 +410,7 @@ class RenderManager:
         is_enemy_destroyed = (self.data.enemy.ship.hp <= 0) or getattr(self.data.combat, "combat_won", False)
 
         # Triebwerks-Partikel dynamisch am Heck (Unterseite) der Schiffe emittieren (nach unten)
-        if hasattr(self.data, "particle_manager"):
+        if self.game is not None:
             if self.data.player.ship.rooms:
                 p_left = min(r.rect.left for r in self.data.player.ship.rooms)
                 p_right = max(r.rect.right for r in self.data.player.ship.rooms)
@@ -930,7 +929,7 @@ class RenderManager:
         self.screen.blit(p_surf, (p_box.x, p_box.y))
         pygame.draw.rect(self.screen, (0, 200, 255), p_box, 1)
 
-        if hasattr(self.data, "combat_manager") and hasattr(self.game.combat_manager, "get_player_evasion"):
+        if self.game is not None and hasattr(self.game.combat_manager, "get_player_evasion"):
             evade_val = int(self.game.combat_manager.get_player_evasion() * 100)
         else:
             evade_val = int(self.data.player.ship.rooms[2].current_power * 0.20 * 100) if len(self.data.player.ship.rooms) > 2 else 10
@@ -1601,7 +1600,7 @@ class RenderManager:
         res_idx = getattr(game_ref, "resolution_idx", 0) if game_ref else 0
         res_list = getattr(game_ref, "resolutions", RESOLUTIONS) if game_ref else RESOLUTIONS
         cur_res = res_list[res_idx] if res_idx < len(res_list) else (1920, 1080)
-        sound_ref = getattr(game_ref, "sound", None) if game_ref else (getattr(self, "sound", None))
+        sound_ref = getattr(game_ref, "sound_manager", None) if game_ref else (getattr(self, "sound", None))
         audio_on = sound_ref.enabled if sound_ref else True
 
         master_v = sound_ref.master_volume if sound_ref else 1.0
@@ -1720,7 +1719,7 @@ class RenderManager:
         self.screen.blit(t_lbl, (LOGICAL_WIDTH // 2 - t_lbl.get_width() // 2, 28))
 
         # 2. Gesamt-Fortschrittsbalken
-        ach_mgr = getattr(self.data, "achievements", None)
+        ach_mgr = getattr(self.game, "achievement_manager", None)
         ach_dict: dict[str, Any] = ach_mgr.achievements if ach_mgr else {}
         total_count = len(ach_dict)
         unlocked_count = sum(1 for a in ach_dict.values() if a.get("unlocked", False))
@@ -1851,10 +1850,9 @@ class RenderManager:
 
 
     def draw_event(self):
-        assert self.game is not None
-        ev_text = self.game.event_manager.current_event_text
-        res_text = getattr(self.game.event_manager, "result_text", "")
-        choices = self.game.event_manager.choices
+        ev_text = self.data.world.event_manager.current_event_text
+        res_text = getattr(self.data.world.event_manager, "result_text", "")
+        choices = self.data.world.event_manager.choices
         
         layout = calculate_event_layout(ev_text, res_text, choices, self.font)
         box_rect = layout["box_rect"]

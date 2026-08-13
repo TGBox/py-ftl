@@ -44,8 +44,7 @@ class CombatManager:
     def update(self, dt: float):
         """Wird einmal pro Frame aufgerufen."""
 
-        if hasattr(self.data, "particle_manager"):
-            assert self.game is not None
+        if self.game is not None:
             self.game.particle_manager.update(dt)
 
         if self.data.paused or getattr(self.data, "show_pause_menu", False):
@@ -133,8 +132,7 @@ class CombatManager:
                 e_rooms = random.sample(self.data.enemy.ship.rooms, min(2, len(self.data.enemy.ship.rooms)))
                 for r in p_rooms + e_rooms:
                     r.ion_timer = 8.0
-                    if hasattr(self.data, "particle_manager"):
-                        assert self.game is not None
+                    if self.game is not None:
                         self.game.particle_manager.emit_shield_ripple(r.rect.centerx, r.rect.centery, (255, 230, 80))
                 if self.sound: self.sound.play("ion_hit")
                 self.show_message("PULSAR-STRAHLUNG! RÄUME BEIDER SCHIFFE IONISIERT!")
@@ -956,8 +954,7 @@ class CombatManager:
                 self.data.player.newly_unlocked_ship = new_ship
 
         # Achievements prüfen
-        if hasattr(self.data, "achievements"):
-            assert self.game is not None
+        if self.game is not None:
             self.game.achievement_manager.unlock("first_victory")
             if is_mini_boss:
                 self.game.achievement_manager.unlock("boss_slayer")
@@ -1089,8 +1086,7 @@ class CombatManager:
                         proj.alive = False
                         d_start = (int(p_cx + math.cos(self.data.combat.drone_orbit_angle) * 130), int(p_cy + math.sin(self.data.combat.drone_orbit_angle) * 100))
                         self.data.combat.defense_laser_beam = (d_start, (int(proj.x), int(proj.y)), 0.25)
-                        if hasattr(self.data, "particle_manager"):
-                            assert self.game is not None
+                        if self.game is not None:
                             self.game.particle_manager.emit_explosion(proj.x, proj.y, count=15)
                         if self.sound: self.sound.play("laser_fire")
                         self.show_message("VERTEIDIGUNGS-DROHNE HAT RAKETE ABGESCHOSSEN!")
@@ -1115,8 +1111,7 @@ class CombatManager:
                     ap_y += (dy / dist) * 110.0 * dt
                 else:
                     target_b.hp = max(0.0, target_b.hp - 22.0 * dt)
-                    if hasattr(self.data, "particle_manager"):
-                        assert self.game is not None
+                    if self.game is not None:
                         self.game.particle_manager.emit_sparks(target_b.x, target_b.y, count=3)
                 self.data.combat.anti_personnel_pos = (ap_x, ap_y)
 

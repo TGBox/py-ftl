@@ -142,18 +142,17 @@ class MapManager:
         self.data.current_state = STATE_TRAINING
 
     def trigger_event(self, event_type: str) -> None:
-        if self.data.player.fuel <= 0 and event_type == "DISTRESS" and hasattr(self.data, "achievements"):
+        if self.data.player.fuel <= 0 and event_type == "DISTRESS" and self.game is not None:
             assert self.game is not None
             self.game.achievement_manager.unlock("survivor")
 
-        assert self.game is not None
-        self.game.event_manager.trigger_event(
+        self.data.world.event_manager.trigger_event(
             event_type, self.data.player.crew, self.data.player.fuel
         )
         self.data.current_state = STATE_EVENT
 
     def handle_choice(self, action: str, choice_data: dict[str, Any]) -> None:
-        if hasattr(self.game, "achievements"):
+        if self.game is not None:
             evt_count = getattr(self.data, "events_completed_count", 0) + 1
             self.events_completed_count = evt_count
             if evt_count >= 10:

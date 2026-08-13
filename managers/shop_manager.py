@@ -367,8 +367,7 @@ class ShopManager:
                     if cur_w.level < 5:
                         self.data.player.scrap -= price
                         cur_w.upgrade()
-                        if hasattr(self.data, "achievements"):
-                            assert self.game is not None
+                        if self.game is not None:
                             self.game.achievement_manager.unlock("weapon_fuser")
                         self.data.combat.msg = f"FUSION AN SLOT {slot_idx+1}! {cur_w.name} ist nun Stufe {cur_w.level} (MK {cur_w.level})!"
                         self.data.combat.msg_timer = 2.8
@@ -493,8 +492,7 @@ class ShopManager:
         self.data.combat.msg = f"{name} ({species}) ANGEHEUERT!"
         self.data.combat.msg_timer = 2.5
         self.generate_next_crew_candidate()
-        if len(self.data.player.crew) >= 6 and hasattr(self.data, "achievements"):
-            assert self.game is not None
+        if len(self.data.player.crew) >= 6 and self.game is not None:
             self.game.achievement_manager.unlock("full_house")
 
     def buy_room_system(self, sys_item: dict[str, Any]):

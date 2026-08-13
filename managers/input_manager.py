@@ -55,7 +55,7 @@ class InputManager:
 
     def handle_keydown(self, event: pygame.event.Event):
         logger.debug(f"Keyboard Taste {event.key} wurde gedrückt.")
-        console_mgr = getattr(self, "console_manager", None) or getattr(self.data, "console_manager", None)
+        console_mgr = getattr(self.game, "console_manager", None)
         if console_mgr and console_mgr.handle_keydown(event):
             return
 
@@ -80,7 +80,7 @@ class InputManager:
             if self.sound: self.sound.play("click")
             return
 
-        combat_mgr = getattr(self.data, "combat_manager", None)
+        combat_mgr = getattr(self.game, "combat_manager", None)
         if self.data.current_state == STATE_COMBAT:
             if event.key == pygame.K_a:
                 self.data.combat.autofire_enabled = not self.data.combat.autofire_enabled
@@ -447,7 +447,7 @@ class InputManager:
             self.handle_map_click(mx, my)
 
         elif self.data.current_state == STATE_TRAINING:
-            training_mgr = getattr(self.data, "training_manager", None)
+            training_mgr = getattr(self.game, "training_manager", None)
             if training_mgr:
                 training_mgr.handle_click(mx, my)
 
@@ -528,13 +528,11 @@ class InputManager:
             if idx < len(layout["choice_rects"]):
                 btn_rect = layout["choice_rects"][idx]
                 if btn_rect.collidepoint(mx, my):
-                    assert choice is dict[str, str]
                     if not can_afford_choice(choice, self.data.player):
                         return
                     action = choice.get("action", "")
                     if self.sound: self.sound.play("click")
                     assert self.game is not None
-                    assert action is str
                     self.game.map_manager.handle_choice(action, choice)
                     return
 
@@ -553,7 +551,7 @@ class InputManager:
         btn_autofire = pygame.Rect(715, 512, 140, 34)
 
         tp_cd = getattr(self.data.combat, "teleport_cooldown", 0.0)
-        combat_mgr = getattr(self.data, "combat_manager", None)
+        combat_mgr = getattr(self.game, "combat_manager", None)
 
         if btn_ftl.collidepoint(mx, my):
             if combat_mgr:
