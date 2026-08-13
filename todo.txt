@@ -26,3 +26,14 @@
 (E) 2026-08-10 In der Drone Klasse gibt es noch Strings die als Enum abgespeichert werden können. +Refactoring @code
 (E) 2026-08-10 In der ShipModel Klasse gibt es noch seehr viele Strings und dicts die als Enum abgespeichert werden können. +Refactoring @code
 (E) 2026-08-12 Wenn man im OptionenMenü den Sound stumm schaltet, wird die Anzeige des Buttons nicht mehr geändert. Dieser bleibt durchgehend grün und zeigt, dass der Sound auch weiterhin an sei. Obwohl dies nicht der Fall ist. +Refactoring @code
+(E) 2026-08-13 Wenn ich das Cheatmenü öffne, wird mir kein Modal mehr angezeigt, aber die Befehle werden ohne visuelle Informationen trotzdem ausgeführt. +Rafactoring @code
+(E) 2026-08-13 Wenn ich im Crewtrainingsbildschirm bin (also auf einer Node mit einer Trainingsstation), dann werden mir visuell immernoch die buttons gehighlighted, die auf der darunterliegenden Map liegen, wenn ich darüber hovere. Sie werden sogar manchmal angeklickt obwohl ich ganz klar auf ein element mit einem höheren z-index geklickt habe. +Refactoring @code
+(E) 2026-08-13 In der Crew Training ansicht wird das kleine Panel in dem das Level der Crewmitglieder für die einzelnen Skills angezeigt wird, zu groß für das darunterliegende Parentpanel gerendert.
+(E) 2026-08-13 Im Shop, wenn man auf Schiff umbauen klickt, kann man zwar Räume tauschen; aber man kann nicht auf den Tab "Waffenslots wechseln" klicken. Also es passiert einfach nichts wenn man das tut.  
+(E) 2026-08-13 Im Shop, wenn man auf Schiff umbauen klickt, Möchte ich auch einzelne Räume verkaufen können.
+(E) 2026-08-13 Im Shop möchte ich auch Crewmitglieder verkaufen können.
+(E) 2026-08-13 Im Shop wird mir angezeigt, dass ich Waffen von MK5 auf MK6 upgraden kann. Was aber nicht geht.
+(E) 2026-08-13 Wenn ich innerhalb eines Kampfes ins Menü gehe um die Lautstärke zu ändern, und dann wieder ins Spiel zurückkehre, dann wurde der Kampf beendet, aber ich lande an dem Punkt, als ich in den Kampf gestartet bin.
+(E) 2026-08-13 Nach einem Sieg gegen einen Gegner werden meine Drohnen, Explosionen und Ladebalken auf der Gegnerseite nicht mit der Crew und dem Schiff zusammen entfernt.
+(E) 2026-08-13 In allen Shops scheinen jetzt für jeden Run immer die selben Waffen und Crewmitglieder zu spawnen.
+(E) 2026-08-13 Wenn ein Gegner durch meine Kampfdrohne besiegt wurde, dann werden die nächsten Gegner schon zu Beginn des Kampfes nicht mehr gespawnt und ich habe direkt gewonnen. Die Drohne, sowie die Explosionen und Ladebalken die letztes Mal auf der Karte übrig bleiben, sind jetzt aber immernoch beim Gegner auf der Seite.
