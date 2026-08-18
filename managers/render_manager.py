@@ -190,8 +190,8 @@ class RenderManager:
             self.draw_save_load_slot_modal()
 
         # Ingame Developer Console Overlay (TODO 43)
-        console_mgr = getattr(self, "console_manager", None) or getattr(self.data, "console_manager", None)
-        if console_mgr:
+        console_mgr = getattr(self.game, "console_manager", None) or getattr(self.data, "console_manager", None) or getattr(self, "console_manager", None)
+        if console_mgr and getattr(console_mgr, "active", False):
             console_mgr.render(self.screen)
 
     def draw_save_load_slot_modal(self):
@@ -1180,12 +1180,14 @@ class RenderManager:
     def is_any_overlay_active(self) -> bool:
         shop_mgr = getattr(self.game, "shop_manager", None) if self.game else None
         sel_item = getattr(shop_mgr, "selecting_slot_item", None) if shop_mgr else None
+        console_mgr = getattr(self.game, "console_manager", None) or getattr(self.data, "console_manager", None) or getattr(self, "console_manager", None)
         return (
             getattr(self.data, "show_slot_modal", False)
             or getattr(self.data, "show_help_overlay", False)
             or getattr(self.data, "show_pause_menu", False)
             or getattr(self.data.player, "show_crew_menu", False)
             or getattr(self.data, "show_drone_modal", False)
+            or getattr(console_mgr, "active", False)
             or sel_item is not None
             or self.data.current_state in (STATE_OPTIONS, STATE_ACHIEVEMENTS, STATE_TRAINING, STATE_SHOP)
         )

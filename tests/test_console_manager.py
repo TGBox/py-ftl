@@ -115,6 +115,17 @@ class TestConsoleManager(unittest.TestCase):
         self.console.handle_keydown(event_down)
         self.assertEqual(self.console.input_text, "heal")
 
+    def test_console_rendering_and_game_reference(self):
+        from game import Game
+        game = Game()
+        self.assertIsNotNone(game.data.console_manager)
+        self.assertIs(game.data.console_manager, game.console_manager)
+
+        # Toggle console active
+        game.console_manager.toggle()
+        self.assertTrue(game.console_manager.active)
+        self.assertTrue(game.render_manager.is_any_overlay_active)
+
 
 if __name__ == "__main__":
     unittest.main()

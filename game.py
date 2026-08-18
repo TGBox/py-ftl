@@ -69,6 +69,7 @@ class Game:
         self.data.shop_manager = self.shop_manager
         self.sound_manager: SoundManager = SoundManager()
         self.data.sound_manager = self.sound_manager
+        self.data.console_manager = self.console_manager
         self.state_manager = StateManager(self.data)
         self.training_manager = TrainingManager(self.data)
         self.weapon_manager = WeaponManager(self.data)
@@ -77,6 +78,7 @@ class Game:
         self.input_manager.sound = self.sound_manager
         self.combat_manager.sound = self.sound_manager
         self.map_manager.sound = self.sound_manager
+        self.console_manager.sound = self.sound_manager
         if getattr(self.data, "achievements", None):
             self.achievement_manager.sound = self.sound_manager
 
