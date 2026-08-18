@@ -14,6 +14,8 @@ from classes.Weapon import Weapon
 from managers.sound_manager import SoundManager
 from settings import *
 
+from enums import GameState
+
 if TYPE_CHECKING:
     from game import Game
 
@@ -26,12 +28,20 @@ class MapManager:
         self.game: "Game | None" = None   # Set by Game after construction
         self.sound: SoundManager | None = None  # Set by Game after construction
 
+    def change_state(self, new_state: str | GameState):
+        val = new_state.value if isinstance(new_state, GameState) else str(new_state)
+        sm = getattr(self.game, "state_manager", None) if self.game else None
+        if sm and type(sm).__name__ == "StateManager":
+            sm.change_state(val)
+        else:
+            self.data.current_state = val
+
     def travel_to_node(self, node: Node) -> bool:
         
         logger.debug(f"Reise von Node {self.data.world.star_map.current_node} zu Node {node}")
 
         if self.data.player.fuel <= 0:
-            self.data.current_state = STATE_EVENT
+            self.change_state(GameState.EVENT)
             self.data.world.event_manager.current_event_text = "KEIN TREIBSTOFF MEHR. Du treibst im All."
             self.data.world.event_manager.choices = [{"text": "Warten...", "action": "WAIT"}]
             self.trigger_event("DISTRESS")
@@ -95,7 +105,7 @@ class MapManager:
         self.data.enemy.weapon = Weapon("Schwerer Abfang-Laser", charge_time=3.2, w_type="HEAVY_LASER", damage=45.0)
         self.data.combat.msg = "ACHTUNG! REBELLENFLOTTE HAT DICH EINGEHOLT!"
         self.data.combat.msg_timer = 3.0
-        self.data.current_state = STATE_COMBAT
+        self.change_state(GameState.COMBAT)
 
     def start_mini_boss_fight(self, sector: int) -> None:
         from classes.ShipModel import MINI_BOSS_SECTOR_1, MINI_BOSS_SECTOR_2, ENEMY_CRUISER
@@ -111,7 +121,7 @@ class MapManager:
         w_type = "FLAK" if sector % 2 == 1 else "HEAVY_LASER"
         self.data.enemy.weapon = Weapon(f"Mini-Boss {w_type.capitalize()}", charge_time=max(2.5, 4.0 - sector * 0.3), w_type=w_type, damage=40.0 + sector * 5)
 
-        self.data.current_state = STATE_COMBAT
+        self.change_state(GameState.COMBAT)
 
     def start_boss_fight(self) -> None:
         self.data.combat.boss_phase = 1
@@ -130,16 +140,16 @@ class MapManager:
         self.data.enemy.weapon = Weapon("Dreifach-Rakete (Phase 1)", charge_time=4.0, w_type="MISSILE", damage=45.0, ammo_cost=1)
         self.data.combat.msg = "SEKTOR 5 ENDBOSS-KAMPF GESTARTET! FLAGGSCHIFF PHASE 1!"
         self.data.combat.msg_timer = 4.0
-        self.data.current_state = STATE_COMBAT
+        self.change_state(GameState.COMBAT)
 
     def enter_shop(self) -> None:
         shop_mgr = getattr(self.data, "shop_manager", None)
         if shop_mgr and hasattr(shop_mgr, "refresh_catalog"):
             shop_mgr.refresh_catalog()
-        self.data.current_state = STATE_SHOP
+        self.change_state(GameState.SHOP)
 
     def enter_training(self) -> None:
-        self.data.current_state = STATE_TRAINING
+        self.change_state(GameState.TRAINING)
 
     def trigger_event(self, event_type: str) -> None:
         if self.data.player.fuel <= 0 and event_type == "DISTRESS" and self.game is not None:
@@ -149,7 +159,7 @@ class MapManager:
         self.data.world.event_manager.trigger_event(
             event_type, self.data.player.crew, self.data.player.fuel
         )
-        self.data.current_state = STATE_EVENT
+        self.change_state(GameState.EVENT)
 
     def handle_choice(self, action: str, choice_data: dict[str, Any]) -> None:
         if self.game is not None:
@@ -210,12 +220,12 @@ class MapManager:
                 self.data.player.scrap -= 10
                 self.data.player.fuel += 2
             if not has_result:
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
 
         elif action == "SCAVENGE_FUEL":
             self.data.player.fuel += choice_data.get("fuel", 1)
             if not has_result:
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
 
         elif action in ("CLAIM_RESOURCES", "GIVE_RESOURCES"):
             self.data.player.scrap = max(0, self.data.player.scrap + choice_data.get("scrap", 0))
@@ -223,7 +233,7 @@ class MapManager:
             self.data.player.missiles = max(0, self.data.player.missiles + choice_data.get("missiles", 0))
             self.data.player.drone_parts = max(0, self.data.player.drone_parts + choice_data.get("drones", choice_data.get("drone_parts", 0)))
             if not has_result:
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
 
         elif action in ("FLEE", "TRY_ESCAPE", "ESCAPE") or choice_data.get("is_escape", False):
             if random.random() < 0.30:
@@ -250,7 +260,7 @@ class MapManager:
             dmg = choice_data.get("damage", 0)
             self.data.player.ship.hp = max(0, self.data.player.ship.hp - dmg)
             if not has_result:
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
 
         elif action == "START_COMBAT":
             if not has_result:
@@ -261,7 +271,7 @@ class MapManager:
 
         else:
             if not has_result:
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
 
     def continue_event(self) -> None:
         ev_mgr = self.data.world.event_manager
@@ -276,7 +286,7 @@ class MapManager:
         elif pending == "ENTER_SHOP" or (not pending and ev_type == "SHOP"):
             self.enter_shop()
         else:
-            self.data.current_state = STATE_MAP
+            self.change_state(GameState.MAP)
 
     def start_normal_combat(self) -> None:
         import random
@@ -315,7 +325,7 @@ class MapManager:
         w_name = "Feind " + w_type.capitalize()
         self.data.enemy.weapon = Weapon(w_name, charge_time=max(2.5, 4.5 - sector * 0.4), w_type=w_type)
 
-        self.data.current_state = STATE_COMBAT
+        self.change_state(GameState.COMBAT)
 
     def restart_game(self) -> None:
         from classes.Crew import Crew
@@ -347,4 +357,4 @@ class MapManager:
         self.data.world.star_map.sector = 1
         self.data.world.star_map.generate_map()
 
-        self.data.current_state = STATE_MAP
+        self.change_state(GameState.MAP)

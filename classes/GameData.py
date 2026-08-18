@@ -164,7 +164,7 @@ class GameData:
         self.show_pause_menu: bool = False
         self.show_help_overlay: bool = False
         self.auto_save_enabled: bool = False
-        self.show_slot_modal: bool = True
+        self.show_slot_modal: bool = False
         self.save_toast_text: str = ""
         self.save_toast_timer: float = 0.0
         self.achievement_category_filter: str = "ALLE"

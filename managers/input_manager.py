@@ -12,6 +12,8 @@ from utils import *
 if TYPE_CHECKING:
     from game import Game
 
+from enums import GameState
+
 logger = logging.getLogger(__name__)
 
 class InputManager:
@@ -23,6 +25,22 @@ class InputManager:
         self.data: GameData = data
         self.game: "Game | None" = None   # Set by Game after construction
         self.sound: SoundManager | None = None   # Set by Game after construction
+
+    def change_state(self, new_state: str | GameState):
+        val = new_state.value if isinstance(new_state, GameState) else str(new_state)
+        sm = getattr(self.game, "state_manager", None) if self.game else None
+        if sm and type(sm).__name__ == "StateManager":
+            sm.change_state(val)
+        else:
+            self.data.current_state = val
+
+    def show_message(self, text: str):
+        sm = getattr(self.game, "state_manager", None) if self.game else None
+        if sm and type(sm).__name__ == "StateManager":
+            sm.show_message(text)
+        else:
+            self.data.combat.msg = text
+            self.data.combat.msg_timer = 1.5
 
     # TODO: Investigate if this function causes the rendering resolution to look as bad.
     def _logical_mouse_pos(self, pos: tuple[int, int] | None = None) -> tuple[int, int]:
@@ -56,7 +74,7 @@ class InputManager:
     def handle_keydown(self, event: pygame.event.Event):
         logger.debug(f"Keyboard Taste {event.key} wurde gedrückt.")
         console_mgr = getattr(self.game, "console_manager", None)
-        if console_mgr and console_mgr.handle_keydown(event):
+        if console_mgr and console_mgr.handle_keydown(event) is True:
             return
 
         if self.data.player.active_rename_idx is not None:
@@ -130,9 +148,9 @@ class InputManager:
             # Pause-Menü Modal (ESC)
             if self.data.current_state == STATE_OPTIONS:
                 if getattr(self.data, "show_pause_menu", False):
-                    self.data.current_state = STATE_MAP
+                    self.change_state(GameState.MAP)
                 else:
-                    self.data.current_state = STATE_MAIN_MENU
+                    self.change_state(GameState.MAIN_MENU)
             elif self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
                 self.data.show_pause_menu = not getattr(self.data, "show_pause_menu", False)
                 if self.sound: self.sound.play("click")
@@ -223,12 +241,12 @@ class InputManager:
                 self.data.slot_modal_mode = "LOAD"
                 if self.sound: self.sound.play("click")
             elif btn_pause_options.collidepoint(mx, my):
-                self.data.current_state = STATE_OPTIONS
+                self.change_state(GameState.OPTIONS)
                 if self.sound: self.sound.play("click")
             elif btn_pause_main_menu.collidepoint(mx, my):
                 self.data.show_pause_menu = False
                 self.data.paused = False
-                self.data.current_state = STATE_MAIN_MENU
+                self.change_state(GameState.MAIN_MENU)
                 if self.sound: self.sound.play("click")
             return
 
@@ -311,16 +329,16 @@ class InputManager:
                 if self.sound:
                     self.sound.play("click")
             elif btn_achievements_menu.collidepoint(mx, my):
-                self.data.current_state = STATE_ACHIEVEMENTS
+                self.change_state(GameState.ACHIEVEMENTS)
                 if self.sound:
                     self.sound.play("click")
             elif btn_close_options.collidepoint(mx, my):
                 if self.sound:
                     self.sound.play("click")
                 if getattr(self.data, "show_pause_menu", False) or self.data.paused:
-                    self.data.current_state = STATE_MAP
+                    self.change_state(GameState.MAP)
                 else:
-                    self.data.current_state = STATE_MAIN_MENU
+                    self.change_state(GameState.MAIN_MENU)
             return
 
         # 6. Achievements Bildschirm
@@ -350,7 +368,7 @@ class InputManager:
                 return
             elif btn_close.collidepoint(mx, my):
                 if self.sound: self.sound.play("click")
-                self.data.current_state = STATE_OPTIONS
+                self.change_state(GameState.OPTIONS)
                 return
             return
 
@@ -390,11 +408,11 @@ class InputManager:
             btn_quit = pygame.Rect(670, 532, 195, 42)
 
             if btn_options.collidepoint(mx, my):
-                self.data.current_state = STATE_OPTIONS
+                self.change_state(GameState.OPTIONS)
                 if self.sound:
                     self.sound.play("click")
             elif btn_start.collidepoint(mx, my):
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
                 if self.sound:
                     self.sound.play("jump")
             elif SaveManager.has_any_savegame() and btn_continue_game.collidepoint(mx, my):

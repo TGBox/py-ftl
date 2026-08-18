@@ -409,9 +409,9 @@ class SaveManager:
             data.combat.target_weapon_idx = None
             data.paused = False
 
-            data.active_save_slot = int(slot) if str(slot).isdigit() else 1
             target_state = schema.current_state if schema.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY) else STATE_MAP
             data.current_state = target_state
+            data.show_slot_modal = False
 
             print(f"Spielstand erfolgreich geladen aus {path} (Slot {slot})!")
             return True

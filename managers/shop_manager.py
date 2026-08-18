@@ -573,4 +573,8 @@ class ShopManager:
 
     def leave_shop(self):
         self.selecting_slot_item = None
-        self.data.current_state = STATE_MAP
+        sm = getattr(self.game, "state_manager", None) if self.game else None
+        if sm and type(sm).__name__ == "StateManager":
+            sm.change_state(STATE_MAP)
+        else:
+            self.data.current_state = STATE_MAP

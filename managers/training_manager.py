@@ -19,7 +19,11 @@ class TrainingManager:
 
     def handle_click(self, mx: float, my: float):
         if self.btn_leave_training.collidepoint(mx, my):
-            self.data.current_state = STATE_MAP
+            sm = getattr(self.game, "state_manager", None) if self.game else None
+            if sm and type(sm).__name__ == "StateManager":
+                sm.change_state(STATE_MAP)
+            else:
+                self.data.current_state = STATE_MAP
             return
 
         skills = ["repair", "combat", "piloting", "fitness"]
