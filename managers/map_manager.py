@@ -144,9 +144,12 @@ class MapManager:
         self.change_state(GameState.COMBAT)
 
     def enter_shop(self) -> None:
-        shop_mgr = getattr(self.data, "shop_manager", None)
-        if shop_mgr and hasattr(shop_mgr, "refresh_catalog"):
-            shop_mgr.refresh_catalog()
+        shop_mgr = getattr(self.game, "shop_manager", None) or getattr(self.data, "shop_manager", None)
+        if shop_mgr:
+            if hasattr(shop_mgr, "refresh_catalog"):
+                shop_mgr.refresh_catalog()
+            if hasattr(shop_mgr, "generate_next_crew_candidate"):
+                shop_mgr.generate_next_crew_candidate()
         self.change_state(GameState.SHOP)
 
     def enter_training(self) -> None:

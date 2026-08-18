@@ -66,6 +66,7 @@ class Game:
         self.render_manager = RenderManager(self.logical_surface, self.data)
         self.save_manager = SaveManager()
         self.shop_manager = ShopManager(self.data)
+        self.data.shop_manager = self.shop_manager
         self.sound_manager: SoundManager = SoundManager()
         self.state_manager = StateManager(self.data)
         self.training_manager = TrainingManager(self.data)

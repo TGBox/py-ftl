@@ -65,7 +65,7 @@ class TestEventManager(unittest.TestCase):
 
         # Test failure branch (roll = 0.99 > 0.35)
         with patch("random.random", return_value=0.99):
-            self.event_manager.select_choice(0, p_data)
+            self.event_manager.select_choice(1, p_data)
             self.assertEqual(p_data.ship.hp, 24) # 30 - 6 damage
             self.assertEqual(p_data.crew[0].hp, 70) # 100 - 30 crew_damage
             self.assertIn("FEHLSCHLAG", self.event_manager.result_text)
@@ -76,7 +76,7 @@ class TestEventManager(unittest.TestCase):
         init_scrap = p_data.scrap
         self.event_manager.choices = station_fire_event.choices
         with patch("random.random", return_value=0.10):
-            self.event_manager.select_choice(0, p_data)
+            self.event_manager.select_choice(1, p_data)
             self.assertEqual(p_data.ship.hp, 30)
             self.assertEqual(p_data.scrap, init_scrap + 40)
             self.assertIn("ERFOLG", self.event_manager.result_text)

@@ -197,6 +197,20 @@ class TestShopAndTraining(unittest.TestCase):
         self.assertFalse(ok, "can_buy_weapon should return False when no slot allows LASER!")
         self.assertIn("KEIN PASSENDER ODER FREIER WAFFENSLOT", reason)
 
+    def test_shop_inventory_randomness_on_enter_shop(self):
+        from managers.map_manager import MapManager
+        from unittest.mock import MagicMock
+        map_mgr = MapManager(self.data)
+        mock_game = MagicMock()
+        mock_game.shop_manager = self.shop_manager
+        map_mgr.game = mock_game
+
+        # Trigger enter_shop
+        map_mgr.enter_shop()
+
+        self.assertIsNotNone(self.shop_manager.catalog_stock)
+        self.assertIsNotNone(self.shop_manager.next_crew_candidate)
+
 
 if __name__ == "__main__":
     unittest.main()
