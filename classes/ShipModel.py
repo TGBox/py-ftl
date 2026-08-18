@@ -232,7 +232,7 @@ FEDERATION_SHIP = ShipModel("Federations-Kreuzer", 20, [
     Room("Medbay", (50, 140, 85, 85), max_power=3),
 ], max_weapons=4, max_crew=5, weapon_slots=[
     {"slot_id": 1, "pos": (282, 220), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
-    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["BEAM", "MISSILE"]},
+    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
     {"slot_id": 3, "pos": (92, 220), "allowed_types": ["BEAM"]},
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
 ])
