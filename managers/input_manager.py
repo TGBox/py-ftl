@@ -186,28 +186,33 @@ class InputManager:
             from managers.save_manager import SaveManager
             mode = getattr(self.data, "slot_modal_mode", "SAVE")
 
-            btn_slot_1 = pygame.Rect(505, 150, 180, 42)
-            btn_slot_2 = pygame.Rect(505, 268, 180, 42)
-            btn_slot_3 = pygame.Rect(505, 386, 180, 42)
-            btn_close = pygame.Rect(350, 475, 200, 42)
+            has_slot_4 = (mode == "LOAD") and SaveManager.has_savegame(4)
+            slots_to_check = (1, 2, 3, 4) if has_slot_4 else (1, 2, 3)
+            num_slots = len(slots_to_check)
+            card_h = 84 if num_slots == 4 else 106
+            card_step = 90 if num_slots == 4 else 118
 
+            btn_close = pygame.Rect(350, 480, 200, 40)
             if btn_close.collidepoint(mx, my):
                 self.data.show_slot_modal = False
                 if self.sound: self.sound.play("click")
                 return
 
-            slots = [(1, btn_slot_1), (2, btn_slot_2), (3, btn_slot_3)]
-            for slot_num, btn in slots:
+            for idx, slot_num in enumerate(slots_to_check):
+                card_y = 50 + 52 + idx * card_step
+                btn_y = card_y + (card_h - 38) // 2
+                btn = pygame.Rect(505, btn_y, 180, 38)
+
                 if btn.collidepoint(mx, my):
-                    if mode == "SAVE":
+                    if mode == "SAVE" and slot_num != 4:
                         assert self.game is not None
                         if SaveManager.save_game(self.data, self.game, slot=slot_num):
-                            self.sound.play("click") if self.sound else None
+                            if self.sound: self.sound.play("click")
                         self.data.show_slot_modal = False
                     elif mode == "LOAD":
                         if SaveManager.has_savegame(slot_num):
                             if SaveManager.load_game(self.data, slot=slot_num):
-                                self.sound.play("jump") if self.sound else None
+                                if self.sound: self.sound.play("jump")
                                 self.data.show_pause_menu = False
                                 self.data.show_slot_modal = False
                     return

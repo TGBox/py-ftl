@@ -222,8 +222,8 @@ class Game:
                 
                 # Emergency Autosave on unexpected error
                 try:
-                    SaveManager.save_game(self.data, self)
-                    logger.info("Notfall-Spielstand erfolgreich gesichert!")
+                    SaveManager.save_emergency_game(self.data, self)
+                    logger.info("Notfall-Spielstand erfolgreich gesichert (Slot 4)!")
                 except Exception as save_err:
                     logger.error(f"Notfall-Speichern fehlgeschlagen: {save_err}")
 

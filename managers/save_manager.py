@@ -88,7 +88,12 @@ class SaveManager:
 
     @classmethod
     def has_any_savegame(cls) -> bool:
-        return any(cls.has_savegame(s) for s in (1, 2, 3))
+        return any(cls.has_savegame(s) for s in (1, 2, 3, 4))
+
+    @classmethod
+    def save_emergency_game(cls, data: GameData, game: "Game") -> bool:
+        """Speichert einen Notfall-Backup-Spielstand explizit in Slot 4."""
+        return cls.save_game(data, game, slot=4)
 
     @classmethod
     def get_slot_info(cls, slot: int = 1) -> dict[str, Any] | None:

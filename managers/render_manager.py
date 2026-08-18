@@ -202,42 +202,66 @@ class RenderManager:
         pygame.draw.rect(self.screen, (0, 200, 255), modal_rect, 3)
 
         mode = getattr(self.data, "slot_modal_mode", "SAVE")
-        title = "--- SPIELSTAND SPEICHERN (SLOT 1 - 3) ---" if mode == "SAVE" else "--- SPIELSTAND LADEN (SLOT 1 - 3) ---"
+        has_slot_4 = mode == "LOAD" and SaveManager.has_savegame(4)
+        title = "--- SPIELSTAND SPEICHERN (SLOT 1 - 3) ---" if mode == "SAVE" else ("--- SPIELSTAND LADEN (INKL. NOTFALL-SLOT 4) ---" if has_slot_4 else "--- SPIELSTAND LADEN (SLOT 1 - 3) ---")
         title_txt = self.font.render(title, True, (100, 220, 255))
         self.screen.blit(title_txt, (modal_rect.x + (modal_rect.width - title_txt.get_width()) // 2, modal_rect.y + 16))
 
         from managers.save_manager import SaveManager
         mx, my = self._logical_mouse_pos()
 
-        for slot in (1, 2, 3):
-            card_y = modal_rect.y + 52 + (slot - 1) * 118
-            card_rect = pygame.Rect(modal_rect.x + 20, card_y, 540, 106)
-            info: dict[str, Any] | None = SaveManager.get_slot_info(slot)
-            is_active_slot = getattr(self.data, "active_save_slot", 1) == slot
+        slots_to_show = (1, 2, 3, 4) if has_slot_4 else (1, 2, 3)
+        num_slots = len(slots_to_show)
+        card_h = 84 if num_slots == 4 else 106
+        card_step = 90 if num_slots == 4 else 118
 
-            bg_col = (30, 55, 80) if is_active_slot else (25, 35, 50)
-            border_col = (0, 230, 180) if is_active_slot else (80, 120, 160)
+        for idx, slot in enumerate(slots_to_show):
+            card_y = modal_rect.y + 52 + idx * card_step
+            card_rect = pygame.Rect(modal_rect.x + 20, card_y, 540, card_h)
+            info: dict[str, Any] | None = SaveManager.get_slot_info(slot)
+            is_active_slot = (getattr(self.data, "active_save_slot", 1) == slot) and (slot != 4)
+            is_emergency = (slot == 4)
+
+            if is_emergency:
+                bg_col = (45, 30, 20)
+                border_col = (255, 140, 0)
+                slot_head = "SLOT 4  [NOTFALL-SPEICHERSTAND]"
+                title_col = (255, 160, 50)
+            else:
+                bg_col = (30, 55, 80) if is_active_slot else (25, 35, 50)
+                border_col = (0, 230, 180) if is_active_slot else (80, 120, 160)
+                slot_head = f"SLOT {slot}" + ("  [AKTIV]" if is_active_slot else "")
+                title_col = (255, 220, 100) if is_active_slot else (180, 210, 240)
+
             pygame.draw.rect(self.screen, bg_col, card_rect)
             pygame.draw.rect(self.screen, border_col, card_rect, 2)
 
-            slot_head = f"SLOT {slot}" + ("  [AKTIV]" if is_active_slot else "")
-            self.screen.blit(self.font.render(slot_head, True, (255, 220, 100) if is_active_slot else (180, 210, 240)), (card_rect.x + 15, card_rect.y + 10))
+            self.screen.blit(self.font.render(slot_head, True, title_col), (card_rect.x + 15, card_rect.y + (6 if num_slots == 4 else 10)))
 
             if info:
                 line1 = f"Schiff: {info['ship_name']}  |  Sektor {info['sector']} ({info['sector_type']})"
                 line2 = f"Hülle: {info['hp']}  |  Scrap: {info['scrap']}  |  Zeit: {info['time_str']}"
-                self.screen.blit(self.small_font.render(line1, True, (200, 235, 255)), (card_rect.x + 15, card_rect.y + 38))
-                self.screen.blit(self.small_font.render(line2, True, (160, 200, 230)), (card_rect.x + 15, card_rect.y + 60))
+                self.screen.blit(self.small_font.render(line1, True, (200, 235, 255)), (card_rect.x + 15, card_rect.y + (28 if num_slots == 4 else 38)))
+                self.screen.blit(self.small_font.render(line2, True, (160, 200, 230)), (card_rect.x + 15, card_rect.y + (48 if num_slots == 4 else 60)))
             else:
-                self.screen.blit(self.small_font.render("[ LEERER SPEICHERSLOT ]", True, (140, 155, 175)), (card_rect.x + 15, card_rect.y + 48))
+                self.screen.blit(self.small_font.render("[ LEERER SPEICHERSLOT ]", True, (140, 155, 175)), (card_rect.x + 15, card_rect.y + (38 if num_slots == 4 else 48)))
 
             # Action Button inside slot card
-            btn_rect = pygame.Rect(card_rect.x + 345, card_rect.y + 48, 180, 42)
+            btn_y = card_rect.y + (card_h - 38) // 2
+            btn_rect = pygame.Rect(card_rect.x + 345, btn_y, 180, 38)
             btn_attr = f"btn_slot_{slot}"
             setattr(self, btn_attr, btn_rect)
 
-            btn_label = f"In Slot {slot} sichern" if mode == "SAVE" else f"Slot {slot} laden"
-            btn_color = (0, 220, 130) if mode == "SAVE" else (0, 180, 255)
+            if is_emergency:
+                btn_label = "Notfall Laden"
+                btn_color = (255, 140, 0)
+            elif mode == "SAVE":
+                btn_label = f"In Slot {slot} sichern"
+                btn_color = (0, 220, 130)
+            else:
+                btn_label = f"Slot {slot} laden"
+                btn_color = (0, 180, 255)
+
             self.draw_scifi_button(
                 btn_rect,
                 btn_label,
@@ -247,7 +271,7 @@ class RenderManager:
             )
 
         # Close Modal Button
-        self.btn_close_slot_modal = pygame.Rect(modal_rect.x + 190, modal_rect.y + 425, 200, 42)
+        self.btn_close_slot_modal = pygame.Rect(modal_rect.x + 190, modal_rect.y + 430, 200, 40)
         self.draw_scifi_button(
             self.btn_close_slot_modal,
             "ABBRECHEN",

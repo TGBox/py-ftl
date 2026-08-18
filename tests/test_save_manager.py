@@ -74,5 +74,27 @@ class TestSaveManager(unittest.TestCase):
         self.assertFalse(SaveManager.load_game(loaded_data, self.test_save_file))
 
 
+    def test_emergency_save_slot_4(self):
+        data = GameData()
+        game = Game()
+        data.player.scrap = 999
+
+        # Ensure slot 4 path is cleaned up afterwards
+        slot_4_path = SaveManager.get_slot_filepath(4)
+        if os.path.exists(slot_4_path):
+            os.remove(slot_4_path)
+
+        try:
+            self.assertTrue(SaveManager.save_emergency_game(data, game))
+            self.assertTrue(SaveManager.has_savegame(4))
+
+            loaded_data = GameData()
+            self.assertTrue(SaveManager.load_game(loaded_data, slot=4))
+            self.assertEqual(loaded_data.player.scrap, 999)
+        finally:
+            if os.path.exists(slot_4_path):
+                os.remove(slot_4_path)
+
+
 if __name__ == "__main__":
     unittest.main()
