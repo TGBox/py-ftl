@@ -231,6 +231,20 @@ class TestShopAndTraining(unittest.TestCase):
         self.assertEqual(len(self.data.player.crew), 1, "Selling last crew member must be blocked!")
         self.assertIn("MINDESTENS 1 CREW-MITGLIED", self.data.combat.msg)
 
+    def test_mk5_fusion_max_level_prevention(self):
+        from classes.Weapon import Weapon
+        laser_mk5 = Weapon("Standard Laser", charge_time=3.0, w_type="LASER", level=5)
+        self.data.player.weapons = [laser_mk5]
+        self.data.player.scrap = 200
+
+        item = {"name": "Standard Laser", "charge_time": 3.0, "w_type": "LASER", "price": 40}
+
+        # Attempt to fuse level 5 weapon
+        self.shop_manager.buy_weapon_to_slot(item, 0)
+
+        self.assertEqual(self.data.player.weapons[0].level, 5, "Weapon level must remain capped at 5!")
+        self.assertIn("MAXIMALES FUSION-LEVEL", self.data.combat.msg)
+
 
 if __name__ == "__main__":
     unittest.main()

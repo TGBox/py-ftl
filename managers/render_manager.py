@@ -868,12 +868,19 @@ class RenderManager:
 
                 if not has_w or w_obj is None:
                     status_str = "Einbauen (Slot Leer)"
+                    status_color = (100, 255, 180)
                 elif w_obj.w_type == sel_item.get("w_type"):
-                    status_str = f"WAFFEN-FUSION (Upgrade MK {w_obj.level} -> MK {w_obj.level+1})"
+                    if w_obj.level >= 5:
+                        status_str = "VOLL AUFGERÜSTET (MK V - Maximales Level)"
+                        status_color = (255, 215, 0)
+                    else:
+                        status_str = f"WAFFEN-FUSION (Upgrade MK {w_obj.level} -> MK {w_obj.level+1})"
+                        status_color = (0, 220, 255)
                 else:
-                    status_str = f"ERSETZEN (Alte Waffe {w_obj.name} verkaufen)"
+                    status_str = f"SLOT BELEGT (Zuerst {w_obj.name} verkaufen)"
+                    status_color = (255, 140, 140)
 
-                txt1 = self.font.render(f"Slot {slot_i+1} [Erlaubt: {al_str}]: {status_str}", True, (220, 240, 255))
+                txt1 = self.font.render(f"Slot {slot_i+1} [Erlaubt: {al_str}]: {status_str}", True, status_color)
                 self.screen.blit(txt1, (s_btn.x + 15, s_btn.y + 15))
 
             cancel_btn = pygame.Rect(320, 420, 240, 38)
