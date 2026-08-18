@@ -64,6 +64,10 @@ class InputManager:
                 self.handle_keydown(event)
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                console_mgr = getattr(self.game, "console_manager", None)
+                if console_mgr and getattr(console_mgr, "active", False):
+                    if console_mgr.handle_mouse_scroll(event.button):
+                        continue
 
                 if event.button == 1:
                     self.handle_left_click(event)

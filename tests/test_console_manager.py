@@ -72,6 +72,49 @@ class TestConsoleManager(unittest.TestCase):
         self.console.execute_command("turbo")
         self.assertTrue(getattr(self.data, "turbo_mode", False))
 
+    def test_console_scrolling_and_help_text(self):
+        self.console.toggle()
+        self.console.execute_command("help")
+        # Help adds 11 lines, total history length >= 13
+        self.assertGreaterEqual(len(self.console.history), 13)
+
+        # Test PageUp scrolling
+        event_pgup = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_PAGEUP)
+        self.console.handle_keydown(event_pgup)
+        self.assertGreater(self.console.scroll_offset, 0)
+
+        # Test mouse wheel scrolling
+        init_offset = self.console.scroll_offset
+        self.console.handle_mouse_scroll(4) # Scroll Up
+        self.assertGreaterEqual(self.console.scroll_offset, init_offset)
+
+        # Executing a command resets scroll_offset to 0 (bottom)
+        self.console.execute_command("heal")
+        self.assertEqual(self.console.scroll_offset, 0)
+
+    def test_command_history_recall(self):
+        self.console.toggle()
+        self.console.input_text = "scrap 100"
+        event_ret = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RETURN)
+        self.console.handle_keydown(event_ret)
+
+        self.console.input_text = "heal"
+        self.console.handle_keydown(event_ret)
+
+        # Press UP arrow to recall "heal"
+        event_up = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_UP)
+        self.console.handle_keydown(event_up)
+        self.assertEqual(self.console.input_text, "heal")
+
+        # Press UP arrow again to recall "scrap 100"
+        self.console.handle_keydown(event_up)
+        self.assertEqual(self.console.input_text, "scrap 100")
+
+        # Press DOWN arrow to return to "heal"
+        event_down = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_DOWN)
+        self.console.handle_keydown(event_down)
+        self.assertEqual(self.console.input_text, "heal")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -25,10 +25,27 @@ class ConsoleManager:
         self.party_mode: bool = False
         self.turbo_mode: bool = False
         self.sound = None  # Set by Game after construction
+        self.scroll_offset: int = 0
+        self.cmd_history: list[str] = []
+        self.cmd_history_idx: int = -1
 
     def toggle(self):
         self.active = not self.active
         self.input_text = ""
+        self.cmd_history_idx = -1
+        self.scroll_offset = 0
+
+    def handle_mouse_scroll(self, button: int) -> bool:
+        if not self.active:
+            return False
+        max_scroll = max(0, len(self.history) - 9)
+        if button == 4:  # Scroll Up
+            self.scroll_offset = min(max_scroll, self.scroll_offset + 2)
+            return True
+        elif button == 5:  # Scroll Down
+            self.scroll_offset = max(0, self.scroll_offset - 2)
+            return True
+        return False
 
     def handle_keydown(self, event: pygame.event.Event) -> bool:
         """Behandelt Tasteneingaben für die Konsole. Gibt True zurück, wenn die Eingabe konsumiert wurde."""
@@ -43,12 +60,43 @@ class ConsoleManager:
             self.active = False
             return True
 
+        elif event.key == pygame.K_PAGEUP:
+            max_scroll = max(0, len(self.history) - 9)
+            self.scroll_offset = min(max_scroll, self.scroll_offset + 5)
+            return True
+
+        elif event.key == pygame.K_PAGEDOWN:
+            self.scroll_offset = max(0, self.scroll_offset - 5)
+            return True
+
+        elif event.key == pygame.K_UP:
+            if self.cmd_history:
+                if self.cmd_history_idx == -1:
+                    self.cmd_history_idx = len(self.cmd_history) - 1
+                elif self.cmd_history_idx > 0:
+                    self.cmd_history_idx -= 1
+                self.input_text = self.cmd_history[self.cmd_history_idx]
+            return True
+
+        elif event.key == pygame.K_DOWN:
+            if self.cmd_history_idx != -1:
+                if self.cmd_history_idx < len(self.cmd_history) - 1:
+                    self.cmd_history_idx += 1
+                    self.input_text = self.cmd_history[self.cmd_history_idx]
+                else:
+                    self.cmd_history_idx = -1
+                    self.input_text = ""
+            return True
+
         elif event.key == pygame.K_RETURN:
             cmd = self.input_text.strip()
             if cmd:
+                self.cmd_history.append(cmd)
+                self.cmd_history_idx = -1
                 self.history.append(f"> {cmd}")
                 self.execute_command(cmd)
                 self.input_text = ""
+                self.scroll_offset = 0
             return True
 
         elif event.key == pygame.K_BACKSPACE:
@@ -183,12 +231,37 @@ class ConsoleManager:
         screen.blit(s, (c_rect.x, c_rect.y))
         pygame.draw.rect(screen, (0, 220, 255), c_rect, 2)
 
-        # Letzte 9 Zeilen History anzeigen
-        lines_to_draw = self.history[-9:]
+        visible_count = 9
+        max_scroll = max(0, len(self.history) - visible_count)
+        self.scroll_offset = min(max_scroll, max(0, self.scroll_offset))
+
+        end_idx = len(self.history) - self.scroll_offset
+        start_idx = max(0, end_idx - visible_count)
+        lines_to_draw = self.history[start_idx:end_idx]
+
         for idx, line in enumerate(lines_to_draw):
             col = (100, 255, 180) if line.startswith(">") else ((255, 220, 100) if line.startswith("[CHEAT]") else (200, 220, 245))
             surf = font.render(line, True, col)
             screen.blit(surf, (c_rect.x + 12, c_rect.y + 10 + idx * 20))
+
+        # Visual Scrollbar (falls mehr als 9 Zeilen vorhanden sind)
+        if len(self.history) > visible_count:
+            track_rect = pygame.Rect(c_rect.x + c_rect.width - 16, c_rect.y + 10, 8, 185)
+            pygame.draw.rect(screen, (20, 30, 45), track_rect)
+            pygame.draw.rect(screen, (60, 90, 130), track_rect, 1)
+
+            ratio = visible_count / len(self.history)
+            thumb_h = max(20, int(track_rect.height * ratio))
+            scroll_progress = (max_scroll - self.scroll_offset) / max_scroll if max_scroll > 0 else 1.0
+            thumb_y = track_rect.y + int((track_rect.height - thumb_h) * scroll_progress)
+            thumb_rect = pygame.Rect(track_rect.x + 1, thumb_y, 6, thumb_h)
+            pygame.draw.rect(screen, (0, 220, 255), thumb_rect)
+
+        # Scroll-Status Tag anzeigen, wenn nach oben gescrollt ist
+        if self.scroll_offset > 0:
+            tag_font = pygame.font.SysFont(None, 14, bold=True)
+            tag_lbl = tag_font.render(f"[▲ SCROLL: {self.scroll_offset} Zeilen oben - PageDown = Unten]", True, (255, 200, 100))
+            screen.blit(tag_lbl, (c_rect.x + c_rect.width - 290, c_rect.y + 190))
 
         # Eingabezeile unten
         pygame.draw.line(screen, (0, 180, 230), (c_rect.x + 10, c_rect.y + 205), (c_rect.x + c_rect.width - 10, c_rect.y + 205), 1)
