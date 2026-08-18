@@ -49,6 +49,38 @@ class TestEventManager(unittest.TestCase):
             self.event_manager.trigger_event(ev_type, crew, player_fuel=5)
             self.assertGreater(len(self.event_manager.choices), 0, f"Event type {ev_type} should generate choices.")
 
+    def test_risky_event_outcomes_and_consequences(self):
+        from unittest.mock import patch
+        from classes.GameData import PlayerData
+        from classes.ShipModel import ShipModel
+        p_data = PlayerData()
+        p_data.ship = ShipModel(ship_name="Kestrel", hp=30, max_hp=30)
+        p_data.crew = [Crew(100, 100, species="Mensch")]
+
+        # Trigger station fire event
+        self.event_manager.trigger_event("DISTRESS", p_data.crew, player_fuel=5)
+        # Find distress_station_fire in matching events
+        station_fire_event = [e for e in self.event_manager.events_db if e.get("id") == "distress_station_fire"][0]
+        self.event_manager.choices = station_fire_event.choices
+
+        # Test failure branch (roll = 0.99 > 0.35)
+        with patch("random.random", return_value=0.99):
+            self.event_manager.select_choice(0, p_data)
+            self.assertEqual(p_data.ship.hp, 24) # 30 - 6 damage
+            self.assertEqual(p_data.crew[0].hp, 70) # 100 - 30 crew_damage
+            self.assertIn("FEHLSCHLAG", self.event_manager.result_text)
+
+        # Test success branch (roll = 0.10 <= 0.35)
+        p_data.ship.hp = 30
+        p_data.crew[0].hp = 100
+        init_scrap = p_data.scrap
+        self.event_manager.choices = station_fire_event.choices
+        with patch("random.random", return_value=0.10):
+            self.event_manager.select_choice(0, p_data)
+            self.assertEqual(p_data.ship.hp, 30)
+            self.assertEqual(p_data.scrap, init_scrap + 40)
+            self.assertIn("ERFOLG", self.event_manager.result_text)
+
 
 if __name__ == "__main__":
     unittest.main()

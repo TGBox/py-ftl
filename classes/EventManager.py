@@ -93,6 +93,13 @@ class EventManager:
                     player_data.drone_parts = max(0, getattr(player_data, "drone_parts", 5) + d_val)
                 if "damage" in choice and hasattr(player_data, "ship") and player_data.ship:
                     player_data.ship.hp = max(0, player_data.ship.hp - int(choice["damage"]))
+                if "crew_damage" in choice and hasattr(player_data, "crew") and player_data.crew:
+                    c_dmg = int(choice["crew_damage"])
+                    for c in player_data.crew:
+                        c.hp = max(1.0, c.hp - c_dmg)
+                if choice.get("fire_room") and hasattr(player_data, "ship") and player_data.ship and player_data.ship.rooms:
+                    r = random.choice(player_data.ship.rooms)
+                    r.fire_level = min(100.0, r.fire_level + 50.0)
 
             self.pending_action = action
             self.choices = []
