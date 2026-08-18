@@ -3,7 +3,8 @@ import logging
 
 import copy
 import random
-from typing import Any
+from typing import Any, Union
+from classes.Event import EventChoice
 
 from classes.GameData import GameData
 from classes.Node import Node
@@ -161,7 +162,7 @@ class MapManager:
         )
         self.change_state(GameState.EVENT)
 
-    def handle_choice(self, action: str, choice_data: dict[str, Any]) -> None:
+    def handle_choice(self, action: str, choice_data: Union[EventChoice, dict[str, Any]]) -> None:
         if self.game is not None:
             evt_count = getattr(self.data, "events_completed_count", 0) + 1
             self.events_completed_count = evt_count

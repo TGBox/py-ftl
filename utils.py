@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, Union
 from classes.GameData import PlayerData
 from classes.Room import Room
 import pygame
@@ -30,10 +30,12 @@ def wrap_text(text: str, font: pygame.font.Font, max_width: int) -> list[str]:
     return lines
 
 
+from classes.Event import EventChoice
+
 def calculate_event_layout(
     ev_text: str,
     res_text: str,
-    choices: list[dict[str, str | int | bool]],
+    choices: list[Union[EventChoice, dict[str, Any]]],
     font: pygame.font.Font,
     box_x: int = 120,
     box_y: int = 100,
@@ -134,7 +136,7 @@ def get_room_manning_bonus(room_name: str, crew_count: int, room: Optional[Room]
     return {"multiplier": 1.0 * power_ratio, "evasion": 0.0, "power_ratio": power_ratio, "desc": f"{count} Crew"}
 
 
-def can_afford_choice(choice: dict[str, str], player: PlayerData) -> bool:
+def can_afford_choice(choice: Union[EventChoice, dict[str, Any]], player: PlayerData) -> bool:
     """Checks if player has enough resources (scrap, fuel, missiles, drones) for an event choice."""
     if not player or not choice:
         return True
