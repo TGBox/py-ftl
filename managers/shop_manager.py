@@ -239,6 +239,14 @@ class ShopManager:
         elif self.active_tab == "CREW":
             if self.btn_buy_crew.collidepoint(mx, my):
                 self.buy_crew()
+                return
+
+            for idx, c in enumerate(self.data.player.crew):
+                c_rect = pygame.Rect(480, 160 + idx * 52, 340, 46)
+                sell_btn = pygame.Rect(c_rect.x + 210, c_rect.y + 8, 120, 30)
+                if sell_btn.collidepoint(mx, my):
+                    self.sell_crew_at_idx(idx)
+                    return
 
         elif self.active_tab == "ROOMS":
             # Kauf eines neuen Systems für leeren Raum-Slot
@@ -531,6 +539,38 @@ class ShopManager:
         self.generate_next_crew_candidate()
         if len(self.data.player.crew) >= 6 and self.game is not None:
             self.game.achievement_manager.unlock("full_house")
+
+    def calculate_crew_sell_price(self, crew: Crew) -> int:
+        base_prices = {
+            "Mensch": 15,
+            "Engi": 25,
+            "Mantis": 25,
+            "Rock": 25,
+            "Zoltan": 30,
+        }
+        base = base_prices.get(crew.species, 15)
+        skills = (
+            getattr(crew, "skill_repair", 0)
+            + getattr(crew, "skill_combat", 0)
+            + getattr(crew, "skill_piloting", 0)
+            + getattr(crew, "skill_fitness", 0)
+        )
+        return min(50, base + skills * 5)
+
+    def sell_crew_at_idx(self, crew_idx: int) -> None:
+        if len(self.data.player.crew) <= 1:
+            self.data.combat.msg = "MINDESTENS 1 CREW-MITGLIED MUSS AN BORD BLEIBEN!"
+            self.data.combat.msg_timer = 2.5
+            return
+        if 0 <= crew_idx < len(self.data.player.crew):
+            crew = self.data.player.crew[crew_idx]
+            refund = self.calculate_crew_sell_price(crew)
+            c_name = crew.name
+            c_species = crew.species
+            self.data.player.crew.pop(crew_idx)
+            self.data.player.scrap += refund
+            self.data.combat.msg = f"{c_name} ({c_species}) FÜR {refund} SCRAP VERKAUFT!"
+            self.data.combat.msg_timer = 2.5
 
     def buy_room_system(self, sys_item: dict[str, Any]):
         price = sys_item.get("price", 50)

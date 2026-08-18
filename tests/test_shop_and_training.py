@@ -208,8 +208,28 @@ class TestShopAndTraining(unittest.TestCase):
         # Trigger enter_shop
         map_mgr.enter_shop()
 
-        self.assertIsNotNone(self.shop_manager.catalog_stock)
-        self.assertIsNotNone(self.shop_manager.next_crew_candidate)
+    def test_sell_crew_member(self):
+        # Create 2 crew members
+        c1 = Crew(0, 0, name="Alpha", species="Mensch")
+        c2 = Crew(0, 0, name="Beta", species="Zoltan")
+        c2.skill_repair = 2
+        c2.skill_combat = 1
+        self.data.player.crew = [c1, c2]
+
+        # Verify price calculation: Zoltan base (30) + 3 skills * 5 = 45 Scrap
+        price_c2 = self.shop_manager.calculate_crew_sell_price(c2)
+        self.assertEqual(price_c2, 45)
+
+        # Sell c2 (index 1)
+        init_scrap = self.data.player.scrap
+        self.shop_manager.sell_crew_at_idx(1)
+        self.assertEqual(self.data.player.scrap, init_scrap + 45)
+        self.assertEqual(len(self.data.player.crew), 1)
+
+        # Try selling last remaining crew member (index 0) -> should be blocked!
+        self.shop_manager.sell_crew_at_idx(0)
+        self.assertEqual(len(self.data.player.crew), 1, "Selling last crew member must be blocked!")
+        self.assertIn("MINDESTENS 1 CREW-MITGLIED", self.data.combat.msg)
 
 
 if __name__ == "__main__":

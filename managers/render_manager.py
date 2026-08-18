@@ -660,16 +660,34 @@ class RenderManager:
             c_btn_lbl = title_font.render(f"Rekrutieren ({cand['price']} Scrap)", True, (255, 255, 255))
             self.screen.blit(c_btn_lbl, (btn_buy_c.x + (btn_buy_c.width - c_btn_lbl.get_width()) // 2, btn_buy_c.y + 10))
 
-            # Aktuelle Crew-Liste auf der rechten Seite
-            hdr_curr = sub_font.render("AKTUELLE SCHIFFS-CREW:", True, (255, 220, 100))
+            # Aktuelle Crew-Liste auf der rechten Seite (Klick zum Verkaufen)
+            hdr_curr = sub_font.render("AKTUELLE SCHIFFS-CREW (Klick zum Verkaufen):", True, (255, 220, 100))
             self.screen.blit(hdr_curr, (480, 138))
+            can_sell = len(self.data.player.crew) > 1
+
             for idx, c in enumerate(self.data.player.crew):
-                c_rect = pygame.Rect(480, 160 + idx * 48, 320, 40)
+                c_rect = pygame.Rect(480, 160 + idx * 52, 340, 46)
                 pygame.draw.rect(self.screen, (22, 32, 48), c_rect)
                 pygame.draw.rect(self.screen, (60, 90, 130), c_rect, 1)
                 s_col = {"Mensch": (255, 220, 100), "Engi": (100, 220, 255), "Mantis": (255, 100, 100), "Rock": (220, 150, 80), "Zoltan": (120, 255, 120)}.get(c.species, (255, 255, 255))
-                self.screen.blit(sub_font.render(f"{c.name} ({c.species})", True, s_col), (c_rect.x + 10, c_rect.y + 6))
-                self.screen.blit(tiny_font.render(f"HP: {int(c.hp)}/{int(c.max_hp)}  |  Skill: {c.trait}", True, (180, 200, 220)), (c_rect.x + 10, c_rect.y + 22))
+                self.screen.blit(sub_font.render(f"{c.name} ({c.species})", True, s_col), (c_rect.x + 8, c_rect.y + 5))
+                self.screen.blit(tiny_font.render(f"HP: {int(c.hp)}/{int(c.max_hp)} | Skill: {c.trait}", True, (180, 200, 220)), (c_rect.x + 8, c_rect.y + 24))
+
+                # Verkaufen Button
+                refund = shop_mgr.calculate_crew_sell_price(c) if shop_mgr and hasattr(shop_mgr, "calculate_crew_sell_price") else 15
+                sell_btn = pygame.Rect(c_rect.x + 210, c_rect.y + 8, 120, 30)
+                is_s_hov = sell_btn.collidepoint(mx, my) and can_sell
+
+                if can_sell:
+                    pygame.draw.rect(self.screen, (120, 40, 40) if is_s_hov else (75, 30, 30), sell_btn)
+                    pygame.draw.rect(self.screen, (255, 120, 120) if is_s_hov else (180, 80, 80), sell_btn, 1)
+                    s_lbl = tiny_font.render(f"Verkaufen (+{refund})", True, (255, 220, 220) if is_s_hov else (220, 180, 180))
+                else:
+                    pygame.draw.rect(self.screen, (40, 45, 55), sell_btn)
+                    pygame.draw.rect(self.screen, (80, 85, 95), sell_btn, 1)
+                    s_lbl = tiny_font.render("[MIN. 1 CREW]", True, (140, 145, 155))
+
+                self.screen.blit(s_lbl, (sell_btn.x + (sell_btn.width - s_lbl.get_width()) // 2, sell_btn.y + 8))
 
         # ----------------------------------------------------
         # TAB 4: RAUM-HANDEL (TODO 50)
