@@ -184,11 +184,22 @@ class Game:
             else:
                 self.sound_manager.play_music("bgm_explore")
         elif state == STATE_COMBAT:
-            is_boss = getattr(self.data.enemy.ship, "is_boss", False) or getattr(self.data.enemy.ship, "is_miniboss", False)
-            if is_boss:
-                self.sound_manager.play_music("bgm_boss")
+            if getattr(self.data.combat, "combat_won", False):
+                s_type = getattr(self.data.world.star_map, "sector_type", "Zivil")
+                if "Nebel" in s_type:
+                    self.sound_manager.play_music("bgm_nebula")
+                elif "Piraten" in s_type or "Rebellen" in s_type:
+                    self.sound_manager.play_music("bgm_pirate")
+                elif "Zivil" in s_type:
+                    self.sound_manager.play_music("bgm_civilian")
+                else:
+                    self.sound_manager.play_music("bgm_explore")
             else:
-                self.sound_manager.play_music("bgm_combat")
+                is_boss = getattr(self.data.enemy.ship, "is_boss", False) or getattr(self.data.enemy.ship, "is_miniboss", False)
+                if is_boss:
+                    self.sound_manager.play_music("bgm_boss")
+                else:
+                    self.sound_manager.play_music("bgm_combat")
         elif state in (STATE_GAME_OVER, STATE_VICTORY):
             self.sound_manager.stop_music()
 

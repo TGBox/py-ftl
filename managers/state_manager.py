@@ -223,6 +223,13 @@ class StateManager:
         self.data.combat.ftl_charge_timer = 0.0
         self.data.combat.ftl_ready = False
         self.data.paused = False
+        self.data.player.projectiles.clear()
+        self.data.combat.weapon_targets.clear()
+        if self.game and hasattr(self.game, "particle_manager"):
+            self.game.particle_manager.clear()
+        if self.game and hasattr(self.game, "combat_manager"):
+            self.game.combat_manager.enemy_crew_spawned = False
+            self.game.combat_manager.enemy_crew.clear()
         self.reset_combat_systems()
 
     def enter_game_over_state(self):

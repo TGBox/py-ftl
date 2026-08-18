@@ -225,7 +225,33 @@ class TestCombatManager(unittest.TestCase):
         # Return from Options menu
         self.state_manager.return_from_overlay()
         self.assertEqual(self.data.current_state, GameState.COMBAT.value)
-        self.assertTrue(self.data.combat.combat_drone_active)
+    def test_combat_victory_cleanup_and_drone_deactivation(self):
+        self.data.combat.combat_drone_active = True
+        self.data.combat.repair_drone_active = True
+        self.combat_manager.enemy_crew_spawned = True
+
+        self.combat_manager.player_won()
+
+        self.assertTrue(self.data.combat.combat_won)
+        self.assertFalse(self.data.combat.combat_drone_active)
+        self.assertFalse(self.data.combat.repair_drone_active)
+        self.assertFalse(self.combat_manager.enemy_crew_spawned)
+        self.assertEqual(len(self.data.player.projectiles), 0)
+        self.assertEqual(len(self.data.combat.weapon_targets), 0)
+
+    def test_new_combat_reset_prevents_autowin(self):
+        from enums import GameState
+        self.data.combat.combat_won = True
+        self.combat_manager.enemy_crew_spawned = False
+        self.combat_manager.enemy_crew = []
+
+        self.state_manager.change_state(GameState.COMBAT)
+
+        self.assertFalse(self.data.combat.combat_won)
+        self.assertFalse(self.combat_manager.enemy_crew_spawned)
+        # Check end of battle must not trigger auto-win when enemy_crew is empty before spawning
+        self.combat_manager.check_end_of_battle()
+        self.assertFalse(self.data.combat.combat_won)
 
 
 if __name__ == "__main__":

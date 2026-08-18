@@ -39,6 +39,7 @@ class CombatManager:
         self.data = data
         self.game: "Game | None" = None   # Set by Game after construction
         self.enemy_crew: list[Crew] = []
+        self.enemy_crew_spawned: bool = False
         self.sound: SoundManager | None = None  # Set by Game after construction
 
     def update(self, dt: float):
@@ -303,6 +304,7 @@ class CombatManager:
             target_rooms = self.data.enemy.ship.rooms[:crew_count]
             for r in target_rooms:
                 self.enemy_crew.append(Crew(r.rect.centerx, r.rect.centery, name="Pirate", is_enemy=True))
+            self.enemy_crew_spawned = True
 
         enemy_rooms = self.data.enemy.ship.rooms
         enemy_doors = self.data.enemy.ship.doors
@@ -860,7 +862,7 @@ class CombatManager:
             return
 
         # Schiffs-Kaperung (Enemy crew completely eliminated by boarding)
-        if len(self.enemy_crew) == 0 and len(self.data.player.crew) > 0 and self.data.current_state == STATE_COMBAT:
+        if getattr(self, "enemy_crew_spawned", False) and len(self.enemy_crew) == 0 and len(self.data.player.crew) > 0 and self.data.current_state == STATE_COMBAT:
             self.show_message("SCHIFF GEKAPERT! Feindliche Crew eliminiert (+BONUS BEUTE)!")
             self.data.player.scrap += 35
             self.data.player.fuel += 2
@@ -902,6 +904,17 @@ class CombatManager:
             return
         self.data.combat.combat_won = True
         self.data.combat.ftl_ready = True
+        self.enemy_crew_spawned = False
+
+        # Deaktivieren aller aktiven Drohnen & Systeme beim Sieg
+        self.data.combat.combat_drone_active = False
+        self.data.combat.repair_drone_active = False
+        self.data.combat.defense_drone_active = False
+        self.data.combat.shield_charger_active = False
+        self.data.combat.anti_personnel_active = False
+        self.data.combat.cloak_active_timer = 0.0
+        if self.game and hasattr(self.game, "state_manager") and hasattr(self.game.state_manager, "reset_combat_systems"):
+            self.game.state_manager.reset_combat_systems()
 
         is_mini_boss = "Mini-Boss" in self.data.enemy.ship.name
         is_final_boss = "Flaggschiff" in self.data.enemy.ship.name or (self.data.world.star_map.sector >= 5 and not is_mini_boss)
@@ -914,6 +927,9 @@ class CombatManager:
         self.enemy_crew.clear()
         self.data.player.projectiles.clear()
         self.data.combat.weapon_targets.clear()
+
+        if self.game and hasattr(self.game, "particle_manager"):
+            self.game.particle_manager.clear()
 
         # Boarding-Crew zurück auf das eigene Schiff teleportieren
         p_rooms = self.data.player.ship.rooms
