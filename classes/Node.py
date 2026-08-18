@@ -1,10 +1,13 @@
+from enums import EventType
+
+
 class Node:
 
-  def __init__(self, node_id: int, x: int, y: int, event_type: str) -> None:
+  def __init__(self, node_id: int, x: int, y: int, event_type: EventType | str) -> None:
     self.id: int = node_id
     self.x: int = x
     self.y: int = y
-    self.event_type: str = event_type  # 'COMBAT', 'RESOURCE', 'SHOP', 'EMPTY', 'EXIT'
+    self.event_type: EventType | str = event_type  # EventType Enum or str
     self.connections: list[Node] = []
     self.visited: bool = False
     self.hazard_type: str = "NONE"  # 'NONE', 'SOLAR_FLARE', 'ASTEROID_FIELD'

@@ -32,6 +32,13 @@ class TestCrew(unittest.TestCase):
         human = Crew(100, 100, species="Mensch")
         self.assertEqual(human.species, "Mensch")
 
+    def test_enum_compatibility(self):
+        from enums import CrewSpecies, EventType, DroneType, ShipType
+        self.assertEqual(CrewSpecies.MENSCH, "Mensch")
+        self.assertEqual(EventType.COMBAT, "COMBAT")
+        self.assertEqual(DroneType.COMBAT_MK1, "COMBAT_MK1")
+        self.assertEqual(ShipType.KESTREL, "Kestrel")
+
     def test_skill_training(self):
         crew = Crew(100, 100, species="Mensch")
         # Train repair 3 times

@@ -1,5 +1,6 @@
 import math
 import random
+from enums import DroneType
 
 
 class Drone:
@@ -53,9 +54,9 @@ class Drone:
 
 # Master list of all available drone blueprints
 DRONE_CATALOG: list[Drone] = [
-    Drone("Kampfdrohne MK I", "COMBAT_MK1", 1, "Umkreist den Gegner und schießt Lasersalven.", "K"),
-    Drone("Reparatur-Drohne", "REPAIR", 1, "Repariert beschädigte Räume (+25 HP/s) & Brüchte.", "D"),
-    Drone("Verteidigungs-Drohne MK I", "DEFENSE_MK1", 2, "Schießt feindliche Raketen & Asteroiden ab.", "F"),
-    Drone("Schild-Lade-Drohne", "SHIELD_CHARGER", 2, "Erhöht Schild-Laderate & gewährt Overshield.", "E"),
-    Drone("Anti-Personen-Drohne", "ANTI_PERSONNEL", 2, "Bekämpft feindliche Entermannschaften (150 HP).", "P"),
+    Drone("Kampfdrohne MK I", DroneType.COMBAT_MK1, 1, "Umkreist den Gegner und schießt Lasersalven.", "K"),
+    Drone("Reparatur-Drohne", DroneType.REPAIR, 1, "Repariert beschädigte Räume (+25 HP/s) & Brüchte.", "D"),
+    Drone("Verteidigungs-Drohne MK I", DroneType.DEFENSE_MK1, 2, "Schießt feindliche Raketen & Asteroiden ab.", "F"),
+    Drone("Schild-Lade-Drohne", DroneType.SHIELD_CHARGER, 2, "Erhöht Schild-Laderate & gewährt Overshield.", "E"),
+    Drone("Anti-Personen-Drohne", DroneType.ANTI_PERSONNEL, 2, "Bekämpft feindliche Entermannschaften (150 HP).", "P"),
 ]

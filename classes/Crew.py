@@ -8,6 +8,7 @@ import random
 
 from classes.Door import Door
 from classes.Room import Room
+from enums import CrewSpecies, CrewTrait
 from managers.achievement_manager import AchievementManager
 from settings import *
 

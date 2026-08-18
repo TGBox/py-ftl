@@ -9,6 +9,7 @@ from classes.Crew import Crew
 from classes.Door import Door
 from classes.Room import Room
 from classes.Weapon import Weapon
+from enums import ShipType
 
 if TYPE_CHECKING:
     from classes.GameData import PlayerData
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 class ShipModel:
     def __init__(
         self,
-        name: str,
+        name: ShipType | str,
         max_hp: int,
         rooms: list[Room],
         is_enemy: bool = False,
@@ -172,7 +173,7 @@ class ShipModel:
                 d.opened_by_crew = False
 
 
-PLAYER_SHIP = ShipModel("Kestrel", 15, [
+PLAYER_SHIP = ShipModel(ShipType.KESTREL, 15, [
     Room("Schild", (60, 245, 90, 90)),
     Room("Waffen", (160, 245, 90, 90)),
     Room("Brücke", (260, 245, 90, 90), max_power=2),
@@ -200,7 +201,7 @@ CRUISER_SHIP = ShipModel("Kreuzer", 18, [
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
 ])
 
-STEALTH_SHIP = ShipModel("Tarnschiff", 12, [
+STEALTH_SHIP = ShipModel(ShipType.TARNSSCHIFF, 12, [
     Room("Tarnung", (70, 245, 80, 80)),
     Room("Waffen", (160, 245, 80, 80)),
     Room("Brücke", (250, 245, 80, 80), max_power=2),
