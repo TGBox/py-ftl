@@ -54,7 +54,7 @@ class TestEventManager(unittest.TestCase):
         from classes.GameData import PlayerData
         from classes.ShipModel import ShipModel
         p_data = PlayerData()
-        p_data.ship = ShipModel(ship_name="Kestrel", hp=30, max_hp=30)
+        p_data.ship = ShipModel(name="Kestrel", max_hp=30, rooms=[])
         p_data.crew = [Crew(100, 100, species="Mensch")]
 
         # Trigger station fire event
