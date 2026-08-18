@@ -219,7 +219,7 @@ ZOLTAN_SHIP = ShipModel("Zoltan-Fregatte", 14, [
     Room("Medbay", (240, 140, 85, 85), max_power=2),
 ], max_weapons=4, max_crew=4, weapon_slots=[
     {"slot_id": 1, "pos": (282, 220), "allowed_types": ["BEAM", "LASER"]},
-    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
+    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM", "MISSILE", "ION"]},
     {"slot_id": 3, "pos": (187, 220), "allowed_types": ["LASER"]},
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["MISSILE", "BEAM"]},
 ])
@@ -245,7 +245,7 @@ MANTIS_SHIP = ShipModel("Mantis-Kaperer", 16, [
     Room("Medbay", (145, 140, 85, 85), max_power=2),
     Room("Sensoren", (240, 140, 85, 85), max_power=2),
 ], max_weapons=3, max_crew=5, weapon_slots=[
-    {"slot_id": 1, "pos": (282, 220), "allowed_types": ["LASER", "MISSILE"]},
+    {"slot_id": 1, "pos": (282, 220), "allowed_types": ["LASER", "MISSILE", "FLAK"]},
     {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM"]},
     {"slot_id": 3, "pos": (187, 220), "allowed_types": ["MISSILE", "BEAM"]},
 ])
@@ -259,7 +259,7 @@ ROCK_SHIP = ShipModel("Rock-Schlachtschiff", 22, [
     Room("Teleporter", (240, 140, 85, 85), max_power=1),
 ], max_weapons=4, max_crew=6, weapon_slots=[
     {"slot_id": 1, "pos": (187, 220), "allowed_types": ["MISSILE", "FLAK", "LASER"]},
-    {"slot_id": 2, "pos": (187, 335), "allowed_types": ["MISSILE", "LASER"]},
+    {"slot_id": 2, "pos": (187, 335), "allowed_types": ["MISSILE", "LASER", "BOMB"]},
     {"slot_id": 3, "pos": (282, 220), "allowed_types": ["FLAK", "BEAM"]},
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
 ])
