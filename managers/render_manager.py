@@ -800,9 +800,8 @@ class RenderManager:
 
                     allowed = slot.get("allowed_types")
                     allowed_str = ", ".join(allowed) if allowed else "ALLE"
-                    tmp_w = self.data.player.weapons[idx]
-                    assert tmp_w is not None
-                    w_name = tmp_w.name if idx < len(self.data.player.weapons) else "[Leer]"
+                    tmp_w = self.data.player.weapons[idx] if idx < len(self.data.player.weapons) else None
+                    w_name = tmp_w.name if tmp_w is not None else "[Leer]"
 
                     lbl_title = small_font.render(f"Slot H{idx+1}", True, (255, 220, 100) if is_first else (200, 240, 255))
                     lbl_type = tiny_font.render(f"Typ: {allowed_str}", True, (160, 220, 255))
@@ -831,8 +830,8 @@ class RenderManager:
 
             title = self.font.render(f"Wähle Slot für {sel_item['name']} ({sel_item['price']} Scrap):", True, (255, 220, 100))
             self.screen.blit(title, (dialog.x + 30, dialog.y + 20))
-            max_slots = 3
-            slots: dict[Any, Any] = {}
+            max_slots = getattr(self.data.player.ship, "max_weapons", 3)
+            slots: list[dict[Any, Any]] = getattr(self.data.player.ship, "weapon_slots", [])
             for slot_i in range(max_slots):
                 s_btn = pygame.Rect(150, 150 + slot_i * 65, 600, 52)
                 pygame.draw.rect(self.screen, (40, 60, 85), s_btn)

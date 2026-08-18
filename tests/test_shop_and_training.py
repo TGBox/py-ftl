@@ -175,6 +175,29 @@ class TestShopAndTraining(unittest.TestCase):
             self.assertGreaterEqual(range_val, 550.0, f"Weapon '{w_item['name']}' max_range={range_val} must be at least 550.0 px!")
 
 
+    def test_shop_buy_weapon_no_compatible_slot_prevention(self):
+        from classes.Weapon import Weapon
+        self.data.player.scrap = 200
+        # Fill player slots with non-fusible weapons
+        self.data.player.weapons = [
+            Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE"),
+            Weapon("Pike Strahl", charge_time=5.0, w_type="BEAM"),
+            Weapon("Ion Blast", charge_time=3.0, w_type="ION"),
+        ]
+        self.data.player.ship.max_weapons = 3
+        self.data.player.ship.weapon_slots = [
+            {"slot_id": 1, "allowed_types": ["MISSILE"]},
+            {"slot_id": 2, "allowed_types": ["BEAM"]},
+            {"slot_id": 3, "allowed_types": ["ION"]},
+        ]
+
+        # Trying to buy a LASER weapon when no slot allows LASER
+        laser_item = {"name": "Standard Laser", "charge_time": 3.0, "w_type": "LASER", "price": 30}
+        ok, reason = self.shop_manager.can_buy_weapon(laser_item)
+        self.assertFalse(ok, "can_buy_weapon should return False when no slot allows LASER!")
+        self.assertIn("KEIN PASSENDER ODER FREIER WAFFENSLOT", reason)
+
+
 if __name__ == "__main__":
     unittest.main()
 

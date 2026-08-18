@@ -215,7 +215,12 @@ class ShopManager:
                     if item.get("type") == "AUGMENT":
                         self.buy_augment(item)
                     else:
-                        self.selecting_slot_item = item
+                        ok, reason = self.can_buy_weapon(item)
+                        if not ok:
+                            self.data.combat.msg = reason
+                            self.data.combat.msg_timer = 2.5
+                        else:
+                            self.selecting_slot_item = item
                     return
 
             # Klick auf "Verkaufen" bei eigenen Waffen
@@ -343,12 +348,43 @@ class ShopManager:
             if slot_btn.collidepoint(mx, my):
                 self.buy_weapon_to_slot(item, slot_idx)
                 return
-    
+
+    def can_buy_weapon(self, item: dict[str, Any]) -> tuple[bool, str]:
+        price = item.get("price", 40)
+        if self.data.player.scrap < price:
+            return False, "NICHT GENUG SCRAP!"
+
+        max_slots = getattr(self.data.player.ship, "max_weapons", 3)
+        slots = getattr(self.data.player.ship, "weapon_slots", [])
+
+        has_compatible_slot = False
+        for i in range(max_slots):
+            if i < len(slots):
+                allowed = slots[i].get("allowed_types")
+                if allowed and item["w_type"] not in allowed:
+                    continue
+
+            has_w = i < len(self.data.player.weapons) and self.data.player.weapons[i] is not None
+            if not has_w:
+                has_compatible_slot = True
+                break
+            else:
+                w_obj = self.data.player.weapons[i]
+                if w_obj and w_obj.w_type == item["w_type"] and w_obj.level < 5:
+                    has_compatible_slot = True
+                    break
+
+        if not has_compatible_slot:
+            return False, "KEIN PASSENDER ODER FREIER WAFFENSLOT FÜR DIESEN WAFFENTYP FREI!"
+
+        return True, ""
+
     def buy_weapon_to_slot(self, item: dict[str, Any], slot_idx: int) -> None:
         price = item.get("price", 40)
         if self.data.player.scrap < price:
             self.data.combat.msg = "NICHT GENUG SCRAP!"
             self.data.combat.msg_timer = 1.8
+            self.selecting_slot_item = None
             return
 
         slots = getattr(self.data.player.ship, "weapon_slots", [])
@@ -357,30 +393,31 @@ class ShopManager:
             if allowed and item["w_type"] not in allowed:
                 self.data.combat.msg = f"SLOT {slot_idx+1} ERLAUBT NUR: {', '.join(allowed)}!"
                 self.data.combat.msg_timer = 2.5
+                self.selecting_slot_item = None
                 return
 
         # Ist der Slot belegt?
         if slot_idx < len(self.data.player.weapons) and self.data.player.weapons[slot_idx] is not None:
             cur_w = self.data.player.weapons[slot_idx]
-            if cur_w is not None:
-                if cur_w.w_type == item["w_type"]:
-                    if cur_w.level < 5:
-                        self.data.player.scrap -= price
-                        cur_w.upgrade()
-                        if self.game is not None:
-                            self.game.achievement_manager.unlock("weapon_fuser")
-                        self.data.combat.msg = f"FUSION AN SLOT {slot_idx+1}! {cur_w.name} ist nun Stufe {cur_w.level} (MK {cur_w.level})!"
-                        self.data.combat.msg_timer = 2.8
-                        self.selecting_slot_item = None
-                    else:
-                        self.data.combat.msg = f"MAXIMALES FUSION-LEVEL (MK V) AN SLOT {slot_idx+1} ERREICHT!"
-                        self.data.combat.msg_timer = 2.2
-                    return
+            assert cur_w is not None
+            if cur_w.w_type == item["w_type"]:
+                if cur_w.level < 5:
+                    self.data.player.scrap -= price
+                    cur_w.upgrade()
+                    if self.game is not None:
+                        self.game.achievement_manager.unlock("weapon_fuser")
+                    self.data.combat.msg = f"FUSION AN SLOT {slot_idx+1}! {cur_w.name} ist nun Stufe {cur_w.level} (MK {cur_w.level})!"
+                    self.data.combat.msg_timer = 2.8
+                    self.selecting_slot_item = None
+                else:
+                    self.data.combat.msg = f"MAXIMALES FUSION-LEVEL (MK V) AN SLOT {slot_idx+1} ERREICHT!"
+                    self.data.combat.msg_timer = 2.2
+                    self.selecting_slot_item = None
+                return
             else:
-                # TODO 48: Verhindere versehentliches Überschreiben ohne expliziten Verkauf!
-                if cur_w is not None:
-                    self.data.combat.msg = f"SLOT {slot_idx+1} BELEGT! Verkaufe zuerst die alte Waffe ({cur_w.name})!"
-                    self.data.combat.msg_timer = 3.0
+                self.data.combat.msg = f"SLOT {slot_idx+1} BELEGT! Verkaufe zuerst die alte Waffe ({cur_w.name})!"
+                self.data.combat.msg_timer = 3.0
+                self.selecting_slot_item = None
                 return
         else:
             # Slot frei -> Einbauen
