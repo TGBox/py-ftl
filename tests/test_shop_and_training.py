@@ -167,6 +167,14 @@ class TestShopAndTraining(unittest.TestCase):
                 os.remove(tmp_file)
 
 
+    def test_shop_catalog_weapons_have_range(self):
+        from managers.shop_manager import WEAPON_CATALOG_MASTER
+        for w_item in WEAPON_CATALOG_MASTER:
+            range_val = w_item.get("max_range")
+            self.assertIsNotNone(range_val, f"Weapon '{w_item['name']}' in catalog master must have max_range set!")
+            self.assertGreaterEqual(range_val, 550.0, f"Weapon '{w_item['name']}' max_range={range_val} must be at least 550.0 px!")
+
+
 if __name__ == "__main__":
     unittest.main()
 

@@ -571,7 +571,9 @@ class RenderManager:
                     sub = item.get("subtype", "STANDARD")
                     sub_tag = f" [{sub}]" if sub != "STANDARD" else ""
                     name_lbl = sub_font.render(f"{item['name']} ({w_type}){sub_tag}", True, (240, 240, 255))
-                    eff_txt = f"Dmg: {int(item.get('damage', 0))} | Pierce: {item.get('shield_pierce', 0)} | Ladezeit: {item.get('charge_time', 0)}s"
+                    range_val = item.get("max_range")
+                    range_str = f" | Reichweite: {int(range_val)}px" if range_val is not None else ""
+                    eff_txt = f"Dmg: {int(item.get('damage', 0))} | Pierce: {item.get('shield_pierce', 0)} | Ladezeit: {item.get('charge_time', 0)}s{range_str}"
                     stats_lbl = tiny_font.render(eff_txt, True, (170, 210, 235))
 
                 price_badge = pygame.Rect(item_btn.x + item_btn.width - 85, item_btn.y + 12, 75, 26)
@@ -616,7 +618,9 @@ class RenderManager:
                     refund = max(15, 15 * w.level)
 
                     lbl_name = sub_font.render(f"Slot {idx+1}: {w.name}{w_sub_tag}", True, (100, 255, 180))
-                    lbl_allow = tiny_font.render(f"Erlaubt: {allowed_txt}", True, (150, 175, 200))
+                    w_range = getattr(w, "max_range", None)
+                    range_str = f" | Reichweite: {int(w_range)}px" if w_range is not None else ""
+                    lbl_allow = tiny_font.render(f"Erlaubt: {allowed_txt}{range_str}", True, (150, 175, 200))
                     self.screen.blit(lbl_name, (card_rect.x + 8, card_rect.y + 6))
                     self.screen.blit(lbl_allow, (card_rect.x + 8, card_rect.y + 24))
 
