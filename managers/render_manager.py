@@ -695,25 +695,46 @@ class RenderManager:
         # ----------------------------------------------------
         # TAB 4: RAUM-HANDEL (TODO 50)
         # ----------------------------------------------------
+        # ----------------------------------------------------
+        # TAB 4: RAUM-HANDEL (TODO 50)
+        # ----------------------------------------------------
         elif active_tab == "ROOMS":
             from managers.shop_manager import SYSTEM_ROOM_CATALOG, PROTECTED_CORE_SYSTEMS
 
-            hdr_buy_sys = sub_font.render("NEUE SYSTEME FÜR LEERE RAUM-SLOTS KAUFEN:", True, (100, 255, 180))
-            self.screen.blit(hdr_buy_sys, (100, 138))
+            free_rooms = [r for r in self.data.player.ship.rooms if r.name == "[Freier Raum-Slot]"]
+            tot_rooms = len(self.data.player.ship.rooms)
+
+            # Top Counter Banner
+            counter_rect = pygame.Rect(75, 126, 740, 26)
+            pygame.draw.rect(self.screen, (20, 32, 50), counter_rect)
+            pygame.draw.rect(self.screen, (255, 215, 0) if free_rooms else (80, 100, 130), counter_rect, 1)
+
+            c_text = f"VERFÜGBARE RAUM-SLOTS: {len(free_rooms)} FREI  ({len(free_rooms)} von {tot_rooms} Slots frei auf {self.data.player.ship.name})"
+            c_color = (255, 230, 120) if free_rooms else (200, 215, 235)
+            c_lbl = sub_font.render(c_text, True, c_color)
+            self.screen.blit(c_lbl, (counter_rect.x + (counter_rect.width - c_lbl.get_width()) // 2, counter_rect.y + 4))
+
+            # Left Panel: Buy New Systems
+            hdr_buy_sys = sub_font.render("NEUE SYSTEME FÜR LEERE SLOTS KAUFEN:", True, (100, 255, 180))
+            self.screen.blit(hdr_buy_sys, (75, 158))
 
             for idx, sys_item in enumerate(SYSTEM_ROOM_CATALOG):
-                buy_btn = pygame.Rect(100, 160 + idx * 52, 340, 44)
+                buy_btn = pygame.Rect(75, 178 + idx * 48, 360, 42)
                 is_hov = buy_btn.collidepoint(mx, my)
-                pygame.draw.rect(self.screen, (30, 50, 75) if is_hov else (20, 32, 48), buy_btn)
-                pygame.draw.rect(self.screen, (0, 220, 255) if is_hov else (60, 100, 140), buy_btn, 1)
+                has_free = len(free_rooms) > 0
+                bg_col = (30, 50, 75) if (is_hov and has_free) else ((20, 32, 48) if has_free else (25, 28, 35))
+                border_col = (0, 220, 255) if (is_hov and has_free) else ((60, 100, 140) if has_free else (60, 65, 75))
+                pygame.draw.rect(self.screen, bg_col, buy_btn)
+                pygame.draw.rect(self.screen, border_col, buy_btn, 1)
 
-                name_l = sub_font.render(f"{sys_item['name']} - {sys_item['price']} Scrap", True, (240, 255, 255))
-                desc_l = tiny_font.render(sys_item['desc'], True, (170, 200, 230))
-                self.screen.blit(name_l, (buy_btn.x + 10, buy_btn.y + 5))
-                self.screen.blit(desc_l, (buy_btn.x + 10, buy_btn.y + 24))
+                name_l = sub_font.render(f"{sys_item['name']} - {sys_item['price']} Scrap", True, (240, 255, 255) if has_free else (140, 150, 160))
+                desc_l = tiny_font.render(sys_item['desc'], True, (170, 200, 230) if has_free else (120, 130, 140))
+                self.screen.blit(name_l, (buy_btn.x + 8, buy_btn.y + 4))
+                self.screen.blit(desc_l, (buy_btn.x + 8, buy_btn.y + 22))
 
-            hdr_sell_sys = sub_font.render("ZUSATZSYSTEME VERKAUFEN (50% Scrap Erstattung):", True, (255, 220, 100))
-            self.screen.blit(hdr_sell_sys, (470, 138))
+            # Right Panel Top: Sell Optional Systems
+            hdr_sell_sys = sub_font.render("ZUSATZSYSTEME VERKAUFEN (50% Scrap):", True, (255, 220, 100))
+            self.screen.blit(hdr_sell_sys, (455, 158))
 
             empty_or_optional_rooms = [
                 r for r in self.data.player.ship.rooms
@@ -721,10 +742,10 @@ class RenderManager:
             ]
 
             if not empty_or_optional_rooms:
-                self.screen.blit(tiny_font.render("Keine verkaufbaren Zusatzsysteme installiert.", True, (160, 180, 200)), (470, 165))
+                self.screen.blit(tiny_font.render("Keine verkaufbaren Zusatzsysteme installiert.", True, (160, 180, 200)), (455, 180))
             else:
-                for idx, r in enumerate(empty_or_optional_rooms):
-                    sell_btn = pygame.Rect(470, 160 + idx * 52, 350, 44)
+                for idx, r in enumerate(empty_or_optional_rooms[:3]):
+                    sell_btn = pygame.Rect(455, 178 + idx * 46, 360, 42)
                     is_hov = sell_btn.collidepoint(mx, my)
                     pygame.draw.rect(self.screen, (80, 35, 35) if is_hov else (50, 24, 24), sell_btn)
                     pygame.draw.rect(self.screen, (255, 100, 100) if is_hov else (160, 60, 60), sell_btn, 1)
@@ -733,8 +754,66 @@ class RenderManager:
                     refund = (cat_info["price"] // 2) if cat_info else 25
                     r_lbl = sub_font.render(f"{r.name} verkaufen (+{refund} Scrap)", True, (255, 220, 220))
                     p_lbl = tiny_font.render(f"Max Power: {r.max_power} | Zustand: {int(r.health)}%", True, (220, 180, 180))
-                    self.screen.blit(r_lbl, (sell_btn.x + 10, sell_btn.y + 5))
-                    self.screen.blit(p_lbl, (sell_btn.x + 10, sell_btn.y + 24))
+                    self.screen.blit(r_lbl, (sell_btn.x + 8, sell_btn.y + 4))
+                    self.screen.blit(p_lbl, (sell_btn.x + 8, sell_btn.y + 22))
+
+            # Right Panel Bottom: Live Ship Mini-Schematic Preview
+            hdr_schematic = sub_font.render("SCHIFFS-SCHEMATIK (RAUMSLOT-POSITIONEN):", True, (0, 220, 255))
+            self.screen.blit(hdr_schematic, (455, 320))
+
+            mini_panel = pygame.Rect(455, 338, 360, 145)
+            pygame.draw.rect(self.screen, (12, 18, 30), mini_panel)
+            pygame.draw.rect(self.screen, (0, 180, 230), mini_panel, 1)
+
+            ship_rooms = self.data.player.ship.rooms
+            if ship_rooms:
+                min_rx = min(r.rect.x for r in ship_rooms)
+                max_rx = max(r.rect.x + r.rect.width for r in ship_rooms)
+                min_ry = min(r.rect.y for r in ship_rooms)
+                max_ry = max(r.rect.y + r.rect.height for r in ship_rooms)
+
+                ship_w = max(1, max_rx - min_rx)
+                ship_h = max(1, max_ry - min_ry)
+
+                scale_x = (mini_panel.width - 30) / ship_w
+                scale_y = (mini_panel.height - 30) / ship_h
+                scale = min(scale_x, scale_y)
+
+                off_x = mini_panel.x + (mini_panel.width - int(ship_w * scale)) // 2
+                off_y = mini_panel.y + (mini_panel.height - int(ship_h * scale)) // 2
+
+                for r in ship_rooms:
+                    rx = off_x + int((r.rect.x - min_rx) * scale)
+                    ry = off_y + int((r.rect.y - min_ry) * scale)
+                    rw = max(18, int(r.rect.width * scale))
+                    rh = max(18, int(r.rect.height * scale))
+
+                    m_r_rect = pygame.Rect(rx, ry, rw, rh)
+
+                    is_free = (r.name == "[Freier Raum-Slot]")
+                    is_core = (r.name in PROTECTED_CORE_SYSTEMS)
+
+                    if is_free:
+                        r_fill = (110, 85, 20)
+                        r_bord = (255, 215, 0)
+                        lbl_t = "FREI"
+                        t_col = (255, 235, 150)
+                    elif is_core:
+                        r_fill = (30, 45, 65)
+                        r_bord = (70, 110, 160)
+                        lbl_t = r.name[:6]
+                        t_col = (180, 210, 240)
+                    else:
+                        r_fill = (25, 75, 45)
+                        r_bord = (0, 230, 150)
+                        lbl_t = r.name[:6]
+                        t_col = (180, 255, 210)
+
+                    pygame.draw.rect(self.screen, r_fill, m_r_rect)
+                    pygame.draw.rect(self.screen, r_bord, m_r_rect, 2 if is_free else 1)
+
+                    r_label_surf = tiny_font.render(lbl_t, True, t_col)
+                    self.screen.blit(r_label_surf, (m_r_rect.x + (m_r_rect.width - r_label_surf.get_width()) // 2, m_r_rect.y + (m_r_rect.height - r_label_surf.get_height()) // 2))
 
         # Shop verlassen Button (Gemeinsam unten)
         btn_leave = pygame.Rect(340, 495, 220, 40)

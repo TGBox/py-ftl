@@ -251,7 +251,7 @@ class ShopManager:
         elif self.active_tab == "ROOMS":
             # Kauf eines neuen Systems für leeren Raum-Slot
             for idx, sys_item in enumerate(SYSTEM_ROOM_CATALOG):
-                buy_btn = pygame.Rect(100, 140 + idx * 55, 340, 42)
+                buy_btn = pygame.Rect(75, 178 + idx * 48, 360, 42)
                 if buy_btn.collidepoint(mx, my):
                     self.buy_room_system(sys_item)
                     return
@@ -261,8 +261,8 @@ class ShopManager:
                 r for r in self.data.player.ship.rooms
                 if r.name not in PROTECTED_CORE_SYSTEMS and r.name != "[Freier Raum-Slot]"
             ]
-            for idx, r in enumerate(empty_or_optional_rooms):
-                sell_btn = pygame.Rect(470, 140 + idx * 55, 350, 42)
+            for idx, r in enumerate(empty_or_optional_rooms[:3]):
+                sell_btn = pygame.Rect(455, 178 + idx * 46, 360, 42)
                 if sell_btn.collidepoint(mx, my):
                     self.sell_room_system(r)
                     return

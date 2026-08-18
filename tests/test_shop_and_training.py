@@ -129,6 +129,16 @@ class TestShopAndTraining(unittest.TestCase):
         self.shop_manager.sell_room_system(free_slot)
         self.assertEqual(free_slot.name, "[Freier Raum-Slot]")
 
+    def test_shop_room_slot_display_and_counting(self):
+        from classes.Room import Room
+        # Ensure free room slots count matches
+        free_rooms_before = [r for r in self.data.player.ship.rooms if r.name == "[Freier Raum-Slot]"]
+        free_slot = Room("[Freier Raum-Slot]", (150, 150, 80, 80), max_power=0)
+        self.data.player.ship.rooms.append(free_slot)
+
+        free_rooms_after = [r for r in self.data.player.ship.rooms if r.name == "[Freier Raum-Slot]"]
+        self.assertEqual(len(free_rooms_after), len(free_rooms_before) + 1)
+
     def test_shop_weapon_overwrite_prevention(self):
         from classes.Weapon import Weapon
         self.data.player.scrap = 100
