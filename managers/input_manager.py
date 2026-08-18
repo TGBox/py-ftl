@@ -134,7 +134,11 @@ class InputManager:
                     self.data.player.crew[0].activate_ability(self.data, self.game)
 
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
-            if event.key == pygame.K_o:
+            if event.key == pygame.K_d and self.data.player.active_rename_idx is None:
+                self.data.show_drone_modal = not getattr(self.data, "show_drone_modal", False)
+                if self.sound: self.sound.play("click")
+                return
+            elif event.key == pygame.K_o:
                 self.data.player.ship.open_all_doors()
             elif event.key == pygame.K_v:
                 self.data.player.ship.open_airlocks()
@@ -274,6 +278,49 @@ class InputManager:
                 if rename_btn.collidepoint(mx, my):
                     self.data.player.active_rename_idx = idx
                     self.data.player.rename_buffer = crew.name
+                    return
+            return
+
+        # 4b. Drohnen-Menü Modal Interaktion
+        if getattr(self.data, "show_drone_modal", False):
+            render_mgr = getattr(self.game, "render_manager", None)
+            close_btn = getattr(render_mgr, "btn_close_drone_modal", pygame.Rect(380, 495, 200, 36))
+            if close_btn.collidepoint(mx, my):
+                self.data.show_drone_modal = False
+                if self.sound: self.sound.play("click")
+                return
+
+            inv = getattr(self.data.player, "drones_inventory", [])
+            max_slots = getattr(self.data.player, "max_drone_slots", 3)
+            eq_count = sum(1 for d in inv if getattr(d, "equipped", True))
+
+            for idx, drone in enumerate(inv):
+                btn_eq = getattr(render_mgr, f"btn_drone_equip_{idx}", None)
+                btn_dis = getattr(render_mgr, f"btn_drone_dismantle_{idx}", None)
+
+                if btn_eq and btn_eq.collidepoint(mx, my):
+                    is_eq = getattr(drone, "equipped", True)
+                    if is_eq:
+                        drone.equipped = False
+                        self.show_message(f"{drone.name.upper()} AUSGEBAUT!")
+                    else:
+                        if eq_count < max_slots:
+                            drone.equipped = True
+                            self.show_message(f"{drone.name.upper()} AUSGERÜSTET!")
+                        else:
+                            self.show_message("ALLE DROHNEN-SLOTS BELEGT (MAX 3)!")
+                    if self.sound: self.sound.play("click")
+                    return
+
+                if btn_dis and btn_dis.collidepoint(mx, my):
+                    is_eq = getattr(drone, "equipped", True)
+                    if not is_eq:
+                        inv.pop(idx)
+                        self.data.player.scrap += 15
+                        self.show_message(f"{drone.name.upper()} ZERLEGT (+15 SCRAP)!")
+                        if self.sound: self.sound.play("click")
+                    else:
+                        self.show_message("ZUERST AUSBAUEN ZUM ZERLEGEN!")
                     return
             return
 

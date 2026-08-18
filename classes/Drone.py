@@ -20,6 +20,7 @@ class Drone:
         self.desc = desc
         self.hotkey = hotkey
         self.active = False
+        self.equipped = True
         self.hp = hp
         self.max_hp = hp
         self.x = 0.0

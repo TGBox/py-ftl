@@ -146,6 +146,9 @@ class RenderManager:
         if getattr(self.data.player, "show_crew_menu", False):
             self.draw_crew_menu()
 
+        if getattr(self.data, "show_drone_modal", False):
+            self.draw_drone_modal()
+
         # Toast Notifications
         if self.game is not None:
             self.game.achievement_manager.update_toasts(0.016)
@@ -1182,6 +1185,7 @@ class RenderManager:
             or getattr(self.data, "show_help_overlay", False)
             or getattr(self.data, "show_pause_menu", False)
             or getattr(self.data.player, "show_crew_menu", False)
+            or getattr(self.data, "show_drone_modal", False)
             or sel_item is not None
             or self.data.current_state in (STATE_OPTIONS, STATE_ACHIEVEMENTS, STATE_TRAINING, STATE_SHOP)
         )
@@ -2071,3 +2075,99 @@ class RenderManager:
             ),
             (260, 310),
         )
+
+    def draw_drone_modal(self):
+        overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((10, 16, 28, 235))
+        self.screen.blit(overlay, (0, 0))
+
+        modal_rect = pygame.Rect(100, 50, 760, 490)
+        pygame.draw.rect(self.screen, (18, 28, 45), modal_rect)
+        pygame.draw.rect(self.screen, (0, 220, 255), modal_rect, 2)
+
+        # Header Title
+        title_lbl = self.font.render("--- SCHIFFS-DROHNEN INVENTAR & AUSRÜSTUNG ---", True, (0, 220, 255))
+        self.screen.blit(title_lbl, (modal_rect.x + (modal_rect.width - title_lbl.get_width()) // 2, modal_rect.y + 14))
+
+        # Status & Resource Line
+        inv = getattr(self.data.player, "drones_inventory", [])
+        max_slots = getattr(self.data.player, "max_drone_slots", 3)
+        eq_count = sum(1 for d in inv if getattr(d, "equipped", True))
+        d_parts = getattr(self.data.player, "drone_parts", 0)
+
+        sub_font = pygame.font.SysFont(None, 18)
+        tiny_font = pygame.font.SysFont(None, 15)
+
+        status_str = f"Drohnenteile: {d_parts}  |  Ausrüstung: {eq_count}/{max_slots} Slots belegt  |  Schrott: {self.data.player.scrap}"
+        st_lbl = sub_font.render(status_str, True, (255, 230, 120))
+        self.screen.blit(st_lbl, (modal_rect.x + (modal_rect.width - st_lbl.get_width()) // 2, modal_rect.y + 40))
+
+        mx, my = self._logical_mouse_pos(for_overlay=True)
+
+        # List Drones
+        if not inv:
+            empty_lbl = self.font.render("[ KEINE DROHNEN IM INVENTAR UNTERGEBRACHT ]", True, (160, 180, 210))
+            self.screen.blit(empty_lbl, (modal_rect.x + (modal_rect.width - empty_lbl.get_width()) // 2, modal_rect.y + 180))
+        else:
+            for idx, drone in enumerate(inv):
+                card_y = modal_rect.y + 70 + idx * 105
+                if card_y + 95 > modal_rect.bottom - 50:
+                    break
+                card_rect = pygame.Rect(modal_rect.x + 20, card_y, 720, 95)
+                is_eq = getattr(drone, "equipped", True)
+                bg_col = (30, 45, 70) if is_eq else (22, 30, 45)
+                border_col = (0, 220, 255) if is_eq else (80, 100, 130)
+
+                pygame.draw.rect(self.screen, bg_col, card_rect)
+                pygame.draw.rect(self.screen, border_col, card_rect, 2 if is_eq else 1)
+
+                # Drone Name & Type Badge
+                d_name_lbl = self.font.render(f"{drone.name}", True, (240, 245, 255))
+                type_badge = f"[{drone.drone_type}]"
+                type_lbl = tiny_font.render(type_badge, True, (0, 200, 255))
+                self.screen.blit(d_name_lbl, (card_rect.x + 15, card_rect.y + 10))
+                self.screen.blit(type_lbl, (card_rect.x + 15 + d_name_lbl.get_width() + 10, card_rect.y + 14))
+
+                # Power Cost & Health Bar
+                pwr_lbl = sub_font.render(f"Energiebedarf: {drone.power_cost} PWR", True, (150, 220, 255))
+                self.screen.blit(pwr_lbl, (card_rect.x + 15, card_rect.y + 36))
+
+                # Description
+                desc_lbl = tiny_font.render(f"{drone.desc}", True, (180, 200, 220))
+                self.screen.blit(desc_lbl, (card_rect.x + 15, card_rect.y + 60))
+
+                # Status Badge
+                eq_status_str = "AUSGERÜSTET" if is_eq else "IM LAGER"
+                eq_status_col = (100, 255, 150) if is_eq else (180, 180, 180)
+                st_badge = sub_font.render(f"Status: {eq_status_str}", True, eq_status_col)
+                self.screen.blit(st_badge, (card_rect.x + 360, card_rect.y + 12))
+
+                # Equip / Unequip Action Button
+                btn_eq = pygame.Rect(card_rect.x + 550, card_rect.y + 12, 155, 32)
+                setattr(self, f"btn_drone_equip_{idx}", btn_eq)
+                is_eq_hov = btn_eq.collidepoint(mx, my)
+                eq_btn_txt = "Ausbauen" if is_eq else "Ausrüsten"
+                eq_bg = (140, 70, 30) if is_eq else ((40, 100, 140) if (eq_count < max_slots or is_eq) else (40, 50, 65))
+                pygame.draw.rect(self.screen, eq_bg, btn_eq)
+                pygame.draw.rect(self.screen, (255, 180, 100) if is_eq else (0, 220, 255), btn_eq, 2 if is_eq_hov else 1)
+                eq_lbl = sub_font.render(eq_btn_txt, True, (255, 255, 255))
+                self.screen.blit(eq_lbl, (btn_eq.x + (btn_eq.width - eq_lbl.get_width()) // 2, btn_eq.y + 7))
+
+                # Dismantle Action Button (Zerlegen +15 Scrap)
+                btn_dis = pygame.Rect(card_rect.x + 550, card_rect.y + 50, 155, 32)
+                setattr(self, f"btn_drone_dismantle_{idx}", btn_dis)
+                is_dis_hov = btn_dis.collidepoint(mx, my)
+                can_dis = not is_eq
+                dis_bg = (130, 40, 40) if can_dis else (45, 45, 55)
+                pygame.draw.rect(self.screen, dis_bg, btn_dis)
+                pygame.draw.rect(self.screen, (255, 100, 100) if can_dis else (80, 80, 90), btn_dis, 2 if (is_dis_hov and can_dis) else 1)
+                dis_lbl = tiny_font.render("Zerlegen (+15 Scrap)" if can_dis else "[Ausbauen zum Zerlegen]", True, (255, 220, 220) if can_dis else (140, 140, 150))
+                self.screen.blit(dis_lbl, (btn_dis.x + (btn_dis.width - dis_lbl.get_width()) // 2, btn_dis.y + 8))
+
+        # Close Button
+        self.btn_close_drone_modal = pygame.Rect(modal_rect.x + (modal_rect.width - 200) // 2, modal_rect.bottom - 46, 200, 36)
+        is_close_hov = self.btn_close_drone_modal.collidepoint(mx, my)
+        pygame.draw.rect(self.screen, (70, 40, 40) if is_close_hov else (50, 30, 30), self.btn_close_drone_modal)
+        pygame.draw.rect(self.screen, (255, 120, 120) if is_close_hov else COLOR_ENEMY_BORDER, self.btn_close_drone_modal, 2)
+        close_txt = self.font.render("Schließen", True, (255, 220, 220))
+        self.screen.blit(close_txt, (self.btn_close_drone_modal.x + (self.btn_close_drone_modal.width - close_txt.get_width()) // 2, self.btn_close_drone_modal.y + 7))

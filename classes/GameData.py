@@ -35,6 +35,10 @@ class PlayerData:
         self.fuel: int = PLAYER_START_FUEL
         self.missiles: int = PLAYER_START_MISSILES
         self.drone_parts: int = 5
+        from classes.Drone import DRONE_CATALOG
+        self.drones_inventory = [copy.deepcopy(DRONE_CATALOG[0]), copy.deepcopy(DRONE_CATALOG[2])]
+        self.max_drone_slots: int = 3
+        self.show_drone_modal: bool = False
         self.augments: list[str] = ["Waffen-Vorheizer"]
         self.show_crew_menu: bool = False
         self.renaming_crew_idx: Optional[int] = None
