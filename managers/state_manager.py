@@ -18,6 +18,7 @@ class StateManager:
     def __init__(self, data: GameData):
         self.data = data
         self.game: "Game | None" = None   # Set by Game after construction
+        self.previous_game_state: str | None = None
 
     # --------------------------------------------------
     # Eigenschaften
@@ -81,7 +82,14 @@ class StateManager:
 
         old_state = self.current
 
-        self.on_leave(old_state)
+        # Wenn in temporären Menü-Overlay Zustand gewechselt wird, vorherigen Spielzustand merken
+        overlay_states = (GameState.OPTIONS.value, GameState.ACHIEVEMENTS.value)
+        if state_str in overlay_states:
+            if old_state not in overlay_states:
+                self.previous_game_state = old_state
+        else:
+            # Nur on_leave ausführen, wenn wir NICHT in ein Menü-Overlay wechseln
+            self.on_leave(old_state)
 
         self.data.current_state = state_str
 
@@ -95,6 +103,12 @@ class StateManager:
         self.on_enter(state_str)
 
         print(f"{old_state} -> {state_str}")
+
+    def return_from_overlay(self) -> None:
+        """Kehrt aus einem Overlay-Menü (Optionen / Achievements) zum vorherigen Spielzustand zurück."""
+        target = self.previous_game_state or GameState.MAP.value
+        self.previous_game_state = None
+        self.change_state(target)
 
     def enter_main_menu(self):
         self.change_state(GameState.MAIN_MENU)

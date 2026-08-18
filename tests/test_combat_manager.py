@@ -209,6 +209,24 @@ class TestCombatManager(unittest.TestCase):
         map_mgr.start_normal_combat()
         self.assertIn(self.data.enemy.ship.name, ["Mantis-Kaperer", "Rock-Kriegsschiff", "Kaper-Bomber"])
 
+    def test_combat_options_overlay_state_preservation(self):
+        from enums import GameState
+        # Enter combat state
+        self.state_manager.change_state(GameState.COMBAT)
+        self.data.combat.combat_drone_active = True
+        self.assertEqual(self.data.current_state, GameState.COMBAT.value)
+
+        # Open Options Menu during combat
+        self.state_manager.change_state(GameState.OPTIONS)
+        self.assertEqual(self.data.current_state, GameState.OPTIONS.value)
+        # Active combat drones should NOT be reset when entering Options
+        self.assertTrue(self.data.combat.combat_drone_active)
+
+        # Return from Options menu
+        self.state_manager.return_from_overlay()
+        self.assertEqual(self.data.current_state, GameState.COMBAT.value)
+        self.assertTrue(self.data.combat.combat_drone_active)
+
 
 if __name__ == "__main__":
     unittest.main()

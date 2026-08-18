@@ -146,11 +146,12 @@ class InputManager:
                 self.show_message("ZIELEN ABGEBROCHEN.")
                 return
             # Pause-Menü Modal (ESC)
-            if self.data.current_state == STATE_OPTIONS:
-                if getattr(self.data, "show_pause_menu", False):
-                    self.change_state(GameState.MAP)
+            if self.data.current_state in (STATE_OPTIONS, STATE_ACHIEVEMENTS):
+                sm = getattr(self.game, "state_manager", None)
+                if sm and hasattr(sm, "return_from_overlay"):
+                    sm.return_from_overlay()
                 else:
-                    self.change_state(GameState.MAIN_MENU)
+                    self.change_state(GameState.MAP)
             elif self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
                 self.data.show_pause_menu = not getattr(self.data, "show_pause_menu", False)
                 if self.sound: self.sound.play("click")
@@ -340,10 +341,11 @@ class InputManager:
             elif btn_close_options.collidepoint(mx, my):
                 if self.sound:
                     self.sound.play("click")
-                if getattr(self.data, "show_pause_menu", False) or self.data.paused:
-                    self.change_state(GameState.MAP)
+                sm = getattr(self.game, "state_manager", None)
+                if sm and hasattr(sm, "return_from_overlay"):
+                    sm.return_from_overlay()
                 else:
-                    self.change_state(GameState.MAIN_MENU)
+                    self.change_state(GameState.MAP)
             return
 
         # 6. Achievements Bildschirm
