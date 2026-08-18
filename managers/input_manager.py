@@ -433,8 +433,14 @@ class InputManager:
                     self.sound.play("click")
             return
 
-        # 9. Top Action Bar & Door Controls (ONLY evaluated when NO modal/menu/shop is open)
-        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
+        # 9. Top Action Bar & Door Controls (ONLY evaluated when NO modal/menu/shop/training is open)
+        has_active_overlay = (
+            getattr(self.data, "show_slot_modal", False)
+            or getattr(self.data, "show_help_overlay", False)
+            or getattr(self.data, "show_pause_menu", False)
+            or getattr(self.data.player, "show_crew_menu", False)
+        )
+        if not has_active_overlay and self.data.current_state in (STATE_MAP, STATE_COMBAT):
             btn_crew_toggle = pygame.Rect(750, 8, 130, 26)
             btn_open_all = pygame.Rect(750, 38, 130, 26)
             btn_close_all = pygame.Rect(750, 68, 130, 26)

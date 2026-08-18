@@ -880,6 +880,8 @@ class RenderManager:
             ("fitness", "Fitness", "+15 Max HP"),
         ]
 
+        mx, my = self._logical_mouse_pos(for_overlay=True)
+
         for c_idx, crew in enumerate(self.data.player.crew):
             card_y = 100 + c_idx * 95
             card_rect = pygame.Rect(55, card_y, 790, 85)
@@ -912,9 +914,10 @@ class RenderManager:
                 self.screen.blit(lbl_sdesc, (s_box.x + 4, s_box.y + 18))
 
                 upg_btn = pygame.Rect(s_box.x + 4, s_box.y + 36, 84, 26)
-                b_col = (110, 50, 160) if cur_lvl < 3 else (50, 60, 70)
+                is_u_hov = upg_btn.collidepoint(mx, my) and cur_lvl < 3
+                b_col = (140, 60, 190) if is_u_hov else ((110, 50, 160) if cur_lvl < 3 else (50, 60, 70))
                 pygame.draw.rect(self.screen, b_col, upg_btn)
-                pygame.draw.rect(self.screen, (210, 150, 255) if cur_lvl < 3 else (100, 100, 100), upg_btn, 1)
+                pygame.draw.rect(self.screen, (255, 200, 255) if is_u_hov else ((210, 150, 255) if cur_lvl < 3 else (100, 100, 100)), upg_btn, 2 if is_u_hov else 1)
 
                 btn_txt_str = "Trainieren" if cur_lvl < 3 else "Max"
                 upg_lbl = tiny_font.render(btn_txt_str, True, (255, 255, 255) if cur_lvl < 3 else (160, 160, 160))
@@ -922,10 +925,8 @@ class RenderManager:
 
         # Button zum Verlassen
         btn_leave = pygame.Rect(320, 510, 260, 42)
-        pygame.draw.rect(self.screen, (60, 40, 70), btn_leave)
-        pygame.draw.rect(self.screen, COLOR_TRAINING_NODE, btn_leave, 2)
-        l_lbl = self.font.render("Station verlassen", True, (240, 200, 255))
-        self.screen.blit(l_lbl, (btn_leave.x + (btn_leave.width - l_lbl.get_width()) // 2, btn_leave.y + 10))
+        is_l_hov = btn_leave.collidepoint(mx, my)
+        self.draw_scifi_button(btn_leave, "Station verlassen", is_hovered=is_l_hov, primary_color=(220, 160, 255))
 
     def draw_rooms(self):
         assert self.game is not None
@@ -1133,7 +1134,22 @@ class RenderManager:
         for p in self.data.player.projectiles:
             p.draw(self.screen)
 
-    def _logical_mouse_pos(self) -> tuple[int, int]:
+    @property
+    def is_any_overlay_active(self) -> bool:
+        shop_mgr = getattr(self.game, "shop_manager", None) if self.game else None
+        sel_item = getattr(shop_mgr, "selecting_slot_item", None) if shop_mgr else None
+        return (
+            getattr(self.data, "show_slot_modal", False)
+            or getattr(self.data, "show_help_overlay", False)
+            or getattr(self.data, "show_pause_menu", False)
+            or getattr(self.data.player, "show_crew_menu", False)
+            or sel_item is not None
+            or self.data.current_state in (STATE_OPTIONS, STATE_ACHIEVEMENTS, STATE_TRAINING, STATE_SHOP)
+        )
+
+    def _logical_mouse_pos(self, for_overlay: bool = False) -> tuple[int, int]:
+        if not for_overlay and self.is_any_overlay_active:
+            return (-9999, -9999)
         raw_mx, raw_my = pygame.mouse.get_pos()
         game_ref = getattr(self, "game", None)
         if game_ref and hasattr(game_ref, "screen_to_logical"):
