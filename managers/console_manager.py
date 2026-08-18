@@ -111,6 +111,7 @@ class ConsoleManager:
         return True
 
     def execute_command(self, cmd_str: str):
+        self.scroll_offset = 0
         parts = cmd_str.lower().split()
         if not parts:
             return
