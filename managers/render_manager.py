@@ -911,26 +911,36 @@ class RenderManager:
 
         mx, my = self._logical_mouse_pos(for_overlay=True)
 
+        num_crew = max(1, len(self.data.player.crew))
+        compact = num_crew > 4
+        card_h = 62 if compact else 80
+        card_spacing = 65 if compact else 95
+
         for c_idx, crew in enumerate(self.data.player.crew):
-            card_y = 100 + c_idx * 95
-            card_rect = pygame.Rect(55, card_y, 790, 85)
+            card_y = 98 + c_idx * card_spacing
+            card_rect = pygame.Rect(55, card_y, 790, card_h)
             pygame.draw.rect(self.screen, (30, 40, 60), card_rect)
             pygame.draw.rect(self.screen, COLOR_BORDER, card_rect, 1)
 
             # Crew-Icon & Details
             c_color = (100, 200, 255) if crew.species == "Engi" else ((200, 255, 100) if crew.species == "Mantis" else COLOR_CREW)
-            pygame.draw.circle(self.screen, c_color, (card_rect.x + 30, card_rect.y + 30), 16)
+            circle_y = card_y + (24 if compact else 30)
+            pygame.draw.circle(self.screen, c_color, (card_rect.x + 30, circle_y), 14 if compact else 16)
             b_lbl = self.font.render(crew.species[0], True, (0, 0, 0))
-            self.screen.blit(b_lbl, (card_rect.x + 24, card_rect.y + 18))
+            self.screen.blit(b_lbl, (card_rect.x + 24, circle_y - 12))
 
             name_txt = self.font.render(f"{crew.name} ({crew.species})", True, (240, 240, 255))
             hp_txt = tiny_font.render(f"HP: {int(crew.hp)}/{int(crew.max_hp)} | Trait: {crew.trait}", True, (180, 220, 240))
-            self.screen.blit(name_txt, (card_rect.x + 60, card_rect.y + 12))
-            self.screen.blit(hp_txt, (card_rect.x + 60, card_rect.y + 36))
+            self.screen.blit(name_txt, (card_rect.x + 60, card_rect.y + (6 if compact else 12)))
+            self.screen.blit(hp_txt, (card_rect.x + 60, card_rect.y + (30 if compact else 36)))
 
             # Render 4 Skill Upgrade Cards
+            box_h = 54 if compact else 68
+            upg_h = 22 if compact else 26
+            upg_y_off = 28 if compact else 36
+
             for s_idx, (s_key, s_name, _) in enumerate(skills):
-                s_box = pygame.Rect(465 + s_idx * 98, card_y + 8, 92, 68)
+                s_box = pygame.Rect(465 + s_idx * 98, card_y + 4, 92, box_h)
                 pygame.draw.rect(self.screen, (22, 30, 48), s_box)
                 pygame.draw.rect(self.screen, (70, 90, 130), s_box, 1)
 
@@ -939,10 +949,10 @@ class RenderManager:
 
                 lbl_sname = tiny_font.render(f"{s_name}", True, (220, 220, 255))
                 lbl_sdesc = tiny_font.render(lvl_str, True, (160, 220, 255))
-                self.screen.blit(lbl_sname, (s_box.x + 4, s_box.y + 4))
-                self.screen.blit(lbl_sdesc, (s_box.x + 4, s_box.y + 18))
+                self.screen.blit(lbl_sname, (s_box.x + 4, s_box.y + 3))
+                self.screen.blit(lbl_sdesc, (s_box.x + 4, s_box.y + (14 if compact else 18)))
 
-                upg_btn = pygame.Rect(s_box.x + 4, s_box.y + 36, 84, 26)
+                upg_btn = pygame.Rect(s_box.x + 4, s_box.y + upg_y_off, 84, upg_h)
                 is_u_hov = upg_btn.collidepoint(mx, my) and cur_lvl < 3
                 b_col = (140, 60, 190) if is_u_hov else ((110, 50, 160) if cur_lvl < 3 else (50, 60, 70))
                 pygame.draw.rect(self.screen, b_col, upg_btn)
@@ -950,7 +960,7 @@ class RenderManager:
 
                 btn_txt_str = "Trainieren" if cur_lvl < 3 else "Max"
                 upg_lbl = tiny_font.render(btn_txt_str, True, (255, 255, 255) if cur_lvl < 3 else (160, 160, 160))
-                self.screen.blit(upg_lbl, (upg_btn.x + (upg_btn.width - upg_lbl.get_width()) // 2, upg_btn.y + 6))
+                self.screen.blit(upg_lbl, (upg_btn.x + (upg_btn.width - upg_lbl.get_width()) // 2, upg_btn.y + (4 if compact else 6)))
 
         # Button zum Verlassen
         btn_leave = pygame.Rect(320, 510, 260, 42)

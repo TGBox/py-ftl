@@ -34,12 +34,18 @@ class TrainingManager:
             "fitness": "Fitness (+HP)",
         }
 
+        num_crew = max(1, len(self.data.player.crew))
+        compact = num_crew > 4
+        card_spacing = 65 if compact else 95
+        upg_h = 22 if compact else 26
+        upg_y_off = 28 if compact else 36
+
         # Prüfen ob ein Skill-Upgrade-Button eines Crew-Mitglieds angeklickt wurde
         for c_idx, crew in enumerate(self.data.player.crew):
-            card_y = 110 + c_idx * 90
+            card_y = 98 + c_idx * card_spacing
             for s_idx, skill in enumerate(skills):
-                btn_x = 470 + s_idx * 98
-                btn_rect = pygame.Rect(btn_x, card_y + 36, 92, 28)
+                s_box_x = 465 + s_idx * 98
+                btn_rect = pygame.Rect(s_box_x + 4, card_y + 4 + upg_y_off, 84, upg_h)
                 if btn_rect.collidepoint(mx, my):
                     self.buy_training(crew, skill, skill_names_de[skill])
                     return

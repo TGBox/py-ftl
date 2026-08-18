@@ -245,6 +245,19 @@ class TestShopAndTraining(unittest.TestCase):
         self.assertEqual(self.data.player.weapons[0].level, 5, "Weapon level must remain capped at 5!")
         self.assertIn("MAXIMALES FUSION-LEVEL", self.data.combat.msg)
 
+    def test_crew_training_compact_layout_scaling(self):
+        # Create 6 crew members to test 6-crew compact training layout
+        self.data.player.crew = [Crew(0, 0, name=f"Crew #{i+1}", species="Mensch") for i in range(6)]
+        self.data.player.scrap = 200
+
+        # Click upgrade button for 6th crew member (index 5) repair skill
+        # card_y = 98 + 5 * 65 = 423
+        # btn_x = 465 + 4 = 469, btn_y = 423 + 4 + 28 = 455
+        self.training_manager.handle_click(475, 460)
+
+        self.assertEqual(self.data.player.crew[5].skill_repair, 1)
+        self.assertEqual(self.data.player.scrap, 180)
+
 
 if __name__ == "__main__":
     unittest.main()
