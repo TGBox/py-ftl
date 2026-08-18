@@ -286,8 +286,8 @@ class ShopManager:
             return
 
         # Tab-Buttons für Tauschmodus (Räume vs. Waffenslots)
-        tab_rooms = pygame.Rect(200, 50, 190, 32)
-        tab_weapons = pygame.Rect(410, 50, 190, 32)
+        tab_rooms = pygame.Rect(200, 20, 190, 32)
+        tab_weapons = pygame.Rect(410, 20, 190, 32)
         if tab_rooms.collidepoint(mx, my):
             self.layout_swap_type = "ROOMS"
             self.layout_swap_first_selection = None

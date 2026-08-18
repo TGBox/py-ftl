@@ -755,18 +755,22 @@ class RenderManager:
             first_sel = getattr(shop_mgr, "layout_swap_first_selection", None)
 
             # Tab-Buttons rendern
+            mx, my = self._logical_mouse_pos(for_overlay=True)
             tab_rooms = pygame.Rect(200, 20, 190, 32)
             tab_weapons = pygame.Rect(410, 20, 190, 32)
 
-            col_r_fill = (50, 70, 100) if swap_type == "ROOMS" else (25, 35, 50)
-            col_r_bord = (255, 220, 100) if swap_type == "ROOMS" else (80, 120, 160)
+            is_r_hov = tab_rooms.collidepoint(mx, my)
+            is_w_hov = tab_weapons.collidepoint(mx, my)
+
+            col_r_fill = (70, 95, 135) if (swap_type == "ROOMS" or is_r_hov) else (25, 35, 50)
+            col_r_bord = (255, 220, 100) if swap_type == "ROOMS" else ((0, 220, 255) if is_r_hov else (80, 120, 160))
             pygame.draw.rect(self.screen, col_r_fill, tab_rooms)
             pygame.draw.rect(self.screen, col_r_bord, tab_rooms, 2)
             lbl_tr = self.small_font.render("Räume tauschen", True, (255, 255, 255))
             self.screen.blit(lbl_tr, (tab_rooms.x + (tab_rooms.width - lbl_tr.get_width()) // 2, tab_rooms.y + 8))
 
-            col_w_fill = (50, 70, 100) if swap_type == "WEAPONS" else (25, 35, 50)
-            col_w_bord = (255, 220, 100) if swap_type == "WEAPONS" else (80, 120, 160)
+            col_w_fill = (70, 95, 135) if (swap_type == "WEAPONS" or is_w_hov) else (25, 35, 50)
+            col_w_bord = (255, 220, 100) if swap_type == "WEAPONS" else ((0, 220, 255) if is_w_hov else (80, 120, 160))
             pygame.draw.rect(self.screen, col_w_fill, tab_weapons)
             pygame.draw.rect(self.screen, col_w_bord, tab_weapons, 2)
             lbl_tw = self.small_font.render("Waffenslots tauschen", True, (255, 255, 255))

@@ -44,7 +44,7 @@ class TestWeaponSlotSwap(unittest.TestCase):
         self.assertEqual(self.shop_mgr.layout_swap_type, "ROOMS")
 
         # Switch to WEAPONS tab
-        self.shop_mgr.handle_layout_swap_click(450, 60)
+        self.shop_mgr.handle_layout_swap_click(450, 25)
         self.assertEqual(self.shop_mgr.layout_swap_type, "WEAPONS")
 
 
