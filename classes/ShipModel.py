@@ -207,8 +207,8 @@ STEALTH_SHIP = ShipModel("Tarnschiff", 12, [
     Room("Medbay", (160, 155, 80, 80), max_power=1),
 ], max_weapons=3, max_crew=3, weapon_slots=[
     {"slot_id": 1, "pos": (200, 230), "allowed_types": ["LASER", "BEAM"]},
-    {"slot_id": 2, "pos": (200, 340), "allowed_types": ["BEAM"]},
-    {"slot_id": 3, "pos": (290, 285), "allowed_types": ["LASER", "MISSILE"]},
+    {"slot_id": 2, "pos": (200, 340), "allowed_types": ["BEAM", "LASER"]},
+    {"slot_id": 3, "pos": (290, 285), "allowed_types": ["LASER", "MISSILE", "BEAM"]},
 ])
 
 ZOLTAN_SHIP = ShipModel("Zoltan-Fregatte", 14, [
@@ -342,64 +342,66 @@ SHIP_STARTING_SPECS: dict[str, dict[str, str | list[str]]] = {
 }
 
 
-def apply_starting_setup_for_ship(player_data: "PlayerData", ship_name: str) -> None:
+def apply_starting_setup_for_ship(player_data: Any, ship_name: str) -> None:
     from classes.Crew import Crew
     from classes.Weapon import Weapon
+
+    player = getattr(player_data, "player", player_data)
 
     specs = SHIP_STARTING_SPECS.get(ship_name, SHIP_STARTING_SPECS["Kestrel"])
     species_list = specs["crew_species"]
 
     # Start-Crew setzen
-    player_data.crew.clear()
-    rooms = getattr(player_data.ship, "rooms", [])
+    player.crew.clear()
+    rooms = getattr(player.ship, "rooms", [])
     for idx, spec in enumerate(species_list):
         r = rooms[idx % len(rooms)] if rooms else None
         cx = r.rect.centerx if r else 250
         cy = r.rect.centery if r else 250
-        player_data.crew.append(Crew(cx, cy, species=spec))
+        player.crew.append(Crew(cx, cy, species=spec))
 
     # Start-Waffen setzen
-    assert player_data.weapons is not None
-    player_data.weapons.clear()
+    assert player.weapons is not None
+    player.weapons.clear()
     if ship_name == "Kestrel":
-        player_data.weapons = [
-            Weapon("Standard Laser", charge_time=3.0, w_type="LASER", max_range=650.0),
-            Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1),
+        player.weapons = [
+            Weapon("Standard Laser", charge_time=3.0, w_type="LASER", damage=25.0, max_range=650.0),
+            Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1, damage=35.0, max_range=600.0),
         ]
     elif ship_name == "Kreuzer":
-        player_data.weapons = [
+        player.weapons = [
             Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0, max_range=600.0),
             Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0, max_range=600.0),
         ]
     elif ship_name == "Tarnschiff":
-        player_data.weapons = [
-            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0, max_range=320.0),
-            Weapon("Pike Strahl", charge_time=5.0, w_type="BEAM", damage=35.0, max_range=500.0),
+        player.weapons = [
+            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0, max_range=600.0),
+            Weapon("Pike Strahl", charge_time=5.0, w_type="BEAM", damage=35.0, max_range=600.0),
         ]
     elif ship_name == "Zoltan-Fregatte":
-        player_data.weapons = [
-            Weapon("Halberd Strahl", charge_time=5.5, w_type="BEAM", damage=45.0, max_range=550.0),
-            Weapon("Ion Blast MK I", charge_time=3.0, w_type="ION", damage=10.0),
+        player.weapons = [
+            Weapon("Halberd Strahl", charge_time=5.5, w_type="BEAM", damage=45.0, max_range=600.0),
+            Weapon("Ion Blast MK I", charge_time=3.0, w_type="ION", damage=10.0, max_range=600.0),
         ]
     elif ship_name == "Federations-Kreuzer":
-        player_data.weapons = [
+        player.weapons = [
             Weapon("Standard Laser", charge_time=3.0, w_type="LASER", damage=25.0, max_range=650.0),
             Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0, max_range=600.0),
         ]
     elif ship_name == "Mantis-Kaperer":
-        player_data.weapons = [
-            Weapon("Kurzstrecken-Flak", charge_time=3.2, w_type="FLAK", damage=30.0, max_range=350.0),
+        player.weapons = [
+            Weapon("Kurzstrecken-Flak", charge_time=3.2, w_type="FLAK", damage=30.0, max_range=550.0),
             Weapon("Brand-Laser MK I", charge_time=3.8, w_type="LASER", damage=15.0, fire_chance=0.75, max_range=600.0),
         ]
     elif ship_name == "Rock-Schlachtschiff":
-        player_data.weapons = [
-            Weapon("Hermes Rakete", charge_time=4.5, w_type="MISSILE", ammo_cost=1, damage=50.0),
-            Weapon("Hüllenbruch-Bombe", charge_time=5.0, w_type="BOMB", ammo_cost=1, damage=15.0, breach_chance=0.90, max_range=420.0),
+        player.weapons = [
+            Weapon("Hermes Rakete", charge_time=4.5, w_type="MISSILE", ammo_cost=1, damage=50.0, max_range=600.0),
+            Weapon("Hüllenbruch-Bombe", charge_time=5.0, w_type="BOMB", ammo_cost=1, damage=15.0, breach_chance=0.90, max_range=550.0),
         ]
     elif ship_name == "Kristall-Kreuzer":
-        player_data.weapons = [
+        player.weapons = [
             Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0, max_range=600.0),
-            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0, max_range=320.0),
+            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0, max_range=600.0),
         ]
 
 
