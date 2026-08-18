@@ -204,6 +204,10 @@ class AchievementManager:
                 "unlock_time": None,
             }
 
+    def reset_achievements(self) -> None:
+        self.init_achievements()
+        self.save_achievements()
+
     def unlock(self, a_id: str) -> bool:
         if a_id in self.achievements and not self.achievements[a_id]["unlocked"]:
             self.achievements[a_id]["unlocked"] = True

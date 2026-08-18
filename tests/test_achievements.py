@@ -52,6 +52,14 @@ class TestAchievements(unittest.TestCase):
         self.mgr.update_toasts(2.5)
         self.assertEqual(len(self.mgr.toasts), 0, "Toast should expire after timer reaches 0.")
 
+    def test_reset_achievements(self):
+        self.mgr.unlock("first_victory")
+        self.assertTrue(self.mgr.achievements["first_victory"]["unlocked"])
+
+        self.mgr.reset_achievements()
+        self.assertFalse(self.mgr.achievements["first_victory"]["unlocked"])
+        self.assertIsNone(self.mgr.achievements["first_victory"]["unlock_time"])
+
     #def test_gamedata_integration(self):
     #    data = GameData()
     #    self.assertIsNotNone(data.achievement_manager)

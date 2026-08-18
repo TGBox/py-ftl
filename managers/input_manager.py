@@ -293,8 +293,10 @@ class InputManager:
             btn_sfx_up = pygame.Rect(648, 311, 34, 30)
 
             btn_autosave_toggle = pygame.Rect(210, 350, 480, 34)
-            btn_achievements_menu = pygame.Rect(210, 390, 480, 34)
-            btn_close_options = pygame.Rect(350, 460, 200, 40)
+            btn_achievements_menu = pygame.Rect(210, 390, 480, 32)
+            btn_reset_achievements = pygame.Rect(210, 428, 235, 32)
+            btn_reset_unlocks = pygame.Rect(455, 428, 235, 32)
+            btn_close_options = pygame.Rect(350, 468, 200, 36)
 
             if btn_toggle_fullscreen.collidepoint(mx, my):
                 if self.game:
@@ -340,6 +342,20 @@ class InputManager:
                     self.sound.play("click")
             elif btn_achievements_menu.collidepoint(mx, my):
                 self.change_state(GameState.ACHIEVEMENTS)
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_reset_achievements.collidepoint(mx, my):
+                ach_mgr = getattr(self.game, "achievement_manager", None)
+                if ach_mgr and hasattr(ach_mgr, "reset_achievements"):
+                    ach_mgr.reset_achievements()
+                self.show_message("ERRUNGENSCHAFTEN ERFOLGREICH ZURÜCKGESETZT!")
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_reset_unlocks.collidepoint(mx, my):
+                from managers.save_manager import SaveManager
+                self.data.player.unlocked_ships = ["Kestrel"]
+                SaveManager.save_unlocks(["Kestrel"])
+                self.show_message("SCHIFF-UNLOCKS ERFOLGREICH ZURÜCKGESETZT!")
                 if self.sound:
                     self.sound.play("click")
             elif btn_close_options.collidepoint(mx, my):

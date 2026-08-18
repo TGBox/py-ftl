@@ -1779,22 +1779,37 @@ class RenderManager:
         self.screen.blit(as_txt, (self.btn_autosave_toggle.x + 60, self.btn_autosave_toggle.y + 7))
 
         # 5. Errungenschaften Button
-        self.btn_achievements_menu = pygame.Rect(210, 390, 480, 34)
-        pygame.draw.rect(self.screen, (35, 65, 95), self.btn_achievements_menu)
-        pygame.draw.rect(self.screen, (255, 215, 0), self.btn_achievements_menu, 2)
-        ach_btn_txt = self.font.render("ERRUNGENSCHAFTEN ANSEHEN", True, (255, 230, 100))
-        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + 110, self.btn_achievements_menu.y + 7))
+        self.btn_achievements_menu = pygame.Rect(210, 390, 480, 32)
+        is_ach_hov = self.btn_achievements_menu.collidepoint(mx, my)
+        pygame.draw.rect(self.screen, (50, 85, 125) if is_ach_hov else (35, 65, 95), self.btn_achievements_menu)
+        pygame.draw.rect(self.screen, (255, 230, 100) if is_ach_hov else (255, 215, 0), self.btn_achievements_menu, 2)
+        ach_btn_txt = self.font.render("ERRUNGENSCHAFTEN ANSEHEN", True, (255, 240, 150) if is_ach_hov else (255, 230, 100))
+        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + (self.btn_achievements_menu.width - ach_btn_txt.get_width()) // 2, self.btn_achievements_menu.y + 6))
 
-        # Steuerungshinweis
-        ctrl_font = pygame.font.SysFont(None, 17)
-        self.screen.blit(ctrl_font.render("Steuerung: S = Speichern | L = Laden | Pausieren = Leertaste | +/- = Lautstärke", True, (160, 180, 210)), (210, 432))
+        # 6. Reset Buttons (Achievements & Unlocks Einzeln)
+        self.btn_reset_achievements = pygame.Rect(210, 428, 235, 32)
+        self.btn_reset_unlocks = pygame.Rect(455, 428, 235, 32)
 
-        # 6. Zurück Button
-        self.btn_close_options = pygame.Rect(350, 460, 200, 40)
-        pygame.draw.rect(self.screen, (70, 40, 40), self.btn_close_options)
-        pygame.draw.rect(self.screen, COLOR_ENEMY_BORDER, self.btn_close_options, 2)
+        is_ra_hov = self.btn_reset_achievements.collidepoint(mx, my)
+        pygame.draw.rect(self.screen, (140, 45, 45) if is_ra_hov else (85, 30, 30), self.btn_reset_achievements)
+        pygame.draw.rect(self.screen, (255, 100, 100) if is_ra_hov else (180, 60, 60), self.btn_reset_achievements, 2)
+        ra_txt = self.font.render("Achievements Reset", True, (255, 220, 220) if is_ra_hov else (220, 180, 180))
+        self.screen.blit(ra_txt, (self.btn_reset_achievements.x + (self.btn_reset_achievements.width - ra_txt.get_width()) // 2, self.btn_reset_achievements.y + 6))
+
+        is_ru_hov = self.btn_reset_unlocks.collidepoint(mx, my)
+        pygame.draw.rect(self.screen, (140, 45, 45) if is_ru_hov else (85, 30, 30), self.btn_reset_unlocks)
+        pygame.draw.rect(self.screen, (255, 100, 100) if is_ru_hov else (180, 60, 60), self.btn_reset_unlocks, 2)
+        ru_txt = self.font.render("Schiff-Unlocks Reset", True, (255, 220, 220) if is_ru_hov else (220, 180, 180))
+        self.screen.blit(ru_txt, (self.btn_reset_unlocks.x + (self.btn_reset_unlocks.width - ru_txt.get_width()) // 2, self.btn_reset_unlocks.y + 6))
+
+        # 7. Zurück Button
+        self.btn_close_options = pygame.Rect(350, 468, 200, 36)
+        is_c_hov = self.btn_close_options.collidepoint(mx, my)
+        pygame.draw.rect(self.screen, (90, 45, 45) if is_c_hov else (70, 40, 40), self.btn_close_options)
+        pygame.draw.rect(self.screen, (255, 120, 120) if is_c_hov else COLOR_ENEMY_BORDER, self.btn_close_options, 2)
         close_txt = "Zurück zur Pause" if self.data.paused else "Zurück zum Menü"
-        self.screen.blit(self.font.render(close_txt, True, (255, 200, 200)), (self.btn_close_options.x + 25, self.btn_close_options.y + 9))
+        cl_surf = self.font.render(close_txt, True, (255, 220, 220) if is_c_hov else (255, 200, 200))
+        self.screen.blit(cl_surf, (self.btn_close_options.x + (self.btn_close_options.width - cl_surf.get_width()) // 2, self.btn_close_options.y + 7))
 
     def draw_achievements_screen(self):
         bg_surf = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
