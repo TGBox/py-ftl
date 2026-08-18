@@ -1672,7 +1672,7 @@ class RenderManager:
         res_idx = getattr(game_ref, "resolution_idx", 0) if game_ref else 0
         res_list = getattr(game_ref, "resolutions", RESOLUTIONS) if game_ref else RESOLUTIONS
         cur_res = res_list[res_idx] if res_idx < len(res_list) else (1920, 1080)
-        sound_ref = getattr(game_ref, "sound_manager", None) if game_ref else (getattr(self, "sound", None))
+        sound_ref = getattr(self.game, "sound_manager", None) or getattr(self.data, "sound_manager", None) or getattr(self, "sound", None)
         audio_on = sound_ref.enabled if sound_ref else True
 
         master_v = sound_ref.master_volume if sound_ref else 1.0
@@ -1685,6 +1685,8 @@ class RenderManager:
             "FULLSCREEN": "Exklusives Vollbild (Hardware-Fullscreen)",
         }
         disp_mode_label = mode_labels.get(mode_str, mode_str)
+
+        mx, my = self._logical_mouse_pos(for_overlay=True)
 
         # 1. Anzeigemodus Button
         self.btn_toggle_fullscreen = pygame.Rect(210, 105, 480, 36)
@@ -1703,13 +1705,23 @@ class RenderManager:
 
         # 3. Audio Stummschalten Toggle
         self.btn_audio_toggle = pygame.Rect(210, 191, 480, 36)
-        aud_col = (40, 80, 40) if audio_on else (80, 40, 40)
+        is_aud_hov = self.btn_audio_toggle.collidepoint(mx, my)
+
+        if audio_on:
+            aud_col = (45, 110, 55) if is_aud_hov else (25, 70, 35)
+            aud_border = (100, 255, 140) if is_aud_hov else (0, 180, 80)
+            aud_label = "Audio Hauptschalter: AN (Ton Aktiviert)"
+            aud_color = (200, 255, 200)
+        else:
+            aud_col = (130, 45, 45) if is_aud_hov else (80, 25, 25)
+            aud_border = (255, 100, 100) if is_aud_hov else (180, 50, 50)
+            aud_label = "Audio Hauptschalter: STUMM (Ton Deaktiviert)"
+            aud_color = (255, 200, 200)
+
         pygame.draw.rect(self.screen, aud_col, self.btn_audio_toggle)
-        pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_audio_toggle, 2)
-        aud_label = "Audio Hauptschalter: AN" if audio_on else "Audio Hauptschalter: STUMM"
-        aud_color = (150, 240, 150) if audio_on else (255, 120, 120)
+        pygame.draw.rect(self.screen, aud_border, self.btn_audio_toggle, 2)
         audio_txt = self.font.render(aud_label, True, aud_color)
-        self.screen.blit(audio_txt, (self.btn_audio_toggle.x + 140, self.btn_audio_toggle.y + 8))
+        self.screen.blit(audio_txt, (self.btn_audio_toggle.x + (self.btn_audio_toggle.width - audio_txt.get_width()) // 2, self.btn_audio_toggle.y + 8))
 
         # --- LAUTSTÄRKE EINSTELLUNGEN ---
         # Helper to draw a volume row with [-] [ Bar ] [+]
