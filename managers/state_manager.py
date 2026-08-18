@@ -84,6 +84,8 @@ class StateManager:
 
         # Wenn in temporären Menü-Overlay Zustand gewechselt wird, vorherigen Spielzustand merken
         overlay_states = (GameState.OPTIONS.value, GameState.ACHIEVEMENTS.value)
+        is_returning_from_overlay = (old_state in overlay_states) and (state_str not in overlay_states)
+
         if state_str in overlay_states:
             if old_state not in overlay_states:
                 self.previous_game_state = old_state
@@ -100,7 +102,8 @@ class StateManager:
             if hasattr(self.data.player, "show_crew_menu"):
                 self.data.player.show_crew_menu = False
 
-        self.on_enter(state_str)
+        if not is_returning_from_overlay:
+            self.on_enter(state_str)
 
         print(f"{old_state} -> {state_str}")
 
