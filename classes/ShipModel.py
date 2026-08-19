@@ -90,17 +90,34 @@ class ShipModel:
         self.generate_doors()
 
     def swap_weapon_slots(self, idx1: int, idx2: int, weapons_list: list) -> bool:
-        # Optional: Prüfen, ob die Indizes im gültigen Bereich liegen
         if not (0 <= idx1 < len(self.weapon_slots) and 0 <= idx2 < len(self.weapon_slots)):
             return False
 
-        # 1. Die Waffen in der übergebenen Inventarliste tauschen
-        if 0 <= idx1 < len(weapons_list) and 0 <= idx2 < len(weapons_list):
-            weapons_list[idx1], weapons_list[idx2] = weapons_list[idx2], weapons_list[idx1]
-            
-        # 2. Die Eigenschaften der Slots im Schiff tauschen
-        self.weapon_slots[idx1], self.weapon_slots[idx2] = self.weapon_slots[idx2], self.weapon_slots[idx1]
-        
+        # Ensure weapons_list has enough entries for both slots
+        max_idx = max(idx1, idx2)
+        while len(weapons_list) <= max_idx:
+            weapons_list.append(None)
+
+        # 1. Die Waffen in der Inventarliste tauschen
+        weapons_list[idx1], weapons_list[idx2] = weapons_list[idx2], weapons_list[idx1]
+
+        # 2. Slot-Eigenschaften (z.B. allowed_types) tauschen, während pos und slot_id fest bleiben
+        slot1 = self.weapon_slots[idx1]
+        slot2 = self.weapon_slots[idx2]
+        keys_to_swap = [k for k in set(slot1.keys()).union(slot2.keys()) if k not in ("pos", "slot_id")]
+        for k in keys_to_swap:
+            v1 = slot1.get(k)
+            v2 = slot2.get(k)
+            if v2 is not None:
+                slot1[k] = v2
+            elif k in slot1:
+                del slot1[k]
+
+            if v1 is not None:
+                slot2[k] = v1
+            elif k in slot2:
+                del slot2[k]
+
         return True
 
     def generate_doors(self) -> None:

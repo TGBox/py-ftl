@@ -35,7 +35,29 @@ class TestWeaponSlotSwap(unittest.TestCase):
         assert self.data.player.weapons[0] is not None
         self.assertEqual(self.data.player.weapons[0].name, "Artemis Missile")
         assert self.data.player.weapons[1] is not None
-        self.assertEqual(self.data.player.weapons[1].name, "Burst Laser")
+        # Verify physical pos remained fixed to slot indices
+        self.assertNotEqual(ship.weapon_slots[0]["pos"], ship.weapon_slots[1]["pos"])
+
+    def test_swap_weapon_slots_with_empty_slot(self):
+        ship = self.data.player.ship
+        if len(ship.weapon_slots) >= 4:
+            ship.weapon_slots[0]["allowed_types"] = ["LASER"]
+            ship.weapon_slots[3]["allowed_types"] = ["MISSILE"]
+
+            w1 = Weapon("Burst Laser", charge_time=8.0, w_type="LASER", damage=25.0, ammo_cost=0)
+            self.data.player.weapons = [w1]  # Only 1 weapon in weapons list (length < 4)
+
+            success = ship.swap_weapon_slots(0, 3, self.data.player.weapons)
+            self.assertTrue(success)
+
+            # Slot 0 should now allow MISSILE and be empty
+            self.assertEqual(ship.weapon_slots[0]["allowed_types"], ["MISSILE"])
+            self.assertIsNone(self.data.player.weapons[0])
+
+            # Slot 3 should now allow LASER and hold Burst Laser
+            self.assertEqual(ship.weapon_slots[3]["allowed_types"], ["LASER"])
+            self.assertIsNotNone(self.data.player.weapons[3])
+            self.assertEqual(self.data.player.weapons[3].name, "Burst Laser")
 
     def test_layout_swap_mode_toggle(self):
         self.data.player.scrap = 50
@@ -43,8 +65,8 @@ class TestWeaponSlotSwap(unittest.TestCase):
         self.assertTrue(self.shop_mgr.layout_swap_mode)
         self.assertEqual(self.shop_mgr.layout_swap_type, "ROOMS")
 
-        # Switch to WEAPONS tab
-        self.shop_mgr.handle_layout_swap_click(450, 25)
+        # Switch to WEAPONS tab (tab_weapons rect is 470, 465, 230, 34)
+        self.shop_mgr.handle_layout_swap_click(500, 480)
         self.assertEqual(self.shop_mgr.layout_swap_type, "WEAPONS")
 
 
