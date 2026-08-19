@@ -837,36 +837,20 @@ class RenderManager:
             first_sel = getattr(shop_mgr, "layout_swap_first_selection", None)
 
             # Tab-Buttons rendern
-            mx, my = self._logical_mouse_pos(for_overlay=True)
-            tab_rooms = pygame.Rect(200, 20, 190, 32)
-            tab_weapons = pygame.Rect(410, 20, 190, 32)
-
-            is_r_hov = tab_rooms.collidepoint(mx, my)
-            is_w_hov = tab_weapons.collidepoint(mx, my)
-
-            col_r_fill = (70, 95, 135) if (swap_type == "ROOMS" or is_r_hov) else (25, 35, 50)
-            col_r_bord = (255, 220, 100) if swap_type == "ROOMS" else ((0, 220, 255) if is_r_hov else (80, 120, 160))
-            pygame.draw.rect(self.screen, col_r_fill, tab_rooms)
-            pygame.draw.rect(self.screen, col_r_bord, tab_rooms, 2)
-            lbl_tr = self.render_text_fitted(self.small_font, "Räume tauschen", (255, 255, 255), tab_rooms.width - 8)
-            self.screen.blit(lbl_tr, (tab_rooms.x + (tab_rooms.width - lbl_tr.get_width()) // 2, tab_rooms.y + 8))
-
-            col_w_fill = (70, 95, 135) if (swap_type == "WEAPONS" or is_w_hov) else (25, 35, 50)
-            col_w_bord = (255, 220, 100) if swap_type == "WEAPONS" else ((0, 220, 255) if is_w_hov else (80, 120, 160))
-            pygame.draw.rect(self.screen, col_w_fill, tab_weapons)
-            pygame.draw.rect(self.screen, col_w_bord, tab_weapons, 2)
-            lbl_tw = self.render_text_fitted(self.small_font, "Waffenslots tauschen", (255, 255, 255), tab_weapons.width - 8)
-            self.screen.blit(lbl_tw, (tab_weapons.x + (tab_weapons.width - lbl_tw.get_width()) // 2, tab_weapons.y + 8))
+            # Header Banner & Subtitle
+            banner_bg = pygame.Rect(100, 12, 700, 48)
+            pygame.draw.rect(self.screen, (15, 25, 40), banner_bg)
+            pygame.draw.rect(self.screen, (0, 200, 255), banner_bg, 2)
 
             if swap_type == "ROOMS":
                 first_r_name = first_sel.name if (first_sel and hasattr(first_sel, "name")) else ""
-                subtitle_txt = f"1. Raum: {first_r_name.upper()} | Klicke auf den 2. Raum zum Tauschen!" if first_r_name else "KLICKE AUF ZWEI RÄUME, UM DEREN SYSTEME ZU TAUSCHEN:"
+                subtitle_txt = f"1. RAUM: {first_r_name.upper()} | KLICKE AUF 2. RAUM ZUM TAUSCHEN!" if first_r_name else "KLICKE AUF ZWEI RÄUME, UM DEREN SYSTEME ZU TAUSCHEN:"
             else:
                 s1_num = f"H{first_sel+1}" if isinstance(first_sel, int) else ""
-                subtitle_txt = f"1. Slot: {s1_num} | Klicke auf den 2. Waffenslot zum Tauschen!" if s1_num else "KLICKE AUF ZWEI WAFFENSLOTS, UM DEREN TYPEN ZU TAUSCHEN:"
+                subtitle_txt = f"1. SLOT: {s1_num} | KLICKE AUF 2. WAFFENSLOT ZUM TAUSCHEN!" if s1_num else "KLICKE AUF ZWEI WAFFENSLOTS, UM DEREN TYPEN ZU TAUSCHEN:"
 
-            st_lbl = self.render_text_fitted(self.small_font, subtitle_txt, (100, 220, 255), 560)
-            self.screen.blit(st_lbl, (220, 58))
+            st_lbl = self.render_text_fitted(self.font, subtitle_txt, (255, 220, 100), 680)
+            self.screen.blit(st_lbl, (LOGICAL_WIDTH // 2 - st_lbl.get_width() // 2, 26))
 
             if swap_type == "ROOMS":
                 # Spielerschiff Räume zeichnen
@@ -915,11 +899,33 @@ class RenderManager:
                     self.screen.blit(lbl_type, (slot_rect.x + 6, slot_rect.y + 20))
                     self.screen.blit(lbl_weap, (slot_rect.x + 6, slot_rect.y + 34))
 
-            cancel_btn = pygame.Rect(320, 490, 260, 40)
+            # Bottom Controls: Mode Tabs & Cancel Button
+            mx, my = self._logical_mouse_pos(for_overlay=True)
+            tab_rooms = pygame.Rect(200, 465, 230, 34)
+            tab_weapons = pygame.Rect(470, 465, 230, 34)
+
+            is_r_hov = tab_rooms.collidepoint(mx, my)
+            is_w_hov = tab_weapons.collidepoint(mx, my)
+
+            col_r_fill = (70, 95, 135) if (swap_type == "ROOMS" or is_r_hov) else (25, 35, 50)
+            col_r_bord = (255, 220, 100) if swap_type == "ROOMS" else ((0, 220, 255) if is_r_hov else (80, 120, 160))
+            pygame.draw.rect(self.screen, col_r_fill, tab_rooms)
+            pygame.draw.rect(self.screen, col_r_bord, tab_rooms, 2)
+            lbl_tr = self.render_text_fitted(self.font, "Räume tauschen", (255, 255, 255), tab_rooms.width - 8)
+            self.screen.blit(lbl_tr, (tab_rooms.x + (tab_rooms.width - lbl_tr.get_width()) // 2, tab_rooms.y + 7))
+
+            col_w_fill = (70, 95, 135) if (swap_type == "WEAPONS" or is_w_hov) else (25, 35, 50)
+            col_w_bord = (255, 220, 100) if swap_type == "WEAPONS" else ((0, 220, 255) if is_w_hov else (80, 120, 160))
+            pygame.draw.rect(self.screen, col_w_fill, tab_weapons)
+            pygame.draw.rect(self.screen, col_w_bord, tab_weapons, 2)
+            lbl_tw = self.render_text_fitted(self.font, "Waffenslots tauschen", (255, 255, 255), tab_weapons.width - 8)
+            self.screen.blit(lbl_tw, (tab_weapons.x + (tab_weapons.width - lbl_tw.get_width()) // 2, tab_weapons.y + 7))
+
+            cancel_btn = pygame.Rect(320, 510, 260, 36)
             pygame.draw.rect(self.screen, (70, 40, 40), cancel_btn)
             pygame.draw.rect(self.screen, (255, 120, 120), cancel_btn, 2)
             c_lbl = self.render_text_fitted(self.font, "Umbau Abbrechen", (255, 200, 200), cancel_btn.width - 12)
-            self.screen.blit(c_lbl, (cancel_btn.x + (cancel_btn.width - c_lbl.get_width()) // 2, cancel_btn.y + 10))
+            self.screen.blit(c_lbl, (cancel_btn.x + (cancel_btn.width - c_lbl.get_width()) // 2, cancel_btn.y + 8))
             return
 
         sel_item = getattr(shop_mgr, "selecting_slot_item", None) if shop_mgr else None
@@ -977,10 +983,10 @@ class RenderManager:
         pygame.draw.rect(self.screen, (20, 25, 40), panel_rect)
         pygame.draw.rect(self.screen, COLOR_TRAINING_NODE, panel_rect, 3)
 
-        title_lbl = self.title_font.render("CREW-TRAININGSSATZ (20 Scrap / Skill)", True, (220, 180, 255))
-        scrap_lbl = self.font.render(f"Dein Schrott: {self.data.player.scrap} Scrap", True, (255, 220, 100))
-        self.screen.blit(title_lbl, (60, 45))
-        self.screen.blit(scrap_lbl, (670, 52))
+        title_lbl = self.render_text_fitted(self.title_font, "CREW-TRAININGSSATZ (20 Scrap / Skill)", (220, 180, 255), 520)
+        scrap_lbl = self.render_text_fitted(self.font, f"Dein Schrott: {self.data.player.scrap} Scrap", (255, 220, 100), 250)
+        self.screen.blit(title_lbl, (55, 48))
+        self.screen.blit(scrap_lbl, (panel_rect.right - scrap_lbl.get_width() - 20, 52))
 
         tiny_font = pygame.font.SysFont(None, 15)
 
@@ -1136,14 +1142,17 @@ class RenderManager:
             self.data.enemy.ship.draw_doors(self.screen)
 
         # Hardpoint Waffenslots auf den Schiffen zeichnen
-        small_font = pygame.font.SysFont(None, 14)
+        small_font = pygame.font.SysFont(None, 12, bold=True)
         for s_idx, slot in enumerate(getattr(self.data.player.ship, "weapon_slots", [])):
             hx, hy = slot["pos"]
-            pygame.draw.circle(self.screen, (20, 30, 45), (hx, hy), 7)
-            pygame.draw.circle(self.screen, (100, 220, 255), (hx, hy), 7, 2)
+            pygame.draw.circle(self.screen, (15, 25, 40), (hx, hy), 6)
+            pygame.draw.circle(self.screen, (100, 220, 255), (hx, hy), 6, 2)
             pygame.draw.circle(self.screen, (255, 200, 100), (hx, hy), 2)
-            lbl = small_font.render(f"H{s_idx+1}", True, (180, 230, 255))
-            self.screen.blit(lbl, (hx - 6, hy - 16))
+            lbl = small_font.render(f"H{s_idx+1}", True, (255, 230, 120))
+            hp_bg = pygame.Rect(hx - 10, hy - 17, 20, 12)
+            pygame.draw.rect(self.screen, (15, 25, 40), hp_bg)
+            pygame.draw.rect(self.screen, (100, 200, 255), hp_bg, 1)
+            self.screen.blit(lbl, (hp_bg.x + (hp_bg.width - lbl.get_width()) // 2, hp_bg.y + 1))
 
         if not is_enemy_destroyed:
             for s_idx, slot in enumerate(getattr(self.data.enemy.ship, "weapon_slots", [])):
@@ -1328,29 +1337,29 @@ class RenderManager:
             self.screen.blit(w_badge, (mx + 10, my - 8))
 
         # 3. Waffen-UI-Bars (Unten Links)
-        weapon_ui_y = 465
+        weapon_ui_y = 432
         self.screen.blit(self.font.render("Waffensysteme:", True, (200, 220, 255)), (25, weapon_ui_y))
         small_font = pygame.font.SysFont(None, 18)
         for i, w in enumerate(self.data.player.weapons):
             assert w is not None
-            bar_x, bar_y = 25 + i * 125, weapon_ui_y + 35
+            bar_x, bar_y = 25 + i * 125, weapon_ui_y + 22
             charge_ratio = w.current_charge / w.charge_time
-            pygame.draw.rect(self.screen, (30, 35, 45), (bar_x, bar_y, 115, 16))
+            pygame.draw.rect(self.screen, (30, 35, 45), (bar_x, bar_y, 115, 14))
             bar_color = COLOR_POWER_ACTIVE if w.is_ready() else COLOR_WEAPON_CHARGE
-            pygame.draw.rect(self.screen, bar_color, (bar_x, bar_y, int(115 * charge_ratio), 16))
-            pygame.draw.rect(self.screen, COLOR_BORDER, (bar_x, bar_y, 115, 16), 1)
+            pygame.draw.rect(self.screen, bar_color, (bar_x, bar_y, int(115 * charge_ratio), 14))
+            pygame.draw.rect(self.screen, COLOR_BORDER, (bar_x, bar_y, 115, 14), 1)
 
             w_color = WEAPON_LINE_COLORS[i % len(WEAPON_LINE_COLORS)]
             target_indicator = f" [W{i+1}]" if i in self.data.combat.weapon_targets else ""
             lbl_color = w_color if i in self.data.combat.weapon_targets else (200, 220, 255)
             disp_name = w.name if len(w.name) <= 14 else w.name[:13] + "."
             lbl = small_font.render(f"{disp_name}{target_indicator}", True, lbl_color)
-            self.screen.blit(lbl, (bar_x, bar_y - 18))
+            self.screen.blit(lbl, (bar_x, bar_y - 15))
 
             # Reichweiten-Anzeige unter der Ladeleiste
             if w.max_range is not None:
                 range_lbl = small_font.render(f"R:{int(w.max_range)}", True, (180, 180, 200))
-                self.screen.blit(range_lbl, (bar_x + 75, bar_y + 1))
+                self.screen.blit(range_lbl, (bar_x + 75, bar_y + 15))
 
         # 4. Untere Aktions-Buttons (Sci-Fi Glassmorphism Style)
         mx, my = self._logical_mouse_pos()
@@ -1445,7 +1454,7 @@ class RenderManager:
         if augments:
             small_font = pygame.font.SysFont(None, 14, bold=True)
             for a_idx, aug_name in enumerate(augments):
-                a_rect = pygame.Rect(25 + a_idx * 130, 520, 120, 24)
+                a_rect = pygame.Rect(25 + a_idx * 130, 485, 120, 22)
                 pygame.draw.rect(self.screen, (30, 45, 65), a_rect)
                 pygame.draw.rect(self.screen, (100, 200, 255), a_rect, 1)
                 a_lbl = small_font.render(f"AUG: {aug_name[:12]}", True, (160, 230, 255))

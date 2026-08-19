@@ -169,10 +169,13 @@ class Room:
         dest_lbl = get_font(12, bold=True).render("ZERSTÖRT (5X REP)", True, (255, 60, 60))
         surface.blit(dest_lbl, (self.rect.x + 6, self.rect.y + 36))
 
-    surface.blit(
-        get_font(14, bold=True).render(self.name, True, (230, 240, 255)),
-        (self.rect.x + 6, self.rect.y + 4),
-    )
+    max_name_w = self.rect.width - 24
+    r_font = get_font(12, bold=True)
+    r_name_surf = r_font.render(self.name, True, (230, 240, 255))
+    if r_name_surf.get_width() > max_name_w:
+        r_font = get_font(10, bold=True)
+        r_name_surf = r_font.render(self.name, True, (230, 240, 255))
+    surface.blit(r_name_surf, (self.rect.x + 4, self.rect.y + 3))
 
     if self.name == "Medbay" and self.current_power > 0:
         heal_lbl = get_font(13, bold=True).render("+HEILEN", True, (100, 255, 100))

@@ -279,15 +279,15 @@ class ShopManager:
         self.data.combat.msg_timer = 3.0
 
     def handle_layout_swap_click(self, mx: float, my: float):
-        btn_cancel = pygame.Rect(320, 490, 260, 40)
+        btn_cancel = pygame.Rect(320, 510, 260, 36)
         if btn_cancel.collidepoint(mx, my):
             self.layout_swap_mode = False
             self.layout_swap_first_selection = None
             return
 
         # Tab-Buttons für Tauschmodus (Räume vs. Waffenslots)
-        tab_rooms = pygame.Rect(200, 20, 190, 32)
-        tab_weapons = pygame.Rect(410, 20, 190, 32)
+        tab_rooms = pygame.Rect(200, 465, 230, 34)
+        tab_weapons = pygame.Rect(470, 465, 230, 34)
         if tab_rooms.collidepoint(mx, my):
             self.layout_swap_type = "ROOMS"
             self.layout_swap_first_selection = None
