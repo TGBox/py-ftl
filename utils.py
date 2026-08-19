@@ -174,3 +174,18 @@ def can_afford_choice(choice: Union[EventChoice, dict[str, Any]], player: Player
         return False
 
     return True
+
+
+def get_max_potential_damage(choice: Union[EventChoice, dict[str, Any]]) -> int:
+    """Calculates the maximum potential damage a choice (or any of its outcomes) can cause to the player's ship."""
+    if not choice:
+        return 0
+    max_dmg = int(choice.get("damage", 0))
+    outcomes = choice.get("outcomes")
+    if outcomes and isinstance(outcomes, list):
+        for o in outcomes:
+            if isinstance(o, (dict, EventChoice)):
+                o_dmg = int(o.get("damage", 0))
+                if o_dmg > max_dmg:
+                    max_dmg = o_dmg
+    return max_dmg

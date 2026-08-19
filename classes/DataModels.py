@@ -122,3 +122,4 @@ class SavegameSchema(BaseModel):
     weapons: list[WeaponSaveSchema] = Field(default_factory=list[WeaponSaveSchema])
     crew: list[CrewSaveSchema] = Field(default_factory=list[CrewSaveSchema])
     unlocked_ships: list[str] = Field(default_factory=lambda: ["Kestrel"])
+    disqualified_from_unlocks: bool = False

@@ -964,16 +964,17 @@ class CombatManager:
                 "Rock-Schlachtschiff",
                 "Kristall-Kreuzer",
             ]
-            unlocked = SaveManager.load_unlocks()
-            for s in ship_sequence:
-                if s not in unlocked:
-                    unlocked.append(s)
-                    new_ship = s
-                    SaveManager.save_unlocks(unlocked)
-                    break
-            self.data.player.unlocked_ships = unlocked
-            if new_ship:
-                self.data.player.newly_unlocked_ship = new_ship
+            if not getattr(self.data.player, "disqualified_from_unlocks", False):
+                unlocked = SaveManager.load_unlocks()
+                for s in ship_sequence:
+                    if s not in unlocked:
+                        unlocked.append(s)
+                        new_ship = s
+                        SaveManager.save_unlocks(unlocked)
+                        break
+                self.data.player.unlocked_ships = unlocked
+                if new_ship:
+                    self.data.player.newly_unlocked_ship = new_ship
 
         # Achievements prüfen
         if self.game is not None:

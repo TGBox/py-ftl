@@ -209,6 +209,8 @@ class AchievementManager:
         self.save_achievements()
 
     def unlock(self, a_id: str) -> bool:
+        if self.game and hasattr(self.game, "data") and hasattr(self.game.data, "player") and getattr(self.game.data.player, "disqualified_from_unlocks", False):
+            return False
         if a_id in self.achievements and not self.achievements[a_id]["unlocked"]:
             self.achievements[a_id]["unlocked"] = True
             self.achievements[a_id]["unlock_time"] = time.strftime("%d.%m.%Y, %H:%M Uhr")

@@ -356,6 +356,7 @@ class MapManager:
         from managers.save_manager import SaveManager
         self.data.player.unlocked_ships = SaveManager.load_unlocks()
         self.data.player.newly_unlocked_ship = None
+        self.data.player.disqualified_from_unlocks = False
         self.data.paused = False
 
         self.data.world.star_map.sector = 1

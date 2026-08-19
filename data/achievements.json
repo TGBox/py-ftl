@@ -4,24 +4,24 @@
     "title": "Erster Sieg",
     "desc": "Besiege ein feindliches Raumschiff im Gefecht.",
     "category": "KAMPF",
-    "unlocked": true,
-    "unlock_time": "13.08.2026, 23:32 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "boss_slayer": {
     "id": "boss_slayer",
     "title": "Rebellen-Schreck",
     "desc": "Besiege einen Sektor Mini-Boss.",
     "category": "KAMPF",
-    "unlocked": true,
-    "unlock_time": "13.08.2026, 23:32 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "flagship_down": {
     "id": "flagship_down",
     "title": "Galaktischer Retter",
     "desc": "Zerstöre das Endboss-Flaggschiff der Rebellen!",
     "category": "KAMPF",
-    "unlocked": true,
-    "unlock_time": "13.08.2026, 23:55 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "beam_master": {
     "id": "beam_master",
@@ -44,8 +44,8 @@
     "title": "Bio-Extinktion",
     "desc": "Eliminiere die gesamte gegnerische Crew ohne das Schiff zu zerstören.",
     "category": "KAMPF",
-    "unlocked": true,
-    "unlock_time": "13.08.2026, 23:32 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "bare_hull": {
     "id": "bare_hull",
@@ -68,16 +68,16 @@
     "title": "Meister-Ingenieur",
     "desc": "Bringe den Reparatur-Skill eines Crew-Mitglieds auf Stufe 3.",
     "category": "CREW",
-    "unlocked": true,
-    "unlock_time": "13.08.2026, 23:45 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "master_warrior": {
     "id": "master_warrior",
     "title": "Kriegsfürst",
     "desc": "Bringe den Nahkampf-Skill eines Crew-Mitglieds auf Stufe 3.",
     "category": "CREW",
-    "unlocked": true,
-    "unlock_time": "13.08.2026, 23:45 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "ace_pilot": {
     "id": "ace_pilot",
@@ -140,8 +140,8 @@
     "title": "Waffenschmied",
     "desc": "Führe eine erfolgreiche Waffen-Fusion im Shop durch.",
     "category": "SCHIFF",
-    "unlocked": true,
-    "unlock_time": "13.08.2026, 23:39 Uhr"
+    "unlocked": false,
+    "unlock_time": null
   },
   "survivor": {
     "id": "survivor",

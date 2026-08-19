@@ -95,6 +95,36 @@ class TestSaveManager(unittest.TestCase):
             if os.path.exists(slot_4_path):
                 os.remove(slot_4_path)
 
+    def test_load_savegame_after_unlocks_reset_disqualifies_achievements(self):
+        from unittest.mock import patch
+        data = GameData()
+        game = Game()
+        data.player.ship.name = "Kreuzer"
+
+        # Save game when ship was "Kreuzer"
+        self.assertTrue(SaveManager.save_game(data, game, self.test_save_file))
+
+        # Mock load_unlocks to return only Kestrel (simulating reset unlocks)
+        with patch.object(SaveManager, "load_unlocks", return_value=["Kestrel"]), \
+             patch.object(SaveManager, "save_unlocks") as mock_save_unlocks:
+
+            loaded_data = GameData()
+            self.assertTrue(SaveManager.load_game(loaded_data, self.test_save_file))
+
+            # Savegame loads successfully
+            self.assertEqual(loaded_data.player.ship.name, "Kreuzer")
+
+            # Must be marked disqualified from unlocks & achievements
+            self.assertTrue(loaded_data.player.disqualified_from_unlocks)
+
+            # Profile unlocks must NOT be updated or overwritten
+            self.assertEqual(loaded_data.player.unlocked_ships, ["Kestrel"])
+            mock_save_unlocks.assert_not_called()
+
+            # Achievements must be blocked
+            game.data = loaded_data
+            self.assertFalse(game.achievement_manager.unlock("first_victory"))
+
 
 if __name__ == "__main__":
     unittest.main()

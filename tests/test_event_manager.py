@@ -81,6 +81,38 @@ class TestEventManager(unittest.TestCase):
             self.assertEqual(p_data.scrap, init_scrap + 40)
             self.assertIn("ERFOLG", self.event_manager.result_text)
 
+    def test_max_potential_damage_and_critical_warning(self):
+        from utils import get_max_potential_damage
+        from classes.Event import EventChoice
+
+        # Direct damage choice
+        c1 = EventChoice.from_dict({"text": "Test Direct Damage", "damage": 10})
+        self.assertEqual(get_max_potential_damage(c1), 10)
+
+        # Outcomes damage choice
+        c2 = EventChoice.from_dict({
+            "text": "Test Outcomes",
+            "outcomes": [
+                {"chance": 0.5, "damage": 0},
+                {"chance": 0.5, "damage": 12}
+            ]
+        })
+        self.assertEqual(get_max_potential_damage(c2), 12)
+
+        # Test critical damage calculation (> 50% of current HP)
+        current_hp_full = 18
+        current_hp_low = 6
+
+        # 10 damage vs 18 HP (50% is 9 HP) -> 10 > 9 -> Critical!
+        self.assertTrue(get_max_potential_damage(c1) > (current_hp_full * 0.5))
+
+        # 4 damage vs 18 HP -> 4 <= 9 -> Not critical!
+        c3 = EventChoice.from_dict({"text": "Minor Damage", "damage": 4})
+        self.assertFalse(get_max_potential_damage(c3) > (current_hp_full * 0.5))
+
+        # 4 damage vs 6 HP (50% is 3 HP) -> 4 > 3 -> Critical for low HP!
+        self.assertTrue(get_max_potential_damage(c3) > (current_hp_low * 0.5))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -268,6 +268,23 @@ class TestShopAndTraining(unittest.TestCase):
         self.assertEqual(self.data.player.crew[5].skill_repair, 1)
         self.assertEqual(self.data.player.scrap, 180)
 
+    def test_render_text_fitted(self):
+        import pygame
+        pygame.font.init()
+        font = pygame.font.SysFont(None, 16)
+        mock_surface = MagicMock()
+        from managers.render_manager import RenderManager
+        rm = RenderManager(mock_surface, self.data)
+
+        long_text = "Erlaubt: LASER, BEAM, MISSILE | Reichweite: 600px"
+        # Render fitted to narrow 100px width
+        fitted_surf = rm.render_text_fitted(font, long_text, (255, 255, 255), 100)
+        self.assertLessEqual(fitted_surf.get_width(), 100)
+
+        # Render fitted to wide 500px width (should not truncate)
+        full_surf = rm.render_text_fitted(font, long_text, (255, 255, 255), 500)
+        self.assertEqual(full_surf.get_width(), font.render(long_text, True, (255, 255, 255)).get_width())
+
 
 if __name__ == "__main__":
     unittest.main()

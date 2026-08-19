@@ -241,6 +241,7 @@ class SaveManager:
                 weapons=weapon_schemas,
                 crew=crew_schemas,
                 unlocked_ships=getattr(data.player, "unlocked_ships", ["Kestrel"]),
+                disqualified_from_unlocks=getattr(data.player, "disqualified_from_unlocks", False),
             )
             json_str = schema.model_dump_json()
 
@@ -340,10 +341,18 @@ class SaveManager:
             data.player.drone_parts = getattr(schema, "player_drone_parts", 5)
 
             persistent_unlocks = cls.load_unlocks()
-            saved_unlocks = getattr(schema, "unlocked_ships", ["Kestrel"])
-            combined_unlocks = list(dict.fromkeys(persistent_unlocks + saved_unlocks))
-            data.player.unlocked_ships = combined_unlocks
-            cls.save_unlocks(combined_unlocks)
+            saved_disqualified = getattr(schema, "disqualified_from_unlocks", False)
+
+            # Qualifiziert nur, wenn das Schiff im aktuellen Profil freigeschaltet ist und das Savegame nicht disqualifiziert war
+            ship_is_unlocked = (schema.ship_name in persistent_unlocks)
+            is_disqualified = saved_disqualified or (not ship_is_unlocked)
+
+            data.player.unlocked_ships = persistent_unlocks
+            data.player.disqualified_from_unlocks = is_disqualified
+
+            if is_disqualified:
+                data.combat.msg = "⚠️ HINWEIS: UNLOCKS & ERRUNGENSCHAFTEN DEAKTIVIERT!"
+                data.combat.msg_timer = 5.0
 
             # 3. Raumschiff & Räume wiederherstellen
             import copy
