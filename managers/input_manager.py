@@ -753,10 +753,10 @@ class InputManager:
         weapon_room = self.data.player.ship.rooms[1]
         clicked_weapon_idx: int | None = None
         assert self.data.player.weapons is not None
+        from utils import get_weapon_slot_rect
         for idx, w in enumerate(self.data.player.weapons):
-            bar_x = 30 + idx * 135
-            bar_rect = pygame.Rect(bar_x, 500, 120, 35)
-            if bar_rect.collidepoint(mx, my):
+            card_rect = get_weapon_slot_rect(idx)
+            if card_rect.collidepoint(mx, my):
                 clicked_weapon_idx = idx
                 break
 

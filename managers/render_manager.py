@@ -1336,30 +1336,63 @@ class RenderManager:
             w_badge = self.font.render(f"W{t_idx+1}", True, color_line)
             self.screen.blit(w_badge, (mx + 10, my - 8))
 
-        # 3. Waffen-UI-Bars (Unten Links)
-        weapon_ui_y = 432
-        self.screen.blit(self.font.render("Waffensysteme:", True, (200, 220, 255)), (25, weapon_ui_y))
-        small_font = pygame.font.SysFont(None, 18)
+        # 3. Waffen-UI Parent Container Cards (Unten Links)
+        from utils import get_weapon_slot_rect
+        self.screen.blit(self.font.render("Waffensysteme:", True, (200, 220, 255)), (25, 408))
+        small_font = pygame.font.SysFont(None, 16, bold=True)
+        tiny_font = pygame.font.SysFont(None, 13)
+        mx, my = self._logical_mouse_pos()
+
         for i, w in enumerate(self.data.player.weapons):
             assert w is not None
-            bar_x, bar_y = 25 + i * 125, weapon_ui_y + 22
-            charge_ratio = w.current_charge / w.charge_time
-            pygame.draw.rect(self.screen, (30, 35, 45), (bar_x, bar_y, 115, 14))
-            bar_color = COLOR_POWER_ACTIVE if w.is_ready() else COLOR_WEAPON_CHARGE
-            pygame.draw.rect(self.screen, bar_color, (bar_x, bar_y, int(115 * charge_ratio), 14))
-            pygame.draw.rect(self.screen, COLOR_BORDER, (bar_x, bar_y, 115, 14), 1)
+            card_rect = get_weapon_slot_rect(i)
+            is_hovered = card_rect.collidepoint(mx, my)
+            is_targeted = i in self.data.combat.weapon_targets
+            is_ready = w.is_ready()
 
+            # Parent Container Card Background & Outline
+            bg_color = (35, 48, 68) if is_hovered else (20, 28, 42)
+            if is_targeted:
+                border_color = (255, 220, 0)
+            elif is_ready:
+                border_color = (0, 230, 160)
+            elif is_hovered:
+                border_color = (0, 200, 255)
+            else:
+                border_color = (60, 90, 130)
+
+            pygame.draw.rect(self.screen, bg_color, card_rect)
+            pygame.draw.rect(self.screen, border_color, card_rect, 2 if (is_targeted or is_ready or is_hovered) else 1)
+
+            # Waffenname im Container
             w_color = WEAPON_LINE_COLORS[i % len(WEAPON_LINE_COLORS)]
-            target_indicator = f" [W{i+1}]" if i in self.data.combat.weapon_targets else ""
-            lbl_color = w_color if i in self.data.combat.weapon_targets else (200, 220, 255)
-            disp_name = w.name if len(w.name) <= 14 else w.name[:13] + "."
+            target_indicator = f" [W{i+1}]" if is_targeted else ""
+            lbl_color = (255, 230, 120) if is_targeted else ((255, 255, 255) if is_ready else (180, 200, 225))
+            disp_name = w.name if len(w.name) <= 13 else w.name[:12] + "."
             lbl = small_font.render(f"{disp_name}{target_indicator}", True, lbl_color)
-            self.screen.blit(lbl, (bar_x, bar_y - 15))
+            self.screen.blit(lbl, (card_rect.x + 6, card_rect.y + 4))
 
-            # Reichweiten-Anzeige unter der Ladeleiste
+            # Ladebalken im Container
+            bar_x, bar_y = card_rect.x + 6, card_rect.y + 20
+            charge_ratio = min(1.0, max(0.0, w.current_charge / w.charge_time))
+            pygame.draw.rect(self.screen, (30, 35, 45), (bar_x, bar_y, 108, 12))
+            bar_color = COLOR_POWER_ACTIVE if is_ready else COLOR_WEAPON_CHARGE
+            pygame.draw.rect(self.screen, bar_color, (bar_x, bar_y, int(108 * charge_ratio), 12))
+            pygame.draw.rect(self.screen, COLOR_BORDER, (bar_x, bar_y, 108, 12), 1)
+
+            # Subtitle / Reichweite & Status im Container
+            if is_ready:
+                status_txt = "BEREIT"
+                status_color = (0, 255, 160)
+            else:
+                status_txt = f"{int(charge_ratio * 100)}%"
+                status_color = (160, 180, 200)
+
             if w.max_range is not None:
-                range_lbl = small_font.render(f"R:{int(w.max_range)}", True, (180, 180, 200))
-                self.screen.blit(range_lbl, (bar_x + 75, bar_y + 15))
+                status_txt += f" | R:{int(w.max_range)}"
+
+            sub_lbl = tiny_font.render(status_txt, True, status_color)
+            self.screen.blit(sub_lbl, (card_rect.x + 6, card_rect.y + 35))
 
         # 4. Untere Aktions-Buttons (Sci-Fi Glassmorphism Style)
         mx, my = self._logical_mouse_pos()

@@ -203,3 +203,8 @@ def arrange_room_crew(room: Room, crew_list: list[Any]) -> None:
         c.y = float(room.rect.centery + oy)
         if getattr(c, "target_pos", None):
             c.target_pos = (c.x, c.y)
+
+
+def get_weapon_slot_rect(idx: int) -> pygame.Rect:
+    """Returns the screen bounding box (hitbox & parent container) for weapon slot UI card idx."""
+    return pygame.Rect(22 + idx * 125, 428, 120, 50)
