@@ -112,6 +112,13 @@ class TestShopAndTraining(unittest.TestCase):
         self.assertEqual(len(self.data.player.crew), initial_crew_count + 1)
         self.assertIsNotNone(self.shop_manager.next_crew_candidate)
 
+        # Verify bought crew members in the spawn room sit at distinct corner positions
+        spawn_room = self.data.player.ship.rooms[0]
+        c1 = self.data.player.crew[0]
+        c_last = self.data.player.crew[-1]
+        self.assertNotEqual((c1.x, c1.y), (c_last.x, c_last.y), "Crew members in same room must spawn in distinct corner slots!")
+        self.assertNotEqual((c_last.x, c_last.y), (spawn_room.rect.centerx, spawn_room.rect.centery), "Bought crew must not spawn dead-center when offset slots are available!")
+
     def test_shop_room_trading(self):
         from classes.Room import Room
         self.data.player.scrap = 200

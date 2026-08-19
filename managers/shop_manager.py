@@ -526,14 +526,15 @@ class ShopManager:
         spawn_room = self.data.player.ship.rooms[0]
         species = cand.get("species", "Mensch")
         name = cand.get("name", "Rekrut")
-        self.data.player.crew.append(
-            Crew(
-                spawn_room.rect.centerx,
-                spawn_room.rect.centery,
-                name=name,
-                species=species,
-            )
+        new_crew = Crew(
+            spawn_room.rect.centerx,
+            spawn_room.rect.centery,
+            name=name,
+            species=species,
         )
+        self.data.player.crew.append(new_crew)
+        from utils import arrange_room_crew
+        arrange_room_crew(spawn_room, self.data.player.crew)
         self.data.combat.msg = f"{name} ({species}) ANGEHEUERT!"
         self.data.combat.msg_timer = 2.5
         self.generate_next_crew_candidate()

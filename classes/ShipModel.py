@@ -361,6 +361,10 @@ def apply_starting_setup_for_ship(player_data: Any, ship_name: str) -> None:
         cy = r.rect.centery if r else 250
         player.crew.append(Crew(cx, cy, species=spec))
 
+    from utils import arrange_room_crew
+    for r in rooms:
+        arrange_room_crew(r, player.crew)
+
     # Start-Waffen setzen
     assert player.weapons is not None
     player.weapons.clear()

@@ -189,3 +189,17 @@ def get_max_potential_damage(choice: Union[EventChoice, dict[str, Any]]) -> int:
                 if o_dmg > max_dmg:
                     max_dmg = o_dmg
     return max_dmg
+
+
+def arrange_room_crew(room: Room, crew_list: list[Any]) -> None:
+    """Positions crew members stationed in room into distinct corner offsets (-16/-16, +16/+16, etc.)."""
+    if not room or not crew_list:
+        return
+    in_room = [c for c in crew_list if getattr(c, "current_room", None) == room or room.rect.collidepoint(int(c.x), int(c.y))]
+    offsets = [(-16, -16), (16, 16), (16, -16), (-16, 16)]
+    for idx, c in enumerate(in_room):
+        ox, oy = offsets[idx % len(offsets)]
+        c.x = float(room.rect.centerx + ox)
+        c.y = float(room.rect.centery + oy)
+        if getattr(c, "target_pos", None):
+            c.target_pos = (c.x, c.y)
