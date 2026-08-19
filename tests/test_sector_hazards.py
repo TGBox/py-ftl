@@ -46,9 +46,11 @@ class TestSectorHazards(unittest.TestCase):
         initial_power = self.data.player.reactor.total_power
         self.combat_mgr.update(0.1)
 
-        expected_power = max(1, initial_power // 2)
+        expected_eff_power = max(1, initial_power // 2)
         assert self.data is not None
-        self.assertEqual(self.data.player.reactor.total_power, expected_power, "Ion storm should halve reactor max power.")
+        self.assertTrue(self.data.player.reactor.ion_storm_active)
+        self.assertEqual(self.data.player.reactor.get_effective_total_power(), expected_eff_power, "Ion storm should halve effective reactor power.")
+        self.assertEqual(self.data.player.reactor.total_power, initial_power, "Ion storm must not corrupt base total_power.")
 
     def test_pulsar_radiation_ionizes_rooms(self):
         node = self.data.world.star_map.nodes[1]

@@ -105,12 +105,15 @@ class CombatManager:
         current_node = self.data.world.star_map.current_node
         hazard = getattr(current_node, "hazard_type", "NONE") if current_node else "NONE"
 
+        is_ion_storm = (hazard == "NEBULA_ION_STORM")
+        self.data.player.reactor.ion_storm_active = is_ion_storm
+        self.data.enemy.reactor.ion_storm_active = is_ion_storm
+
         if hazard == "SOLAR_FLARE":
             self.data.combat.solar_flare_flash = max(0.0, getattr(self.data.combat, "solar_flare_flash", 0.0) - dt)
-            sf_timer = getattr(self.data.combat, "solar_flare_timer", 20.0) - dt
+            sf_timer = getattr(self.data.combat, "solar_flare_timer", 12.0) - dt
             if sf_timer <= 0.0:
-                self.data.combat.solar_flare_timer = 22.0
-                self.data.combat.solar_flare_flash = 0.6
+                self.data.combat.solar_flare_timer = 12.0
                 p_targets = random.sample(self.data.player.ship.rooms, min(2, len(self.data.player.ship.rooms)))
                 e_targets = random.sample(self.data.enemy.ship.rooms, min(2, len(self.data.enemy.ship.rooms)))
                 for r in p_targets + e_targets:
@@ -119,11 +122,6 @@ class CombatManager:
                 self.show_message("SONNEN-ERUPTION! BRÄNDE AUF BEIDEN SCHIFFEN ENTFACHT!")
             else:
                 self.data.combat.solar_flare_timer = sf_timer
-
-        elif hazard == "NEBULA_ION_STORM":
-            # Halves available reactor power in Ion Storm
-            self.data.player.reactor.total_power = max(1, self.data.player.reactor.total_power // 2)
-            self.data.enemy.reactor.total_power = max(1, self.data.enemy.reactor.total_power // 2)
 
         elif hazard == "PULSAR":
             pulsar_t = getattr(self.data.combat, "pulsar_timer", 15.0) - dt

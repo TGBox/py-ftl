@@ -1092,13 +1092,11 @@ class RenderManager:
             min_y = min(r.rect.top for r in e_rooms) - 25
             self.screen.blit(self.assets["enemy_scout"], (min_x, min_y))
 
-        # 1. Reaktor zeichnen (links am Rand)
-        self.data.player.reactor.draw(self.screen, 15, 45)
+        # 1. Reaktor & Combat-Ausweich-Box zeichnen (oben links, ohne Überlappungen)
+        small_font = pygame.font.SysFont(None, 16, bold=True)
 
-        # Kompakte Infoboxen OBERHALB der Schiffe
-        small_font = pygame.font.SysFont(None, 17, bold=True)
-
-        p_box = pygame.Rect(10, 34, 225, 22)
+        # Kompakte Ausweich-Box oberhalb des Reaktors bei y=34
+        p_box = pygame.Rect(10, 34, 150, 22)
         p_surf = pygame.Surface((p_box.width, p_box.height), pygame.SRCALPHA)
         p_surf.fill((14, 25, 42, 210))
         self.screen.blit(p_surf, (p_box.x, p_box.y))
@@ -1108,8 +1106,11 @@ class RenderManager:
             evade_val = int(self.game.combat_manager.get_player_evasion() * 100)
         else:
             evade_val = int(self.data.player.ship.rooms[2].current_power * 0.20 * 100) if len(self.data.player.ship.rooms) > 2 else 10
-        p_lbl = small_font.render(f"Spieler Hülle: {self.data.player.ship.hp}/{self.data.player.ship.max_hp} HP  |  Ausw: {evade_val}%", True, (130, 240, 170))
+        p_lbl = small_font.render(f"Ausweichen: {evade_val}%", True, (130, 240, 170))
         self.screen.blit(p_lbl, (p_box.x + 8, p_box.y + 4))
+
+        # Reaktor Panel sauber bei y=62 (unterhalb der Ausweich-Box)
+        self.data.player.reactor.draw(self.screen, 15, 64)
 
         if not is_enemy_destroyed:
             e_box = pygame.Rect(520, 34, 225, 22)
@@ -1161,18 +1162,12 @@ class RenderManager:
         if not is_enemy_destroyed:
             self.data.enemy.ship.draw_doors(self.screen)
 
-        # Hardpoint Waffenslots auf den Schiffen zeichnen
-        small_font = pygame.font.SysFont(None, 12, bold=True)
+        # Hardpoint Waffenslots auf den Schiffen zeichnen (dezenter Kreis ohne überlappende Text-Overlays)
         for s_idx, slot in enumerate(getattr(self.data.player.ship, "weapon_slots", [])):
             hx, hy = slot["pos"]
             pygame.draw.circle(self.screen, (15, 25, 40), (hx, hy), 6)
             pygame.draw.circle(self.screen, (100, 220, 255), (hx, hy), 6, 2)
             pygame.draw.circle(self.screen, (255, 200, 100), (hx, hy), 2)
-            lbl = small_font.render(f"H{s_idx+1}", True, (255, 230, 120))
-            hp_bg = pygame.Rect(hx - 10, hy - 17, 20, 12)
-            pygame.draw.rect(self.screen, (15, 25, 40), hp_bg)
-            pygame.draw.rect(self.screen, (100, 200, 255), hp_bg, 1)
-            self.screen.blit(lbl, (hp_bg.x + (hp_bg.width - lbl.get_width()) // 2, hp_bg.y + 1))
 
         if not is_enemy_destroyed:
             for s_idx, slot in enumerate(getattr(self.data.enemy.ship, "weapon_slots", [])):

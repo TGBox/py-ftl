@@ -4,16 +4,16 @@
     "title": "Erster Sieg",
     "desc": "Besiege ein feindliches Raumschiff im Gefecht.",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "19.08.2026, 22:24 Uhr"
   },
   "boss_slayer": {
     "id": "boss_slayer",
     "title": "Rebellen-Schreck",
     "desc": "Besiege einen Sektor Mini-Boss.",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "19.08.2026, 22:30 Uhr"
   },
   "flagship_down": {
     "id": "flagship_down",
@@ -44,8 +44,8 @@
     "title": "Bio-Extinktion",
     "desc": "Eliminiere die gesamte gegnerische Crew ohne das Schiff zu zerstören.",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "19.08.2026, 22:24 Uhr"
   },
   "bare_hull": {
     "id": "bare_hull",
@@ -68,16 +68,16 @@
     "title": "Meister-Ingenieur",
     "desc": "Bringe den Reparatur-Skill eines Crew-Mitglieds auf Stufe 3.",
     "category": "CREW",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "19.08.2026, 22:27 Uhr"
   },
   "master_warrior": {
     "id": "master_warrior",
     "title": "Kriegsfürst",
     "desc": "Bringe den Nahkampf-Skill eines Crew-Mitglieds auf Stufe 3.",
     "category": "CREW",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "19.08.2026, 22:27 Uhr"
   },
   "ace_pilot": {
     "id": "ace_pilot",
@@ -140,8 +140,8 @@
     "title": "Waffenschmied",
     "desc": "Führe eine erfolgreiche Waffen-Fusion im Shop durch.",
     "category": "SCHIFF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "19.08.2026, 22:26 Uhr"
   },
   "survivor": {
     "id": "survivor",
