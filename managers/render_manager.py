@@ -91,7 +91,7 @@ class RenderManager:
         else:
             self.screen.fill(COLOR_BG)
 
-        # Top Status Banner (Rohstoffe & Sektor)
+        # Top Status Banner (Rohstoffe, Hülle & Sektor)
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
             b_rect = pygame.Rect(10, 6, 735, 24)
             b_surf = pygame.Surface((b_rect.width, b_rect.height), pygame.SRCALPHA)
@@ -99,13 +99,33 @@ class RenderManager:
             self.screen.blit(b_surf, (b_rect.x, b_rect.y))
             pygame.draw.rect(self.screen, (0, 200, 255), b_rect, 1)
 
+            hp = getattr(self.data.player.ship, "hp", 18)
+            max_hp = getattr(self.data.player.ship, "max_hp", 18)
+            hp_ratio = max(0.0, min(1.0, hp / max_hp)) if max_hp > 0 else 1.0
+
+            font_sm = pygame.font.SysFont(None, 17, bold=True)
+            font_main = pygame.font.SysFont(None, 18)
+
+            # Hülle Text & Mini HP Bar
+            hp_color = (100, 255, 160) if hp_ratio > 0.5 else ((255, 220, 80) if hp_ratio > 0.25 else (255, 80, 80))
+            lbl_hp = font_sm.render(f"Hülle: {hp}/{max_hp} HP", True, hp_color)
+            self.screen.blit(lbl_hp, (b_rect.x + 8, b_rect.y + 4))
+
+            bar_x = b_rect.x + 8 + lbl_hp.get_width() + 5
+            bar_y = b_rect.y + 6
+            pygame.draw.rect(self.screen, (30, 35, 45), (bar_x, bar_y, 40, 12))
+            pygame.draw.rect(self.screen, hp_color, (bar_x, bar_y, int(40 * hp_ratio), 12))
+            pygame.draw.rect(self.screen, (100, 150, 200), (bar_x, bar_y, 40, 12), 1)
+
+            # Restlicher Status (Treibstoff, Raketen, Drohnen, Scrap, Sektor)
+            rest_x = bar_x + 48
             status_str = (
-                f"Treibstoff: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  "
+                f" |  Treibstoff: {self.data.player.fuel}  |  Raketen: {self.data.player.missiles}  |  "
                 f"Drohnen: {getattr(self.data.player, 'drone_parts', 5)}  |  Scrap: {self.data.player.scrap}  |  "
                 f"Sektor: {self.data.world.star_map.sector} ({self.data.world.star_map.sector_type})"
             )
-            lbl = pygame.font.SysFont(None, 20).render(status_str, True, (240, 245, 255))
-            self.screen.blit(lbl, (b_rect.x + 10, b_rect.y + 4))
+            lbl = font_main.render(status_str, True, (240, 245, 255))
+            self.screen.blit(lbl, (rest_x, b_rect.y + 4))
 
             # Buttons oben rechts (Sci-Fi Glassmorphism Style)
             mx, my = self._logical_mouse_pos()
