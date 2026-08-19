@@ -254,6 +254,8 @@ class StateManager:
 
     def leave_combat(self):
         self.reset_combat_systems()
+        if self.game and hasattr(self.game, "combat_manager"):
+            self.game.combat_manager.enemy_crew.clear()
 
     def leave_event(self):
         pass

@@ -253,6 +253,16 @@ class TestCombatManager(unittest.TestCase):
         self.combat_manager.check_end_of_battle()
         self.assertFalse(self.data.combat.combat_won)
 
+    def test_enemy_crew_does_not_respawn_post_combat(self):
+        from enums import GameState
+        self.state_manager.change_state(GameState.COMBAT)
+        self.combat_manager.player_won()
+        self.assertEqual(len(self.combat_manager.enemy_crew), 0)
+
+        # Updating crew after combat won must NOT re-spawn enemy crew
+        self.combat_manager.update_crew(0.1)
+        self.assertEqual(len(self.combat_manager.enemy_crew), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

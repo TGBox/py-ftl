@@ -1160,6 +1160,8 @@ class RenderManager:
 
         if sensor_power >= 1:
             for c in getattr(self.game.combat_manager, "enemy_crew", []):
+                if is_enemy_destroyed and not any(r == c.current_room for r in self.data.player.ship.rooms):
+                    continue
                 c.draw(self.screen)
 
         # 4. Drohnen im Raum & Orbit zeichnen
