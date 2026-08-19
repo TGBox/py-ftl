@@ -1,0 +1,34 @@
+=== PY-FTL PROTOKOLL-LOG GESTARTET AM 2026-08-19 22:48:27 ===
+[2026-08-19 22:48:27] [SYSTEM] Protokollmodus vom Benutzer AKTIVIERT.
+[2026-08-19 22:48:33] [STATE] Zustand wechselt von OPTIONS zu MAIN_MENU
+[2026-08-19 22:48:38] [STATE] Zustand wechselt von MAIN_MENU zu MAP
+[2026-08-19 22:48:40] [MAP] Sprung zu Knoten (Typ: NEBULA, Gefahr: NONE) - Rest-Treibstoff: 6
+[2026-08-19 22:48:40] [STATE] Zustand wechselt von MAP zu EVENT
+[2026-08-19 22:48:44] [EVENT] Event-Option gewählt: '1. Gefechtsbereitschaft herstellen' (Aktion: START_COMBAT)
+[2026-08-19 22:48:45] [STATE] Zustand wechselt von EVENT zu COMBAT
+[2026-08-19 22:49:19] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 11/12)
+[2026-08-19 22:49:19] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 10/12)
+[2026-08-19 22:49:23] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 9/12)
+[2026-08-19 22:49:24] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 8/12)
+[2026-08-19 22:49:28] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 7/12)
+[2026-08-19 22:49:32] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 6/12)
+[2026-08-19 22:49:34] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 5/12)
+[2026-08-19 22:49:37] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 4/12)
+[2026-08-19 22:49:39] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 3/12)
+[2026-08-19 22:49:41] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 2/12)
+[2026-08-19 22:49:44] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 1/12)
+[2026-08-19 22:49:45] [DAMAGE] Projektil LASER hat gegnerischen Raum 'Schild' getroffen (Gegner Rest-HP: 0/12)
+[2026-08-19 22:49:51] [MAP] Sprung zu Knoten (Typ: SHOP, Gefahr: NONE) - Rest-Treibstoff: 5
+[2026-08-19 22:49:51] [STATE] Zustand wechselt von MAP zu SHOP
+[2026-08-19 22:49:56] [SHOP] Reaktor aufgerüstet (-15 Scrap). Neue Leistung: 7 Power
+[2026-08-19 22:49:57] [SHOP] Reaktor aufgerüstet (-15 Scrap). Neue Leistung: 8 Power
+[2026-08-19 22:49:58] [STATE] Zustand wechselt von SHOP zu MAP
+[2026-08-19 22:49:59] [MAP] Sprung zu Knoten (Typ: RESOURCE, Gefahr: PULSAR) - Rest-Treibstoff: 4
+[2026-08-19 22:49:59] [STATE] Zustand wechselt von MAP zu EVENT
+[2026-08-19 22:50:01] [EVENT] Event-Option gewählt: '1. Frachtcontainer bergen' (Aktion: CONTINUE)
+[2026-08-19 22:50:01] [STATE] Zustand wechselt von EVENT zu MAP
+[2026-08-19 22:50:02] [MAP] Sprung zu Knoten (Typ: NEBULA, Gefahr: NONE) - Rest-Treibstoff: 3
+[2026-08-19 22:50:02] [STATE] Zustand wechselt von MAP zu EVENT
+[2026-08-19 22:50:03] [EVENT] Event-Option gewählt: '1. Gefechtsbereitschaft herstellen' (Aktion: START_COMBAT)
+[2026-08-19 22:50:04] [STATE] Zustand wechselt von EVENT zu COMBAT
+[2026-08-19 22:50:40] [STATE] Zustand wechselt von GAME_OVER zu MAP

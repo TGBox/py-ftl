@@ -48,6 +48,9 @@ class MapManager:
             self.trigger_event("DISTRESS")
             return False
 
+        from managers.logger_manager import log_debug
+        log_debug("MAP", f"Sprung zu Knoten (Typ: {node.event_type}, Gefahr: {getattr(node, 'hazard_type', 'KEINE')}) - Rest-Treibstoff: {self.data.player.fuel}")
+
         self.data.player.fuel -= 1
         self.data.world.star_map.advance_fleet()
 
@@ -166,6 +169,10 @@ class MapManager:
         self.change_state(GameState.EVENT)
 
     def handle_choice(self, action: str, choice_data: Union[EventChoice, dict[str, Any]]) -> None:
+        from managers.logger_manager import log_debug
+        c_text = choice_data.get("text", "Unbekannt") if isinstance(choice_data, dict) else getattr(choice_data, "text", "Unbekannt")
+        log_debug("EVENT", f"Event-Option gewählt: '{c_text}' (Aktion: {action})")
+
         if self.game is not None:
             evt_count = getattr(self.data, "events_completed_count", 0) + 1
             self.events_completed_count = evt_count

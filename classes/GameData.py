@@ -49,6 +49,7 @@ class PlayerData:
         self.newly_unlocked_ship: Optional[str] = None
         self.godmode: bool = False
         self.disqualified_from_unlocks: bool = False
+        self.debug_logging_enabled: bool = DEBUG_LOG_ENABLED
 
     def __str__(self) -> str:
         w_count = len(self.weapons) if self.weapons else 0

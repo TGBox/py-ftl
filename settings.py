@@ -48,6 +48,9 @@ current_state: str = STATE_MAP
 LOGICAL_WIDTH = 900
 LOGICAL_HEIGHT = 600
 
+# Debugging & Protokollmodus
+DEBUG_LOG_ENABLED = False
+
 # Verfügbare Fensterauflösungen (inkl. Ultrawide)
 RESOLUTIONS = [
     (900, 600),

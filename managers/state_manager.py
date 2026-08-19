@@ -77,10 +77,9 @@ class StateManager:
         
         logger.debug(f"State wechselt von {self.current} zu {state_str}")
 
-        if self.current == state_str:
-            return
-
         old_state = self.current
+        from managers.logger_manager import log_debug
+        log_debug("STATE", f"Zustand wechselt von {old_state} zu {state_str}")
 
         # Wenn in temporären Menü-Overlay Zustand gewechselt wird, vorherigen Spielzustand merken
         overlay_states = (GameState.OPTIONS.value, GameState.ACHIEVEMENTS.value)

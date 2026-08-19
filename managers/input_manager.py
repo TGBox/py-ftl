@@ -339,11 +339,12 @@ class InputManager:
             btn_sfx_down = pygame.Rect(452, 311, 34, 30)
             btn_sfx_up = pygame.Rect(648, 311, 34, 30)
 
-            btn_autosave_toggle = pygame.Rect(210, 350, 480, 34)
-            btn_achievements_menu = pygame.Rect(210, 390, 480, 32)
-            btn_reset_achievements = pygame.Rect(210, 428, 235, 32)
-            btn_reset_unlocks = pygame.Rect(455, 428, 235, 32)
-            btn_close_options = pygame.Rect(350, 468, 200, 36)
+            btn_autosave_toggle = pygame.Rect(210, 350, 480, 30)
+            btn_debug_log_toggle = pygame.Rect(210, 384, 480, 30)
+            btn_achievements_menu = pygame.Rect(210, 418, 480, 28)
+            btn_reset_achievements = pygame.Rect(210, 450, 235, 28)
+            btn_reset_unlocks = pygame.Rect(455, 450, 235, 28)
+            btn_close_options = pygame.Rect(350, 484, 200, 34)
 
             if btn_toggle_fullscreen.collidepoint(mx, my):
                 if self.game:
@@ -385,6 +386,16 @@ class InputManager:
                     self.sound.play("click")
             elif btn_autosave_toggle.collidepoint(mx, my):
                 self.data.auto_save_enabled = not getattr(self.data, "auto_save_enabled", False)
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_debug_log_toggle.collidepoint(mx, my):
+                from managers.logger_manager import DebugLogger
+                logger_inst = DebugLogger.get_instance()
+                new_state = not logger_inst.enabled
+                logger_inst.set_enabled(new_state)
+                self.data.debug_logging_enabled = new_state
+                msg = "PROTOKOLLMODUS AKTIVIERT!" if new_state else "PROTOKOLLMODUS DEAKTIVIERT!"
+                self.show_message(msg)
                 if self.sound:
                     self.sound.play("click")
             elif btn_achievements_menu.collidepoint(mx, my):

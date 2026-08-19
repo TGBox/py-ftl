@@ -482,6 +482,8 @@ class ShopManager:
             return
         self.data.player.scrap -= 6
         self.data.player.missiles += 3
+        from managers.logger_manager import log_debug
+        log_debug("SHOP", f"3 Raketen gekauft (-6 Scrap). Neuer Bestand: {self.data.player.missiles}")
 
     def buy_drone_parts(self):
         if self.data.player.scrap < 6:
@@ -492,6 +494,8 @@ class ShopManager:
         self.data.player.drone_parts += 2
         self.data.combat.msg = "2 DROHNENTEILE GEKAUFT! (+2 Drohnenteile)"
         self.data.combat.msg_timer = 2.0
+        from managers.logger_manager import log_debug
+        log_debug("SHOP", f"2 Drohnenteile gekauft (-6 Scrap). Neuer Bestand: {self.data.player.drone_parts}")
 
     def upgrade_reactor(self):
         # TODO 39: Reaktorleistungs-Begrenzung auf maximale Raumpower
@@ -509,6 +513,8 @@ class ShopManager:
         self.data.player.reactor.available_power += 1
         self.data.combat.msg = f"REAKTOR AUFGERÜSTET! ({self.data.player.reactor.total_power} Power)"
         self.data.combat.msg_timer = 2.0
+        from managers.logger_manager import log_debug
+        log_debug("SHOP", f"Reaktor aufgerüstet (-15 Scrap). Neue Leistung: {self.data.player.reactor.total_power} Power")
 
     def buy_crew(self):
         max_c = getattr(self.data.player.ship, "max_crew", 4)

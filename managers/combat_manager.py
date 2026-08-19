@@ -680,6 +680,8 @@ class CombatManager:
                     if projectile.damage > 0:
                         self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
                         room.apply_damage(projectile.damage, self.data.enemy.reactor)
+                        from managers.logger_manager import log_debug
+                        log_debug("DAMAGE", f"Projektil {projectile.w_type} hat gegnerischen Raum '{room.name}' getroffen (Gegner Rest-HP: {self.data.enemy.ship.hp}/{self.data.enemy.ship.max_hp})")
 
                     # Subtyp & Statuseffekte anwenden
                     if projectile.fire_chance > 0 and random.random() < projectile.fire_chance:
@@ -756,6 +758,8 @@ class CombatManager:
         player_evade = self.get_player_evasion()
 
         if random.random() < player_evade:
+            from managers.logger_manager import log_debug
+            log_debug("COMBAT", f"Spielerschiff ist feindlichem Schuss ({projectile.w_type}) ausgewichen! (Chance: {int(player_evade*100)}%)")
             self.show_message("AUSGEWICHEN!")
         else:
             hit_successful = False

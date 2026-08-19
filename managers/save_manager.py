@@ -258,6 +258,9 @@ class SaveManager:
             with open(path, "wb") as f:
                 f.write(iv + ciphertext)
 
+            from managers.logger_manager import log_debug
+            log_debug("SAVE", f"Spielstand erfolgreich in Datei/Slot '{slot}' gespeichert.")
+
             game.save_notification_msg = f"SPIELSTAND GESPEICHERT (SLOT {slot})"
             game.save_notification_timer = 3.0
             data.combat.msg = f"💾 SPIELSTAND ERFOLGREICH GESPEICHERT (SLOT {slot})!"

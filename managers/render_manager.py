@@ -1935,47 +1935,63 @@ class RenderManager:
 
         # 4. Auto-Speichern Toggle
         auto_save_on = getattr(self.data, "auto_save_enabled", False)
-        self.btn_autosave_toggle = pygame.Rect(210, 350, 480, 34)
+        self.btn_autosave_toggle = pygame.Rect(210, 350, 480, 30)
         as_col = (40, 80, 40) if auto_save_on else (80, 40, 40)
         pygame.draw.rect(self.screen, as_col, self.btn_autosave_toggle)
         pygame.draw.rect(self.screen, COLOR_BORDER, self.btn_autosave_toggle, 2)
         as_label = "Auto-Speichern bei Sprung: AN" if auto_save_on else "Auto-Speichern bei Sprung: AUS [MANUELL]"
         as_color = (150, 240, 150) if auto_save_on else (255, 200, 150)
         as_txt = self.font.render(as_label, True, as_color)
-        self.screen.blit(as_txt, (self.btn_autosave_toggle.x + 60, self.btn_autosave_toggle.y + 7))
+        self.screen.blit(as_txt, (self.btn_autosave_toggle.x + 60, self.btn_autosave_toggle.y + 5))
 
-        # 5. Errungenschaften Button
-        self.btn_achievements_menu = pygame.Rect(210, 390, 480, 32)
+        # 5. Debug-Protokollmodus Toggle
+        from managers.logger_manager import DebugLogger
+        logger_inst = DebugLogger.get_instance()
+        log_on = logger_inst.enabled
+        self.btn_debug_log_toggle = pygame.Rect(210, 384, 480, 30)
+        is_dl_hov = self.btn_debug_log_toggle.collidepoint(mx, my)
+
+        dl_col = (30, 85, 95) if log_on else (45, 45, 60)
+        dl_border = (0, 230, 200) if (log_on or is_dl_hov) else (90, 110, 140)
+        pygame.draw.rect(self.screen, dl_col, self.btn_debug_log_toggle)
+        pygame.draw.rect(self.screen, dl_border, self.btn_debug_log_toggle, 2 if is_dl_hov else 1)
+
+        dl_label = f"PROTOKOLLMODUS (DEBUG-LOG): {'AN [IN logs/]' if log_on else 'AUS'}"
+        dl_txt = self.font.render(dl_label, True, (150, 255, 230) if log_on else (180, 195, 215))
+        self.screen.blit(dl_txt, (self.btn_debug_log_toggle.x + (self.btn_debug_log_toggle.width - dl_txt.get_width()) // 2, self.btn_debug_log_toggle.y + 5))
+
+        # 6. Errungenschaften Button
+        self.btn_achievements_menu = pygame.Rect(210, 418, 480, 28)
         is_ach_hov = self.btn_achievements_menu.collidepoint(mx, my)
         pygame.draw.rect(self.screen, (50, 85, 125) if is_ach_hov else (35, 65, 95), self.btn_achievements_menu)
         pygame.draw.rect(self.screen, (255, 230, 100) if is_ach_hov else (255, 215, 0), self.btn_achievements_menu, 2)
         ach_btn_txt = self.font.render("ERRUNGENSCHAFTEN ANSEHEN", True, (255, 240, 150) if is_ach_hov else (255, 230, 100))
-        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + (self.btn_achievements_menu.width - ach_btn_txt.get_width()) // 2, self.btn_achievements_menu.y + 6))
+        self.screen.blit(ach_btn_txt, (self.btn_achievements_menu.x + (self.btn_achievements_menu.width - ach_btn_txt.get_width()) // 2, self.btn_achievements_menu.y + 4))
 
-        # 6. Reset Buttons (Achievements & Unlocks Einzeln)
-        self.btn_reset_achievements = pygame.Rect(210, 428, 235, 32)
-        self.btn_reset_unlocks = pygame.Rect(455, 428, 235, 32)
+        # 7. Reset Buttons (Achievements & Unlocks Einzeln)
+        self.btn_reset_achievements = pygame.Rect(210, 450, 235, 28)
+        self.btn_reset_unlocks = pygame.Rect(455, 450, 235, 28)
 
         is_ra_hov = self.btn_reset_achievements.collidepoint(mx, my)
         pygame.draw.rect(self.screen, (140, 45, 45) if is_ra_hov else (85, 30, 30), self.btn_reset_achievements)
         pygame.draw.rect(self.screen, (255, 100, 100) if is_ra_hov else (180, 60, 60), self.btn_reset_achievements, 2)
         ra_txt = self.font.render("Achievements Reset", True, (255, 220, 220) if is_ra_hov else (220, 180, 180))
-        self.screen.blit(ra_txt, (self.btn_reset_achievements.x + (self.btn_reset_achievements.width - ra_txt.get_width()) // 2, self.btn_reset_achievements.y + 6))
+        self.screen.blit(ra_txt, (self.btn_reset_achievements.x + (self.btn_reset_achievements.width - ra_txt.get_width()) // 2, self.btn_reset_achievements.y + 4))
 
         is_ru_hov = self.btn_reset_unlocks.collidepoint(mx, my)
         pygame.draw.rect(self.screen, (140, 45, 45) if is_ru_hov else (85, 30, 30), self.btn_reset_unlocks)
         pygame.draw.rect(self.screen, (255, 100, 100) if is_ru_hov else (180, 60, 60), self.btn_reset_unlocks, 2)
         ru_txt = self.font.render("Schiff-Unlocks Reset", True, (255, 220, 220) if is_ru_hov else (220, 180, 180))
-        self.screen.blit(ru_txt, (self.btn_reset_unlocks.x + (self.btn_reset_unlocks.width - ru_txt.get_width()) // 2, self.btn_reset_unlocks.y + 6))
+        self.screen.blit(ru_txt, (self.btn_reset_unlocks.x + (self.btn_reset_unlocks.width - ru_txt.get_width()) // 2, self.btn_reset_unlocks.y + 4))
 
-        # 7. Zurück Button
-        self.btn_close_options = pygame.Rect(350, 468, 200, 36)
+        # 8. Zurück Button
+        self.btn_close_options = pygame.Rect(350, 484, 200, 34)
         is_c_hov = self.btn_close_options.collidepoint(mx, my)
         pygame.draw.rect(self.screen, (90, 45, 45) if is_c_hov else (70, 40, 40), self.btn_close_options)
         pygame.draw.rect(self.screen, (255, 120, 120) if is_c_hov else COLOR_ENEMY_BORDER, self.btn_close_options, 2)
         close_txt = "Zurück zur Pause" if self.data.paused else "Zurück zum Menü"
         cl_surf = self.font.render(close_txt, True, (255, 220, 220) if is_c_hov else (255, 200, 200))
-        self.screen.blit(cl_surf, (self.btn_close_options.x + (self.btn_close_options.width - cl_surf.get_width()) // 2, self.btn_close_options.y + 7))
+        self.screen.blit(cl_surf, (self.btn_close_options.x + (self.btn_close_options.width - cl_surf.get_width()) // 2, self.btn_close_options.y + 6))
 
     def draw_achievements_screen(self):
         bg_surf = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
