@@ -54,7 +54,7 @@ class SoundManager:
     def play_music(self, track_name: str) -> None:
         if not self._music_enabled or self._current_track_name == track_name:
             if not self._music_enabled and self._music_channel:
-                self._music_channel.stop()
+                self._music_channel.fadeout(300)
                 self._current_track_name = None
             return
 
@@ -62,11 +62,12 @@ class SoundManager:
         if snd:
             if self._music_channel is None:
                 self._music_channel = pygame.mixer.Channel(0)
-            self._music_channel.stop()
+            else:
+                self._music_channel.fadeout(300)
             eff_vol = min(1.0, self._master_volume * self._music_volume)
             snd.set_volume(eff_vol)
             self._music_channel.set_volume(eff_vol)
-            self._music_channel.play(snd, loops=-1)
+            self._music_channel.play(snd, loops=-1, fade_ms=400)
             self._current_track_name = track_name
 
     def stop_music(self) -> None:

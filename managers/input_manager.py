@@ -96,13 +96,44 @@ class InputManager:
                 self.data.player.rename_buffer += event.unicode
             return
 
-        # Hilfe-Overlay Umschalten (H / F1)
-        if event.key in (pygame.K_h, pygame.K_F1):
+        # Hilfe-Overlay Umschalten (H)
+        if event.key == pygame.K_h:
             self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
             if self.sound: self.sound.play("click")
             return
 
         combat_mgr = getattr(self.game, "combat_manager", None)
+
+        # Crew-Stations-Memory & Tür-Schnellsteuerung (global verfügbar außerhalb von Menüs)
+        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
+            if event.key == pygame.K_F1:
+                if combat_mgr: combat_mgr.save_crew_stations()
+                return
+            elif event.key == pygame.K_F2:
+                if combat_mgr: combat_mgr.return_crew_to_stations()
+                return
+            elif event.key == pygame.K_z:
+                if combat_mgr: combat_mgr.open_all_doors()
+                else: self.data.player.ship.open_all_doors()
+                return
+            elif event.key == pygame.K_x:
+                if combat_mgr: combat_mgr.close_all_doors()
+                else: self.data.player.ship.close_all_doors()
+                return
+            elif event.key == pygame.K_v:
+                self.data.player.ship.open_airlocks()
+                if self.sound: self.sound.play("click")
+                return
+            elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4):
+                c_idx = event.key - pygame.K_1
+                if c_idx < len(self.data.player.crew):
+                    for other in self.data.player.crew:
+                        other.selected = False
+                    self.data.player.crew[c_idx].selected = True
+                    self.show_message(f"CREW {self.data.player.crew[c_idx].name.upper()} AUSGEWÄHLT [{c_idx+1}]")
+                    if self.sound: self.sound.play("click")
+                return
+
         if self.data.current_state == STATE_COMBAT:
             if event.key == pygame.K_a:
                 self.data.combat.autofire_enabled = not self.data.combat.autofire_enabled
@@ -113,15 +144,17 @@ class InputManager:
                 if combat_mgr: combat_mgr.recall_boarding_crew()
             elif event.key == pygame.K_c:
                 if combat_mgr: combat_mgr.activate_cloaking()
-            elif event.key in (pygame.K_k, pygame.K_1):
+            elif event.key == pygame.K_k:
                 if combat_mgr: combat_mgr.toggle_combat_drone()
-            elif event.key in (pygame.K_d, pygame.K_2):
-                if combat_mgr: combat_mgr.toggle_repair_drone()
-            elif event.key in (pygame.K_f, pygame.K_3):
+            elif event.key == pygame.K_d and self.data.player.active_rename_idx is None:
+                self.data.show_drone_modal = not getattr(self.data, "show_drone_modal", False)
+                if self.sound: self.sound.play("click")
+                return
+            elif event.key == pygame.K_f:
                 if combat_mgr: combat_mgr.toggle_defense_drone()
-            elif event.key in (pygame.K_e, pygame.K_4):
+            elif event.key == pygame.K_e:
                 if combat_mgr: combat_mgr.toggle_shield_charger()
-            elif event.key in (pygame.K_p, pygame.K_5):
+            elif event.key == pygame.K_p:
                 if combat_mgr: combat_mgr.toggle_anti_personnel()
             elif event.key == pygame.K_g:
                 selected = [c for c in self.data.player.crew if c.selected]
@@ -134,14 +167,10 @@ class InputManager:
                     self.data.player.crew[0].activate_ability(self.data, self.game)
 
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
-            if event.key == pygame.K_d and self.data.player.active_rename_idx is None:
+            if event.key == pygame.K_d and self.data.player.active_rename_idx is None and self.data.current_state != STATE_COMBAT:
                 self.data.show_drone_modal = not getattr(self.data, "show_drone_modal", False)
                 if self.sound: self.sound.play("click")
                 return
-            elif event.key == pygame.K_o:
-                self.data.player.ship.open_all_doors()
-            elif event.key == pygame.K_v:
-                self.data.player.ship.open_airlocks()
 
         if event.key == pygame.K_SPACE:
             # Taktische Pause umschalten (Spiel-Interaktionen bleiben möglich)
@@ -525,11 +554,15 @@ class InputManager:
             or getattr(self.data.player, "show_crew_menu", False)
         )
         if not has_active_overlay and self.data.current_state in (STATE_MAP, STATE_COMBAT):
-            btn_crew_toggle = pygame.Rect(750, 8, 130, 26)
-            btn_open_all = pygame.Rect(750, 38, 130, 26)
-            btn_close_all = pygame.Rect(750, 68, 130, 26)
-            btn_vent = pygame.Rect(750, 98, 130, 26)
-            btn_help_toggle = pygame.Rect(750, 128, 130, 26)
+            btn_crew_toggle = pygame.Rect(750, 8, 130, 24)
+            btn_open_all = pygame.Rect(750, 34, 130, 24)
+            btn_close_all = pygame.Rect(750, 60, 130, 24)
+            btn_vent = pygame.Rect(750, 86, 130, 24)
+            btn_save_stations = pygame.Rect(750, 112, 130, 24)
+            btn_return_stations = pygame.Rect(750, 138, 130, 24)
+            btn_help_toggle = pygame.Rect(750, 164, 130, 24)
+
+            combat_mgr = getattr(self.game, "combat_manager", None)
 
             if btn_help_toggle.collidepoint(mx, my):
                 self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
@@ -539,16 +572,22 @@ class InputManager:
                 self.data.player.show_crew_menu = not getattr(self.data.player, "show_crew_menu", False)
                 return
             elif btn_open_all.collidepoint(mx, my):
-                self.data.player.ship.open_all_doors()
-                if self.sound: self.sound.play("click")
+                if combat_mgr: combat_mgr.open_all_doors()
+                else: self.data.player.ship.open_all_doors()
                 return
             elif btn_close_all.collidepoint(mx, my):
-                self.data.player.ship.close_all_doors()
-                if self.sound: self.sound.play("click")
+                if combat_mgr: combat_mgr.close_all_doors()
+                else: self.data.player.ship.close_all_doors()
                 return
             elif btn_vent.collidepoint(mx, my):
                 self.data.player.ship.open_airlocks()
                 if self.sound: self.sound.play("click")
+                return
+            elif btn_save_stations.collidepoint(mx, my):
+                if combat_mgr: combat_mgr.save_crew_stations()
+                return
+            elif btn_return_stations.collidepoint(mx, my):
+                if combat_mgr: combat_mgr.return_crew_to_stations()
                 return
 
             for d in self.data.player.ship.doors:

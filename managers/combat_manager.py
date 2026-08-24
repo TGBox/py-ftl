@@ -41,6 +41,12 @@ class CombatManager:
         self.enemy_crew: list[Crew] = []
         self.enemy_crew_spawned: bool = False
         self.sound: SoundManager | None = None  # Set by Game after construction
+        self.saved_crew_stations: dict[str, tuple[float, float, str | None]] = {}
+        self.alarm_cooldown_fire: float = 0.0
+        self.alarm_cooldown_breach: float = 0.0
+        self.alarm_cooldown_low_hp: float = 0.0
+        self.surge_warned: bool = False
+        self.was_in_combat: bool = False
 
     def update(self, dt: float):
         """Wird einmal pro Frame aufgerufen."""
@@ -206,14 +212,19 @@ class CombatManager:
                 self.data.combat.repair_drone_pos = (rx, ry)
 
         # ------------------------------------------------------
+        # ------------------------------------------------------
         # FLAGGSCHIFF BOSS MECHANIKEN (Phase 2 Surge & Phase 3 Boarders)
         # ------------------------------------------------------
         if "Flaggschiff" in getattr(self.data.enemy.ship, "name", ""):
             b_phase = getattr(self.data.combat, "boss_phase", 1)
             if b_phase == 2:
                 self.data.combat.drone_surge_timer = getattr(self.data.combat, "drone_surge_timer", 18.0) - dt
+                if self.data.combat.drone_surge_timer <= 1.5 and not getattr(self, "surge_warned", False):
+                    self.surge_warned = True
+                    if self.sound: self.sound.play("alarm")
                 if self.data.combat.drone_surge_timer <= 0.0:
                     self.data.combat.drone_surge_timer = 18.0
+                    self.surge_warned = False
                     self.show_message("ACHTUNG! DROHNENSCHWARM POWER SURGE!")
                     if self.sound: self.sound.play("alarm")
                     for _ in range(4):
@@ -224,14 +235,35 @@ class CombatManager:
                             )
             elif b_phase == 3:
                 self.data.combat.boss_teleport_timer = getattr(self.data.combat, "boss_teleport_timer", 20.0) - dt
+                if self.data.combat.boss_teleport_timer <= 1.5 and not getattr(self, "surge_warned", False):
+                    self.surge_warned = True
+                    if self.sound: self.sound.play("alarm")
                 if self.data.combat.boss_teleport_timer <= 0.0:
                     self.data.combat.boss_teleport_timer = 20.0
+                    self.surge_warned = False
                     if len(self.enemy_crew) < 6 and self.data.player.ship.rooms:
                         t_r = random.choice(self.data.player.ship.rooms)
                         for _ in range(2):
                             self.enemy_crew.append(Crew(t_r.rect.centerx, t_r.rect.centery, name="Elite-Pirate", is_enemy=True))
                         self.show_message("WARNUNG! REBELLEN-BOARDER AUF DEIN SCHIFF TELEPORTIERT!")
                         if self.sound: self.sound.play("alarm")
+
+        # Akustische Notfall-Warnsignale mit Cooldown
+        self.alarm_cooldown_fire = max(0.0, getattr(self, "alarm_cooldown_fire", 0.0) - dt)
+        self.alarm_cooldown_breach = max(0.0, getattr(self, "alarm_cooldown_breach", 0.0) - dt)
+        self.alarm_cooldown_low_hp = max(0.0, getattr(self, "alarm_cooldown_low_hp", 0.0) - dt)
+
+        if self.alarm_cooldown_fire <= 0.0 and any(getattr(r, "fire_level", 0.0) > 20.0 for r in self.data.player.ship.rooms):
+            self.alarm_cooldown_fire = 7.0
+            if self.sound: self.sound.play("alarm")
+
+        if self.alarm_cooldown_breach <= 0.0 and any(getattr(r, "has_breach", False) for r in self.data.player.ship.rooms):
+            self.alarm_cooldown_breach = 7.0
+            if self.sound: self.sound.play("alarm")
+
+        if self.alarm_cooldown_low_hp <= 0.0 and any(0.0 < c.hp < (c.max_hp * 0.25) for c in self.data.player.crew):
+            self.alarm_cooldown_low_hp = 6.0
+            if self.sound: self.sound.play("alarm")
 
         self.update_shields(dt)
         self.update_weapons(dt)
@@ -1264,5 +1296,52 @@ class CombatManager:
 
         self.data.combat.msg = text
         self.data.combat.msg_timer = 1.5
+
+    def open_all_doors(self) -> None:
+        """Öffnet alle internen Schiffstüren (Luftschleusen bleiben sicherheitshalber unverändert)."""
+        opened_count = 0
+        for d in self.data.player.ship.doors:
+            if not getattr(d, "is_airlock", False):
+                d.is_open = True
+                opened_count += 1
+        self.show_message("ALLE INNENTÜREN GEÖFFNET [Z]")
+        if self.sound:
+            self.sound.play("door")
+
+    def close_all_doors(self) -> None:
+        """Schließt alle Schiffstüren und Luftschleusen luftdicht."""
+        for d in self.data.player.ship.doors:
+            d.is_open = False
+        self.show_message("ALLE TÜREN GESCHLOSSEN [X]")
+        if self.sound:
+            self.sound.play("door")
+
+    def save_crew_stations(self) -> None:
+        """Speichert die aktuellen Raum- und Positionszuweisungen der Crew."""
+        self.saved_crew_stations = {}
+        for c in self.data.player.crew:
+            if not getattr(c, "is_boarding", False):
+                r_name = getattr(c.current_room, "name", None)
+                self.saved_crew_stations[c.name] = (float(c.x), float(c.y), r_name)
+        self.show_message(f"STATIONEN GESPEICHERT ({len(self.saved_crew_stations)} Crew) [F1]")
+        if self.sound:
+            self.sound.play("click")
+
+    def return_crew_to_stations(self) -> None:
+        """Schickt alle Crew-Mitglieder sofort zu ihren gespeicherten Stationen zurück."""
+        if not getattr(self, "saved_crew_stations", None):
+            self.save_crew_stations()
+            return
+        dispatched = 0
+        for c in self.data.player.crew:
+            if not getattr(c, "is_boarding", False) and c.name in self.saved_crew_stations:
+                sx, sy, _ = self.saved_crew_stations[c.name]
+                c.target_pos = (int(sx), int(sy))
+                c.path_waypoints = []
+                dispatched += 1
+        self.show_message(f"CREW KEHRT ZU STATIONEN ZURÜCK ({dispatched}) [F2]")
+        if self.sound:
+            self.sound.play("click")
+
 
 

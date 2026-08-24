@@ -505,3 +505,35 @@ ENEMY_TEMPLATES = [
     ENEMY_DRONE_CARRIER,
 ]
 
+# Sektor-spezifische Rebellen-Verfolger (Flotten-Kollision)
+REBEL_PURSUER_S1 = ShipModel("Rebellen-Aufklärer (S1)", 10, [
+    Room("Schild", (600, 220, 80, 80), is_enemy=True),
+    Room("Waffen", (690, 220, 80, 80), is_enemy=True),
+    Room("Brücke", (780, 220, 80, 80), is_enemy=True)
+], is_enemy=True)
+
+REBEL_PURSUER_S2 = ShipModel("Rebellen-Abfangjäger (S2)", 14, [
+    Room("Schild", (580, 210, 85, 85), is_enemy=True),
+    Room("Waffen", (675, 210, 85, 85), is_enemy=True),
+    Room("Antrieb", (770, 210, 85, 85), is_enemy=True)
+], is_enemy=True)
+
+REBEL_PURSUER_S3 = ShipModel("Rebellen-Bomber (S3)", 18, [
+    Room("Schild", (570, 200, 90, 90), is_enemy=True),
+    Room("Raketen", (670, 200, 90, 90), is_enemy=True),
+    Room("Brücke", (770, 200, 90, 90), is_enemy=True)
+], is_enemy=True)
+
+REBEL_PURSUER_S4 = ShipModel("Schwerer Rebellen-Zerstörer (S4)", 22, [
+    Room("Schild", (550, 160, 95, 95), is_enemy=True),
+    Room("Waffen", (655, 160, 95, 95), is_enemy=True),
+    Room("Maschinen", (760, 160, 95, 95), is_enemy=True)
+], is_enemy=True)
+
+REBEL_PURSUER_S5 = ShipModel("Flotten-Elite-Kreuzer (S5)", 28, [
+    Room("Schild", (550, 150, 95, 95), max_power=3, is_enemy=True),
+    Room("Waffen", (655, 150, 95, 95), max_power=3, is_enemy=True),
+    Room("Drohnen", (760, 150, 95, 95), max_power=2, is_enemy=True)
+], is_enemy=True)
+
+

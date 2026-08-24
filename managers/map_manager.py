@@ -99,16 +99,30 @@ class MapManager:
             self.start_boss_fight()
 
     def start_rebel_pursuit_combat(self) -> None:
-        from classes.ShipModel import ENEMY_CRUISER
-        self.data.enemy.ship = copy.deepcopy(ENEMY_CRUISER)
-        self.data.enemy.ship.name = "Rebellen-Verfolger"
+        from classes.ShipModel import (
+            REBEL_PURSUER_S1, REBEL_PURSUER_S2, REBEL_PURSUER_S3, REBEL_PURSUER_S4, REBEL_PURSUER_S5
+        )
+        sec = getattr(self.data.world.star_map, "sector", 1)
+        pursuer_templates = {
+            1: (REBEL_PURSUER_S1, "Rebellen-Laser MK I", 3.5, "LASER", 25.0, 0),
+            2: (REBEL_PURSUER_S2, "Abfang-Flak MK I", 3.2, "FLAK", 30.0, 1),
+            3: (REBEL_PURSUER_S3, "Flotten-Rakete MK II", 3.8, "MISSILE", 35.0, 2),
+            4: (REBEL_PURSUER_S4, "Schwerer Hüllen-Laser", 3.4, "LASER", 45.0, 2),
+            5: (REBEL_PURSUER_S5, "Elite-Burst Laser MK III", 3.0, "LASER", 55.0, 3),
+        }
+        template, w_name, c_time, w_type, dmg, extra_p = pursuer_templates.get(sec, pursuer_templates[5])
+        self.data.enemy.ship = copy.deepcopy(template)
+        self.data.enemy.ship.name = f"{template.name}"
         for room in self.data.enemy.ship.rooms:
             room.current_power = 1
-        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + 2)
+        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + sec + extra_p)
         self.data.enemy.shield = ShieldSystem()
-        self.data.enemy.weapon = Weapon("Schwerer Abfang-Laser", charge_time=3.2, w_type="HEAVY_LASER", damage=45.0)
-        self.data.combat.msg = "ACHTUNG! REBELLENFLOTTE HAT DICH EINGEHOLT!"
-        self.data.combat.msg_timer = 3.0
+        layers = 3 if sec >= 5 else (2 if sec >= 3 else 1)
+        self.data.enemy.shield.max_layers = layers
+        self.data.enemy.shield.current_layers = layers
+        self.data.enemy.weapon = Weapon(w_name, charge_time=c_time, w_type=w_type, damage=dmg, max_range=800.0)
+        self.data.combat.msg = f"ACHTUNG! REBELLENFLOTTE IN SEKTOR {sec} HAT DICH EINGEHOLT!"
+        self.data.combat.msg_timer = 3.5
         self.change_state(GameState.COMBAT)
 
     def start_mini_boss_fight(self, sector: int) -> None:

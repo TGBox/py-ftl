@@ -20,12 +20,14 @@ class RenderManager:
         self.small_font = pygame.font.SysFont(None, 18)
         self.font = pygame.font.SysFont(None, 24)
         self.title_font = pygame.font.SysFont(None, 36, bold=True)
-        # Top-Right Buttons
-        self.btn_crew_toggle = pygame.Rect(750, 8, 130, 26)
-        self.btn_doors_open_all = pygame.Rect(750, 38, 130, 26)
-        self.btn_doors_close_all = pygame.Rect(750, 68, 130, 26)
-        self.btn_airlocks_vent = pygame.Rect(750, 98, 130, 26)
-        self.btn_help_toggle = pygame.Rect(750, 128, 130, 26)
+        # Top-Right Buttons (Compact Glassmorphism)
+        self.btn_crew_toggle = pygame.Rect(750, 8, 130, 24)
+        self.btn_doors_open_all = pygame.Rect(750, 34, 130, 24)
+        self.btn_doors_close_all = pygame.Rect(750, 60, 130, 24)
+        self.btn_airlocks_vent = pygame.Rect(750, 86, 130, 24)
+        self.btn_save_stations = pygame.Rect(750, 112, 130, 24)
+        self.btn_return_stations = pygame.Rect(750, 138, 130, 24)
+        self.btn_help_toggle = pygame.Rect(750, 164, 130, 24)
 
         # Bottom Action Buttons
         self.btn_ftl = pygame.Rect(265, 512, 140, 34)
@@ -131,9 +133,11 @@ class RenderManager:
             mx, my = self._logical_mouse_pos()
 
             self.draw_scifi_button(self.btn_crew_toggle, "Crew-Menü", is_hovered=self.btn_crew_toggle.collidepoint(mx, my), primary_color=(0, 180, 255))
-            self.draw_scifi_button(self.btn_doors_open_all, "Türen auf [O]", is_hovered=self.btn_doors_open_all.collidepoint(mx, my), primary_color=(0, 220, 130))
-            self.draw_scifi_button(self.btn_doors_close_all, "Türen zu [L]", is_hovered=self.btn_doors_close_all.collidepoint(mx, my), primary_color=(230, 80, 80))
+            self.draw_scifi_button(self.btn_doors_open_all, "Türen auf [Z]", is_hovered=self.btn_doors_open_all.collidepoint(mx, my), primary_color=(0, 220, 130))
+            self.draw_scifi_button(self.btn_doors_close_all, "Türen zu [X]", is_hovered=self.btn_doors_close_all.collidepoint(mx, my), primary_color=(230, 80, 80))
             self.draw_scifi_button(self.btn_airlocks_vent, "Vakuum [V]", is_hovered=self.btn_airlocks_vent.collidepoint(mx, my), primary_color=(0, 200, 220))
+            self.draw_scifi_button(self.btn_save_stations, "Stat. sichern [F1]", is_hovered=self.btn_save_stations.collidepoint(mx, my), primary_color=(255, 215, 0))
+            self.draw_scifi_button(self.btn_return_stations, "Zu Stationen [F2]", is_hovered=self.btn_return_stations.collidepoint(mx, my), primary_color=(255, 180, 50))
             self.draw_scifi_button(self.btn_help_toggle, "[?] HILFE [H]", is_hovered=self.btn_help_toggle.collidepoint(mx, my), primary_color=(180, 120, 255))
 
         if self.data.current_state in (STATE_MAIN_MENU, STATE_OPTIONS) and not self.data.paused:
@@ -483,9 +487,44 @@ class RenderManager:
 
         self.draw_shields()
 
+        # Boss Surge Countdown Banner & Bar (Phase 2 & 3)
+        if "Flaggschiff" in getattr(self.data.enemy.ship, "name", "") and not is_enemy_destroyed:
+            b_phase = getattr(self.data.combat, "boss_phase", 1)
+            if b_phase == 2:
+                s_timer = max(0.0, getattr(self.data.combat, "drone_surge_timer", 18.0))
+                s_title = f"POWER-SURGE (DROHNENSCHWARM) IN: {s_timer:.1f}s"
+                self._draw_boss_surge_bar(s_title, s_timer, 18.0, (255, 140, 0))
+            elif b_phase == 3:
+                s_timer = max(0.0, getattr(self.data.combat, "boss_teleport_timer", 20.0))
+                s_title = f"ENTER-SURGE (TELEPORTATION) IN: {s_timer:.1f}s"
+                self._draw_boss_surge_bar(s_title, s_timer, 20.0, (220, 80, 255))
+
         self.draw_weapons()
 
         self.draw_messages()
+
+    def _draw_boss_surge_bar(self, title: str, timer: float, max_timer: float, color: tuple[int, int, int]):
+        surge_rect = pygame.Rect(540, 52, 330, 36)
+        s_surf = pygame.Surface((surge_rect.width, surge_rect.height), pygame.SRCALPHA)
+        s_surf.fill((20, 25, 40, 220))
+        self.screen.blit(s_surf, (surge_rect.x, surge_rect.y))
+
+        # Pulsierender Rahmen wenn <= 4.0 Sekunden
+        is_imminent = timer <= 4.0
+        glow_color = (255, 60, 60) if is_imminent else color
+
+        pygame.draw.rect(self.screen, glow_color, surge_rect, 2 if not is_imminent else 3)
+
+        # Ladebalken
+        ratio = max(0.0, min(1.0, 1.0 - (timer / max_timer)))
+        bar_w = int((surge_rect.width - 16) * ratio)
+        pygame.draw.rect(self.screen, (30, 40, 60), (surge_rect.x + 8, surge_rect.y + 20, surge_rect.width - 16, 10))
+        pygame.draw.rect(self.screen, glow_color, (surge_rect.x + 8, surge_rect.y + 20, bar_w, 10))
+        pygame.draw.rect(self.screen, (80, 120, 180), (surge_rect.x + 8, surge_rect.y + 20, surge_rect.width - 16, 10), 1)
+
+        font_surge = pygame.font.SysFont(None, 14, bold=True)
+        lbl = font_surge.render(title, True, (255, 255, 255) if not is_imminent else (255, 220, 100))
+        self.screen.blit(lbl, (surge_rect.x + 10, surge_rect.y + 4))
         
     def draw_map(self):
         self.data.world.star_map.draw(self.screen)       
@@ -2359,3 +2398,45 @@ class RenderManager:
         pygame.draw.rect(self.screen, (255, 120, 120) if is_close_hov else COLOR_ENEMY_BORDER, self.btn_close_drone_modal, 2)
         close_txt = self.font.render("Schließen", True, (255, 220, 220))
         self.screen.blit(close_txt, (self.btn_close_drone_modal.x + (self.btn_close_drone_modal.width - close_txt.get_width()) // 2, self.btn_close_drone_modal.y + 7))
+
+    def draw_help_overlay(self):
+        """Zeigt ein strukturiertes Sci-Fi Tastatur- und Hilfemenü."""
+        overlay = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((10, 15, 25, 225))
+        self.screen.blit(overlay, (0, 0))
+
+        box_rect = pygame.Rect(120, 40, 660, 520)
+        pygame.draw.rect(self.screen, (18, 26, 44), box_rect)
+        pygame.draw.rect(self.screen, (0, 200, 255), box_rect, 2)
+
+        t_lbl = self.title_font.render("TASTATURBELEGUNG & HILFE", True, (0, 220, 255))
+        self.screen.blit(t_lbl, (box_rect.x + (box_rect.width - t_lbl.get_width()) // 2, box_rect.y + 18))
+
+        keybinds = [
+            ("LEERTASTE", "Taktische Pause ein-/ausschalten (Befehle erteilen)"),
+            ("1, 2, 3, 4", "Crew-Mitglied 1 bis 4 direkt anwählen"),
+            ("F1 / F2", "Crew-Stationen speichern [F1] / Zurückkehren [F2]"),
+            ("Z / X", "Alle Innentüren öffnen [Z] / Alle schließen [X]"),
+            ("V", "Luftschleusen öffnen (Vakuum zum Feuerlöschen)"),
+            ("A", "Autofire für Waffen ein-/ausschalten"),
+            ("B / R", "Teleporter aktivieren [B] / Boarder zurückrufen [R]"),
+            ("C", "Tarnvorrichtung (Cloaking) aktivieren"),
+            ("G", "Spezialfähigkeit der aktiven Crew aktivieren"),
+            ("D", "Drohnen-Hangar & Ausrüstungs-Modal öffnen"),
+            ("+ / -", "Master-Lautstärke lauter / leiser"),
+            ("M", "Hintergrundmusik an / stumm"),
+            ("ESC", "Pausemenü öffnen / Zielen abbrechen"),
+            ("H", "Dieses Hilfemenü schließen / öffnen"),
+        ]
+
+        curr_y = box_rect.y + 70
+        for key, desc in keybinds:
+            k_surf = self.font.render(key, True, (255, 220, 100))
+            d_surf = self.small_font.render(desc, True, (220, 230, 245))
+            self.screen.blit(k_surf, (box_rect.x + 35, curr_y))
+            self.screen.blit(d_surf, (box_rect.x + 190, curr_y + 3))
+            curr_y += 28
+
+        hint_lbl = self.small_font.render("Drücke [H] oder klicke oben rechts, um zurückzukehren.", True, (150, 180, 210))
+        self.screen.blit(hint_lbl, (box_rect.x + (box_rect.width - hint_lbl.get_width()) // 2, box_rect.bottom - 30))
+
