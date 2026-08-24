@@ -1359,8 +1359,14 @@ class RenderManager:
         mx, my = self._logical_mouse_pos()
 
         for i, w in enumerate(self.data.player.weapons):
-            assert w is not None
             card_rect = get_weapon_slot_rect(i)
+            if w is None:
+                pygame.draw.rect(self.screen, (18, 24, 35), card_rect)
+                pygame.draw.rect(self.screen, (50, 70, 95), card_rect, 1)
+                lbl = small_font.render(f"Slot {i+1}: [ Leer ]", True, (130, 150, 175))
+                self.screen.blit(lbl, (card_rect.x + 6, card_rect.y + 14))
+                continue
+
             is_hovered = card_rect.collidepoint(mx, my)
             is_targeted = i in self.data.combat.weapon_targets
             is_ready = w.is_ready()

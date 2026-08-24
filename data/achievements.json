@@ -20,8 +20,8 @@
     "title": "Galaktischer Retter",
     "desc": "Zerstöre das Endboss-Flaggschiff der Rebellen!",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "24.08.2026, 22:00 Uhr"
   },
   "beam_master": {
     "id": "beam_master",
@@ -52,8 +52,8 @@
     "title": "Auf Messers Schneide",
     "desc": "Gewinne einen Kampf mit nur 1 HP verbleibender Hüllenenergie.",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "24.08.2026, 22:00 Uhr"
   },
   "boarding_party": {
     "id": "boarding_party",
@@ -108,16 +108,16 @@
     "title": "Schiffs-Sammler",
     "desc": "Schalte mindestens 4 verschiedene Raumschiffe frei.",
     "category": "SCHIFF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "24.08.2026, 22:00 Uhr"
   },
   "armada": {
     "id": "armada",
     "title": "Sternen-Armada",
     "desc": "Schalte alle 8 Raumschiffe im Spiel frei!",
     "category": "SCHIFF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "24.08.2026, 22:00 Uhr"
   },
   "max_power": {
     "id": "max_power",
