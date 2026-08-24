@@ -77,7 +77,7 @@ class Crew:
         x: float,
         y: float,
         name: str = "",
-        species: str = "Mensch",
+        species: CrewSpecies | str = CrewSpecies.MENSCH,
         is_enemy: bool = False,
     ) -> None:
         self.x: float = x

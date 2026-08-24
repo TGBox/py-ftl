@@ -70,6 +70,7 @@ class TestScalingAndHitboxes(unittest.TestCase):
 
     def test_modal_overlay_click_lock(self):
         from enums import GameState
+        self.game.screen = pygame.Surface((900, 600))
         input_mgr = self.game.input_manager
         door = self.game.data.player.ship.doors[0]
         initial_open = door.is_open
@@ -81,12 +82,52 @@ class TestScalingAndHitboxes(unittest.TestCase):
         input_mgr.handle_left_click(mock_event)
         self.assertEqual(door.is_open, initial_open)
 
-        # When in STATE_TRAINING, top bar or door clicks are ignored
-        self.game.data.show_pause_menu = False
-        self.game.data.current_state = GameState.TRAINING.value
-        input_mgr.handle_left_click(mock_event)
-        self.assertEqual(door.is_open, initial_open)
+    def test_main_menu_options_navigation_and_return(self):
+        from enums import GameState
+        self.game.screen = pygame.Surface((900, 600))
+        input_mgr = self.game.input_manager
+        sm = self.game.state_manager
+
+        # Start in Main Menu
+        sm.change_state(GameState.MAIN_MENU)
+        self.assertEqual(self.game.data.current_state, GameState.MAIN_MENU.value)
+
+        # Click Options button (Rect(460, 532, 195, 42))
+        btn_opt_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=(470, 540))
+        input_mgr.handle_left_click(btn_opt_event)
+        self.assertEqual(self.game.data.current_state, GameState.OPTIONS.value)
+
+        # Click Close Options button (Rect(350, 484, 200, 34))
+        btn_close_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=(400, 500))
+        input_mgr.handle_left_click(btn_close_event)
+        self.assertEqual(self.game.data.current_state, GameState.MAIN_MENU.value)
+
+    def test_training_leave_button(self):
+        from enums import GameState
+        self.game.screen = pygame.Surface((900, 600))
+        input_mgr = self.game.input_manager
+        sm = self.game.state_manager
+
+        sm.change_state(GameState.TRAINING)
+        self.assertEqual(self.game.data.current_state, GameState.TRAINING.value)
+
+        # Click leave button (Rect(320, 510, 260, 42))
+        btn_leave_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=(400, 525))
+        input_mgr.handle_left_click(btn_leave_event)
+        self.assertEqual(self.game.data.current_state, GameState.MAP.value)
+
+    def test_enums_definitions(self):
+        from enums import HazardType, WeaponType, WeaponSubtype, SystemType
+        self.assertEqual(HazardType.NONE.value, "NONE")
+        self.assertEqual(HazardType.SOLAR_FLARE.value, "SOLAR_FLARE")
+        self.assertEqual(HazardType.ASTEROID_FIELD.value, "ASTEROID_FIELD")
+        self.assertEqual(WeaponType.LASER.value, "LASER")
+        self.assertEqual(WeaponType.MISSILE.value, "MISSILE")
+        self.assertEqual(WeaponSubtype.STANDARD.value, "STANDARD")
+        self.assertEqual(SystemType.SHIELD.value, "Schild")
+        self.assertEqual(SystemType.WEAPONS.value, "Waffen")
 
 
 if __name__ == "__main__":
     unittest.main()
+

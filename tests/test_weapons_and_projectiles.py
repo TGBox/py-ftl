@@ -73,11 +73,11 @@ class TestWeaponsAndProjectiles(unittest.TestCase):
             for w_idx, w in enumerate(data.player.weapons):
                 if w is None:
                     continue
-                # Ensure weapon max_range is at least 550.0 px so it reaches enemy ship at X >= 550
+                # Ensure weapon max_range is at least 750.0 px so it reaches enemy ship at X >= 550 from any hardpoint
                 m_range = getattr(w, "max_range", None)
                 if m_range is not None:
                     self.assertGreaterEqual(
-                        m_range, 550.0,
+                        m_range, 750.0,
                         f"Ship '{ship_name}' weapon '{w.name}' max_range={m_range} is too short to reach enemy!"
                     )
 

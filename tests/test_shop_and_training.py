@@ -189,7 +189,7 @@ class TestShopAndTraining(unittest.TestCase):
         for w_item in WEAPON_CATALOG_MASTER:
             range_val = w_item.get("max_range")
             self.assertIsNotNone(range_val, f"Weapon '{w_item['name']}' in catalog master must have max_range set!")
-            self.assertGreaterEqual(range_val, 550.0, f"Weapon '{w_item['name']}' max_range={range_val} must be at least 550.0 px!")
+            self.assertGreaterEqual(range_val, 750.0, f"Weapon '{w_item['name']}' max_range={range_val} must be at least 750.0 px!")
 
 
     def test_shop_buy_weapon_no_compatible_slot_prevention(self):

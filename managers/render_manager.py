@@ -160,6 +160,9 @@ class RenderManager:
         elif self.data.current_state == STATE_VICTORY:
             self.draw_victory()
 
+        elif self.data.current_state == STATE_OPTIONS:
+            self.draw_options_menu()
+
         elif self.data.current_state == STATE_ACHIEVEMENTS:
             self.draw_achievements_screen()
 
@@ -195,11 +198,8 @@ class RenderManager:
             self.screen.blit(p_lbl, (banner_rect.x + (banner_rect.width - p_lbl.get_width()) // 2, banner_rect.y + 4))
 
         # Pause-Menü Modal (ESC)
-        if getattr(self.data, "show_pause_menu", False):
-            if self.data.current_state == STATE_OPTIONS:
-                self.draw_options_menu()
-            else:
-                self.draw_pause_menu()
+        if getattr(self.data, "show_pause_menu", False) and self.data.current_state not in (STATE_OPTIONS, STATE_ACHIEVEMENTS):
+            self.draw_pause_menu()
 
         # Hilfe-Overlay Modal (H / F1)
         if getattr(self.data, "show_help_overlay", False):
@@ -1048,7 +1048,7 @@ class RenderManager:
             upg_y_off = 28 if compact else 36
 
             for s_idx, (s_key, s_name, _) in enumerate(skills):
-                s_box = pygame.Rect(465 + s_idx * 98, card_y + 4, 92, box_h)
+                s_box = pygame.Rect(455 + s_idx * 95, card_y + 4, 90, box_h)
                 pygame.draw.rect(self.screen, (22, 30, 48), s_box)
                 pygame.draw.rect(self.screen, (70, 90, 130), s_box, 1)
 
@@ -1060,7 +1060,7 @@ class RenderManager:
                 self.screen.blit(lbl_sname, (s_box.x + 4, s_box.y + 3))
                 self.screen.blit(lbl_sdesc, (s_box.x + 4, s_box.y + (14 if compact else 18)))
 
-                upg_btn = pygame.Rect(s_box.x + 4, s_box.y + upg_y_off, 84, upg_h)
+                upg_btn = pygame.Rect(s_box.x + 4, s_box.y + upg_y_off, 82, upg_h)
                 is_u_hov = upg_btn.collidepoint(mx, my) and cur_lvl < 3
                 b_col = (140, 60, 190) if is_u_hov else ((110, 50, 160) if cur_lvl < 3 else (50, 60, 70))
                 pygame.draw.rect(self.screen, b_col, upg_btn)

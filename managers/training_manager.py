@@ -44,8 +44,8 @@ class TrainingManager:
         for c_idx, crew in enumerate(self.data.player.crew):
             card_y = 98 + c_idx * card_spacing
             for s_idx, skill in enumerate(skills):
-                s_box_x = 465 + s_idx * 98
-                btn_rect = pygame.Rect(s_box_x + 4, card_y + 4 + upg_y_off, 84, upg_h)
+                s_box_x = 455 + s_idx * 95
+                btn_rect = pygame.Rect(s_box_x + 4, card_y + 4 + upg_y_off, 82, upg_h)
                 if btn_rect.collidepoint(mx, my):
                     self.buy_training(crew, skill, skill_names_de[skill])
                     return

@@ -60,3 +60,45 @@ class ShipType(str, Enum):
     REBEL_SCOUT = "Rebellen-Späher"
     REBEL_FIGHTER = "Rebellen-Jäger"
     REBEL_FLAGSHIP = "Rebellen-Flaggschiff"
+
+
+class HazardType(str, Enum):
+    NONE = "NONE"
+    SOLAR_FLARE = "SOLAR_FLARE"
+    ASTEROID_FIELD = "ASTEROID_FIELD"
+    PULSAR = "PULSAR"
+    ION_STORM = "ION_STORM"
+
+
+class WeaponType(str, Enum):
+    LASER = "LASER"
+    MISSILE = "MISSILE"
+    BEAM = "BEAM"
+    ION = "ION"
+    BOMB = "BOMB"
+    FLAK = "FLAK"
+
+
+class WeaponSubtype(str, Enum):
+    STANDARD = "STANDARD"
+    BIO = "BIO"
+    FIRE = "FIRE"
+    BREACH = "BREACH"
+    STUN = "STUN"
+    HEAVY = "HEAVY"
+
+
+class SystemType(str, Enum):
+    SHIELD = "Schild"
+    WEAPONS = "Waffen"
+    BRIDGE = "Brücke"
+    ENGINES = "Maschinen"
+    MEDBAY = "Medbay"
+    TELEPORTER = "Teleporter"
+    CLOAKING = "Tarnung"
+    DRONE_CONTROL = "Drohnen-Kontrolle"
+    SENSORS = "Sensoren"
+    REACTOR = "Reaktor"
+    OXYGEN = "Sauerstoff"
+    DOORS = "Türen"
+

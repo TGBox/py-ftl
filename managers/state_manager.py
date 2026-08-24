@@ -190,9 +190,15 @@ class StateManager:
 
     def enter_shop_state(self):
         """
-        Initialisierung des Shops.
+        Initialisierung des Shops mit dynamischer Katalog-Generierung.
         """
         self.data.world.event_manager.current_event_type = None
+        shop_mgr = getattr(self.game, "shop_manager", None) or getattr(self.data, "shop_manager", None)
+        if shop_mgr:
+            if hasattr(shop_mgr, "refresh_catalog"):
+                shop_mgr.refresh_catalog()
+            if hasattr(shop_mgr, "generate_next_crew_candidate"):
+                shop_mgr.generate_next_crew_candidate()
 
     def enter_event_state(self):
         """

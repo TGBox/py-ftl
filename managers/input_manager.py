@@ -463,6 +463,12 @@ class InputManager:
             self.game.shop_manager.handle_click(mx, my)
             return
 
+        # 7b. Training Modal State
+        if self.data.current_state == STATE_TRAINING:
+            assert self.game is not None
+            self.game.training_manager.handle_click(mx, my)
+            return
+
         # 8. Main Menu State
         if self.data.current_state == STATE_MAIN_MENU:
             import copy

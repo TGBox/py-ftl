@@ -9,7 +9,7 @@ class Drone:
     def __init__(
         self,
         name: str,
-        drone_type: str,
+        drone_type: DroneType | str,
         power_cost: int,
         desc: str,
         hotkey: str,

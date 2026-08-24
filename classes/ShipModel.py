@@ -387,43 +387,43 @@ def apply_starting_setup_for_ship(player_data: Any, ship_name: str) -> None:
     player.weapons.clear()
     if ship_name == "Kestrel":
         player.weapons = [
-            Weapon("Standard Laser", charge_time=3.0, w_type="LASER", damage=25.0, max_range=650.0),
-            Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1, damage=35.0, max_range=600.0),
+            Weapon("Standard Laser", charge_time=3.0, w_type="LASER", damage=25.0, max_range=750.0),
+            Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1, damage=35.0, max_range=750.0),
         ]
     elif ship_name == "Kreuzer":
         player.weapons = [
-            Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0, max_range=600.0),
-            Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0, max_range=600.0),
+            Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0, max_range=750.0),
+            Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0, max_range=750.0),
         ]
     elif ship_name == "Tarnschiff":
         player.weapons = [
-            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0, max_range=600.0),
-            Weapon("Pike Strahl", charge_time=5.0, w_type="BEAM", damage=35.0, max_range=600.0),
+            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0, max_range=750.0),
+            Weapon("Pike Strahl", charge_time=5.0, w_type="BEAM", damage=35.0, max_range=750.0),
         ]
     elif ship_name == "Zoltan-Fregatte":
         player.weapons = [
-            Weapon("Halberd Strahl", charge_time=5.5, w_type="BEAM", damage=45.0, max_range=600.0),
-            Weapon("Ion Blast MK I", charge_time=3.0, w_type="ION", damage=10.0, max_range=600.0),
+            Weapon("Halberd Strahl", charge_time=5.5, w_type="BEAM", damage=45.0, max_range=750.0),
+            Weapon("Ion Blast MK I", charge_time=3.0, w_type="ION", damage=10.0, max_range=750.0),
         ]
     elif ship_name == "Federations-Kreuzer":
         player.weapons = [
-            Weapon("Standard Laser", charge_time=3.0, w_type="LASER", damage=25.0, max_range=650.0),
-            Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0, max_range=600.0),
+            Weapon("Standard Laser", charge_time=3.0, w_type="LASER", damage=25.0, max_range=750.0),
+            Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0, max_range=750.0),
         ]
     elif ship_name == "Mantis-Kaperer":
         player.weapons = [
-            Weapon("Kurzstrecken-Flak", charge_time=3.2, w_type="FLAK", damage=30.0, max_range=550.0),
-            Weapon("Brand-Laser MK I", charge_time=3.8, w_type="LASER", damage=15.0, fire_chance=0.75, max_range=600.0),
+            Weapon("Kurzstrecken-Flak", charge_time=3.2, w_type="FLAK", damage=30.0, max_range=750.0),
+            Weapon("Brand-Laser MK I", charge_time=3.8, w_type="LASER", damage=15.0, fire_chance=0.75, max_range=750.0),
         ]
     elif ship_name == "Rock-Schlachtschiff":
         player.weapons = [
-            Weapon("Hermes Rakete", charge_time=4.5, w_type="MISSILE", ammo_cost=1, damage=50.0, max_range=600.0),
-            Weapon("Hüllenbruch-Bombe", charge_time=5.0, w_type="BOMB", ammo_cost=1, damage=15.0, breach_chance=0.90, max_range=550.0),
+            Weapon("Hermes Rakete", charge_time=4.5, w_type="MISSILE", ammo_cost=1, damage=50.0, max_range=750.0),
+            Weapon("Hüllenbruch-Bombe", charge_time=5.0, w_type="BOMB", ammo_cost=1, damage=15.0, breach_chance=0.90, max_range=750.0),
         ]
     elif ship_name == "Kristall-Kreuzer":
         player.weapons = [
-            Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0, max_range=600.0),
-            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0, max_range=600.0),
+            Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0, max_range=750.0),
+            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0, max_range=750.0),
         ]
 
 

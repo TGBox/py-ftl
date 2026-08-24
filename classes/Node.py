@@ -1,4 +1,4 @@
-from enums import EventType
+from enums import EventType, HazardType
 
 
 class Node:
@@ -10,7 +10,7 @@ class Node:
     self.event_type: EventType | str = event_type  # EventType Enum or str
     self.connections: list[Node] = []
     self.visited: bool = False
-    self.hazard_type: str = "NONE"  # 'NONE', 'SOLAR_FLARE', 'ASTEROID_FIELD'
+    self.hazard_type: HazardType | str = HazardType.NONE
 
   def __str__(self) -> str:
     """Methode um aus einem Node Objekt einen wohlgeformten String zu generieren, der von Menschen einfach gelesen werden kann.
