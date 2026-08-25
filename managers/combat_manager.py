@@ -1,16 +1,21 @@
+from typing import TYPE_CHECKING
 import math
 import random
 
 from classes.Crew import Crew
 from classes.GameData import GameData
 from classes.Projectile import Projectile
+from classes.Room import Room
 from classes.Weapon import Weapon
-from managers.state_manager import StateManager
+from managers.sound_manager import SoundManager
 from settings import *
 from utils import get_room_manning_bonus
 
+if TYPE_CHECKING:
+    from game import Game
 
-def center_crew_in_rooms(crew_list: list[Crew], rooms: list):
+
+def center_crew_in_rooms(crew_list: list[Crew], rooms: list[Room]):
     for crew in crew_list:
         room = crew.current_room
         if not room:
@@ -30,17 +35,24 @@ def center_crew_in_rooms(crew_list: list[Crew], rooms: list):
 
 class CombatManager:
 
-    def __init__(self, data: GameData, state_manager: StateManager):
+    def __init__(self, data: GameData):
         self.data = data
-        self.state_manager = state_manager
+        self.game: "Game | None" = None   # Set by Game after construction
         self.enemy_crew: list[Crew] = []
-        self.sound = None  # Set by Game after construction
+        self.enemy_crew_spawned: bool = False
+        self.sound: SoundManager | None = None  # Set by Game after construction
+        self.saved_crew_stations: dict[str, tuple[float, float, str | None]] = {}
+        self.alarm_cooldown_fire: float = 0.0
+        self.alarm_cooldown_breach: float = 0.0
+        self.alarm_cooldown_low_hp: float = 0.0
+        self.surge_warned: bool = False
+        self.was_in_combat: bool = False
 
     def update(self, dt: float):
         """Wird einmal pro Frame aufgerufen."""
 
-        if hasattr(self.data, "particle_manager"):
-            self.data.particle_manager.update(dt)
+        if self.game is not None:
+            self.game.particle_manager.update(dt)
 
         if self.data.paused or getattr(self.data, "show_pause_menu", False):
             return
@@ -55,7 +67,8 @@ class CombatManager:
             if random.random() < 0.15:
                 for r in self.data.player.ship.rooms + self.data.enemy.ship.rooms:
                     if getattr(r, "fire_level", 0) > 0 or getattr(r, "has_breach", False) or r.health < r.max_health:
-                        self.data.particle_manager.emit_smoke(r.rect.centerx + random.uniform(-10, 10), r.rect.centery + random.uniform(-10, 10))
+                        assert self.game is not None
+                        self.game.particle_manager.emit_smoke(r.rect.centerx + random.uniform(-10, 10), r.rect.centery + random.uniform(-10, 10))
 
             if len(self.data.player.crew) == 0:
                 if self.sound: self.sound.play("game_over")
@@ -73,8 +86,12 @@ class CombatManager:
             center_crew_in_rooms(self.data.player.crew, self.data.player.ship.rooms)
             center_crew_in_rooms(self.enemy_crew, self.data.enemy.ship.rooms)
             if "Waffen-Vorheizer" in getattr(self.data.player, "augments", []):
+                assert self.data.player.weapons is not None
                 for w in self.data.player.weapons:
-                    w.current_charge = w.charge_time
+                    if w is None:
+                        continue  # Leeren Slot überspringen
+                    else:
+                        w.current_charge = w.charge_time
                 self.show_message("WAFFEN-VORHEIZER AKTIV! Waffen voll geladen!")
 
         self.data.combat.msg_timer = max(
@@ -94,12 +111,15 @@ class CombatManager:
         current_node = self.data.world.star_map.current_node
         hazard = getattr(current_node, "hazard_type", "NONE") if current_node else "NONE"
 
+        is_ion_storm = (hazard == "NEBULA_ION_STORM")
+        self.data.player.reactor.ion_storm_active = is_ion_storm
+        self.data.enemy.reactor.ion_storm_active = is_ion_storm
+
         if hazard == "SOLAR_FLARE":
             self.data.combat.solar_flare_flash = max(0.0, getattr(self.data.combat, "solar_flare_flash", 0.0) - dt)
-            sf_timer = getattr(self.data.combat, "solar_flare_timer", 20.0) - dt
+            sf_timer = getattr(self.data.combat, "solar_flare_timer", 12.0) - dt
             if sf_timer <= 0.0:
-                self.data.combat.solar_flare_timer = 22.0
-                self.data.combat.solar_flare_flash = 0.6
+                self.data.combat.solar_flare_timer = 12.0
                 p_targets = random.sample(self.data.player.ship.rooms, min(2, len(self.data.player.ship.rooms)))
                 e_targets = random.sample(self.data.enemy.ship.rooms, min(2, len(self.data.enemy.ship.rooms)))
                 for r in p_targets + e_targets:
@@ -109,11 +129,6 @@ class CombatManager:
             else:
                 self.data.combat.solar_flare_timer = sf_timer
 
-        elif hazard == "NEBULA_ION_STORM":
-            # Halves available reactor power in Ion Storm
-            self.data.player.reactor.max_power = max(1, self.data.player.reactor.total_power // 2)
-            self.data.enemy.reactor.max_power = max(1, self.data.enemy.reactor.total_power // 2)
-
         elif hazard == "PULSAR":
             pulsar_t = getattr(self.data.combat, "pulsar_timer", 15.0) - dt
             if pulsar_t <= 0.0:
@@ -122,8 +137,8 @@ class CombatManager:
                 e_rooms = random.sample(self.data.enemy.ship.rooms, min(2, len(self.data.enemy.ship.rooms)))
                 for r in p_rooms + e_rooms:
                     r.ion_timer = 8.0
-                    if hasattr(self.data, "particle_manager"):
-                        self.data.particle_manager.emit_shield_ripple(r.rect.centerx, r.rect.centery, (255, 230, 80))
+                    if self.game is not None:
+                        self.game.particle_manager.emit_shield_ripple(r.rect.centerx, r.rect.centery, (255, 230, 80))
                 if self.sound: self.sound.play("ion_hit")
                 self.show_message("PULSAR-STRAHLUNG! RÄUME BEIDER SCHIFFE IONISIERT!")
             else:
@@ -197,14 +212,19 @@ class CombatManager:
                 self.data.combat.repair_drone_pos = (rx, ry)
 
         # ------------------------------------------------------
+        # ------------------------------------------------------
         # FLAGGSCHIFF BOSS MECHANIKEN (Phase 2 Surge & Phase 3 Boarders)
         # ------------------------------------------------------
         if "Flaggschiff" in getattr(self.data.enemy.ship, "name", ""):
             b_phase = getattr(self.data.combat, "boss_phase", 1)
             if b_phase == 2:
                 self.data.combat.drone_surge_timer = getattr(self.data.combat, "drone_surge_timer", 18.0) - dt
+                if self.data.combat.drone_surge_timer <= 1.5 and not getattr(self, "surge_warned", False):
+                    self.surge_warned = True
+                    if self.sound: self.sound.play("alarm")
                 if self.data.combat.drone_surge_timer <= 0.0:
                     self.data.combat.drone_surge_timer = 18.0
+                    self.surge_warned = False
                     self.show_message("ACHTUNG! DROHNENSCHWARM POWER SURGE!")
                     if self.sound: self.sound.play("alarm")
                     for _ in range(4):
@@ -215,14 +235,35 @@ class CombatManager:
                             )
             elif b_phase == 3:
                 self.data.combat.boss_teleport_timer = getattr(self.data.combat, "boss_teleport_timer", 20.0) - dt
+                if self.data.combat.boss_teleport_timer <= 1.5 and not getattr(self, "surge_warned", False):
+                    self.surge_warned = True
+                    if self.sound: self.sound.play("alarm")
                 if self.data.combat.boss_teleport_timer <= 0.0:
                     self.data.combat.boss_teleport_timer = 20.0
+                    self.surge_warned = False
                     if len(self.enemy_crew) < 6 and self.data.player.ship.rooms:
                         t_r = random.choice(self.data.player.ship.rooms)
                         for _ in range(2):
                             self.enemy_crew.append(Crew(t_r.rect.centerx, t_r.rect.centery, name="Elite-Pirate", is_enemy=True))
                         self.show_message("WARNUNG! REBELLEN-BOARDER AUF DEIN SCHIFF TELEPORTIERT!")
                         if self.sound: self.sound.play("alarm")
+
+        # Akustische Notfall-Warnsignale mit Cooldown
+        self.alarm_cooldown_fire = max(0.0, getattr(self, "alarm_cooldown_fire", 0.0) - dt)
+        self.alarm_cooldown_breach = max(0.0, getattr(self, "alarm_cooldown_breach", 0.0) - dt)
+        self.alarm_cooldown_low_hp = max(0.0, getattr(self, "alarm_cooldown_low_hp", 0.0) - dt)
+
+        if self.alarm_cooldown_fire <= 0.0 and any(getattr(r, "fire_level", 0.0) > 20.0 for r in self.data.player.ship.rooms):
+            self.alarm_cooldown_fire = 7.0
+            if self.sound: self.sound.play("alarm")
+
+        if self.alarm_cooldown_breach <= 0.0 and any(getattr(r, "has_breach", False) for r in self.data.player.ship.rooms):
+            self.alarm_cooldown_breach = 7.0
+            if self.sound: self.sound.play("alarm")
+
+        if self.alarm_cooldown_low_hp <= 0.0 and any(0.0 < c.hp < (c.max_hp * 0.25) for c in self.data.player.crew):
+            self.alarm_cooldown_low_hp = 6.0
+            if self.sound: self.sound.play("alarm")
 
         self.update_shields(dt)
         self.update_weapons(dt)
@@ -237,10 +278,20 @@ class CombatManager:
             for r in self.data.player.ship.rooms:
                 if r.health < r.max_health and r.fire_level == 0.0 and not r.has_breach:
                     r.repair(4.5 * dt)
-        if "Sauerstoff-Konverter" in augments:
-            for r in self.data.player.ship.rooms:
-                if r.current_power > 0:
-                    r.oxygen = min(100.0, r.oxygen + 2.5 * dt)
+        # ------------------------------------------------------
+        # FTL-ANTRIEB LADETIMER (30 Sek., Brücke besetzt & voll versorgt)
+        # ------------------------------------------------------
+        b_room = next((r for r in self.data.player.ship.rooms if r.name == "Brücke"), None)
+        pilot_count = len([c for c in self.data.player.crew if b_room and c.current_room == b_room])
+        b_powered = (
+            b_room is not None
+            and b_room.max_power > 0
+            and b_room.current_power >= b_room.max_power
+            and b_room.health > 0
+        )
+        if pilot_count >= 1 and b_powered:
+            self.data.combat.ftl_charge_timer = min(30.0, getattr(self.data.combat, "ftl_charge_timer", 0.0) + dt)
+        self.data.combat.ftl_ready = (getattr(self.data.combat, "ftl_charge_timer", 0.0) >= 30.0)
 
         # Sauerstoff & Erstickungs-Schaden (SRS Kap. 5.1)
         for room in self.data.player.ship.rooms:
@@ -248,7 +299,7 @@ class CombatManager:
         for room in self.data.enemy.ship.rooms:
             room.update_oxygen(dt, self.data.enemy.ship.rooms)
 
-        dead_crew: list = []
+        dead_crew: list[Crew] = []
         for crew in self.data.player.crew:
             target_rooms = self.data.enemy.ship.rooms if crew.is_boarding else self.data.player.ship.rooms
             target_doors = self.data.enemy.ship.doors if crew.is_boarding else self.data.player.ship.doors
@@ -263,8 +314,8 @@ class CombatManager:
             # Medbay-Heilung: Crew in eigener Medbay wird geheilt wenn Raum Strom hat (1 Crew: +25%, 2+ Crew: +50%)
             if not crew.is_boarding and crew.current_room and crew.current_room.name == "Medbay" and crew.current_room.current_power > 0:
                 m_count = len([c for c in self.data.player.crew if c.current_room == crew.current_room])
-                m_bonus = get_room_manning_bonus("Medbay", m_count)
-                heal_rate = 15.0 * crew.current_room.current_power * m_bonus["multiplier"]
+                m_bonus = get_room_manning_bonus("Medbay", m_count, room=crew.current_room)
+                heal_rate = 15.0 * m_bonus["multiplier"]
                 crew.hp = min(crew.max_hp, crew.hp + heal_rate * dt)
             # Tod prüfen
             if crew.hp <= 0.0:
@@ -276,18 +327,25 @@ class CombatManager:
                 self.sound.play("crew_death")
             self.show_message(f"CREW-MITGLIED {dead.name.upper()} GEFALLEN!")
         # Gegnerische Crew initialisieren & updaten (Ausgewogene Anzahl nach Sektor)
-        if not self.enemy_crew and len(self.data.enemy.ship.rooms) > 0:
+        if (
+            self.data.current_state == STATE_COMBAT
+            and not getattr(self.data.combat, "combat_won", False)
+            and self.data.enemy.ship.hp > 0
+            and not self.enemy_crew_spawned
+            and len(self.data.enemy.ship.rooms) > 0
+        ):
             sector = self.data.world.star_map.sector
             is_boss = "Boss" in self.data.enemy.ship.name or "Flaggschiff" in self.data.enemy.ship.name
             crew_count = 3 if is_boss else (2 if sector >= 2 else 1)
             target_rooms = self.data.enemy.ship.rooms[:crew_count]
             for r in target_rooms:
                 self.enemy_crew.append(Crew(r.rect.centerx, r.rect.centery, name="Pirate", is_enemy=True))
+            self.enemy_crew_spawned = True
 
         enemy_rooms = self.data.enemy.ship.rooms
         enemy_doors = self.data.enemy.ship.doors
         boarders = [c for c in self.data.player.crew if getattr(c, "is_boarding", False)]
-        dead_enemy: list = []
+        dead_enemy: list[Crew] = []
         for e_crew in self.enemy_crew:
             e_crew.update(dt, enemy_rooms, enemy_doors)
             if e_crew.hp <= 0.0:
@@ -351,7 +409,7 @@ class CombatManager:
                 r.apply_damage(12.0 * dt, self.data.player.reactor)
                 self.data.player.ship.hp = max(0, self.data.player.ship.hp - int(1 * dt))
 
-    def teleport_selected_crew_to_room(self, target_room):
+    def teleport_selected_crew_to_room(self, target_room: Room):
         selected_crew = [c for c in self.data.player.crew if c.selected]
         if not selected_crew:
             tp_room = next((r for r in self.data.player.ship.rooms if r.name == "Teleporter"), None)
@@ -410,7 +468,7 @@ class CombatManager:
         s_room = next((r for r in self.data.player.ship.rooms if r.name == "Schild"), None)
         s_power = s_room.current_power if s_room else 0
         s_count = len([c for c in self.data.player.crew if c.current_room == s_room]) if s_room else 0
-        s_bonus = get_room_manning_bonus("Schild", s_count)
+        s_bonus = get_room_manning_bonus("Schild", s_count, room=s_room)
 
         self.data.player.shield.update(
             dt * s_bonus["multiplier"],
@@ -420,7 +478,7 @@ class CombatManager:
         enemy_s_room = next((r for r in self.data.enemy.ship.rooms if r.name == "Schild"), None)
         enemy_s_power = enemy_s_room.current_power if enemy_s_room else 0
         enemy_s_count = len([c for c in self.enemy_crew if c.current_room == enemy_s_room]) if enemy_s_room else 0
-        enemy_s_bonus = get_room_manning_bonus("Schild", enemy_s_count)
+        enemy_s_bonus = get_room_manning_bonus("Schild", enemy_s_count, room=enemy_s_room)
 
         self.data.enemy.shield.update(
             dt * enemy_s_bonus["multiplier"],
@@ -433,10 +491,13 @@ class CombatManager:
 
         # Waffen-Bemannungsbonus (1 Crew: +20%, 2+ Crew: +35%)
         w_manned_count = len([c for c in self.data.player.crew if c.current_room == w_room]) if w_room else 0
-        charge_mult = get_room_manning_bonus("Waffen", w_manned_count)["multiplier"]
-
+        charge_mult = get_room_manning_bonus("Waffen", w_manned_count, room=w_room)["multiplier"]
+        assert self.data.player.weapons is not None
         for weapon in self.data.player.weapons:
-            weapon.update(dt * charge_mult, weapon_powered)
+            if weapon is None:
+                continue  # Leeren Slot überspringen
+            else:
+                weapon.update(dt * charge_mult, weapon_powered)
 
         if self.data.combat.autofire_enabled:
             self.fire_autofire_weapons()
@@ -444,60 +505,71 @@ class CombatManager:
     def fire_autofire_weapons(self):
 
         weapon_room = self.data.player.ship.rooms[1]
-
+        assert self.data.player.weapons is not None
         for idx, weapon in enumerate(self.data.player.weapons):
+            if weapon is None:
+                continue  # Leeren Slot überspringen
+            else:
 
-            if not weapon.is_ready():
-                continue
+                if not weapon.is_ready():
+                    continue
 
-            if idx not in self.data.combat.weapon_targets:
-                continue
+                if idx not in self.data.combat.weapon_targets:
+                    continue
 
-            target_room, _, end_pos = \
-                self.data.combat.weapon_targets[idx]
+                target_room, _, end_pos = \
+                    self.data.combat.weapon_targets[idx]
 
-            if target_room not in self.data.enemy.ship.rooms:
-                continue
+                if target_room not in self.data.enemy.ship.rooms:
+                    continue
 
-            if (
-                weapon.ammo_cost > 0
-                and self.data.player.missiles < weapon.ammo_cost
-            ):
-                self.state_manager.show_message("KEINE RAKETEN MEHR!")
-                continue
+                if (
+                    weapon.ammo_cost > 0
+                    and self.data.player.missiles < weapon.ammo_cost
+                ):
+                    assert self.game is not None
+                    self.game.state_manager.show_message("KEINE RAKETEN MEHR!")
+                    continue
 
-            if weapon.ammo_cost > 0:
-                self.data.player.missiles -= weapon.ammo_cost
+                if weapon.ammo_cost > 0:
+                    self.data.player.missiles -= weapon.ammo_cost
 
-            slots = getattr(self.data.player.ship, "weapon_slots", [])
-            start_pos = slots[idx]["pos"] if (slots and idx < len(slots)) else weapon_room.rect.center
+                slots = getattr(self.data.player.ship, "weapon_slots", [])
+                start_pos = slots[idx]["pos"] if (slots and idx < len(slots)) else weapon_room.rect.center
 
-            self.data.player.projectiles.append(
-                Projectile(
-                    start_pos,
-                    end_pos,
-                    target_room,
-                    is_player_shot=True,
-                    w_type=weapon.w_type,
-                    shield_pierce=weapon.shield_pierce,
-                    damage=weapon.damage,
-                    subtype=getattr(weapon, "subtype", "STANDARD"),
-                    fire_chance=getattr(weapon, "fire_chance", 0.0),
-                    breach_chance=getattr(weapon, "breach_chance", 0.0),
-                    stun_duration=getattr(weapon, "stun_duration", 0.0),
-                    crew_damage=getattr(weapon, "crew_damage", 0.0),
-                    max_range=getattr(weapon, "max_range", None),
+                # Reichweiten-Check
+                if weapon.max_range is not None:
+                    dist = math.hypot(end_pos[0] - start_pos[0], end_pos[1] - start_pos[1])
+                    if dist > weapon.max_range:
+                        del self.data.combat.weapon_targets[idx]
+                        continue
+
+                self.data.player.projectiles.append(
+                    Projectile(
+                        start_pos,
+                        end_pos,
+                        target_room,
+                        is_player_shot=True,
+                        w_type=weapon.w_type,
+                        shield_pierce=weapon.shield_pierce,
+                        damage=weapon.damage,
+                        subtype=getattr(weapon, "subtype", "STANDARD"),
+                        fire_chance=getattr(weapon, "fire_chance", 0.0),
+                        breach_chance=getattr(weapon, "breach_chance", 0.0),
+                        stun_duration=getattr(weapon, "stun_duration", 0.0),
+                        crew_damage=getattr(weapon, "crew_damage", 0.0),
+                        max_range=getattr(weapon, "max_range", None),
+                    )
                 )
-            )
 
-            # Sound: weapon fire
-            if self.sound:
-                sfx = {"LASER": "laser_fire", "MISSILE": "missile_fire",
-                       "BEAM": "beam_fire", "FLAK": "flak_fire",
-                       "HEAVY_LASER": "laser_fire"}.get(weapon.w_type, "laser_fire")
-                self.sound.play(sfx)
+                # Sound: weapon fire
+                if self.sound:
+                    sfx = {"LASER": "laser_fire", "MISSILE": "missile_fire",
+                        "BEAM": "beam_fire", "FLAK": "flak_fire",
+                        "HEAVY_LASER": "laser_fire"}.get(weapon.w_type, "laser_fire")
+                    self.sound.play(sfx)
 
-            weapon.reset()
+                weapon.reset()
 
     def activate_cloaking(self):
         cloak_room = next((r for r in self.data.player.ship.rooms if r.name == "Tarnung"), None)
@@ -520,6 +592,8 @@ class CombatManager:
         self.show_message(f"TARNUNG AKTIVIERT ({int(duration)}s)! (+100% Ausweichen)")
 
     def update_enemy_weapon(self, dt: float):
+        if getattr(self.data.combat, "combat_won", False) or self.data.enemy.ship.hp <= 0:
+            return
 
         weapon = self.data.enemy.weapon
 
@@ -528,7 +602,7 @@ class CombatManager:
 
         enemy_w_room = next((r for r in self.data.enemy.ship.rooms if r.name == "Waffen"), None)
         enemy_w_count = len([c for c in self.enemy_crew if c.current_room == enemy_w_room]) if enemy_w_room else 0
-        manned_mult = get_room_manning_bonus("Waffen", enemy_w_count)["multiplier"]
+        manned_mult = get_room_manning_bonus("Waffen", enemy_w_count, room=enemy_w_room)["multiplier"]
 
         weapon.update(
             effective_dt * manned_mult,
@@ -571,7 +645,8 @@ class CombatManager:
 
             if getattr(projectile, "out_of_range", False):
                 self.show_message("SCHUSS AUßER REICHWEITE DISSIPPIERT!")
-                self.data.particle_manager.emit_sparks(projectile.x, projectile.y, count=8)
+                assert self.game is not None
+                self.game.particle_manager.emit_sparks(projectile.x, projectile.y, count=8)
                 self.data.player.projectiles.remove(projectile)
                 continue
 
@@ -616,24 +691,29 @@ class CombatManager:
                 else:
                     self.data.enemy.shield.attempt_block()
                     if self.sound: self.sound.play("shield_hit")
-                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
+                    assert self.game is not None
+                    self.game.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
             else:
                 if not self.data.enemy.shield.attempt_block():
                     hit_successful = True
                 else:
                     if self.sound: self.sound.play("shield_hit")
-                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
+                    assert self.game is not None
+                    self.game.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (0, 220, 255))
 
             if hit_successful:
                 if self.sound: self.sound.play("hull_hit")
-                self.data.particle_manager.emit_sparks(projectile.x, projectile.y, count=15)
-                self.data.particle_manager.emit_explosion(projectile.x, projectile.y, count=12)
+                assert self.game is not None
+                self.game.particle_manager.emit_sparks(projectile.x, projectile.y, count=15)
+                self.game.particle_manager.emit_explosion(projectile.x, projectile.y, count=12)
                 target_rooms = projectile.get_intersected_rooms(self.data.enemy.ship.rooms) if projectile.w_type == "BEAM" else [projectile.target_room]
 
                 for room in target_rooms:
                     if projectile.damage > 0:
                         self.data.enemy.ship.hp = max(0, self.data.enemy.ship.hp - 1)
                         room.apply_damage(projectile.damage, self.data.enemy.reactor)
+                        from managers.logger_manager import log_debug
+                        log_debug("DAMAGE", f"Projektil {projectile.w_type} hat gegnerischen Raum '{room.name}' getroffen (Gegner Rest-HP: {self.data.enemy.ship.hp}/{self.data.enemy.ship.max_hp})")
 
                     # Subtyp & Statuseffekte anwenden
                     if projectile.fire_chance > 0 and random.random() < projectile.fire_chance:
@@ -682,7 +762,7 @@ class CombatManager:
         if pilot_count >= 1:
             a_multiplier = 1.0
             pilot_crew = pilot_crews[0]
-            b_bonus = get_room_manning_bonus("Brücke", pilot_count)
+            b_bonus = get_room_manning_bonus("Brücke", pilot_count, room=bridge_room)
             c_pilot_bonus = b_bonus["evasion"] + getattr(pilot_crew, "skill_piloting", 0) * 0.05
         else:
             bridge_power = bridge_room.current_power if bridge_room else 0
@@ -694,7 +774,7 @@ class CombatManager:
                 a_multiplier = 0.0
             c_pilot_bonus = 0.0
 
-        eng_bonus = get_room_manning_bonus("Maschinen", engine_count)
+        eng_bonus = get_room_manning_bonus("Maschinen", engine_count, room=engine_room)
         c_engine_bonus = eng_bonus["evasion"]
 
         s_cloak = 0.60 if getattr(self.data.combat, "cloak_active_timer", 0.0) > 0.0 else 0.0
@@ -710,6 +790,8 @@ class CombatManager:
         player_evade = self.get_player_evasion()
 
         if random.random() < player_evade:
+            from managers.logger_manager import log_debug
+            log_debug("COMBAT", f"Spielerschiff ist feindlichem Schuss ({projectile.w_type}) ausgewichen! (Chance: {int(player_evade*100)}%)")
             self.show_message("AUSGEWICHEN!")
         else:
             hit_successful = False
@@ -729,18 +811,21 @@ class CombatManager:
                 else:
                     self.data.player.shield.attempt_block()
                     if self.sound: self.sound.play("shield_hit")
-                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (100, 255, 180))
+                    assert self.game is not None
+                    self.game.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (100, 255, 180))
             else:
                 if not self.data.player.shield.attempt_block():
                     hit_successful = True
                 else:
                     if self.sound: self.sound.play("shield_hit")
-                    self.data.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (100, 255, 180))
+                    assert self.game is not None
+                    self.game.particle_manager.emit_shield_ripple(projectile.x, projectile.y, (100, 255, 180))
 
             if hit_successful:
                 if self.sound: self.sound.play("hull_hit")
-                self.data.particle_manager.emit_sparks(projectile.x, projectile.y, count=15)
-                self.data.particle_manager.emit_explosion(projectile.x, projectile.y, count=12)
+                assert self.game is not None
+                self.game.particle_manager.emit_sparks(projectile.x, projectile.y, count=15)
+                self.game.particle_manager.emit_explosion(projectile.x, projectile.y, count=12)
                 target_rooms = projectile.get_intersected_rooms(self.data.player.ship.rooms) if projectile.w_type == "BEAM" else [projectile.target_room]
 
                 for room in target_rooms:
@@ -779,6 +864,9 @@ class CombatManager:
 
 
     def check_end_of_battle(self):
+        if getattr(self.data.combat, "combat_won", False):
+            return
+
         if self.data.enemy.ship.hp <= 0:
             if "Flaggschiff" in getattr(self.data.enemy.ship, "name", ""):
                 b_phase = getattr(self.data.combat, "boss_phase", 1)
@@ -814,7 +902,7 @@ class CombatManager:
             return
 
         # Schiffs-Kaperung (Enemy crew completely eliminated by boarding)
-        if len(self.enemy_crew) == 0 and len(self.data.player.crew) > 0 and self.data.current_state == STATE_COMBAT:
+        if getattr(self, "enemy_crew_spawned", False) and len(self.enemy_crew) == 0 and len(self.data.player.crew) > 0 and self.data.current_state == STATE_COMBAT:
             self.show_message("SCHIFF GEKAPERT! Feindliche Crew eliminiert (+BONUS BEUTE)!")
             self.data.player.scrap += 35
             self.data.player.fuel += 2
@@ -852,6 +940,21 @@ class CombatManager:
         return scrap, missiles, drone_parts
 
     def player_won(self):
+        if getattr(self.data.combat, "combat_won", False):
+            return
+        self.data.combat.combat_won = True
+        self.data.combat.ftl_ready = True
+        self.enemy_crew_spawned = False
+
+        # Deaktivieren aller aktiven Drohnen & Systeme beim Sieg
+        self.data.combat.combat_drone_active = False
+        self.data.combat.repair_drone_active = False
+        self.data.combat.defense_drone_active = False
+        self.data.combat.shield_charger_active = False
+        self.data.combat.anti_personnel_active = False
+        self.data.combat.cloak_active_timer = 0.0
+        if self.game and hasattr(self.game, "state_manager") and hasattr(self.game.state_manager, "reset_combat_systems"):
+            self.game.state_manager.reset_combat_systems()
 
         is_mini_boss = "Mini-Boss" in self.data.enemy.ship.name
         is_final_boss = "Flaggschiff" in self.data.enemy.ship.name or (self.data.world.star_map.sector >= 5 and not is_mini_boss)
@@ -862,12 +965,28 @@ class CombatManager:
         self.data.player.missiles += missile_reward
         self.data.player.drone_parts += drone_reward
         self.enemy_crew.clear()
-
         self.data.player.projectiles.clear()
         self.data.combat.weapon_targets.clear()
 
+        if self.game and hasattr(self.game, "particle_manager"):
+            self.game.particle_manager.clear()
+
+        # Boarding-Crew zurück auf das eigene Schiff teleportieren
+        p_rooms = self.data.player.ship.rooms
+        for c in self.data.player.crew:
+            if c.is_boarding or (c.current_room and getattr(c.current_room, "is_enemy", False)):
+                c.is_boarding = False
+                c.current_room = p_rooms[0] if p_rooms else None
+                if p_rooms:
+                    c.x = float(p_rooms[0].rect.centerx)
+                    c.y = float(p_rooms[0].rect.centery)
+                    c.target_pos = None
+                    c.path_waypoints = []
+
         new_ship = None
-        if is_final_boss or is_mini_boss:
+        # Schiff-Freischaltung NUR nach dem Sieg über den Endboss im Sektor 5 (strikte Reihenfolge, einzeln)
+        is_sector_5_final_boss = (self.data.world.star_map.sector >= 5 and ("Flaggschiff" in self.data.enemy.ship.name or is_final_boss))
+        if is_sector_5_final_boss:
             from managers.save_manager import SaveManager
             ship_sequence = [
                 "Kestrel",
@@ -879,53 +998,65 @@ class CombatManager:
                 "Rock-Schlachtschiff",
                 "Kristall-Kreuzer",
             ]
-            unlocked = SaveManager.load_unlocks()
-            for s in ship_sequence:
-                if s not in unlocked:
-                    unlocked.append(s)
-                    new_ship = s
-                    SaveManager.save_unlocks(unlocked)
-                    break
-            self.data.player.unlocked_ships = unlocked
-            if new_ship:
-                self.data.player.newly_unlocked_ship = new_ship
+            if not getattr(self.data.player, "disqualified_from_unlocks", False):
+                unlocked = SaveManager.load_unlocks()
+                for s in ship_sequence:
+                    if s not in unlocked:
+                        unlocked.append(s)
+                        new_ship = s
+                        SaveManager.save_unlocks(unlocked)
+                        break
+                self.data.player.unlocked_ships = unlocked
+                if new_ship:
+                    self.data.player.newly_unlocked_ship = new_ship
 
         # Achievements prüfen
-        if hasattr(self.data, "achievements"):
-            self.data.achievements.unlock("first_victory")
+        if self.game is not None:
+            self.game.achievement_manager.unlock("first_victory")
             if is_mini_boss:
-                self.data.achievements.unlock("boss_slayer")
+                self.game.achievement_manager.unlock("boss_slayer")
             if is_final_boss and self.data.combat.boss_phase >= 3:
-                self.data.achievements.unlock("flagship_down")
+                self.game.achievement_manager.unlock("flagship_down")
 
             if self.data.player.ship.hp == 1:
-                self.data.achievements.unlock("bare_hull")
+                self.game.achievement_manager.unlock("bare_hull")
 
             if getattr(self.data.enemy.ship, "hp", 0) > 0:
-                self.data.achievements.unlock("crew_eliminator")
+                self.game.achievement_manager.unlock("crew_eliminator")
 
             unlocked_list = getattr(self.data.player, "unlocked_ships", ["Kestrel"])
             if len(unlocked_list) >= 4:
-                self.data.achievements.unlock("collector")
+                self.game.achievement_manager.unlock("collector")
             if len(unlocked_list) >= 8:
-                self.data.achievements.unlock("armada")
+                self.game.achievement_manager.unlock("armada")
 
         if is_final_boss:
             self.data.current_state = STATE_VICTORY
         elif is_mini_boss:
-            sec = self.data.world.star_map.sector
+            _ = self.data.world.star_map.sector # TODO: Check if needed?
             self.data.world.star_map.sector += 1
             self.data.world.star_map.generate_map()
             self.data.player.scrap += 25
 
             if new_ship:
-                self.show_message(f"NEUES SCHIFF FREIGESCHALTET: {new_ship}!")
+                self.show_message(f"NEUES SCHIFF FREIGESCHALTET: {new_ship}! [KARTENANSICHT DRÜCKEN]")
             else:
-                self.show_message(f"MINI-BOSS BESIEGT! WEITER ZU SEKTOR {self.data.world.star_map.sector}")
+                self.show_message(f"MINI-BOSS BESIEGT! WEITER ZU SEKTOR {self.data.world.star_map.sector} [KARTENANSICHT DRÜCKEN]")
 
-            self.data.current_state = STATE_MAP
+            self.data.combat.combat_won = True
+            self.data.combat.ftl_ready = True
         else:
-            self.data.current_state = STATE_MAP
+            self.data.combat.combat_won = True
+            self.data.combat.ftl_ready = True
+            self.show_message("KAMPF GEWONNEN! [KARTENANSICHT DRÜCKEN UM WEITERZUFLIEGEN]")
+
+    def leave_post_combat(self):
+        """Transitions back to map view after post-combat repair/cleanup phase."""
+        self.show_message("RÜCKKEHR ZUR KARTENANSICHT...")
+        self.data.current_state = STATE_MAP
+        self.data.combat.combat_won = False
+        self.data.combat.ftl_charge_timer = 0.0
+        self.data.combat.ftl_ready = False
 
 
 
@@ -1012,8 +1143,8 @@ class CombatManager:
                         proj.alive = False
                         d_start = (int(p_cx + math.cos(self.data.combat.drone_orbit_angle) * 130), int(p_cy + math.sin(self.data.combat.drone_orbit_angle) * 100))
                         self.data.combat.defense_laser_beam = (d_start, (int(proj.x), int(proj.y)), 0.25)
-                        if hasattr(self.data, "particle_manager"):
-                            self.data.particle_manager.emit_explosion(proj.x, proj.y, count=15)
+                        if self.game is not None:
+                            self.game.particle_manager.emit_explosion(proj.x, proj.y, count=15)
                         if self.sound: self.sound.play("laser_fire")
                         self.show_message("VERTEIDIGUNGS-DROHNE HAT RAKETE ABGESCHOSSEN!")
                         break
@@ -1037,8 +1168,8 @@ class CombatManager:
                     ap_y += (dy / dist) * 110.0 * dt
                 else:
                     target_b.hp = max(0.0, target_b.hp - 22.0 * dt)
-                    if hasattr(self.data, "particle_manager"):
-                        self.data.particle_manager.emit_sparks(target_b.x, target_b.y, count=3)
+                    if self.game is not None:
+                        self.game.particle_manager.emit_sparks(target_b.x, target_b.y, count=3)
                 self.data.combat.anti_personnel_pos = (ap_x, ap_y)
 
     def toggle_combat_drone(self):
@@ -1149,9 +1280,68 @@ class CombatManager:
 
         self.data.current_state = STATE_GAME_OVER
 
+    def flee_combat(self):
+        """Allows fleeing combat when FTL engine is 100% charged (30s manned & powered bridge)."""
+        if not getattr(self.data.combat, "ftl_ready", False):
+            self.show_message("FTL-ANTRIEB NICHT BEREIT!")
+            return
+        if self.sound:
+            self.sound.play("jump")
+        self.show_message("ERFOLGREICH AUS DEM KAMPF GEFLOHEN!")
+        self.data.current_state = STATE_MAP
+        self.data.combat.ftl_charge_timer = 0.0
+        self.data.combat.ftl_ready = False
+
     def show_message(self, text: str):
 
         self.data.combat.msg = text
         self.data.combat.msg_timer = 1.5
+
+    def open_all_doors(self) -> None:
+        """Öffnet alle internen Schiffstüren (Luftschleusen bleiben sicherheitshalber unverändert)."""
+        opened_count = 0
+        for d in self.data.player.ship.doors:
+            if not getattr(d, "is_airlock", False):
+                d.is_open = True
+                opened_count += 1
+        self.show_message("ALLE INNENTÜREN GEÖFFNET [Z]")
+        if self.sound:
+            self.sound.play("door")
+
+    def close_all_doors(self) -> None:
+        """Schließt alle Schiffstüren und Luftschleusen luftdicht."""
+        for d in self.data.player.ship.doors:
+            d.is_open = False
+        self.show_message("ALLE TÜREN GESCHLOSSEN [X]")
+        if self.sound:
+            self.sound.play("door")
+
+    def save_crew_stations(self) -> None:
+        """Speichert die aktuellen Raum- und Positionszuweisungen der Crew."""
+        self.saved_crew_stations = {}
+        for c in self.data.player.crew:
+            if not getattr(c, "is_boarding", False):
+                r_name = getattr(c.current_room, "name", None)
+                self.saved_crew_stations[c.name] = (float(c.x), float(c.y), r_name)
+        self.show_message(f"STATIONEN GESPEICHERT ({len(self.saved_crew_stations)} Crew) [F1]")
+        if self.sound:
+            self.sound.play("click")
+
+    def return_crew_to_stations(self) -> None:
+        """Schickt alle Crew-Mitglieder sofort zu ihren gespeicherten Stationen zurück."""
+        if not getattr(self, "saved_crew_stations", None):
+            self.save_crew_stations()
+            return
+        dispatched = 0
+        for c in self.data.player.crew:
+            if not getattr(c, "is_boarding", False) and c.name in self.saved_crew_stations:
+                sx, sy, _ = self.saved_crew_stations[c.name]
+                c.target_pos = (int(sx), int(sy))
+                c.path_waypoints = []
+                dispatched += 1
+        self.show_message(f"CREW KEHRT ZU STATIONEN ZURÜCK ({dispatched}) [F2]")
+        if self.sound:
+            self.sound.play("click")
+
 
 

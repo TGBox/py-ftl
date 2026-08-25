@@ -1,19 +1,30 @@
-import copy
+from typing import TYPE_CHECKING
 
+
+from typing import Any
+
+import pygame
+
+from classes.Crew import Crew
 from classes.Door import Door
 from classes.Room import Room
+from classes.Weapon import Weapon
+from enums import ShipType
+
+if TYPE_CHECKING:
+    from classes.GameData import PlayerData
 
 
 class ShipModel:
     def __init__(
         self,
-        name: str,
+        name: ShipType | str,
         max_hp: int,
         rooms: list[Room],
         is_enemy: bool = False,
         max_weapons: int = 3,
         max_crew: int = 4,
-        weapon_slots: list[dict] | None = None,
+        weapon_slots: list[dict[str, int | tuple[int, int] | list[str] | None]] = [],
     ):
         self.name = name
         self.max_hp = max_hp
@@ -22,11 +33,22 @@ class ShipModel:
         self.is_enemy = is_enemy
         self.max_weapons = max_weapons
         self.max_crew = max_crew
-        self.weapon_slots: list[dict] = weapon_slots or []
+        self.weapon_slots: list[dict[Any, Any]] = weapon_slots or []
         self.doors: list[Door] = []
         self.generate_doors()
         if not self.weapon_slots:
             self.generate_default_weapon_slots()
+            
+    def __str__(self) -> str:
+        """Methode um aus dem ShipModel Objekt einen wohlgeformten und von Menschen gut lesbaren String zu generieren.
+
+        Returns:
+            str: Die String Repräsentation des ShipModels.
+        """
+        s_str = (f"{"Gegnerisches " if self.is_enemy else "Spieler "}Schiff: \"{self.name}\" | "
+                 f"Gesundheit: {self.hp} / {self.max_hp} | {len(self.rooms)} Räume | Maximale Crew: "
+                 f"{self.max_crew} Mitglieder | Maximale Anzahl Waffen: {len(self.weapon_slots)} | {len(self.doors)} Türen")
+        return s_str
 
     def generate_default_weapon_slots(self) -> None:
         self.weapon_slots = []
@@ -67,21 +89,34 @@ class ShipModel:
         # Türen & Luftschleusen neu berechnen
         self.generate_doors()
 
-    def swap_weapon_slots(self, idx1: int, idx2: int, player_weapons: list | None = None) -> bool:
-        if idx1 < 0 or idx1 >= len(self.weapon_slots) or idx2 < 0 or idx2 >= len(self.weapon_slots) or idx1 == idx2:
+    def swap_weapon_slots(self, idx1: int, idx2: int, weapons_list: list) -> bool:
+        if not (0 <= idx1 < len(self.weapon_slots) and 0 <= idx2 < len(self.weapon_slots)):
             return False
 
-        # Tausche allowed_types der beiden Slots
-        self.weapon_slots[idx1]["allowed_types"], self.weapon_slots[idx2]["allowed_types"] = (
-            self.weapon_slots[idx2]["allowed_types"],
-            self.weapon_slots[idx1]["allowed_types"],
-        )
+        # Ensure weapons_list has enough entries for both slots
+        max_idx = max(idx1, idx2)
+        while len(weapons_list) <= max_idx:
+            weapons_list.append(None)
 
-        # Tausche auch ausgerüstete Waffen in player_weapons (falls vorhanden)
-        if player_weapons is not None:
-            max_len = len(player_weapons)
-            if idx1 < max_len and idx2 < max_len:
-                player_weapons[idx1], player_weapons[idx2] = player_weapons[idx2], player_weapons[idx1]
+        # 1. Die Waffen in der Inventarliste tauschen
+        weapons_list[idx1], weapons_list[idx2] = weapons_list[idx2], weapons_list[idx1]
+
+        # 2. Slot-Eigenschaften (z.B. allowed_types) tauschen, während pos und slot_id fest bleiben
+        slot1 = self.weapon_slots[idx1]
+        slot2 = self.weapon_slots[idx2]
+        keys_to_swap = [k for k in set(slot1.keys()).union(slot2.keys()) if k not in ("pos", "slot_id")]
+        for k in keys_to_swap:
+            v1 = slot1.get(k)
+            v2 = slot2.get(k)
+            if v2 is not None:
+                slot1[k] = v2
+            elif k in slot1:
+                del slot1[k]
+
+            if v1 is not None:
+                slot2[k] = v1
+            elif k in slot2:
+                del slot2[k]
 
         return True
 
@@ -118,7 +153,7 @@ class ShipModel:
             self.doors.append(Door(min_x_room, None, (min_x_room.rect.left - 4, min_x_room.rect.centery - 12, 6, 24), is_airlock=True))
             self.doors.append(Door(max_x_room, None, (max_x_room.rect.right - 2, max_x_room.rect.centery - 12, 6, 24), is_airlock=True))
 
-    def update_doors(self, dt: float, crew_list: list | None = None) -> None:
+    def update_doors(self, dt: float, crew_list: list[Crew] | None = None) -> None:
         for d in self.doors:
             d.update(dt)
             if d.opened_by_crew and not d.is_airlock:
@@ -133,7 +168,7 @@ class ShipModel:
                     d.is_open = False
                     d.opened_by_crew = False
 
-    def draw_doors(self, surface, door_level: int = 1) -> None:
+    def draw_doors(self, surface: pygame.Surface, door_level: int = 1) -> None:
         for d in self.doors:
             d.draw(surface, door_level=door_level)
 
@@ -155,7 +190,7 @@ class ShipModel:
                 d.opened_by_crew = False
 
 
-PLAYER_SHIP = ShipModel("Kestrel", 15, [
+PLAYER_SHIP = ShipModel(ShipType.KESTREL, 15, [
     Room("Schild", (60, 245, 90, 90)),
     Room("Waffen", (160, 245, 90, 90)),
     Room("Brücke", (260, 245, 90, 90), max_power=2),
@@ -183,15 +218,15 @@ CRUISER_SHIP = ShipModel("Kreuzer", 18, [
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
 ])
 
-STEALTH_SHIP = ShipModel("Tarnschiff", 12, [
+STEALTH_SHIP = ShipModel(ShipType.TARNSSCHIFF, 12, [
     Room("Tarnung", (70, 245, 80, 80)),
     Room("Waffen", (160, 245, 80, 80)),
     Room("Brücke", (250, 245, 80, 80), max_power=2),
     Room("Medbay", (160, 155, 80, 80), max_power=1),
 ], max_weapons=3, max_crew=3, weapon_slots=[
     {"slot_id": 1, "pos": (200, 230), "allowed_types": ["LASER", "BEAM"]},
-    {"slot_id": 2, "pos": (200, 340), "allowed_types": ["BEAM"]},
-    {"slot_id": 3, "pos": (290, 285), "allowed_types": ["LASER", "MISSILE"]},
+    {"slot_id": 2, "pos": (200, 340), "allowed_types": ["BEAM", "LASER"]},
+    {"slot_id": 3, "pos": (290, 285), "allowed_types": ["LASER", "MISSILE", "BEAM"]},
 ])
 
 ZOLTAN_SHIP = ShipModel("Zoltan-Fregatte", 14, [
@@ -202,7 +237,7 @@ ZOLTAN_SHIP = ShipModel("Zoltan-Fregatte", 14, [
     Room("Medbay", (240, 140, 85, 85), max_power=2),
 ], max_weapons=4, max_crew=4, weapon_slots=[
     {"slot_id": 1, "pos": (282, 220), "allowed_types": ["BEAM", "LASER"]},
-    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
+    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM", "MISSILE", "ION"]},
     {"slot_id": 3, "pos": (187, 220), "allowed_types": ["LASER"]},
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["MISSILE", "BEAM"]},
 ])
@@ -215,7 +250,7 @@ FEDERATION_SHIP = ShipModel("Federations-Kreuzer", 20, [
     Room("Medbay", (50, 140, 85, 85), max_power=3),
 ], max_weapons=4, max_crew=5, weapon_slots=[
     {"slot_id": 1, "pos": (282, 220), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
-    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["BEAM", "MISSILE"]},
+    {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM", "MISSILE"]},
     {"slot_id": 3, "pos": (92, 220), "allowed_types": ["BEAM"]},
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
 ])
@@ -228,7 +263,7 @@ MANTIS_SHIP = ShipModel("Mantis-Kaperer", 16, [
     Room("Medbay", (145, 140, 85, 85), max_power=2),
     Room("Sensoren", (240, 140, 85, 85), max_power=2),
 ], max_weapons=3, max_crew=5, weapon_slots=[
-    {"slot_id": 1, "pos": (282, 220), "allowed_types": ["LASER", "MISSILE"]},
+    {"slot_id": 1, "pos": (282, 220), "allowed_types": ["LASER", "MISSILE", "FLAK"]},
     {"slot_id": 2, "pos": (282, 335), "allowed_types": ["LASER", "BEAM"]},
     {"slot_id": 3, "pos": (187, 220), "allowed_types": ["MISSILE", "BEAM"]},
 ])
@@ -242,7 +277,7 @@ ROCK_SHIP = ShipModel("Rock-Schlachtschiff", 22, [
     Room("Teleporter", (240, 140, 85, 85), max_power=1),
 ], max_weapons=4, max_crew=6, weapon_slots=[
     {"slot_id": 1, "pos": (187, 220), "allowed_types": ["MISSILE", "FLAK", "LASER"]},
-    {"slot_id": 2, "pos": (187, 335), "allowed_types": ["MISSILE", "LASER"]},
+    {"slot_id": 2, "pos": (187, 335), "allowed_types": ["MISSILE", "LASER", "BOMB"]},
     {"slot_id": 3, "pos": (282, 220), "allowed_types": ["FLAK", "BEAM"]},
     {"slot_id": 4, "pos": (377, 290), "allowed_types": ["LASER", "MISSILE"]},
 ])
@@ -273,7 +308,7 @@ SHIP_BLUEPRINTS = {
     "Kristall-Kreuzer": CRYSTAL_SHIP,
 }
 
-SHIP_STARTING_SPECS = {
+SHIP_STARTING_SPECS: dict[str, dict[str, str | list[str]]] = {
     "Kestrel": {
         "crew_summary": "1x Mensch, 1x Engi",
         "crew_species": ["Mensch", "Engi"],
@@ -325,63 +360,70 @@ SHIP_STARTING_SPECS = {
 }
 
 
-def apply_starting_setup_for_ship(player_data, ship_name: str) -> None:
+def apply_starting_setup_for_ship(player_data: Any, ship_name: str) -> None:
     from classes.Crew import Crew
     from classes.Weapon import Weapon
+
+    player = getattr(player_data, "player", player_data)
 
     specs = SHIP_STARTING_SPECS.get(ship_name, SHIP_STARTING_SPECS["Kestrel"])
     species_list = specs["crew_species"]
 
     # Start-Crew setzen
-    player_data.crew.clear()
-    rooms = getattr(player_data.ship, "rooms", [])
+    player.crew.clear()
+    rooms = getattr(player.ship, "rooms", [])
     for idx, spec in enumerate(species_list):
         r = rooms[idx % len(rooms)] if rooms else None
         cx = r.rect.centerx if r else 250
         cy = r.rect.centery if r else 250
-        player_data.crew.append(Crew(cx, cy, species=spec))
+        player.crew.append(Crew(cx, cy, species=spec))
+
+    from utils import arrange_room_crew
+    for r in rooms:
+        arrange_room_crew(r, player.crew)
 
     # Start-Waffen setzen
-    player_data.weapons.clear()
+    assert player.weapons is not None
+    player.weapons.clear()
     if ship_name == "Kestrel":
-        player_data.weapons = [
-            Weapon("Standard Laser", charge_time=3.0, w_type="LASER"),
-            Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1),
+        player.weapons = [
+            Weapon("Standard Laser", charge_time=3.0, w_type="LASER", damage=25.0, max_range=750.0),
+            Weapon("Artemis Rakete", charge_time=4.0, w_type="MISSILE", ammo_cost=1, damage=35.0, max_range=750.0),
         ]
     elif ship_name == "Kreuzer":
-        player_data.weapons = [
-            Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0),
-            Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0),
+        player.weapons = [
+            Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0, max_range=750.0),
+            Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0, max_range=750.0),
         ]
     elif ship_name == "Tarnschiff":
-        player_data.weapons = [
-            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0),
-            Weapon("Pike Strahl", charge_time=5.0, w_type="BEAM", damage=35.0),
+        player.weapons = [
+            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0, max_range=750.0),
+            Weapon("Pike Strahl", charge_time=5.0, w_type="BEAM", damage=35.0, max_range=750.0),
         ]
     elif ship_name == "Zoltan-Fregatte":
-        player_data.weapons = [
-            Weapon("Halberd Strahl", charge_time=5.5, w_type="BEAM", damage=45.0),
-            Weapon("Ion Blast MK I", charge_time=3.0, w_type="ION", damage=10.0),
+        player.weapons = [
+            Weapon("Halberd Strahl", charge_time=5.5, w_type="BEAM", damage=45.0, max_range=750.0),
+            Weapon("Ion Blast MK I", charge_time=3.0, w_type="ION", damage=10.0, max_range=750.0),
         ]
     elif ship_name == "Federations-Kreuzer":
-        player_data.weapons = [
-            Weapon("Standard Laser", charge_time=3.0, w_type="LASER", damage=25.0),
-            Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0),
+        player.weapons = [
+            Weapon("Standard Laser", charge_time=3.0, w_type="LASER", damage=25.0, max_range=750.0),
+            Weapon("Burst Laser MK II", charge_time=4.0, w_type="LASER", damage=60.0, max_range=750.0),
         ]
     elif ship_name == "Mantis-Kaperer":
-        player_data.weapons = [
-            Weapon("Kurzstrecken-Flak", charge_time=3.2, w_type="FLAK", damage=30.0),
-            Weapon("Brand-Laser MK I", charge_time=3.8, w_type="LASER", damage=15.0, fire_chance=0.75),
+        player.weapons = [
+            Weapon("Kurzstrecken-Flak", charge_time=3.2, w_type="FLAK", damage=30.0, max_range=750.0),
+            Weapon("Brand-Laser MK I", charge_time=3.8, w_type="LASER", damage=15.0, fire_chance=0.75, max_range=750.0),
         ]
     elif ship_name == "Rock-Schlachtschiff":
-        player_data.weapons = [
-            Weapon("Hermes Rakete", charge_time=4.5, w_type="MISSILE", ammo_cost=1, damage=50.0),
-            Weapon("Hüllenbruch-Bombe", charge_time=5.0, w_type="BOMB", ammo_cost=1, damage=15.0, breach_chance=0.90),
+        player.weapons = [
+            Weapon("Hermes Rakete", charge_time=4.5, w_type="MISSILE", ammo_cost=1, damage=50.0, max_range=750.0),
+            Weapon("Hüllenbruch-Bombe", charge_time=5.0, w_type="BOMB", ammo_cost=1, damage=15.0, breach_chance=0.90, max_range=750.0),
         ]
     elif ship_name == "Kristall-Kreuzer":
-        player_data.weapons = [
-            Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0),
-            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0),
+        player.weapons = [
+            Weapon("Schwerer Laser", charge_time=3.5, w_type="LASER", damage=45.0, max_range=750.0),
+            Weapon("Impuls-Laser (Kurz)", charge_time=2.5, w_type="LASER", damage=25.0, max_range=750.0),
         ]
 
 
@@ -409,6 +451,30 @@ ENEMY_CRUISER = ShipModel("Schwerer Kreuzer", 18, [
     Room("Maschinen", (760, 160, 95, 95), is_enemy=True)
 ], is_enemy=True)
 
+ENEMY_MANTIS_BOARDER = ShipModel("Mantis-Kaperer", 16, [
+    Room("Schild", (550, 170, 85, 85), is_enemy=True),
+    Room("Teleporter", (645, 170, 85, 85), is_enemy=True),
+    Room("Waffen", (740, 170, 85, 85), is_enemy=True)
+], is_enemy=True)
+
+ENEMY_ZOLTAN_FRIGATE = ShipModel("Zoltan-Fregatte", 14, [
+    Room("Schild", (560, 180, 80, 80), max_power=3, is_enemy=True),
+    Room("Waffen", (650, 180, 80, 80), is_enemy=True),
+    Room("Brücke", (740, 180, 80, 80), is_enemy=True)
+], is_enemy=True)
+
+ENEMY_ROCK_WARSHIP = ShipModel("Rock-Kriegsschiff", 22, [
+    Room("Schild", (540, 150, 95, 95), is_enemy=True),
+    Room("Waffen", (645, 150, 95, 95), is_enemy=True),
+    Room("Maschinen", (750, 150, 95, 95), is_enemy=True)
+], is_enemy=True)
+
+ENEMY_DRONE_CARRIER = ShipModel("Drohnen-Träger", 16, [
+    Room("Schild", (550, 170, 85, 85), is_enemy=True),
+    Room("Drohnen-Kontrolle", (645, 170, 85, 85), is_enemy=True),
+    Room("Brücke", (740, 170, 85, 85), is_enemy=True)
+], is_enemy=True)
+
 MINI_BOSS_SECTOR_1 = ShipModel("Elite-Kaperer (Mini-Boss)", 16, [
     Room("Schild", (560, 170, 90, 90), is_enemy=True),
     Room("Waffen", (660, 170, 90, 90), is_enemy=True),
@@ -428,5 +494,46 @@ ENEMY_BOSS = ShipModel("Flaggschiff", 25, [
     Room("Brücke", (770, 150, 100, 100), is_enemy=True)
 ], is_enemy=True)
 
-ENEMY_TEMPLATES = [ENEMY_SCOUT, ENEMY_FIGHTER, ENEMY_BOMBER, ENEMY_CRUISER]
-
+ENEMY_TEMPLATES = [
+    ENEMY_SCOUT,
+    ENEMY_FIGHTER,
+    ENEMY_BOMBER,
+    ENEMY_CRUISER,
+    ENEMY_MANTIS_BOARDER,
+    ENEMY_ZOLTAN_FRIGATE,
+    ENEMY_ROCK_WARSHIP,
+    ENEMY_DRONE_CARRIER,
+]
+
+# Sektor-spezifische Rebellen-Verfolger (Flotten-Kollision)
+REBEL_PURSUER_S1 = ShipModel("Rebellen-Aufklärer (S1)", 10, [
+    Room("Schild", (600, 220, 80, 80), is_enemy=True),
+    Room("Waffen", (690, 220, 80, 80), is_enemy=True),
+    Room("Brücke", (780, 220, 80, 80), is_enemy=True)
+], is_enemy=True)
+
+REBEL_PURSUER_S2 = ShipModel("Rebellen-Abfangjäger (S2)", 14, [
+    Room("Schild", (580, 210, 85, 85), is_enemy=True),
+    Room("Waffen", (675, 210, 85, 85), is_enemy=True),
+    Room("Antrieb", (770, 210, 85, 85), is_enemy=True)
+], is_enemy=True)
+
+REBEL_PURSUER_S3 = ShipModel("Rebellen-Bomber (S3)", 18, [
+    Room("Schild", (570, 200, 90, 90), is_enemy=True),
+    Room("Raketen", (670, 200, 90, 90), is_enemy=True),
+    Room("Brücke", (770, 200, 90, 90), is_enemy=True)
+], is_enemy=True)
+
+REBEL_PURSUER_S4 = ShipModel("Schwerer Rebellen-Zerstörer (S4)", 22, [
+    Room("Schild", (550, 160, 95, 95), is_enemy=True),
+    Room("Waffen", (655, 160, 95, 95), is_enemy=True),
+    Room("Maschinen", (760, 160, 95, 95), is_enemy=True)
+], is_enemy=True)
+
+REBEL_PURSUER_S5 = ShipModel("Flotten-Elite-Kreuzer (S5)", 28, [
+    Room("Schild", (550, 150, 95, 95), max_power=3, is_enemy=True),
+    Room("Waffen", (655, 150, 95, 95), max_power=3, is_enemy=True),
+    Room("Drohnen", (760, 150, 95, 95), max_power=2, is_enemy=True)
+], is_enemy=True)
+
+

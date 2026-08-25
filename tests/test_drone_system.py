@@ -16,7 +16,7 @@ class TestDroneSystem(unittest.TestCase):
     def setUp(self):
         self.data = GameData()
         self.state_mgr = StateManager(self.data)
-        self.combat_mgr = CombatManager(self.data, self.state_mgr)
+        self.combat_mgr = CombatManager(self.data)
 
         # Give player ship Drone Control room power = 4
         drone_room = next((r for r in self.data.player.ship.rooms if r.name == "Drohnen-Kontrolle"), None)
@@ -79,6 +79,23 @@ class TestDroneSystem(unittest.TestCase):
 
         # Missile should be shot down (alive = False)
         self.assertFalse(missile.alive, "Defense drone should shoot down incoming missile.")
+
+    def test_drone_inventory_management(self):
+        # 1. Initial inventory verification
+        self.assertEqual(len(self.data.player.drones_inventory), 2)
+        self.assertTrue(self.data.player.drones_inventory[0].equipped)
+
+        # 2. Unequip first drone
+        self.data.player.drones_inventory[0].equipped = False
+        self.assertFalse(self.data.player.drones_inventory[0].equipped)
+
+        # 3. Dismantle unequipped drone for +15 Scrap
+        init_scrap = self.data.player.scrap
+        dismantled_drone = self.data.player.drones_inventory.pop(0)
+        self.data.player.scrap += 15
+
+        self.assertEqual(len(self.data.player.drones_inventory), 1)
+        self.assertEqual(self.data.player.scrap, init_scrap + 15)
 
 
 if __name__ == "__main__":

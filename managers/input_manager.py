@@ -1,31 +1,48 @@
+from typing import TYPE_CHECKING
+import logging
 import math
 import pygame
 
 from classes.GameData import GameData
 from classes.Projectile import Projectile
-from managers.map_manager import MapManager
-from managers.shop_manager import ShopManager
-from managers.weapon_manager import WeaponManager
+from managers.sound_manager import SoundManager
 from settings import *
-from utils import calculate_event_layout
+from utils import *
 
+if TYPE_CHECKING:
+    from game import Game
+
+from enums import GameState
+
+logger = logging.getLogger(__name__)
 
 class InputManager:
 
     def __init__(
         self,
-        data: GameData,
-        shop_manager: ShopManager,
-        map_manager: MapManager,
-        weapon_manager: WeaponManager | None = None,
+        data: GameData
     ):
-        self.data = data
-        self.shop_manager = shop_manager
-        self.map_manager = map_manager
-        self.weapon_manager = weapon_manager or WeaponManager(data)
-        self.sound = None   # Set by Game after construction
-        self.game = None    # Set by Game after construction
+        self.data: GameData = data
+        self.game: "Game | None" = None   # Set by Game after construction
+        self.sound: SoundManager | None = None   # Set by Game after construction
 
+    def change_state(self, new_state: str | GameState):
+        val = new_state.value if isinstance(new_state, GameState) else str(new_state)
+        sm = getattr(self.game, "state_manager", None) if self.game else None
+        if sm and type(sm).__name__ == "StateManager":
+            sm.change_state(val)
+        else:
+            self.data.current_state = val
+
+    def show_message(self, text: str):
+        sm = getattr(self.game, "state_manager", None) if self.game else None
+        if sm and type(sm).__name__ == "StateManager":
+            sm.show_message(text)
+        else:
+            self.data.combat.msg = text
+            self.data.combat.msg_timer = 1.5
+
+    # TODO: Investigate if this function causes the rendering resolution to look as bad.
     def _logical_mouse_pos(self, pos: tuple[int, int] | None = None) -> tuple[int, int]:
         """Convert raw screen mouse position to logical 900x600 coordinates."""
         if pos is not None:
@@ -47,6 +64,10 @@ class InputManager:
                 self.handle_keydown(event)
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                console_mgr = getattr(self.game, "console_manager", None)
+                if console_mgr and getattr(console_mgr, "active", False):
+                    if console_mgr.handle_mouse_scroll(event.button):
+                        continue
 
                 if event.button == 1:
                     self.handle_left_click(event)
@@ -55,6 +76,11 @@ class InputManager:
                     self.handle_right_click(event)
 
     def handle_keydown(self, event: pygame.event.Event):
+        logger.debug(f"Keyboard Taste {event.key} wurde gedrückt.")
+        console_mgr = getattr(self.game, "console_manager", None)
+        if console_mgr and console_mgr.handle_keydown(event) is True:
+            return
+
         if self.data.player.active_rename_idx is not None:
             if event.key == pygame.K_RETURN:
                 idx = self.data.player.active_rename_idx
@@ -70,13 +96,44 @@ class InputManager:
                 self.data.player.rename_buffer += event.unicode
             return
 
-        # Hilfe-Overlay Umschalten (H / F1)
-        if event.key in (pygame.K_h, pygame.K_F1):
+        # Hilfe-Overlay Umschalten (H)
+        if event.key == pygame.K_h:
             self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
             if self.sound: self.sound.play("click")
             return
 
-        combat_mgr = getattr(self.data, "combat_manager", None)
+        combat_mgr = getattr(self.game, "combat_manager", None)
+
+        # Crew-Stations-Memory & Tür-Schnellsteuerung (global verfügbar außerhalb von Menüs)
+        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
+            if event.key == pygame.K_F1:
+                if combat_mgr: combat_mgr.save_crew_stations()
+                return
+            elif event.key == pygame.K_F2:
+                if combat_mgr: combat_mgr.return_crew_to_stations()
+                return
+            elif event.key == pygame.K_z:
+                if combat_mgr: combat_mgr.open_all_doors()
+                else: self.data.player.ship.open_all_doors()
+                return
+            elif event.key == pygame.K_x:
+                if combat_mgr: combat_mgr.close_all_doors()
+                else: self.data.player.ship.close_all_doors()
+                return
+            elif event.key == pygame.K_v:
+                self.data.player.ship.open_airlocks()
+                if self.sound: self.sound.play("click")
+                return
+            elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4):
+                c_idx = event.key - pygame.K_1
+                if c_idx < len(self.data.player.crew):
+                    for other in self.data.player.crew:
+                        other.selected = False
+                    self.data.player.crew[c_idx].selected = True
+                    self.show_message(f"CREW {self.data.player.crew[c_idx].name.upper()} AUSGEWÄHLT [{c_idx+1}]")
+                    if self.sound: self.sound.play("click")
+                return
+
         if self.data.current_state == STATE_COMBAT:
             if event.key == pygame.K_a:
                 self.data.combat.autofire_enabled = not self.data.combat.autofire_enabled
@@ -87,40 +144,51 @@ class InputManager:
                 if combat_mgr: combat_mgr.recall_boarding_crew()
             elif event.key == pygame.K_c:
                 if combat_mgr: combat_mgr.activate_cloaking()
-            elif event.key in (pygame.K_k, pygame.K_1):
+            elif event.key == pygame.K_k:
                 if combat_mgr: combat_mgr.toggle_combat_drone()
-            elif event.key in (pygame.K_d, pygame.K_2):
-                if combat_mgr: combat_mgr.toggle_repair_drone()
-            elif event.key in (pygame.K_f, pygame.K_3):
+            elif event.key == pygame.K_d and self.data.player.active_rename_idx is None:
+                self.data.show_drone_modal = not getattr(self.data, "show_drone_modal", False)
+                if self.sound: self.sound.play("click")
+                return
+            elif event.key == pygame.K_f:
                 if combat_mgr: combat_mgr.toggle_defense_drone()
-            elif event.key in (pygame.K_e, pygame.K_4):
+            elif event.key == pygame.K_e:
                 if combat_mgr: combat_mgr.toggle_shield_charger()
-            elif event.key in (pygame.K_p, pygame.K_5):
+            elif event.key == pygame.K_p:
                 if combat_mgr: combat_mgr.toggle_anti_personnel()
             elif event.key == pygame.K_g:
                 selected = [c for c in self.data.player.crew if c.selected]
                 if selected:
                     for c in selected:
-                        c.activate_ability(self.data, combat_mgr)
+                        assert self.game is not None
+                        c.activate_ability(self.data, self.game)
                 elif self.data.player.crew:
-                    self.data.player.crew[0].activate_ability(self.data, combat_mgr)
+                    assert self.game is not None
+                    self.data.player.crew[0].activate_ability(self.data, self.game)
 
         if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
-            if event.key == pygame.K_o:
-                self.data.player.ship.open_all_doors()
-            elif event.key == pygame.K_v:
-                self.data.player.ship.open_airlocks()
+            if event.key == pygame.K_d and self.data.player.active_rename_idx is None and self.data.current_state != STATE_COMBAT:
+                self.data.show_drone_modal = not getattr(self.data, "show_drone_modal", False)
+                if self.sound: self.sound.play("click")
+                return
 
         if event.key == pygame.K_SPACE:
             # Taktische Pause umschalten (Spiel-Interaktionen bleiben möglich)
             self.data.paused = not self.data.paused
         elif event.key == pygame.K_ESCAPE:
+            # TODO 40: Target-Modus mit ESC abbrechen ohne Schussverlust
+            if self.data.current_state == STATE_COMBAT and getattr(self.data.combat, "is_targeting", False):
+                self.data.combat.is_targeting = False
+                self.data.combat.target_weapon_idx = None
+                self.show_message("ZIELEN ABGEBROCHEN.")
+                return
             # Pause-Menü Modal (ESC)
-            if self.data.current_state == STATE_OPTIONS:
-                if getattr(self.data, "show_pause_menu", False):
-                    self.data.current_state = STATE_MAP
+            if self.data.current_state in (STATE_OPTIONS, STATE_ACHIEVEMENTS):
+                sm = getattr(self.game, "state_manager", None)
+                if sm and hasattr(sm, "return_from_overlay"):
+                    sm.return_from_overlay()
                 else:
-                    self.data.current_state = STATE_MAIN_MENU
+                    self.change_state(GameState.MAP)
             elif self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
                 self.data.show_pause_menu = not getattr(self.data, "show_pause_menu", False)
                 if self.sound: self.sound.play("click")
@@ -149,33 +217,40 @@ class InputManager:
                 if self.sound: self.sound.play("click")
 
     def handle_left_click(self, event: pygame.event.Event):
+        logger.debug(f"Linksklick auf Position x={event.pos[0]}, y={event.pos[1]}")
 
         mx, my = self._logical_mouse_pos(getattr(event, "pos", None))        # 1. 3 Save Slots Modal Interaction
         if getattr(self.data, "show_slot_modal", False):
             from managers.save_manager import SaveManager
             mode = getattr(self.data, "slot_modal_mode", "SAVE")
 
-            btn_slot_1 = pygame.Rect(505, 150, 180, 42)
-            btn_slot_2 = pygame.Rect(505, 268, 180, 42)
-            btn_slot_3 = pygame.Rect(505, 386, 180, 42)
-            btn_close = pygame.Rect(350, 475, 200, 42)
+            has_slot_4 = (mode == "LOAD") and SaveManager.has_savegame(4)
+            slots_to_check = (1, 2, 3, 4) if has_slot_4 else (1, 2, 3)
+            num_slots = len(slots_to_check)
+            card_h = 84 if num_slots == 4 else 106
+            card_step = 90 if num_slots == 4 else 118
 
+            btn_close = pygame.Rect(350, 480, 200, 40)
             if btn_close.collidepoint(mx, my):
                 self.data.show_slot_modal = False
                 if self.sound: self.sound.play("click")
                 return
 
-            slots = [(1, btn_slot_1), (2, btn_slot_2), (3, btn_slot_3)]
-            for slot_num, btn in slots:
+            for idx, slot_num in enumerate(slots_to_check):
+                card_y = 50 + 52 + idx * card_step
+                btn_y = card_y + (card_h - 38) // 2
+                btn = pygame.Rect(505, btn_y, 180, 38)
+
                 if btn.collidepoint(mx, my):
-                    if mode == "SAVE":
-                        if SaveManager.save_game(self.data, slot=slot_num):
-                            self.sound.play("click") if self.sound else None
+                    if mode == "SAVE" and slot_num != 4:
+                        assert self.game is not None
+                        if SaveManager.save_game(self.data, self.game, slot=slot_num):
+                            if self.sound: self.sound.play("click")
                         self.data.show_slot_modal = False
                     elif mode == "LOAD":
                         if SaveManager.has_savegame(slot_num):
                             if SaveManager.load_game(self.data, slot=slot_num):
-                                self.sound.play("jump") if self.sound else None
+                                if self.sound: self.sound.play("jump")
                                 self.data.show_pause_menu = False
                                 self.data.show_slot_modal = False
                     return
@@ -209,12 +284,12 @@ class InputManager:
                 self.data.slot_modal_mode = "LOAD"
                 if self.sound: self.sound.play("click")
             elif btn_pause_options.collidepoint(mx, my):
-                self.data.current_state = STATE_OPTIONS
+                self.change_state(GameState.OPTIONS)
                 if self.sound: self.sound.play("click")
             elif btn_pause_main_menu.collidepoint(mx, my):
                 self.data.show_pause_menu = False
                 self.data.paused = False
-                self.data.current_state = STATE_MAIN_MENU
+                self.change_state(GameState.MAIN_MENU)
                 if self.sound: self.sound.play("click")
             return
 
@@ -235,6 +310,49 @@ class InputManager:
                     return
             return
 
+        # 4b. Drohnen-Menü Modal Interaktion
+        if getattr(self.data, "show_drone_modal", False):
+            render_mgr = getattr(self.game, "render_manager", None)
+            close_btn = getattr(render_mgr, "btn_close_drone_modal", pygame.Rect(380, 495, 200, 36))
+            if close_btn.collidepoint(mx, my):
+                self.data.show_drone_modal = False
+                if self.sound: self.sound.play("click")
+                return
+
+            inv = getattr(self.data.player, "drones_inventory", [])
+            max_slots = getattr(self.data.player, "max_drone_slots", 3)
+            eq_count = sum(1 for d in inv if getattr(d, "equipped", True))
+
+            for idx, drone in enumerate(inv):
+                btn_eq = getattr(render_mgr, f"btn_drone_equip_{idx}", None)
+                btn_dis = getattr(render_mgr, f"btn_drone_dismantle_{idx}", None)
+
+                if btn_eq and btn_eq.collidepoint(mx, my):
+                    is_eq = getattr(drone, "equipped", True)
+                    if is_eq:
+                        drone.equipped = False
+                        self.show_message(f"{drone.name.upper()} AUSGEBAUT!")
+                    else:
+                        if eq_count < max_slots:
+                            drone.equipped = True
+                            self.show_message(f"{drone.name.upper()} AUSGERÜSTET!")
+                        else:
+                            self.show_message("ALLE DROHNEN-SLOTS BELEGT (MAX 3)!")
+                    if self.sound: self.sound.play("click")
+                    return
+
+                if btn_dis and btn_dis.collidepoint(mx, my):
+                    is_eq = getattr(drone, "equipped", True)
+                    if not is_eq:
+                        inv.pop(idx)
+                        self.data.player.scrap += 15
+                        self.show_message(f"{drone.name.upper()} ZERLEGT (+15 SCRAP)!")
+                        if self.sound: self.sound.play("click")
+                    else:
+                        self.show_message("ZUERST AUSBAUEN ZUM ZERLEGEN!")
+                    return
+            return
+
         # 5. Optionen Bildschirm
         if self.data.current_state == STATE_OPTIONS:
             btn_toggle_fullscreen = pygame.Rect(210, 105, 480, 36)
@@ -250,9 +368,12 @@ class InputManager:
             btn_sfx_down = pygame.Rect(452, 311, 34, 30)
             btn_sfx_up = pygame.Rect(648, 311, 34, 30)
 
-            btn_autosave_toggle = pygame.Rect(210, 350, 480, 34)
-            btn_achievements_menu = pygame.Rect(210, 390, 480, 34)
-            btn_close_options = pygame.Rect(350, 460, 200, 40)
+            btn_autosave_toggle = pygame.Rect(210, 350, 480, 30)
+            btn_debug_log_toggle = pygame.Rect(210, 384, 480, 30)
+            btn_achievements_menu = pygame.Rect(210, 418, 480, 28)
+            btn_reset_achievements = pygame.Rect(210, 450, 235, 28)
+            btn_reset_unlocks = pygame.Rect(455, 450, 235, 28)
+            btn_close_options = pygame.Rect(350, 484, 200, 34)
 
             if btn_toggle_fullscreen.collidepoint(mx, my):
                 if self.game:
@@ -296,17 +417,42 @@ class InputManager:
                 self.data.auto_save_enabled = not getattr(self.data, "auto_save_enabled", False)
                 if self.sound:
                     self.sound.play("click")
+            elif btn_debug_log_toggle.collidepoint(mx, my):
+                from managers.logger_manager import DebugLogger
+                logger_inst = DebugLogger.get_instance()
+                new_state = not logger_inst.enabled
+                logger_inst.set_enabled(new_state)
+                self.data.debug_logging_enabled = new_state
+                msg = "PROTOKOLLMODUS AKTIVIERT!" if new_state else "PROTOKOLLMODUS DEAKTIVIERT!"
+                self.show_message(msg)
+                if self.sound:
+                    self.sound.play("click")
             elif btn_achievements_menu.collidepoint(mx, my):
-                self.data.current_state = STATE_ACHIEVEMENTS
+                self.change_state(GameState.ACHIEVEMENTS)
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_reset_achievements.collidepoint(mx, my):
+                ach_mgr = getattr(self.game, "achievement_manager", None)
+                if ach_mgr and hasattr(ach_mgr, "reset_achievements"):
+                    ach_mgr.reset_achievements()
+                self.show_message("ERRUNGENSCHAFTEN ERFOLGREICH ZURÜCKGESETZT!")
+                if self.sound:
+                    self.sound.play("click")
+            elif btn_reset_unlocks.collidepoint(mx, my):
+                from managers.save_manager import SaveManager
+                self.data.player.unlocked_ships = ["Kestrel"]
+                SaveManager.save_unlocks(["Kestrel"])
+                self.show_message("SCHIFF-UNLOCKS ERFOLGREICH ZURÜCKGESETZT!")
                 if self.sound:
                     self.sound.play("click")
             elif btn_close_options.collidepoint(mx, my):
                 if self.sound:
                     self.sound.play("click")
-                if getattr(self.data, "show_pause_menu", False) or self.data.paused:
-                    self.data.current_state = STATE_MAP
+                sm = getattr(self.game, "state_manager", None)
+                if sm and hasattr(sm, "return_from_overlay"):
+                    sm.return_from_overlay()
                 else:
-                    self.data.current_state = STATE_MAIN_MENU
+                    self.change_state(GameState.MAP)
             return
 
         # 6. Achievements Bildschirm
@@ -336,13 +482,20 @@ class InputManager:
                 return
             elif btn_close.collidepoint(mx, my):
                 if self.sound: self.sound.play("click")
-                self.data.current_state = STATE_OPTIONS
+                self.change_state(GameState.OPTIONS)
                 return
             return
 
         # 7. Shop Modal State
         if self.data.current_state == STATE_SHOP:
-            self.shop_manager.handle_click(mx, my)
+            assert self.game is not None
+            self.game.shop_manager.handle_click(mx, my)
+            return
+
+        # 7b. Training Modal State
+        if self.data.current_state == STATE_TRAINING:
+            assert self.game is not None
+            self.game.training_manager.handle_click(mx, my)
             return
 
         # 8. Main Menu State
@@ -375,11 +528,11 @@ class InputManager:
             btn_quit = pygame.Rect(670, 532, 195, 42)
 
             if btn_options.collidepoint(mx, my):
-                self.data.current_state = STATE_OPTIONS
+                self.change_state(GameState.OPTIONS)
                 if self.sound:
                     self.sound.play("click")
             elif btn_start.collidepoint(mx, my):
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
                 if self.sound:
                     self.sound.play("jump")
             elif SaveManager.has_any_savegame() and btn_continue_game.collidepoint(mx, my):
@@ -393,13 +546,23 @@ class InputManager:
                     self.sound.play("click")
             return
 
-        # 9. Top Action Bar & Door Controls (ONLY evaluated when NO modal/menu/shop is open)
-        if self.data.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY):
-            btn_crew_toggle = pygame.Rect(750, 8, 130, 26)
-            btn_open_all = pygame.Rect(750, 38, 130, 26)
-            btn_close_all = pygame.Rect(750, 68, 130, 26)
-            btn_vent = pygame.Rect(750, 98, 130, 26)
-            btn_help_toggle = pygame.Rect(750, 128, 130, 26)
+        # 9. Top Action Bar & Door Controls (ONLY evaluated when NO modal/menu/shop/training is open)
+        has_active_overlay = (
+            getattr(self.data, "show_slot_modal", False)
+            or getattr(self.data, "show_help_overlay", False)
+            or getattr(self.data, "show_pause_menu", False)
+            or getattr(self.data.player, "show_crew_menu", False)
+        )
+        if not has_active_overlay and self.data.current_state in (STATE_MAP, STATE_COMBAT):
+            btn_crew_toggle = pygame.Rect(750, 8, 130, 24)
+            btn_open_all = pygame.Rect(750, 34, 130, 24)
+            btn_close_all = pygame.Rect(750, 60, 130, 24)
+            btn_vent = pygame.Rect(750, 86, 130, 24)
+            btn_save_stations = pygame.Rect(750, 112, 130, 24)
+            btn_return_stations = pygame.Rect(750, 138, 130, 24)
+            btn_help_toggle = pygame.Rect(750, 164, 130, 24)
+
+            combat_mgr = getattr(self.game, "combat_manager", None)
 
             if btn_help_toggle.collidepoint(mx, my):
                 self.data.show_help_overlay = not getattr(self.data, "show_help_overlay", False)
@@ -409,16 +572,22 @@ class InputManager:
                 self.data.player.show_crew_menu = not getattr(self.data.player, "show_crew_menu", False)
                 return
             elif btn_open_all.collidepoint(mx, my):
-                self.data.player.ship.open_all_doors()
-                if self.sound: self.sound.play("click")
+                if combat_mgr: combat_mgr.open_all_doors()
+                else: self.data.player.ship.open_all_doors()
                 return
             elif btn_close_all.collidepoint(mx, my):
-                self.data.player.ship.close_all_doors()
-                if self.sound: self.sound.play("click")
+                if combat_mgr: combat_mgr.close_all_doors()
+                else: self.data.player.ship.close_all_doors()
                 return
             elif btn_vent.collidepoint(mx, my):
                 self.data.player.ship.open_airlocks()
                 if self.sound: self.sound.play("click")
+                return
+            elif btn_save_stations.collidepoint(mx, my):
+                if combat_mgr: combat_mgr.save_crew_stations()
+                return
+            elif btn_return_stations.collidepoint(mx, my):
+                if combat_mgr: combat_mgr.return_crew_to_stations()
                 return
 
             for d in self.data.player.ship.doors:
@@ -432,7 +601,7 @@ class InputManager:
             self.handle_map_click(mx, my)
 
         elif self.data.current_state == STATE_TRAINING:
-            training_mgr = getattr(self.data, "training_manager", None)
+            training_mgr = getattr(self.game, "training_manager", None)
             if training_mgr:
                 training_mgr.handle_click(mx, my)
 
@@ -448,9 +617,16 @@ class InputManager:
 
 
     def handle_right_click(self, event: pygame.event.Event):
+        logger.debug(f"Rechtsklick auf Position x={event.pos[0]}, y={event.pos[1]}")
         if self.data.current_state != STATE_COMBAT:
             return
         mx, my = self._logical_mouse_pos(getattr(event, "pos", None))
+        # TODO 40: Target-Modus mit Rechtsklick abbrechen ohne Schussverlust
+        if getattr(self.data.combat, "is_targeting", False):
+            self.data.combat.is_targeting = False
+            self.data.combat.target_weapon_idx = None
+            self.show_message("ZIELEN ABGEBROCHEN.")
+            return
         if self.remove_weapon_target(mx, my):
             return
         if self.deselect_crew(event):
@@ -472,12 +648,14 @@ class InputManager:
             )
 
             if dist <= 18:
-                self.map_manager.travel_to_node(node)
+                assert self.game is not None
+                self.game.map_manager.travel_to_node(node)
                 break
 
-    def handle_shop_click(self, event: pygame.event.Event):
+    def handle_shop_click(self, _: pygame.event.Event):
         mx, my = self._logical_mouse_pos()
-        self.shop_manager.handle_click(mx, my)
+        assert self.game is not None
+        self.game.shop_manager.handle_click(mx, my)
 
     def handle_event_click(self):
         mx, my = self._logical_mouse_pos()
@@ -485,7 +663,7 @@ class InputManager:
 
         ev_text = ev_mgr.current_event_text
         res_text = getattr(ev_mgr, "result_text", "")
-        choices = ev_mgr.choices
+        choices: list[dict[str, str | int | bool]] = ev_mgr.choices
 
         font = pygame.font.SysFont(None, 24)
         layout = calculate_event_layout(ev_text, res_text, choices, font)
@@ -495,24 +673,30 @@ class InputManager:
         if ev_mgr.result_text or not choices:
             cont_btn = layout.get("cont_btn")
             if (cont_btn and cont_btn.collidepoint(mx, my)) or box_rect.collidepoint(mx, my):
-                self.map_manager.continue_event()
+                assert self.game is not None
+                self.game.map_manager.continue_event()
             return
 
+        from utils import can_afford_choice
         for idx, choice in enumerate(choices):
             if idx < len(layout["choice_rects"]):
                 btn_rect = layout["choice_rects"][idx]
                 if btn_rect.collidepoint(mx, my):
+                    if not can_afford_choice(choice, self.data.player):
+                        return
                     action = choice.get("action", "")
                     if self.sound: self.sound.play("click")
-                    self.map_manager.handle_choice(action, choice)
+                    assert self.game is not None
+                    self.game.map_manager.handle_choice(action, choice)
                     return
 
 
 
-    def handle_combat_click(self, event: pygame.event.Event):
+    def handle_combat_click(self, _: pygame.event.Event):
         mx, my = self._logical_mouse_pos()
         self.data.world.event_manager.current_event_type = None
 
+        btn_ftl = pygame.Rect(265, 512, 140, 34)
         btn_repair_drone = pygame.Rect(415, 470, 140, 34)
         btn_combat_drone = pygame.Rect(565, 470, 140, 34)
         btn_cloak = pygame.Rect(715, 470, 140, 34)
@@ -521,7 +705,15 @@ class InputManager:
         btn_autofire = pygame.Rect(715, 512, 140, 34)
 
         tp_cd = getattr(self.data.combat, "teleport_cooldown", 0.0)
-        combat_mgr = getattr(self.data, "combat_manager", None)
+        combat_mgr = getattr(self.game, "combat_manager", None)
+
+        if btn_ftl.collidepoint(mx, my):
+            if combat_mgr:
+                if getattr(self.data.combat, "combat_won", False):
+                    combat_mgr.leave_post_combat()
+                else:
+                    combat_mgr.flee_combat()
+            return
 
         if btn_autofire.collidepoint(mx, my):
             self.data.combat.autofire_enabled = not self.data.combat.autofire_enabled
@@ -573,12 +765,23 @@ class InputManager:
             for e_room in self.data.enemy.ship.rooms:
                 if e_room.rect.collidepoint(mx, my):
                     idx = self.data.combat.target_weapon_idx
+                    assert self.data.player.weapons is not None
                     if idx is not None and idx < len(self.data.player.weapons):
                         w = self.data.player.weapons[idx]
+                        start = self.data.combat.start_pos
+                        target = (mx, my)
+                        # Reichweiten-Check
+                        assert w is not None
+                        if w.max_range is not None:
+                            dist_to_target = math.hypot(target[0] - start[0], target[1] - start[1])
+                            if dist_to_target > w.max_range:
+                                self.show_message("ZIEL AUSSER REICHWEITE!")
+                                self.data.combat.is_targeting = False
+                                return
                         self.data.combat.weapon_targets[idx] = (
                             e_room,
-                            self.data.combat.start_pos,
-                            (mx, my),
+                            start,
+                            target,
                         )
                         if w.is_ready():
                             if w.ammo_cost > 0 and self.data.player.missiles < w.ammo_cost:
@@ -588,8 +791,8 @@ class InputManager:
                                     self.data.player.missiles -= w.ammo_cost
                                 self.data.player.projectiles.append(
                                     Projectile(
-                                        self.data.combat.start_pos,
-                                        (mx, my),
+                                        start,
+                                        target,
                                         e_room,
                                         is_player_shot=True,
                                         w_type=w.w_type,
@@ -602,24 +805,32 @@ class InputManager:
             self.data.combat.is_targeting = False
             return
 
+
         weapon_room = self.data.player.ship.rooms[1]
-        clicked_weapon_idx = None
+        clicked_weapon_idx: int | None = None
+        assert self.data.player.weapons is not None
+        from utils import get_weapon_slot_rect
         for idx, w in enumerate(self.data.player.weapons):
-            bar_x = 30 + idx * 135
-            bar_rect = pygame.Rect(bar_x, 500, 120, 35)
-            if bar_rect.collidepoint(mx, my):
+            card_rect = get_weapon_slot_rect(idx)
+            if card_rect.collidepoint(mx, my):
                 clicked_weapon_idx = idx
                 break
 
-        if clicked_weapon_idx is not None and self.data.player.weapons[clicked_weapon_idx].is_ready():
-            self.data.combat.is_targeting = True
-            self.data.combat.target_weapon_idx = clicked_weapon_idx
-            slots = getattr(self.data.player.ship, "weapon_slots", [])
-            if slots and clicked_weapon_idx < len(slots):
-                self.data.combat.start_pos = slots[clicked_weapon_idx]["pos"]
-            else:
-                self.data.combat.start_pos = weapon_room.rect.center
-            return
+        #assert self.data.player.weapons is not None
+        #assert clicked_weapon_idx is not None
+        #assert self.data.player.weapons[clicked_weapon_idx] is not None
+        # Guard against missing weapon entries (None) before calling is_ready
+        if clicked_weapon_idx is not None:
+            weapon_obj = self.data.player.weapons[clicked_weapon_idx]
+            if weapon_obj is not None and weapon_obj.is_ready():
+                self.data.combat.is_targeting = True
+                self.data.combat.target_weapon_idx = clicked_weapon_idx
+                slots = getattr(self.data.player.ship, "weapon_slots", [])
+                if slots and clicked_weapon_idx < len(slots):
+                    self.data.combat.start_pos = slots[clicked_weapon_idx]["pos"]
+                else:
+                    self.data.combat.start_pos = weapon_room.rect.center
+                return
 
         clicked_crew = False
         for c in self.data.player.crew:
@@ -641,12 +852,17 @@ class InputManager:
                                 c.target_pos = (int(mx), int(my))
                         return
 
-                # Klick auf eigenes Schiff für Bewegung von normaler Crew
+                # Klick auf eigenes Schiff für Bewegung von normaler Crew (TODO 45: Eck-Offsets)
                 for room in self.data.player.ship.rooms:
                     if room.rect.collidepoint(mx, my):
-                        for c in self.data.player.crew:
-                            if c.selected and not c.is_boarding:
-                                c.target_pos = (int(mx), int(my))
+                        selected = [c for c in self.data.player.crew if c.selected and not c.is_boarding]
+                        if selected:
+                            existing = [c for c in self.data.player.crew if c.current_room == room and c not in selected]
+                            all_target_crew = existing + selected
+                            offsets = [(-16, -16), (16, 16), (16, -16), (-16, 16)]
+                            for idx, c in enumerate(all_target_crew):
+                                ox, oy = offsets[idx % len(offsets)]
+                                c.target_pos = (room.rect.centerx + ox, room.rect.centery + oy)
                         return
             else:
                 for room in self.data.player.ship.rooms:
@@ -655,7 +871,8 @@ class InputManager:
                         break
 
     def restart_game(self):
-        self.map_manager.restart_game()
+        assert self.game is not None
+        self.game.map_manager.restart_game()
 
     def remove_weapon_target(self, mx: float, my: float) -> bool:
         for idx in list(self.data.combat.weapon_targets.keys()):
@@ -665,7 +882,7 @@ class InputManager:
                 return True
         return False
 
-    def deselect_crew(self, event: pygame.event.Event) -> bool:
+    def deselect_crew(self, _: pygame.event.Event) -> bool:
         has_selected = False
         for c in self.data.player.crew:
             if c.selected:
@@ -688,4 +905,4 @@ class InputManager:
         self.data.combat.msg_timer = 2.0
         self.data.save_toast_text = text
         self.data.save_toast_timer = 2.5
-
+

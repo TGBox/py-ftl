@@ -1,6 +1,6 @@
 import math
 import random
-import pygame
+from enums import DroneType
 
 
 class Drone:
@@ -9,7 +9,7 @@ class Drone:
     def __init__(
         self,
         name: str,
-        drone_type: str,
+        drone_type: DroneType | str,
         power_cost: int,
         desc: str,
         hotkey: str,
@@ -21,6 +21,7 @@ class Drone:
         self.desc = desc
         self.hotkey = hotkey
         self.active = False
+        self.equipped = True
         self.hp = hp
         self.max_hp = hp
         self.x = 0.0
@@ -34,13 +35,28 @@ class Drone:
         self.hp = self.max_hp
         self.cooldown = 0.0
         self.target_pos = None
+        
+    def __str__(self) -> str:
+        """Methode um eine von Menschen gut lesbare String Repräsentation dieses Drohnen Objekts zu generieren.
+
+        Returns:
+            str: Die String Repräsentation des Drohnen Objekts.
+        """
+        d_str = f"Drohne \"{self.name}\" vom Typ {self.drone_type}, Gesundheit: {self.hp} / {self.max_hp}, Stromkosten: {self.power_cost}, Desc: {self.desc}, Hotkey: {self.hotkey}, "
+        d_str += f"Position: x={self.x}, y={self.y}, Zielposition: "
+        if self.target_pos is None:
+            d_str += "Keine, "
+        else:
+            d_str += f"x={self.target_pos[0]}, y={self.target_pos[1]}, "
+        d_str += f"Cooldown: {self.cooldown}, Orbitwinkel: {self.orbit_angle}, Aktiv: {self.active}"
+        return d_str
 
 
 # Master list of all available drone blueprints
 DRONE_CATALOG: list[Drone] = [
-    Drone("Kampfdrohne MK I", "COMBAT_MK1", 1, "Umkreist den Gegner und schießt Lasersalven.", "K"),
-    Drone("Reparatur-Drohne", "REPAIR", 1, "Repariert beschädigte Räume (+25 HP/s) & Brüchte.", "D"),
-    Drone("Verteidigungs-Drohne MK I", "DEFENSE_MK1", 2, "Schießt feindliche Raketen & Asteroiden ab.", "F"),
-    Drone("Schild-Lade-Drohne", "SHIELD_CHARGER", 2, "Erhöht Schild-Laderate & gewährt Overshield.", "E"),
-    Drone("Anti-Personen-Drohne", "ANTI_PERSONNEL", 2, "Bekämpft feindliche Entermannschaften (150 HP).", "P"),
+    Drone("Kampfdrohne MK I", DroneType.COMBAT_MK1, 1, "Umkreist den Gegner und schießt Lasersalven.", "K"),
+    Drone("Reparatur-Drohne", DroneType.REPAIR, 1, "Repariert beschädigte Räume (+25 HP/s) & Brüchte.", "D"),
+    Drone("Verteidigungs-Drohne MK I", DroneType.DEFENSE_MK1, 2, "Schießt feindliche Raketen & Asteroiden ab.", "F"),
+    Drone("Schild-Lade-Drohne", DroneType.SHIELD_CHARGER, 2, "Erhöht Schild-Laderate & gewährt Overshield.", "E"),
+    Drone("Anti-Personen-Drohne", DroneType.ANTI_PERSONNEL, 2, "Bekämpft feindliche Entermannschaften (150 HP).", "P"),
 ]

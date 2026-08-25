@@ -27,9 +27,19 @@ class Room:
     self.fire_level: float = 0.0  # Feuer (0.0 bis 100.0)
     self.ion_timer: float = 0.0  # Ion-Sperre (Sekunden)
     self.was_destroyed: bool = False  # Komplett zerstört (0 HP)
+    
+  def __str__(self) -> str:
+    """Methode um eine String Repräsentation des Raum Objektes zu generieren, welche von Menschen gut gelesen werden kann.
+
+    Returns:
+        str: Die String Repräsentation des Objekts.
+    """
+    r_str = f"{"Gegner" if self.is_enemy else "Spieler"}-Raum \"{self.name}\" mit Position x={self.rect.x}, y={self.rect.y}, Energie: {self.current_power} / {self.max_power}, Gesundheit: {self.health} / {self.max_health}, "
+    r_str += f"Sauerstofflevel: {self.oxygen} %, Hüllenleck: {self.has_breach}, Feuerlevel: {self.fire_level} %, Ionen-Sperre: {self.ion_timer} Sekunden, Wurde zerstört: {self.was_destroyed}"
+    return r_str
 
   def effective_max_power(self) -> int:
-    eff = math.floor(self.max_power * (self.health / self.max_health))
+    eff: int = math.floor(self.max_power * (self.health / self.max_health))
     if self.ion_timer > 0.0:
         eff = max(0, eff - 1)
     return max(0, eff)
@@ -79,7 +89,7 @@ class Room:
     if self.health >= self.max_health:
         self.was_destroyed = False
 
-  def update_oxygen(self, dt: float, connected_rooms: list["Room"] = None) -> None:
+  def update_oxygen(self, dt: float, connected_rooms: list["Room"] | None = None) -> None:
     """Updates oxygen levels, fire processing, and ion timers for FTL room simulation."""
     self.ion_timer = max(0.0, self.ion_timer - dt)
 
@@ -159,10 +169,13 @@ class Room:
         dest_lbl = get_font(12, bold=True).render("ZERSTÖRT (5X REP)", True, (255, 60, 60))
         surface.blit(dest_lbl, (self.rect.x + 6, self.rect.y + 36))
 
-    surface.blit(
-        get_font(14, bold=True).render(self.name, True, (230, 240, 255)),
-        (self.rect.x + 6, self.rect.y + 4),
-    )
+    max_name_w = self.rect.width - 24
+    r_font = get_font(12, bold=True)
+    r_name_surf = r_font.render(self.name, True, (230, 240, 255))
+    if r_name_surf.get_width() > max_name_w:
+        r_font = get_font(10, bold=True)
+        r_name_surf = r_font.render(self.name, True, (230, 240, 255))
+    surface.blit(r_name_surf, (self.rect.x + 4, self.rect.y + 3))
 
     if self.name == "Medbay" and self.current_power > 0:
         heal_lbl = get_font(13, bold=True).render("+HEILEN", True, (100, 255, 100))
@@ -189,8 +202,8 @@ class Room:
 
     # Sauerstoffanzeige (O2: 100%)
     o2_color = (100, 220, 255) if self.oxygen > 40.0 else (255, 100, 100)
-    o2_txt = get_font(12, bold=True).render(f"O2:{int(self.oxygen)}%", True, o2_color)
-    surface.blit(o2_txt, (self.rect.right - 36, self.rect.y + 5))
+    o2_txt = get_font(10).render(f"O2:{int(self.oxygen)}%", True, o2_color)
+    surface.blit(o2_txt, (self.rect.right - o2_txt.get_width() - 4, self.rect.y + 4))
 
     # Hüllenleck Icon zeichnen (falls vorhanden)
     if self.has_breach:

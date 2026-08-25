@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock, patch
 
 from classes.Crew import Crew
 from classes.GameData import GameData
@@ -14,7 +15,9 @@ class TestWeaponMechanics(unittest.TestCase):
     def setUp(self):
         self.data = GameData()
         self.state_mgr = StateManager(self.data)
-        self.combat_mgr = CombatManager(self.data, self.state_mgr)
+        self.combat_mgr = CombatManager(self.data)
+        self.state_mgr.game = MagicMock()
+        self.combat_mgr.game = MagicMock()
 
     def test_limited_weapon_range_dissipates(self):
         # Create a projectile with limited max_range of 100.0
@@ -37,7 +40,8 @@ class TestWeaponMechanics(unittest.TestCase):
         self.assertFalse(proj.alive)
         self.assertTrue(proj.out_of_range)
 
-    def test_beam_weapon_line_hits_all_rooms_and_crew(self):
+    @patch("random.random", return_value=0.99)
+    def test_beam_weapon_line_hits_all_rooms_and_crew(self, mock_random):
         r1 = Room("Waffen", (100, 100, 80, 80), is_enemy=True)
         r2 = Room("Schild", (190, 100, 80, 80), is_enemy=True)
         self.data.enemy.ship.rooms = [r1, r2]

@@ -1,12 +1,14 @@
 import os
 import sys
 import unittest
+from unittest.mock import MagicMock, patch
+
+import pygame
 
 # Path setup to ensure module resolution
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from classes.Crew import Crew, find_room_path
-from classes.Room import Room
 from classes.ShipModel import PLAYER_SHIP
 
 
@@ -29,6 +31,13 @@ class TestCrew(unittest.TestCase):
 
         human = Crew(100, 100, species="Mensch")
         self.assertEqual(human.species, "Mensch")
+
+    def test_enum_compatibility(self):
+        from enums import CrewSpecies, EventType, DroneType, ShipType
+        self.assertEqual(CrewSpecies.MENSCH, "Mensch")
+        self.assertEqual(EventType.COMBAT, "COMBAT")
+        self.assertEqual(DroneType.COMBAT_MK1, "COMBAT_MK1")
+        self.assertEqual(ShipType.KESTREL, "Kestrel")
 
     def test_skill_training(self):
         crew = Crew(100, 100, species="Mensch")
@@ -75,16 +84,16 @@ class TestCrew(unittest.TestCase):
                     opened_door = d
 
         self.assertIsNotNone(opened_door, "Crew should automatically open doors while passing through.")
+        assert opened_door is not None
         self.assertFalse(opened_door.is_open, "Door should automatically close behind crew after moving away.")
 
     def test_room_damage_and_healing(self):
         from classes.GameData import GameData
         from managers.combat_manager import CombatManager
-        from managers.state_manager import StateManager
 
         data = GameData()
-        sm = StateManager(data)
-        cm = CombatManager(data, sm)
+        cm = CombatManager(data)
+        cm.game = MagicMock()
 
         medbay = next(r for r in data.player.ship.rooms if r.name == "Medbay")
         medbay.current_power = 2
@@ -97,6 +106,71 @@ class TestCrew(unittest.TestCase):
         # Update combat manager crew processing
         cm.update_crew(0.5)
         self.assertGreater(crew.hp, 50.0, "Crew inside powered Medbay should heal over time during combat updates.")
+
+
+    @patch("pygame.mouse.get_pos")
+    def test_crew_corner_offsets_in_same_room(self, mock_get_pos):
+        from classes.GameData import GameData
+        
+        data = GameData()
+        from settings import STATE_COMBAT
+        data.current_state = STATE_COMBAT
+    
+        data.enemy.ship.rooms.clear()
+        room = data.player.ship.rooms[0]
+    
+        start_room = data.player.ship.rooms[1]
+        c1 = Crew(start_room.rect.centerx, start_room.rect.centery)
+        c2 = Crew(start_room.rect.centerx, start_room.rect.centery)
+        c1.current_room = start_room
+        c2.current_room = start_room
+        c1.selected = True
+        c2.selected = True
+        c1.is_boarding = False
+        c2.is_boarding = False
+        data.player.crew = [c1, c2]
+    
+        # Führe exakt die Logik aus, die dein Spiel bei einem Klick auf den Raum ausführt:
+        selected = [c for c in data.player.crew if c.selected and not c.is_boarding]
+        existing = [c for c in data.player.crew if c.current_room == room and c not in selected]
+        all_target_crew = existing + selected
+        
+        offsets = [(-16, -16), (16, 16), (16, -16), (-16, 16)]
+        for idx, c in enumerate(all_target_crew):
+            ox, oy = offsets[idx % len(offsets)]
+            c.target_pos = (room.rect.centerx + ox, room.rect.centery + oy)
+            c.recalculate_path(data.player.ship.rooms, data.player.ship.doors)
+    
+        # 5. Assertions prüfen
+        self.assertIsNotNone(c1.target_pos, "Klick kam nicht bei der Crew an!")
+        self.assertIsNotNone(c2.target_pos)
+        self.assertNotEqual(c1.target_pos, c2.target_pos, "Crew in same room must be assigned opposing corner offsets!")
+
+    def test_targeting_cancel_esc_and_right_click(self):
+        from classes.GameData import GameData
+        from managers.input_manager import InputManager
+        from settings import STATE_COMBAT
+        import pygame
+
+        data = GameData()
+        data.current_state = STATE_COMBAT
+        data.combat.is_targeting = True
+        data.combat.target_weapon_idx = 0
+
+        input_mgr = InputManager(data)
+        input_mgr.game = MagicMock()
+        input_mgr.game.screen_to_logical.return_value = (100, 100) # <- Diese Zeile hinzufügen
+
+        # Simulate ESC key
+        esc_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)
+        input_mgr.handle_keydown(esc_event)
+        self.assertFalse(data.combat.is_targeting, "ESC must cancel weapon targeting mode.")
+
+        # Simulate Right-Click
+        data.combat.is_targeting = True
+        rc_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=3, pos=(100, 100))
+        input_mgr.handle_right_click(rc_event)
+        self.assertFalse(data.combat.is_targeting, "Right-Click must cancel weapon targeting mode.")
 
 
 if __name__ == "__main__":

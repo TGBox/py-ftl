@@ -4,24 +4,24 @@
     "title": "Erster Sieg",
     "desc": "Besiege ein feindliches Raumschiff im Gefecht.",
     "category": "KAMPF",
-    "unlocked": true,
-    "unlock_time": "2026-08-07 09:13"
+    "unlocked": false,
+    "unlock_time": null
   },
   "boss_slayer": {
     "id": "boss_slayer",
     "title": "Rebellen-Schreck",
     "desc": "Besiege einen Sektor Mini-Boss.",
     "category": "KAMPF",
-    "unlocked": true,
-    "unlock_time": "2026-08-07 09:13"
+    "unlocked": false,
+    "unlock_time": null
   },
   "flagship_down": {
     "id": "flagship_down",
     "title": "Galaktischer Retter",
     "desc": "Zerstöre das Endboss-Flaggschiff der Rebellen!",
     "category": "KAMPF",
-    "unlocked": true,
-    "unlock_time": "2026-08-08 11:11"
+    "unlocked": false,
+    "unlock_time": null
   },
   "beam_master": {
     "id": "beam_master",
@@ -44,8 +44,8 @@
     "title": "Bio-Extinktion",
     "desc": "Eliminiere die gesamte gegnerische Crew ohne das Schiff zu zerstören.",
     "category": "KAMPF",
-    "unlocked": true,
-    "unlock_time": "2026-08-08 11:28"
+    "unlocked": false,
+    "unlock_time": null
   },
   "bare_hull": {
     "id": "bare_hull",
@@ -68,8 +68,8 @@
     "title": "Meister-Ingenieur",
     "desc": "Bringe den Reparatur-Skill eines Crew-Mitglieds auf Stufe 3.",
     "category": "CREW",
-    "unlocked": true,
-    "unlock_time": "2026-08-07 09:13"
+    "unlocked": false,
+    "unlock_time": null
   },
   "master_warrior": {
     "id": "master_warrior",
@@ -108,8 +108,8 @@
     "title": "Schiffs-Sammler",
     "desc": "Schalte mindestens 4 verschiedene Raumschiffe frei.",
     "category": "SCHIFF",
-    "unlocked": true,
-    "unlock_time": "2026-08-08 11:05"
+    "unlocked": false,
+    "unlock_time": null
   },
   "armada": {
     "id": "armada",
@@ -140,24 +140,24 @@
     "title": "Waffenschmied",
     "desc": "Führe eine erfolgreiche Waffen-Fusion im Shop durch.",
     "category": "SCHIFF",
-    "unlocked": true,
-    "unlock_time": "2026-08-07 10:18"
+    "unlocked": false,
+    "unlock_time": null
   },
   "survivor": {
     "id": "survivor",
     "title": "Überlebenskünstler",
     "desc": "Triggere ein Event mit 0 Treibstoff und überlebe.",
     "category": "ERKUNDUNG",
-    "unlocked": true,
-    "unlock_time": "2026-08-07 09:13"
+    "unlocked": false,
+    "unlock_time": null
   },
   "event_explorer": {
     "id": "event_explorer",
     "title": "Weltraum-Erkunder",
     "desc": "Erfülle 10 zufällige Sektor-Events.",
     "category": "ERKUNDUNG",
-    "unlocked": true,
-    "unlock_time": "2026-08-07 10:17"
+    "unlocked": false,
+    "unlock_time": null
   },
   "scrap_hoarder": {
     "id": "scrap_hoarder",

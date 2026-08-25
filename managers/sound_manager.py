@@ -1,7 +1,13 @@
+from typing import TYPE_CHECKING
+    
 import math
 import struct
+from typing import Callable
 import pygame
 
+
+if TYPE_CHECKING:
+    from game import Game
 
 class SoundManager:
     """Procedural sound effects & background music engine — generates all audio from synth waveforms."""
@@ -15,11 +21,13 @@ class SoundManager:
         self._music_enabled: bool = True
         self._master_volume: float = 1.0
         self._music_volume: float = 1.0
-        self._sfx_volume: float = 0.45
+        self._sfx_volume: float = 0.25
         self._current_track_name: str | None = None
         self._music_channel: pygame.mixer.Channel | None = None
+        self.game: "Game | None" = None   # Set by Game after construction
 
-        self._generate_all()
+        #self._generate_all()
+        self._load_all()
         self._generate_music()
 
     # ------------------------------------------------------------------
@@ -46,19 +54,20 @@ class SoundManager:
     def play_music(self, track_name: str) -> None:
         if not self._music_enabled or self._current_track_name == track_name:
             if not self._music_enabled and self._music_channel:
-                self._music_channel.stop()
+                self._music_channel.fadeout(300)
                 self._current_track_name = None
             return
 
         snd = self._music_tracks.get(track_name)
         if snd:
             if self._music_channel is None:
-                self._music_channel = pygame.mixer.Channel(7)
-            self._music_channel.stop()
+                self._music_channel = pygame.mixer.Channel(0)
+            else:
+                self._music_channel.fadeout(300)
             eff_vol = min(1.0, self._master_volume * self._music_volume)
-            snd.set_volume(1.0)
+            snd.set_volume(eff_vol)
             self._music_channel.set_volume(eff_vol)
-            self._music_channel.play(snd, loops=-1)
+            self._music_channel.play(snd, loops=-1, fade_ms=400)
             self._current_track_name = track_name
 
     def stop_music(self) -> None:
@@ -120,7 +129,6 @@ class SoundManager:
     @property
     def music_enabled(self) -> bool:
         return self._music_enabled
-        return self._music_enabled
 
     # ------------------------------------------------------------------
     # Waveform & Synthesizer generation helpers
@@ -136,7 +144,7 @@ class SoundManager:
         sample_rate: int = 22050
     ) -> bytes:
         n_samples = int(sample_rate * duration_ms / 1000)
-        samples = []
+        samples: list[float] = []
         for i in range(n_samples):
             t = i / sample_rate
             if wave == "sin":
@@ -170,7 +178,7 @@ class SoundManager:
         sample_rate: int = 22050
     ) -> bytes:
         n_samples = int(sample_rate * duration_ms / 1000)
-        samples = []
+        samples: list[float] = []
         phase = 0.0
         for i in range(n_samples):
             t = i / n_samples
@@ -280,6 +288,62 @@ class SoundManager:
         self._cache["game_over"] = self._sound(go)
 
     # ------------------------------------------------------------------
+    # Load all game sound effects
+    # ------------------------------------------------------------------
+
+    def _load_all(self) -> None:
+        # --- Laser fire ---
+        self._cache["laser_fire"] = pygame.mixer.Sound("assets/sounds/laser_fire.wav")
+
+        # --- Missile fire ---
+        self._cache["missile_fire"] = pygame.mixer.Sound("assets/sounds/missile_fire.wav")
+
+        # --- Beam fire ---
+        self._cache["beam_fire"] = pygame.mixer.Sound("assets/sounds/beam_fire.wav")
+
+        # --- Flak fire ---
+        self._cache["flak_fire"] = pygame.mixer.Sound("assets/sounds/flak_fire.wav")
+
+        # --- Ion fire & Hit ---
+        self._cache["ion_fire"] = pygame.mixer.Sound("assets/sounds/ion_fire.wav")
+        self._cache["ion_hit"] = pygame.mixer.Sound("assets/sounds/ion_hit.wav")
+
+        # --- Teleport & Cloak ---
+        self._cache["teleport"] = pygame.mixer.Sound("assets/sounds/teleport.wav")
+        self._cache["cloak"] = pygame.mixer.Sound("assets/sounds/cloak.wav")
+
+        # --- Shield & Hull ---
+        self._cache["shield_hit"] = pygame.mixer.Sound("assets/sounds/shield_hit.wav")
+        self._cache["shield_recharge"] = pygame.mixer.Sound("assets/sounds/shield_recharge.wav")
+        self._cache["hull_hit"] = pygame.mixer.Sound("assets/sounds/hull_hit.wav")
+
+        # --- Explosion (enemy destroyed) ---
+        self._cache["explosion"] = pygame.mixer.Sound("assets/sounds/explosion.wav")
+
+        # --- Button click & Purchase ---
+        self._cache["click"] = pygame.mixer.Sound("assets/sounds/click.wav")
+        self._cache["purchase"] = pygame.mixer.Sound("assets/sounds/purchase.wav")
+
+        # --- Jump / travel ---
+        self._cache["jump"] = pygame.mixer.Sound("assets/sounds/jump.wav")
+
+        # --- Warning / alarm / Low Fuel ---
+        self._cache["alarm"] = pygame.mixer.Sound("assets/sounds/alarm.wav")
+        self._cache["low_fuel"] = pygame.mixer.Sound("assets/sounds/low_fuel.wav")
+
+        # --- Crew death & Repair ---
+        self._cache["crew_death"] = pygame.mixer.Sound("assets/sounds/crew_death.wav")
+        self._cache["repair"] = pygame.mixer.Sound("assets/sounds/repair.wav")
+        self._cache["door"] = pygame.mixer.Sound("assets/sounds/door.wav")
+
+        # --- Achievement Fanfare ---
+        self._cache["achievement"] = pygame.mixer.Sound("assets/sounds/achievement.wav")
+
+        # --- Victory & Game Over ---
+        self._cache["victory"] = pygame.mixer.Sound("assets/sounds/victory.wav")
+        self._cache["game_over"] = pygame.mixer.Sound("assets/sounds/game_over.wav")
+
+    # ------------------------------------------------------------------
     # Generate procedural background music loops (Synth BGM)
     # ------------------------------------------------------------------
 
@@ -291,8 +355,8 @@ class SoundManager:
         music_dir = "assets/music"
         os.makedirs(music_dir, exist_ok=True)
 
-        expected_tracks = ["bgm_menu", "bgm_explore", "bgm_combat", "bgm_boss"]
-        loaded_from_file = set()
+        expected_tracks = ["bgm_menu", "bgm_explore", "bgm_combat", "bgm_boss", "bgm_civilian", "bgm_nebula", "bgm_pirate"]
+        loaded_from_file: set[str] = set()
 
         for track in expected_tracks:
             for ext in [".ogg", ".wav", ".mp3"]:
@@ -370,16 +434,16 @@ class SoundManager:
             val = math.sin(2 * math.pi * pitch * t_rel) * decay
             return val * vol
 
-        def build_orchestral_buffer(duration_sec: float, generator_fn, alpha_lpf: float = 0.30) -> bytes:
+        def build_orchestral_buffer(duration_sec: float, generator_fn: Callable[[float], float], alpha_lpf: float = 0.30) -> bytes:
             n_samples = int(sample_rate * duration_sec)
-            raw = []
+            raw: list[float] = []
             for i in range(n_samples):
                 t = i / sample_rate
                 raw.append(generator_fn(t))
 
             # Warm low-pass filter to eliminate digital harshness
             smooth = 0.0
-            pcm = []
+            pcm: list[float] = []
             for v in raw:
                 smooth += alpha_lpf * (v - smooth)
                 pcm.append(int(max(-1.0, min(1.0, smooth)) * 26000))
@@ -474,7 +538,7 @@ class SoundManager:
         # 4. BGM Boss: Grand Flagship Overture (12.8s loop) - Dramatic & Powerful
         if "bgm_boss" not in loaded_from_file:
             def boss_synth(t: float) -> float:
-                t_tr = t % 0.15
+                _ = t % 0.15
                 tr_freqs = [65.41, 98.00, 130.81, 155.56]  # C2, G2, C3, Eb3
                 tr_idx = int(t / 0.15) % len(tr_freqs)
                 cell_val = string_section(t, [tr_freqs[tr_idx]], vol=0.50)

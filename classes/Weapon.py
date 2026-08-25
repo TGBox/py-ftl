@@ -1,15 +1,18 @@
+from enums import WeaponType, WeaponSubtype
+
+
 class Weapon:
 
   def __init__(
       self,
       name: str,
       charge_time: float,
-      w_type: str = "LASER",
+      w_type: WeaponType | str = WeaponType.LASER,
       ammo_cost: int = 0,
       shield_pierce: int = 0,
       damage: float = 35.0,
       level: int = 1,
-      subtype: str = "STANDARD",
+      subtype: WeaponSubtype | str = WeaponSubtype.STANDARD,
       fire_chance: float = 0.0,
       breach_chance: float = 0.0,
       stun_duration: float = 0.0,
@@ -19,12 +22,12 @@ class Weapon:
     self.name: str = name
     self.charge_time: float = charge_time
     self.current_charge: float = 0.0
-    self.w_type: str = w_type  # "LASER", "MISSILE", "BEAM", "ION", "BOMB", "FLAK"
+    self.w_type: WeaponType | str = w_type  # "LASER", "MISSILE", "BEAM", "ION", "BOMB", "FLAK"
     self.ammo_cost: int = ammo_cost
     self.shield_pierce: int = shield_pierce
     self.damage: float = damage
     self.level: int = level  # Upgradestufe (1 bis 5)
-    self.subtype: str = subtype  # "STANDARD", "BIO", "FIRE", "BREACH", "STUN", "HEAVY"
+    self.subtype: WeaponSubtype | str = subtype  # "STANDARD", "BIO", "FIRE", "BREACH", "STUN", "HEAVY"
     self.fire_chance: float = fire_chance
     self.breach_chance: float = breach_chance
     self.stun_duration: float = stun_duration
@@ -52,4 +55,15 @@ class Weapon:
     return self.current_charge >= self.charge_time
 
   def reset(self) -> None:
-    self.current_charge = 0.0
+    self.current_charge = 0.0
+
+  def __str__(self) -> str:
+    """Methode um eine String Repräsentation dieses Waffenobjekts zu erstellen, die von Menschen gut gelesen werden kann.
+
+    Returns:
+        str: Die String Repräsentation des Objekts.
+    """
+    w_str = f"Level {self.level} Waffe - \"{self.name}\" vom Typ {self.w_type} mit Subtyp {self.subtype}. Ladezeit: {self.charge_time}, Aktuelle Ladung: {self.current_charge}, Munitionskosten: {self.ammo_cost}\n"
+    w_str += f"Schaden: {self.damage}, Crew-Schaden: {self.crew_damage}, Schilddurchdringung: {self.shield_pierce}\n"
+    w_str += f"Feuerchance: {self.fire_chance}, Hüllenbruchchance: {self.breach_chance}, Betäubungsdauer: {self.stun_duration}, Reichweite: {self.max_range}"
+    return w_str

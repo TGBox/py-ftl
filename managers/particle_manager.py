@@ -1,6 +1,12 @@
+from typing import TYPE_CHECKING
+
+    
 import math
 import random
 import pygame
+
+if TYPE_CHECKING:
+    from game import Game
 
 
 class Particle:
@@ -51,6 +57,7 @@ class ParticleManager:
 
     def __init__(self):
         self.particles: list[Particle] = []
+        self.game: "Game | None" = None   # Set by Game after construction
 
     def clear(self):
         self.particles.clear()

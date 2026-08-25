@@ -1,6 +1,7 @@
 import os
 import sys
 import unittest
+from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -14,11 +15,13 @@ class TestMapAndChoices(unittest.TestCase):
     def setUp(self):
         self.data = GameData()
         self.map_manager = MapManager(self.data)
+        self.map_manager.game = MagicMock()
 
     def test_travel_to_node_fuel_consumption(self):
         self.data.player.fuel = 5
         start_node = self.data.world.star_map.current_node
         self.assertIsNotNone(start_node)
+        assert start_node is not None
         self.assertGreater(len(start_node.connections), 0)
 
         target_node = start_node.connections[0]
@@ -31,6 +34,7 @@ class TestMapAndChoices(unittest.TestCase):
     def test_travel_to_node_no_fuel_trigger(self):
         self.data.player.fuel = 0
         start_node = self.data.world.star_map.current_node
+        assert start_node is not None
         target_node = start_node.connections[0]
 
         success = self.map_manager.travel_to_node(target_node)
@@ -60,6 +64,23 @@ class TestMapAndChoices(unittest.TestCase):
         self.assertEqual(self.data.player.scrap, 20)
         self.assertEqual(self.data.player.fuel, 4)
 
+    def test_can_afford_choice(self):
+        from utils import can_afford_choice
+        self.data.player.scrap = 5
+        self.data.player.fuel = 1
+
+        costly_choice = {"action": "GIVE_RESOURCES", "scrap": -10}
+        affordable_choice = {"action": "GIVE_RESOURCES", "scrap": -5}
+
+        self.assertFalse(can_afford_choice(costly_choice, self.data.player))
+        self.assertTrue(can_afford_choice(affordable_choice, self.data.player))
+
+    def test_non_negative_resource_clamping(self):
+        self.data.player.scrap = 5
+        choice_data = {"scrap": -20}
+        self.map_manager.handle_choice("GIVE_RESOURCES", choice_data)
+        self.assertEqual(self.data.player.scrap, 0, "Scrap must never become negative.")
+
     def test_handle_choice_take_damage(self):
         self.data.player.ship.hp = 15
         self.data.player.scrap = 20
@@ -75,6 +96,13 @@ class TestMapAndChoices(unittest.TestCase):
         self.map_manager.handle_choice("START_COMBAT", choice_data)
 
         self.assertEqual(self.data.current_state, STATE_COMBAT)
+
+    def test_handle_choice_flee_outcomes(self):
+        choice_data = {"is_escape": True}
+        # Run 20 flee choices to ensure both successful escapes and failures occur without error
+        for _ in range(20):
+            self.map_manager.handle_choice("FLEE", choice_data)
+            self.assertIsNotNone(self.data.world.event_manager.result_text)
 
 
 if __name__ == "__main__":

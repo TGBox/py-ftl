@@ -14,6 +14,18 @@ class StarMap:
     self.rebel_fleet_x: float = 30.0
     self.sector_type: str = "Zivil"
     self.generate_map()
+    
+  def __str__(self) -> str:
+    """Methode um aus der Sternenkarte eine von Menschen gut lesbare String Repräsentation zu generieren.
+
+    Returns:
+        str: Die String Repräsentation des StarMap Objekts.
+    """
+    s_str = (f"Karte - Sektor {self.sector} - Typ: {self.sector_type} - Position X-Achse Rebellenflotte: {self.rebel_fleet_x} -\n"
+      f"Aktive Node: {self.current_node} von insgesamt {len(self.nodes)} Knoten - Knotenpunkte:\n")
+    for i, n in enumerate(self.nodes):
+      s_str += f"{i}: {n.__str__()}\n"
+    return s_str
 
   def advance_fleet(self) -> None:
     self.rebel_fleet_x += REBEL_FLEET_SPEED
@@ -103,14 +115,18 @@ class StarMap:
     # Rebellenflotte Linie zeichnen
     fleet_x = int(self.rebel_fleet_x)
     if fleet_x > 0:
+      # Aktuelle Flottenlinie
       pygame.draw.line(surface, (220, 50, 50), (fleet_x, 60), (fleet_x, 520), 3)
       lbl = get_font(18).render("REBELLENFLOTTE", True, (255, 80, 80))
       surface.blit(lbl, (fleet_x + 5, 70))
 
-    # Header Banner für Sektortyp
-    hdr_font = pygame.font.SysFont(None, 20, bold=True)
-    hdr_lbl = hdr_font.render(f"SEKTOR {self.sector}: {self.sector_type.upper()}", True, (100, 220, 255))
-    surface.blit(hdr_lbl, (450 - hdr_lbl.get_width() // 2, 20))
+      # Vorschau-Linie für nächsten Sprung
+      next_fleet_x = int(self.rebel_fleet_x + REBEL_FLEET_SPEED)
+      if next_fleet_x < 900:
+        for y_dash in range(60, 520, 15):
+          pygame.draw.line(surface, (255, 140, 40), (next_fleet_x, y_dash), (next_fleet_x, min(520, y_dash + 8)), 2)
+        next_lbl = get_font(14).render("FLOTTE (NÄCHSTER SPRUNG)", True, (255, 160, 60))
+        surface.blit(next_lbl, (next_fleet_x + 5, 90))
 
     # Knoten zeichnen
     for node in self.nodes:
@@ -148,4 +164,4 @@ class StarMap:
           self.current_node is not None
           and node in self.current_node.connections
       ):
-        pygame.draw.circle(surface, (255, 255, 255), (node.x, node.y), 18, 2)
+        pygame.draw.circle(surface, (255, 255, 255), (node.x, node.y), 18, 2)

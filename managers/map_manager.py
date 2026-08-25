@@ -1,26 +1,55 @@
+from typing import TYPE_CHECKING
+import logging
+
 import copy
 import random
+from typing import Any, Union
+from classes.Event import EventChoice
 
 from classes.GameData import GameData
 from classes.Node import Node
 from classes.Reactor import Reactor
 from classes.ShieldSystem import ShieldSystem
-from classes.ShipModel import ENEMY_BOSS, ENEMY_SCOUT
+from classes.ShipModel import ENEMY_BOSS
 from classes.Weapon import Weapon
+from managers.sound_manager import SoundManager
 from settings import *
 
+from enums import GameState
+
+if TYPE_CHECKING:
+    from game import Game
+
+logger = logging.getLogger(__name__)
 
 class MapManager:
 
-    def __init__(self, data: GameData):
-        self.data = data
-        self.sound = None  # Set by Game after construction
+    def __init__(self, data: GameData) -> None:
+        self.data: GameData = data
+        self.game: "Game | None" = None   # Set by Game after construction
+        self.sound: SoundManager | None = None  # Set by Game after construction
 
-    def travel_to_node(self, node: Node):
+    def change_state(self, new_state: str | GameState):
+        val = new_state.value if isinstance(new_state, GameState) else str(new_state)
+        sm = getattr(self.game, "state_manager", None) if self.game else None
+        if sm and type(sm).__name__ == "StateManager":
+            sm.change_state(val)
+        else:
+            self.data.current_state = val
+
+    def travel_to_node(self, node: Node) -> bool:
+        
+        logger.debug(f"Reise von Node {self.data.world.star_map.current_node} zu Node {node}")
 
         if self.data.player.fuel <= 0:
+            self.change_state(GameState.EVENT)
+            self.data.world.event_manager.current_event_text = "KEIN TREIBSTOFF MEHR. Du treibst im All."
+            self.data.world.event_manager.choices = [{"text": "Warten...", "action": "WAIT"}]
             self.trigger_event("DISTRESS")
             return False
+
+        from managers.logger_manager import log_debug
+        log_debug("MAP", f"Sprung zu Knoten (Typ: {node.event_type}, Gefahr: {getattr(node, 'hazard_type', 'KEINE')}) - Rest-Treibstoff: {self.data.player.fuel}")
 
         self.data.player.fuel -= 1
         self.data.world.star_map.advance_fleet()
@@ -32,7 +61,8 @@ class MapManager:
         if getattr(self.data, "auto_save_enabled", False):
             from managers.save_manager import SaveManager
             try:
-                SaveManager.save_game(self.data)
+                assert self.game is not None
+                SaveManager.save_game(self.data, self.game)
             except Exception as e:
                 print(f"Auto-Save Fehler: {e}")
 
@@ -45,7 +75,7 @@ class MapManager:
 
         return True
 
-    def handle_node_event(self, node: Node):
+    def handle_node_event(self, node: Node) -> None:
 
         match node.event_type:
 
@@ -61,27 +91,41 @@ class MapManager:
             case _:
                 self.trigger_event(node.event_type)
 
-    def handle_exit_node(self):
+    def handle_exit_node(self) -> None:
         sec = self.data.world.star_map.sector
         if sec < 5:
             self.start_mini_boss_fight(sec)
         else:
             self.start_boss_fight()
 
-    def start_rebel_pursuit_combat(self):
-        from classes.ShipModel import ENEMY_CRUISER
-        self.data.enemy.ship = copy.deepcopy(ENEMY_CRUISER)
-        self.data.enemy.ship.name = "Rebellen-Verfolger"
+    def start_rebel_pursuit_combat(self) -> None:
+        from classes.ShipModel import (
+            REBEL_PURSUER_S1, REBEL_PURSUER_S2, REBEL_PURSUER_S3, REBEL_PURSUER_S4, REBEL_PURSUER_S5
+        )
+        sec = getattr(self.data.world.star_map, "sector", 1)
+        pursuer_templates = {
+            1: (REBEL_PURSUER_S1, "Rebellen-Laser MK I", 3.5, "LASER", 25.0, 0),
+            2: (REBEL_PURSUER_S2, "Abfang-Flak MK I", 3.2, "FLAK", 30.0, 1),
+            3: (REBEL_PURSUER_S3, "Flotten-Rakete MK II", 3.8, "MISSILE", 35.0, 2),
+            4: (REBEL_PURSUER_S4, "Schwerer Hüllen-Laser", 3.4, "LASER", 45.0, 2),
+            5: (REBEL_PURSUER_S5, "Elite-Burst Laser MK III", 3.0, "LASER", 55.0, 3),
+        }
+        template, w_name, c_time, w_type, dmg, extra_p = pursuer_templates.get(sec, pursuer_templates[5])
+        self.data.enemy.ship = copy.deepcopy(template)
+        self.data.enemy.ship.name = f"{template.name}"
         for room in self.data.enemy.ship.rooms:
             room.current_power = 1
-        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + 2)
+        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + sec + extra_p)
         self.data.enemy.shield = ShieldSystem()
-        self.data.enemy.weapon = Weapon("Schwerer Abfang-Laser", charge_time=3.2, w_type="HEAVY_LASER", damage=45.0)
-        self.data.combat.msg = "ACHTUNG! REBELLENFLOTTE HAT DICH EINGEHOLT!"
-        self.data.combat.msg_timer = 3.0
-        self.data.current_state = STATE_COMBAT
+        layers = 3 if sec >= 5 else (2 if sec >= 3 else 1)
+        self.data.enemy.shield.max_layers = layers
+        self.data.enemy.shield.current_layers = layers
+        self.data.enemy.weapon = Weapon(w_name, charge_time=c_time, w_type=w_type, damage=dmg, max_range=800.0)
+        self.data.combat.msg = f"ACHTUNG! REBELLENFLOTTE IN SEKTOR {sec} HAT DICH EINGEHOLT!"
+        self.data.combat.msg_timer = 3.5
+        self.change_state(GameState.COMBAT)
 
-    def start_mini_boss_fight(self, sector: int):
+    def start_mini_boss_fight(self, sector: int) -> None:
         from classes.ShipModel import MINI_BOSS_SECTOR_1, MINI_BOSS_SECTOR_2, ENEMY_CRUISER
         template = MINI_BOSS_SECTOR_1 if sector == 1 else (MINI_BOSS_SECTOR_2 if sector == 2 else ENEMY_CRUISER)
         self.data.enemy.ship = copy.deepcopy(template)
@@ -95,17 +139,9 @@ class MapManager:
         w_type = "FLAK" if sector % 2 == 1 else "HEAVY_LASER"
         self.data.enemy.weapon = Weapon(f"Mini-Boss {w_type.capitalize()}", charge_time=max(2.5, 4.0 - sector * 0.3), w_type=w_type, damage=40.0 + sector * 5)
 
-        self.data.current_state = STATE_COMBAT
+        self.change_state(GameState.COMBAT)
 
-
-        self.data.enemy.reactor = Reactor(total_power=ENEMY_START_POWER + sector)
-        self.data.enemy.shield = ShieldSystem()
-        w_type = "FLAK" if sector == 1 else "HEAVY_LASER"
-        self.data.enemy.weapon = Weapon(f"Mini-Boss {w_type.capitalize()}", charge_time=3.5, w_type=w_type, damage=40.0)
-
-        self.data.current_state = STATE_COMBAT
-
-    def start_boss_fight(self):
+    def start_boss_fight(self) -> None:
         self.data.combat.boss_phase = 1
         self.data.combat.zoltan_shield_hp = 0
         self.data.combat.drone_surge_timer = 18.0
@@ -122,39 +158,48 @@ class MapManager:
         self.data.enemy.weapon = Weapon("Dreifach-Rakete (Phase 1)", charge_time=4.0, w_type="MISSILE", damage=45.0, ammo_cost=1)
         self.data.combat.msg = "SEKTOR 5 ENDBOSS-KAMPF GESTARTET! FLAGGSCHIFF PHASE 1!"
         self.data.combat.msg_timer = 4.0
-        self.data.current_state = STATE_COMBAT
+        self.change_state(GameState.COMBAT)
 
-    def enter_shop(self):
-        shop_mgr = getattr(self.data, "shop_manager", None)
-        if shop_mgr and hasattr(shop_mgr, "refresh_catalog"):
-            shop_mgr.refresh_catalog()
-        self.data.current_state = STATE_SHOP
+    def enter_shop(self) -> None:
+        shop_mgr = getattr(self.game, "shop_manager", None) or getattr(self.data, "shop_manager", None)
+        if shop_mgr:
+            if hasattr(shop_mgr, "refresh_catalog"):
+                shop_mgr.refresh_catalog()
+            if hasattr(shop_mgr, "generate_next_crew_candidate"):
+                shop_mgr.generate_next_crew_candidate()
+        self.change_state(GameState.SHOP)
 
-    def enter_training(self):
-        self.data.current_state = STATE_TRAINING
+    def enter_training(self) -> None:
+        self.change_state(GameState.TRAINING)
 
-    def trigger_event(self, event_type: str):
-        if self.data.player.fuel <= 0 and event_type == "DISTRESS" and hasattr(self.data, "achievements"):
-            self.data.achievements.unlock("survivor")
+    def trigger_event(self, event_type: str) -> None:
+        if self.data.player.fuel <= 0 and event_type == "DISTRESS" and self.game is not None:
+            assert self.game is not None
+            self.game.achievement_manager.unlock("survivor")
 
         self.data.world.event_manager.trigger_event(
             event_type, self.data.player.crew, self.data.player.fuel
         )
-        self.data.current_state = STATE_EVENT
+        self.change_state(GameState.EVENT)
 
+    def handle_choice(self, action: str, choice_data: Union[EventChoice, dict[str, Any]]) -> None:
+        from managers.logger_manager import log_debug
+        c_text = choice_data.get("text", "Unbekannt") if isinstance(choice_data, dict) else getattr(choice_data, "text", "Unbekannt")
+        log_debug("EVENT", f"Event-Option gewählt: '{c_text}' (Aktion: {action})")
 
-    def handle_choice(self, action: str, choice_data: dict):
-        if hasattr(self.data, "achievements"):
+        if self.game is not None:
             evt_count = getattr(self.data, "events_completed_count", 0) + 1
-            self.data.events_completed_count = evt_count
+            self.events_completed_count = evt_count
             if evt_count >= 10:
-                self.data.achievements.unlock("event_explorer")
+                assert self.game is not None
+                self.game.achievement_manager.unlock("event_explorer")
 
         has_result = bool(choice_data.get("result_text")) or "outcomes" in choice_data
 
         # 1. Stochastische Risiko-Auswertung (Erfolg vs. Fehlschlag)
         if "outcomes" in choice_data and isinstance(choice_data["outcomes"], list):
-            outcomes = choice_data["outcomes"]
+            outcomes: list[dict[str, Any]] = choice_data.get("outcomes", [])
+            assert isinstance(outcomes, list)
             r = random.random()
             cum_prob = 0.0
             chosen = outcomes[-1]
@@ -200,26 +245,47 @@ class MapManager:
                 self.data.player.scrap -= 10
                 self.data.player.fuel += 2
             if not has_result:
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
 
         elif action == "SCAVENGE_FUEL":
             self.data.player.fuel += choice_data.get("fuel", 1)
             if not has_result:
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
 
         elif action in ("CLAIM_RESOURCES", "GIVE_RESOURCES"):
-            self.data.player.scrap += choice_data.get("scrap", 0)
-            self.data.player.fuel += choice_data.get("fuel", 0)
-            self.data.player.missiles += choice_data.get("missiles", 0)
-            self.data.player.drone_parts += choice_data.get("drones", choice_data.get("drone_parts", 0))
+            self.data.player.scrap = max(0, self.data.player.scrap + choice_data.get("scrap", 0))
+            self.data.player.fuel = max(0, self.data.player.fuel + choice_data.get("fuel", 0))
+            self.data.player.missiles = max(0, self.data.player.missiles + choice_data.get("missiles", 0))
+            self.data.player.drone_parts = max(0, self.data.player.drone_parts + choice_data.get("drones", choice_data.get("drone_parts", 0)))
             if not has_result:
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
+
+        elif action in ("FLEE", "TRY_ESCAPE", "ESCAPE") or choice_data.get("is_escape", False):
+            if random.random() < 0.30:
+                if random.random() < 0.50:
+                    dmg = random.randint(2, 5)
+                    self.data.player.ship.hp = max(0, self.data.player.ship.hp - dmg)
+                    self.data.world.event_manager.result_text = (
+                        f"FLUCHTVERSUCH MISSLUNGEN! Dein Schiff wird beim Abbiegen unter Beschuss genommen (-{dmg} Hüllenschaden)!"
+                    )
+                    self.data.world.event_manager.pending_action = None
+                else:
+                    self.data.world.event_manager.result_text = (
+                        "FLUCHTVERSUCH MISSLUNGEN! Das gegnerische Schiff blockiert den Sprungpfad und erzwingt das Gefecht!"
+                    )
+                    self.data.world.event_manager.pending_action = "START_COMBAT"
+            else:
+                if not has_result:
+                    self.data.world.event_manager.result_text = "FLUCHT ERFOLGREICH! Du entkommst der Gefahr ohne weiteren Schaden."
+                    self.data.world.event_manager.pending_action = None
+                elif not getattr(self.data.world.event_manager, "result_text", ""):
+                    self.data.world.event_manager.result_text = choice_data.get("result_text", "Flucht erfolgreich.")
 
         elif action == "TAKE_DAMAGE":
             dmg = choice_data.get("damage", 0)
             self.data.player.ship.hp = max(0, self.data.player.ship.hp - dmg)
             if not has_result:
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
 
         elif action == "START_COMBAT":
             if not has_result:
@@ -230,9 +296,9 @@ class MapManager:
 
         else:
             if not has_result:
-                self.data.current_state = STATE_MAP
+                self.change_state(GameState.MAP)
 
-    def continue_event(self):
+    def continue_event(self) -> None:
         ev_mgr = self.data.world.event_manager
         pending = getattr(ev_mgr, "pending_action", None)
         ev_type = ev_mgr.current_event_type
@@ -245,20 +311,33 @@ class MapManager:
         elif pending == "ENTER_SHOP" or (not pending and ev_type == "SHOP"):
             self.enter_shop()
         else:
-            self.data.current_state = STATE_MAP
+            self.change_state(GameState.MAP)
 
-    def start_normal_combat(self):
+    def start_normal_combat(self) -> None:
         import random
-        from classes.ShipModel import ENEMY_SCOUT, ENEMY_FIGHTER, ENEMY_BOMBER, ENEMY_CRUISER
+        from classes.ShipModel import (
+            ENEMY_SCOUT, ENEMY_FIGHTER, ENEMY_BOMBER, ENEMY_CRUISER,
+            ENEMY_MANTIS_BOARDER, ENEMY_ZOLTAN_FRIGATE, ENEMY_ROCK_WARSHIP, ENEMY_DRONE_CARRIER
+        )
 
         sector = self.data.world.star_map.sector
-        if sector == 1:
-            template = random.choice([ENEMY_SCOUT, ENEMY_FIGHTER])
-        elif sector == 2:
-            template = random.choice([ENEMY_FIGHTER, ENEMY_BOMBER])
-        else:
-            template = random.choice([ENEMY_BOMBER, ENEMY_CRUISER])
+        sector_type = getattr(self.data.world.star_map, "sector_type", "Zivil")
 
+        if "Nebel" in sector_type:
+            pool = [ENEMY_SCOUT, ENEMY_ZOLTAN_FRIGATE, ENEMY_DRONE_CARRIER]
+        elif "Piraten" in sector_type:
+            pool = [ENEMY_MANTIS_BOARDER, ENEMY_ROCK_WARSHIP, ENEMY_BOMBER]
+        elif "Rebellen" in sector_type:
+            pool = [ENEMY_FIGHTER, ENEMY_CRUISER, ENEMY_DRONE_CARRIER]
+        else:
+            if sector == 1:
+                pool = [ENEMY_SCOUT, ENEMY_FIGHTER]
+            elif sector == 2:
+                pool = [ENEMY_FIGHTER, ENEMY_BOMBER, ENEMY_ZOLTAN_FRIGATE]
+            else:
+                pool = [ENEMY_BOMBER, ENEMY_CRUISER, ENEMY_ROCK_WARSHIP, ENEMY_MANTIS_BOARDER]
+
+        template = random.choice(pool)
         self.data.enemy.ship = copy.deepcopy(template)
 
         for room in self.data.enemy.ship.rooms:
@@ -271,10 +350,9 @@ class MapManager:
         w_name = "Feind " + w_type.capitalize()
         self.data.enemy.weapon = Weapon(w_name, charge_time=max(2.5, 4.5 - sector * 0.4), w_type=w_type)
 
-        self.data.current_state = STATE_COMBAT
+        self.change_state(GameState.COMBAT)
 
-
-    def restart_game(self):
+    def restart_game(self) -> None:
         from classes.Crew import Crew
         from classes.Reactor import Reactor
         from classes.ShieldSystem import ShieldSystem
@@ -299,9 +377,10 @@ class MapManager:
         from managers.save_manager import SaveManager
         self.data.player.unlocked_ships = SaveManager.load_unlocks()
         self.data.player.newly_unlocked_ship = None
+        self.data.player.disqualified_from_unlocks = False
         self.data.paused = False
 
         self.data.world.star_map.sector = 1
         self.data.world.star_map.generate_map()
 
-        self.data.current_state = STATE_MAP
+        self.change_state(GameState.MAP)

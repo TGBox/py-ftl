@@ -60,5 +60,37 @@ class TestWeaponsAndProjectiles(unittest.TestCase):
         self.assertEqual(proj.crew_damage, 50.0)
 
 
+    def test_all_starting_ships_weapons_viability(self):
+        from classes.GameData import GameData
+        from classes.ShipModel import SHIP_BLUEPRINTS, apply_starting_setup_for_ship
+
+        for ship_name, blueprint in SHIP_BLUEPRINTS.items():
+            data = GameData()
+            data.player.ship = blueprint
+            apply_starting_setup_for_ship(data, ship_name)
+
+            self.assertGreater(len(data.player.weapons), 0, f"Ship {ship_name} must have starting weapons!")
+            for w_idx, w in enumerate(data.player.weapons):
+                if w is None:
+                    continue
+                # Ensure weapon max_range is at least 750.0 px so it reaches enemy ship at X >= 550 from any hardpoint
+                m_range = getattr(w, "max_range", None)
+                if m_range is not None:
+                    self.assertGreaterEqual(
+                        m_range, 750.0,
+                        f"Ship '{ship_name}' weapon '{w.name}' max_range={m_range} is too short to reach enemy!"
+                    )
+
+                # Ensure weapon slot allows the weapon type
+                if w_idx < len(blueprint.weapon_slots):
+                    slot = blueprint.weapon_slots[w_idx]
+                    allowed = slot.get("allowed_types")
+                    if allowed is not None:
+                        self.assertIn(
+                            w.w_type, allowed,
+                            f"Ship '{ship_name}' slot {w_idx+1} does not allow weapon type '{w.w_type}'!"
+                        )
+
+
 if __name__ == "__main__":
     unittest.main()

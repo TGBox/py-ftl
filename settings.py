@@ -29,22 +29,27 @@ WEAPON_LINE_COLORS = [
     (100, 255, 150), # Waffe 5: Grün
 ]
 
+from enums import GameState
+
 # Zustände
-STATE_MAP = "MAP"
-STATE_EVENT = "EVENT"
-STATE_COMBAT = "COMBAT"
-STATE_SHOP = "SHOP"
-STATE_TRAINING = "TRAINING"
-STATE_GAME_OVER = "GAME_OVER"
-STATE_VICTORY = "VICTORY"
-STATE_MAIN_MENU = "MAIN_MENU"
-STATE_OPTIONS = "OPTIONS"
-STATE_ACHIEVEMENTS = "ACHIEVEMENTS"
+STATE_MAP = GameState.MAP.value
+STATE_EVENT = GameState.EVENT.value
+STATE_COMBAT = GameState.COMBAT.value
+STATE_SHOP = GameState.SHOP.value
+STATE_TRAINING = GameState.TRAINING.value
+STATE_GAME_OVER = GameState.GAME_OVER.value
+STATE_VICTORY = GameState.VICTORY.value
+STATE_MAIN_MENU = GameState.MAIN_MENU.value
+STATE_OPTIONS = GameState.OPTIONS.value
+STATE_ACHIEVEMENTS = GameState.ACHIEVEMENTS.value
 current_state: str = STATE_MAP
 
 # Logische Spielauflösung (intern immer 900x600 gerendert, dann skaliert).
 LOGICAL_WIDTH = 900
 LOGICAL_HEIGHT = 600
+
+# Debugging & Protokollmodus
+DEBUG_LOG_ENABLED = False
 
 # Verfügbare Fensterauflösungen (inkl. Ultrawide)
 RESOLUTIONS = [

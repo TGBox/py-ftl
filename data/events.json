@@ -70,11 +70,24 @@
           "result_text": "Das Engi-Protokoll löscht den Brand rasch! Die Stationsleitung belohnt dich großzügig."
         },
         {
-          "text": "1. Rettungskapseln bergen",
-          "action": "CLAIM_RESOURCES",
-          "scrap": 25,
-          "fuel": 1,
-          "result_text": "Du rettest mehrere Überlebende aus den Kapseln."
+          "text": "1. Außenteam in die brennende Station schicken",
+          "outcomes": [
+            {
+              "chance": 0.35,
+              "action": "CLAIM_RESOURCES",
+              "scrap": 40,
+              "fuel": 2,
+              "drones": 1,
+              "result_text": "ERFOLG! Euer Außenteam rettet Überlebende und birgt wertvolle Vorräte!"
+            },
+            {
+              "chance": 0.65,
+              "action": "TAKE_DAMAGE",
+              "damage": 6,
+              "crew_damage": 30,
+              "result_text": "FEHLSCHLAG! Einstürzende Trümmer verletzen das Außenteam schwer (-30 HP) und beschädigen eure Hülle!"
+            }
+          ]
         },
         {
           "text": "2. Vorüberziehen",
@@ -126,19 +139,19 @@
           "text": "1. Außenteam an Bord schicken, um Krankenstation zu behandeln",
           "outcomes": [
             {
-              "chance": 0.45,
+              "chance": 0.30,
               "action": "CLAIM_RESOURCES",
-              "scrap": 45,
+              "scrap": 50,
               "fuel": 2,
               "drones": 1,
               "result_text": "ERFOLG! Dein Außenteam dämmt die Epidemie ein. Die Frachter-Crew belohnt dich reichlich mit Ressourcen!"
             },
             {
-              "chance": 0.55,
+              "chance": 0.70,
               "action": "TAKE_DAMAGE",
-              "damage": 6,
-              "crew_damage": 45,
-              "result_text": "KATASTROPHE! Die Weltraum-Grippe mutiert und greift auf dein Außenteam über! Ein Crew-Mitglied infiziert sich schwer (-45 HP) und eure Hülle nimmt Schaden!"
+              "damage": 8,
+              "crew_damage": 50,
+              "result_text": "KATASTROPHE! Die Weltraum-Grippe mutiert und greift auf dein Außenteam über! Die Mannschaft erleidet schweren Schaden (-50 HP) und eure Hülle nimmt Schaden!"
             }
           ]
         },
@@ -176,19 +189,19 @@
           "text": "1. Tief ins labile Wrack vordringen und Hauptkammer leeren",
           "outcomes": [
             {
-              "chance": 0.50,
+              "chance": 0.35,
               "action": "CLAIM_RESOURCES",
-              "scrap": 55,
-              "fuel": 2,
+              "scrap": 60,
+              "fuel": 3,
               "drones": 1,
               "result_text": "ERFOLG! Ihr bergt wertvollen Schrott, Treibstoff und Drohnenteile aus der Hauptkammer."
             },
             {
-              "chance": 0.50,
+              "chance": 0.65,
               "action": "TAKE_DAMAGE",
-              "damage": 8,
+              "damage": 9,
               "fire_room": true,
-              "result_text": "FEHLSCHLAG! Der Reaktor des Wracks implodiert! Die Trümmerwelle trifft eure Hülle (-8 HP) und entfacht ein Feuer an Bord!"
+              "result_text": "FEHLSCHLAG! Der Reaktor des Wracks implodiert! Die Trümmerwelle trifft eure Hülle (-9 HP) und entfacht ein Feuer an Bord!"
             }
           ]
         },
@@ -214,11 +227,22 @@
           "result_text": "Mit roher Mantis-Gewalt brecht ihr die Panzertür auf und erbeutet militärische Reserven!"
         },
         {
-          "text": "1. Die Hangars nach Ausrüstung durchsuchen",
-          "action": "CLAIM_RESOURCES",
-          "scrap": 25,
-          "fuel": 2,
-          "result_text": "In den Hangars lagen intakte Treibstoffkanister bereit."
+          "text": "1. Tief in den instabilen Orbit tauchen & Hangars durchsuchen",
+          "outcomes": [
+            {
+              "chance": 0.35,
+              "action": "CLAIM_RESOURCES",
+              "scrap": 45,
+              "fuel": 3,
+              "result_text": "ERFOLG! Trotz schwerer Turbulenzen bergt ihr intakte Vorratskanister!"
+            },
+            {
+              "chance": 0.65,
+              "action": "TAKE_DAMAGE",
+              "damage": 7,
+              "result_text": "FEHLSCHLAG! Der enorme Atmosphärendruck drückt eure Hülle ein (-7 HP)!"
+            }
+          ]
         },
         {
           "text": "2. Weiterreisen",
@@ -271,11 +295,22 @@
           "result_text": "Die enorme Körperkraft des Rock-Mitglieds knackt den Schmuggler-Safe problemlos!"
         },
         {
-          "text": "1. Depot knacken",
-          "action": "CLAIM_RESOURCES",
-          "scrap": 35,
-          "fuel": 1,
-          "result_text": "Ihr findet Schrott und Treibstoffkanister!"
+          "text": "1. Sprengsatz anbringen & Panzersafe knacken",
+          "outcomes": [
+            {
+              "chance": 0.35,
+              "action": "CLAIM_RESOURCES",
+              "scrap": 55,
+              "missiles": 3,
+              "result_text": "ERFOLG! Die Sprengung knackt das Depot sauber und legt wertvolle Reserven frei!"
+            },
+            {
+              "chance": 0.65,
+              "action": "TAKE_DAMAGE",
+              "damage": 8,
+              "result_text": "FEHLSCHLAG! Eine Sprengfalle löst eine Kettenreaktion aus, die eure Hülle beschädigt (-8 HP)!"
+            }
+          ]
         },
         {
           "text": "2. Nicht anrühren",
@@ -291,11 +326,22 @@
       "choices": [
         {
           "text": "1. Frachtcontainer bergen",
-          "action": "CLAIM_RESOURCES",
-          "scrap": 35,
-          "fuel": 1,
-          "missiles": 2,
-          "result_text": "Die Bergung war erfolgreich! Der Container war voll nutzbarer Güter."
+          "outcomes": [
+            {
+              "chance": 0.40,
+              "action": "CLAIM_RESOURCES",
+              "scrap": 40,
+              "fuel": 2,
+              "result_text": "ERFOLG! Der Container enthielt wertvolle Ersatzteile!"
+            },
+            {
+              "chance": 0.60,
+              "action": "TAKE_DAMAGE",
+              "damage": 5,
+              "fire_room": true,
+              "result_text": "FEHLSCHLAG! Der Container war miniert und explodiert bei der Bergung!"
+            }
+          ]
         },
         {
           "text": "2. Container passieren lassen",
@@ -345,11 +391,23 @@
           "result_text": "Furchtlos durchkämmen die Mantis das Wrack und sichern wertvolle Waffenkomponenten!"
         },
         {
-          "text": "1. Erkundungsteam entsenden",
-          "action": "CLAIM_RESOURCES",
-          "scrap": 25,
-          "fuel": 1,
-          "result_text": "Das Team kehrt mit Schrott und Vorräten zurück."
+          "text": "1. Erkundungsteam auf das dunkle Wrack entsenden",
+          "outcomes": [
+            {
+              "chance": 0.35,
+              "action": "CLAIM_RESOURCES",
+              "scrap": 45,
+              "fuel": 2,
+              "drones": 1,
+              "result_text": "ERFOLG! Euer Team durchsucht die Hangars und bergt intakte Ausrüstung."
+            },
+            {
+              "chance": 0.65,
+              "action": "START_COMBAT",
+              "damage": 6,
+              "result_text": "HINTERHALT! Das Geisterschiff war eine Piratenfalle! Ihr steckt Schaden ein (-6 HP) und das Gefecht beginnt!"
+            }
+          ]
         },
         {
           "text": "2. Wrack meiden",
@@ -373,11 +431,22 @@
           "result_text": "Das Zoltan-Bewusstsein verbindet sich mit dem Artefakt und lädt alle Energiespeicher vollständig auf!"
         },
         {
-          "text": "1. Artefakt vorsichtig scannen",
-          "action": "CLAIM_RESOURCES",
-          "scrap": 30,
-          "fuel": 1,
-          "result_text": "Der Scan liefert nutzbare Daten und lädt die Energiezellen auf."
+          "text": "1. Artefakt scannen & direkt berühren",
+          "outcomes": [
+            {
+              "chance": 0.30,
+              "action": "CLAIM_RESOURCES",
+              "scrap": 65,
+              "fuel": 3,
+              "result_text": "ERFOLG! Das Artefakt entlädt seine Energie harmlos und lädt eure Speicher vollständig auf!"
+            },
+            {
+              "chance": 0.70,
+              "action": "TAKE_DAMAGE",
+              "damage": 10,
+              "result_text": "FEHLSCHLAG! Eine heftige Energieentladung überlastet eure Systeme und fügt der Hülle schweren Schaden zu (-10 HP)!"
+            }
+          ]
         },
         {
           "text": "2. Abstand halten",

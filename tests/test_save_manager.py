@@ -2,6 +2,8 @@ import os
 import sys
 import unittest
 
+from game import Game
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from classes.GameData import GameData
@@ -29,12 +31,13 @@ class TestSaveManager(unittest.TestCase):
 
     def test_save_and_load_game_roundtrip(self):
         data = GameData()
+        game = Game()
         data.player.scrap = 350
         data.player.fuel = 18
         data.world.star_map.sector = 3
 
         # Save game
-        self.assertTrue(SaveManager.save_game(data, self.test_save_file))
+        self.assertTrue(SaveManager.save_game(data, game, self.test_save_file))
         self.assertTrue(SaveManager.has_savegame(self.test_save_file))
 
         # Load into new GameData instance
@@ -47,10 +50,11 @@ class TestSaveManager(unittest.TestCase):
 
     def test_auto_save_setting_roundtrip(self):
         data = GameData()
+        game = Game()
         self.assertFalse(data.auto_save_enabled)
 
         data.auto_save_enabled = True
-        self.assertTrue(SaveManager.save_game(data, self.test_save_file))
+        self.assertTrue(SaveManager.save_game(data, game, self.test_save_file))
 
         loaded_data = GameData()
         self.assertTrue(SaveManager.load_game(loaded_data, self.test_save_file))
@@ -58,7 +62,8 @@ class TestSaveManager(unittest.TestCase):
 
     def test_tampered_save_rejection(self):
         data = GameData()
-        SaveManager.save_game(data, self.test_save_file)
+        game = Game()
+        SaveManager.save_game(data, game, self.test_save_file)
 
         # Corrupt bytes in save file
         with open(self.test_save_file, "r+b") as f:
@@ -67,6 +72,58 @@ class TestSaveManager(unittest.TestCase):
 
         loaded_data = GameData()
         self.assertFalse(SaveManager.load_game(loaded_data, self.test_save_file))
+
+
+    def test_emergency_save_slot_4(self):
+        data = GameData()
+        game = Game()
+        data.player.scrap = 999
+
+        # Ensure slot 4 path is cleaned up afterwards
+        slot_4_path = SaveManager.get_slot_filepath(4)
+        if os.path.exists(slot_4_path):
+            os.remove(slot_4_path)
+
+        try:
+            self.assertTrue(SaveManager.save_emergency_game(data, game))
+            self.assertTrue(SaveManager.has_savegame(4))
+
+            loaded_data = GameData()
+            self.assertTrue(SaveManager.load_game(loaded_data, slot=4))
+            self.assertEqual(loaded_data.player.scrap, 999)
+        finally:
+            if os.path.exists(slot_4_path):
+                os.remove(slot_4_path)
+
+    def test_load_savegame_after_unlocks_reset_disqualifies_achievements(self):
+        from unittest.mock import patch
+        data = GameData()
+        game = Game()
+        data.player.ship.name = "Kreuzer"
+
+        # Save game when ship was "Kreuzer"
+        self.assertTrue(SaveManager.save_game(data, game, self.test_save_file))
+
+        # Mock load_unlocks to return only Kestrel (simulating reset unlocks)
+        with patch.object(SaveManager, "load_unlocks", return_value=["Kestrel"]), \
+             patch.object(SaveManager, "save_unlocks") as mock_save_unlocks:
+
+            loaded_data = GameData()
+            self.assertTrue(SaveManager.load_game(loaded_data, self.test_save_file))
+
+            # Savegame loads successfully
+            self.assertEqual(loaded_data.player.ship.name, "Kreuzer")
+
+            # Must be marked disqualified from unlocks & achievements
+            self.assertTrue(loaded_data.player.disqualified_from_unlocks)
+
+            # Profile unlocks must NOT be updated or overwritten
+            self.assertEqual(loaded_data.player.unlocked_ships, ["Kestrel"])
+            mock_save_unlocks.assert_not_called()
+
+            # Achievements must be blocked
+            game.data = loaded_data
+            self.assertFalse(game.achievement_manager.unlock("first_victory"))
 
 
 if __name__ == "__main__":

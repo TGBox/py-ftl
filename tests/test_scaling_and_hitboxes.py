@@ -6,7 +6,7 @@ import pygame
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from game import Game
-from settings import LOGICAL_WIDTH, LOGICAL_HEIGHT
+from settings import *
 
 
 class TestScalingAndHitboxes(unittest.TestCase):
@@ -44,10 +44,90 @@ class TestScalingAndHitboxes(unittest.TestCase):
     def test_render_manager_uses_logical_coordinates(self):
         self.game.screen = pygame.Surface((1920, 1080))
         # Verify render_manager._logical_mouse_pos returns scaled logical coordinates
-        lx, ly = self.game.render_manager._logical_mouse_pos()
+        lx, ly = self.game.render_manager._logical_mouse_pos(for_overlay=True) # type: ignore
         self.assertIsInstance(lx, int)
         self.assertIsInstance(ly, int)
+
+    def test_modal_overlay_z_index_hover_suppression(self):
+        self.game.screen = pygame.Surface((960, 540))
+        render_mgr = self.game.render_manager
+
+        # Without overlays, _logical_mouse_pos returns valid coordinates
+        self.game.data.show_pause_menu = False
+        self.assertFalse(render_mgr.is_any_overlay_active)
+        lx, ly = render_mgr._logical_mouse_pos(for_overlay=False)
+        self.assertNotEqual((lx, ly), (-9999, -9999))
+
+        # With pause menu overlay active, _logical_mouse_pos(for_overlay=False) returns (-9999, -9999)
+        self.game.data.show_pause_menu = True
+        self.assertTrue(render_mgr.is_any_overlay_active)
+        lx, ly = render_mgr._logical_mouse_pos(for_overlay=False)
+        self.assertEqual((lx, ly), (-9999, -9999))
+
+        # But for_overlay=True returns real logical coordinates
+        lx_ov, ly_ov = render_mgr._logical_mouse_pos(for_overlay=True)
+        self.assertNotEqual((lx_ov, ly_ov), (-9999, -9999))
+
+    def test_modal_overlay_click_lock(self):
+        from enums import GameState
+        self.game.screen = pygame.Surface((900, 600))
+        input_mgr = self.game.input_manager
+        door = self.game.data.player.ship.doors[0]
+        initial_open = door.is_open
+
+        # When show_pause_menu is True, clicking door coordinate should be ignored
+        self.game.data.show_pause_menu = True
+        self.game.data.current_state = GameState.MAP.value
+        mock_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=(door.rect.centerx, door.rect.centery))
+        input_mgr.handle_left_click(mock_event)
+        self.assertEqual(door.is_open, initial_open)
+
+    def test_main_menu_options_navigation_and_return(self):
+        from enums import GameState
+        self.game.screen = pygame.Surface((900, 600))
+        input_mgr = self.game.input_manager
+        sm = self.game.state_manager
+
+        # Start in Main Menu
+        sm.change_state(GameState.MAIN_MENU)
+        self.assertEqual(self.game.data.current_state, GameState.MAIN_MENU.value)
+
+        # Click Options button (Rect(460, 532, 195, 42))
+        btn_opt_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=(470, 540))
+        input_mgr.handle_left_click(btn_opt_event)
+        self.assertEqual(self.game.data.current_state, GameState.OPTIONS.value)
+
+        # Click Close Options button (Rect(350, 484, 200, 34))
+        btn_close_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=(400, 500))
+        input_mgr.handle_left_click(btn_close_event)
+        self.assertEqual(self.game.data.current_state, GameState.MAIN_MENU.value)
+
+    def test_training_leave_button(self):
+        from enums import GameState
+        self.game.screen = pygame.Surface((900, 600))
+        input_mgr = self.game.input_manager
+        sm = self.game.state_manager
+
+        sm.change_state(GameState.TRAINING)
+        self.assertEqual(self.game.data.current_state, GameState.TRAINING.value)
+
+        # Click leave button (Rect(320, 510, 260, 42))
+        btn_leave_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=(400, 525))
+        input_mgr.handle_left_click(btn_leave_event)
+        self.assertEqual(self.game.data.current_state, GameState.MAP.value)
+
+    def test_enums_definitions(self):
+        from enums import HazardType, WeaponType, WeaponSubtype, SystemType
+        self.assertEqual(HazardType.NONE.value, "NONE")
+        self.assertEqual(HazardType.SOLAR_FLARE.value, "SOLAR_FLARE")
+        self.assertEqual(HazardType.ASTEROID_FIELD.value, "ASTEROID_FIELD")
+        self.assertEqual(WeaponType.LASER.value, "LASER")
+        self.assertEqual(WeaponType.MISSILE.value, "MISSILE")
+        self.assertEqual(WeaponSubtype.STANDARD.value, "STANDARD")
+        self.assertEqual(SystemType.SHIELD.value, "Schild")
+        self.assertEqual(SystemType.WEAPONS.value, "Waffen")
 
 
 if __name__ == "__main__":
     unittest.main()
+

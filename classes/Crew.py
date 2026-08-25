@@ -1,3 +1,6 @@
+from typing import TYPE_CHECKING
+
+
 from collections import deque
 import math
 import pygame
@@ -5,7 +8,14 @@ import random
 
 from classes.Door import Door
 from classes.Room import Room
-from settings import COLOR_CREW, COLOR_SELECTED, get_font
+from enums import CrewSpecies, CrewTrait
+from managers.achievement_manager import AchievementManager
+from settings import *
+
+if TYPE_CHECKING:
+    from classes.GameData import GameData
+    from game import Game
+    from managers.combat_manager import CombatManager
 
 SPECIES_NAMES = {
     "Mensch": ["Vance", "Sarah", "Jackson", "Elena", "Marcus", "David", "Lisa", "Alex"],
@@ -25,7 +35,7 @@ def find_room_path(
 
     adj: dict[Room, list[tuple[Room, Door]]] = {r: [] for r in rooms}
     for d in doors:
-        if not d.is_airlock and d.room_a in adj and d.room_b in adj and d.room_b is not None:
+        if not d.is_airlock and d.room_a in adj and d.room_b in adj and d.room_b is not None: # type: ignore
             adj[d.room_a].append((d.room_b, d))
             adj[d.room_b].append((d.room_a, d))
 
@@ -67,14 +77,14 @@ class Crew:
         x: float,
         y: float,
         name: str = "",
-        species: str = "Mensch",
+        species: CrewSpecies | str = CrewSpecies.MENSCH,
         is_enemy: bool = False,
     ) -> None:
         self.x: float = x
         self.y: float = y
         self.radius: int = 12
         self.selected: bool = False
-        self.target_pos: tuple[int, int] | None = None
+        self.target_pos: tuple[float, float] | None = None
         self.path_waypoints: list[tuple[float, float]] = []
         self.species: str = species
         self.name: str = name if name else random.choice(SPECIES_NAMES.get(species, ["Crew"]))
@@ -131,8 +141,32 @@ class Crew:
             self.melee_multiplier += 0.3
 
         self.move_speed: float = 160.0 if self.trait == "Sprinter" else 120.0
+        
+    def __str__(self) -> str:
+        """Methode um aus dem Crew Objekt eine von Menschen gut lesbare String Repräsentation zu generieren.
 
-    def activate_ability(self, data, combat_mgr=None) -> bool:
+        Returns:
+            str: Die String Repräsentation dieses Crew Objekts.
+        """
+        c_str = (f"{"Gegner" if self.is_enemy else "Spieler"} Crewmitglied \"{self.name}\" der Spezies {self.species} mit der Eigenschaft {self.trait}.\n"
+            f"Gesundheit: {self.hp} / {self.max_hp}, Position: x={self.x}, y={self.y}, Geschwindigkeit: {self.move_speed}, Radius: {self.radius}.\n")
+        c_str += f"Ausgewählt: {self.selected}, Raum: {"Keiner" if self.current_room is None else self.current_room.name}, Zielposition: "
+        if self.target_pos is None:
+            c_str += "Keine | "
+        else:
+            c_str += f"x={self.target_pos[0]}, y={self.target_pos[1]} | "
+        c_str += "Zielwegpunkte:\n"
+        if len(self.path_waypoints) == 0:
+            c_str += "Keine | "
+        else:
+            for i, p in enumerate(self.path_waypoints):
+                c_str += f"[{i}.) x={p[0]}, y={p[1]}]\n"
+        c_str += f"\nVariante: {self.variant_idx}, Animationstimer: {self.anim_timer}, Stuntimer: {self.stun_timer}, Boarding: {self.is_boarding}\n"
+        c_str += f"AbilityName: {self.ability_name}, AbilityCooldown: {self.ability_cooldown}, AbilityMaxCooldown: {self.max_ability_cooldown}, AbilityActiveTimer: {self.ability_active_timer}"
+        c_str += f"Skills - Reparatur: {self.skill_repair}, Pilot: {self.skill_piloting}, Kampf: {self.skill_combat}, Fitness: {self.skill_fitness}"
+        return c_str
+
+    def activate_ability(self, data: "GameData", game: "Game", combat_mgr: "CombatManager | None" = None) -> bool:
         if self.ability_cooldown > 0.0:
             if combat_mgr:
                 combat_mgr.show_message(f"{self.name.upper()} FÄHIGKEIT LÄDT NOCH ({int(self.ability_cooldown)}s)!")
@@ -159,16 +193,16 @@ class Crew:
                 enemies_in_room = [e for e in getattr(combat_mgr, "enemy_crew", []) if e.current_room == self.current_room]
                 for e in enemies_in_room:
                     e.stun_timer = 4.0
-                if hasattr(data, "particle_manager"):
-                    data.particle_manager.emit_explosion(self.x, self.y, count=15)
+                if hasattr(game, "particle_manager"):
+                    game.particle_manager.emit_explosion(self.x, self.y, count=15)
                 if sound: sound.play("explosion")
                 if combat_mgr: combat_mgr.show_message(f"{self.name.upper()} ERDERSCHÜTTERUNG! Gegner stunnt (4s)!")
 
         elif self.species == "Zoltan":
             shield_max = max(1, getattr(data.player.shield, "max_layers", 1))
             data.player.shield.current_layers = min(shield_max, data.player.shield.current_layers + 1)
-            if hasattr(data, "particle_manager"):
-                data.particle_manager.emit_shield_ripple(self.x, self.y, (100, 255, 140))
+            if hasattr(game, "particle_manager"):
+                game.particle_manager.emit_shield_ripple(self.x, self.y, (100, 255, 140))
             if sound: sound.play("shield_recharge")
             if combat_mgr: combat_mgr.show_message(f"{self.name.upper()} SCHILD-BURST! +1 Schildschicht wiederhergestellt!")
 
@@ -182,7 +216,7 @@ class Crew:
 
         return True
 
-    def train_skill(self, skill_name: str, achievement_manager=None) -> bool:
+    def train_skill(self, skill_name: str, achievement_manager: AchievementManager | None = None) -> bool:
         if skill_name == "repair" and self.skill_repair < 3:
             self.skill_repair += 1
             self.repair_multiplier *= 1.25
@@ -235,7 +269,7 @@ class Crew:
             return
 
         waypoints: list[tuple[float, float]] = []
-        for next_r, door in room_path:
+        for _, door in room_path:
             waypoints.append((float(door.rect.centerx), float(door.rect.centery)))
         waypoints.append((tx, ty))
 

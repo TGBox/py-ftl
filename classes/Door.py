@@ -54,3 +54,16 @@ class Door:
         # Gepanzerter Schottestüren Schloss-Indikator
         if not self.is_open and door_level >= 3:
             pygame.draw.circle(surface, (255, 220, 80), self.rect.center, 3)
+
+    def __str__(self) -> str:
+        """Methode um eine von Menschen gut lesbare String Repräsentation dieses Tür Objektes zu generieren.
+
+        Returns:
+            str: Die String Repräsentation dieses Objekts.
+        """
+        if self.room_b is None:
+            d_str = f"Tür zwischen Raum {self.room_a.name} und der Aussenseite des Schiffs, "
+        else:
+            d_str = f"Tür zwischen Raum {self.room_a.name} und Raum {self.room_b.name}, "
+        d_str += f"mit Position x={self.rect.x}, y={self.rect.y}, Status: {"Geöffnet" if self.is_open else "Geschlossen"}, Ist Luftschleuse: {self.is_airlock}, wurde durch Crew geöffnet: {self.opened_by_crew}."
+        return d_str

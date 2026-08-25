@@ -3,6 +3,8 @@ import sys
 import unittest
 import pygame
 
+from game import Game
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from classes.Crew import Crew
@@ -16,7 +18,8 @@ class TestCrewAbilities(unittest.TestCase):
     def setUp(self):
         self.data = GameData()
         self.state_mgr = StateManager(self.data)
-        self.combat_mgr = CombatManager(self.data, self.state_mgr)
+        self.combat_mgr = CombatManager(self.data)
+        self.game = Game()
 
     def test_engi_overclock_instant_repair(self):
         engi = Crew(150, 150, name="Slockat", species="Engi")
@@ -26,7 +29,7 @@ class TestCrewAbilities(unittest.TestCase):
         room.has_breach = True
         engi.current_room = room
 
-        success = engi.activate_ability(self.data, self.combat_mgr)
+        success = engi.activate_ability(self.data, self.game, self.combat_mgr)
         self.assertTrue(success, "Engi ability activation should succeed.")
         self.assertEqual(room.health, 85.0, "Engi ability should restore +35 HP.")
         self.assertEqual(room.fire_level, 0.0, "Engi ability should extinguish fire.")
@@ -39,7 +42,7 @@ class TestCrewAbilities(unittest.TestCase):
         mantis.melee_multiplier = 2.0
         self.assertEqual(mantis.melee_multiplier, 2.0)
 
-        success = mantis.activate_ability(self.data, self.combat_mgr)
+        success = mantis.activate_ability(self.data, self.game, self.combat_mgr)
         self.assertTrue(success)
 
         # Update crew for 0.1s
@@ -55,7 +58,7 @@ class TestCrewAbilities(unittest.TestCase):
         enemy_boarder.current_room = room
         self.combat_mgr.enemy_crew.append(enemy_boarder)
 
-        success = rock.activate_ability(self.data, self.combat_mgr)
+        success = rock.activate_ability(self.data, self.game, self.combat_mgr)
         self.assertTrue(success)
         self.assertEqual(enemy_boarder.stun_timer, 4.0, "Rock earthquake should stun enemy boarders in room for 4.0s.")
 
@@ -63,7 +66,7 @@ class TestCrewAbilities(unittest.TestCase):
         zoltan = Crew(150, 150, name="Kael", species="Zoltan")
         self.data.player.shield.current_layers = 0
 
-        success = zoltan.activate_ability(self.data, self.combat_mgr)
+        success = zoltan.activate_ability(self.data, self.game, self.combat_mgr)
         self.assertTrue(success)
         self.assertEqual(self.data.player.shield.current_layers, 1, "Zoltan Shield Burst should restore 1 shield layer.")
 
@@ -76,7 +79,7 @@ class TestCrewAbilities(unittest.TestCase):
         ally.hp = 50.0
         self.data.player.crew.extend([human, ally])
 
-        success = human.activate_ability(self.data, self.combat_mgr)
+        success = human.activate_ability(self.data, self.game, self.combat_mgr)
         self.assertTrue(success)
         self.assertEqual(ally.hp, 75.0, "Human Tactical Focus should heal allies in room by +25 HP.")
 

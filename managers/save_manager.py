@@ -1,9 +1,11 @@
+from typing import TYPE_CHECKING
+
+
 import hashlib
 import json
 import os
-# pyrefly: ignore [missing-import]
+from typing import Any
 from Crypto.Cipher import AES
-# pyrefly: ignore [missing-import]
 from Crypto.Protocol.KDF import PBKDF2
 
 from classes.Crew import Crew
@@ -17,21 +19,25 @@ from classes.DataModels import (
 from classes.GameData import GameData
 from classes.Node import Node
 from classes.Reactor import Reactor
-from classes.Room import Room
 from classes.ShieldSystem import ShieldSystem
 from classes.ShipModel import SHIP_BLUEPRINTS
 from classes.Weapon import Weapon
 from settings import STATE_GAME_OVER, STATE_MAIN_MENU, STATE_MAP, STATE_VICTORY
 
+if TYPE_CHECKING:
+    from game import Game
+    
 KEY_SALT = b"FTL_SECRET_SALT_2026_VERSION_1.0"
 PASSPHRASE = b"PyGame_FTL_Encryption_Seed"
 
 
 class SaveManager:
+    def __init__(self) -> None:
+        self.game: "Game | None" = None
 
     @staticmethod
     def get_key() -> bytes:
-        return PBKDF2(PASSPHRASE, KEY_SALT, dkLen=32, count=1000)
+        return PBKDF2(str(PASSPHRASE), KEY_SALT, dkLen=32, count=1000)
 
     @classmethod
     def load_unlocks(cls, filepath: str = "data/unlocks.json") -> list[str]:
@@ -82,10 +88,15 @@ class SaveManager:
 
     @classmethod
     def has_any_savegame(cls) -> bool:
-        return any(cls.has_savegame(s) for s in (1, 2, 3))
+        return any(cls.has_savegame(s) for s in (1, 2, 3, 4))
 
     @classmethod
-    def get_slot_info(cls, slot: int = 1) -> dict | None:
+    def save_emergency_game(cls, data: GameData, game: "Game") -> bool:
+        """Speichert einen Notfall-Backup-Spielstand explizit in Slot 4."""
+        return cls.save_game(data, game, slot=4)
+
+    @classmethod
+    def get_slot_info(cls, slot: int = 1) -> dict[str, Any] | None:
         path = cls.get_slot_filepath(slot)
         if not cls.has_savegame(slot, path):
             return None
@@ -96,7 +107,7 @@ class SaveManager:
             iv = file_bytes[:16]
             ciphertext = file_bytes[16:]
             key = cls.get_key()
-            cipher = AES.new(key, AES.MODE_CFB, iv=iv)
+            cipher = AES.new(key, AES.MODE_CFB, iv=iv)  # type: ignore
             decrypted_text = cipher.decrypt(ciphertext).decode("utf-8")
 
             payload = json.loads(decrypted_text)
@@ -120,20 +131,20 @@ class SaveManager:
             return None
 
     @classmethod
-    def save_game(cls, data: GameData, slot: int | str = 1, filepath: str | None = None) -> bool:
+    def save_game(cls, data: GameData, game: "Game", slot: int | str = 1, filepath: str | None = None) -> bool:
         if isinstance(slot, str) and ("/" in slot or "\\" in slot or slot.endswith(".dat")):
             path = slot
-            slot_num = 1
+            _ = 1
         elif filepath is not None:
             path = filepath
-            slot_num = slot if isinstance(slot, int) else 1
+            _ = slot if isinstance(slot, int) else 1
         else:
             path = cls.get_slot_filepath(slot)
-            slot_num = slot if isinstance(slot, int) else 1
+            _ = slot if isinstance(slot, int) else 1
 
         try:
             # Map-Knoten serialisieren
-            node_schemas = []
+            node_schemas: list[NodeSaveSchema] = []
             for n in data.world.star_map.nodes:
                 conn_ids = [c.id for c in n.connections]
                 node_schemas.append(
@@ -169,6 +180,7 @@ class SaveManager:
             ]
 
             # Waffen serialisieren
+            assert data.player.weapons is not None
             weapon_schemas = [
                 WeaponSaveSchema(
                     name=w.name,
@@ -185,7 +197,7 @@ class SaveManager:
                     crew_damage=getattr(w, "crew_damage", 0.0),
                     max_range=getattr(w, "max_range", None),
                 )
-                for w in data.player.weapons
+                for w in data.player.weapons if w is not None  # <- "if w is not None" hinzufügen
             ]
 
             # Crew serialisieren
@@ -229,6 +241,7 @@ class SaveManager:
                 weapons=weapon_schemas,
                 crew=crew_schemas,
                 unlocked_ships=getattr(data.player, "unlocked_ships", ["Kestrel"]),
+                disqualified_from_unlocks=getattr(data.player, "disqualified_from_unlocks", False),
             )
             json_str = schema.model_dump_json()
 
@@ -238,18 +251,21 @@ class SaveManager:
 
             # AES-256-CFB Encryption (SRS Kap. 8)
             key = cls.get_key()
-            cipher = AES.new(key, AES.MODE_CFB)
+            cipher: Any = AES.new(key, AES.MODE_CFB) # type: ignore
             iv = cipher.iv
             ciphertext = cipher.encrypt(payload.encode("utf-8"))
 
             with open(path, "wb") as f:
                 f.write(iv + ciphertext)
 
-            data.save_notification_msg = f"SPIELSTAND GESPEICHERT (SLOT {slot})"
-            data.save_notification_timer = 3.0
+            from managers.logger_manager import log_debug
+            log_debug("SAVE", f"Spielstand erfolgreich in Datei/Slot '{slot}' gespeichert.")
+
+            game.save_notification_msg = f"SPIELSTAND GESPEICHERT (SLOT {slot})"
+            game.save_notification_timer = 3.0
             data.combat.msg = f"💾 SPIELSTAND ERFOLGREICH GESPEICHERT (SLOT {slot})!"
             data.combat.msg_timer = 3.0
-            data.active_save_slot = slot
+            data.active_save_slot = int(slot) if str(slot).isdigit() else 1
 
             print(f"Spielstand erfolgreich gespeichert in {path} (Slot {slot})!")
             return True
@@ -261,13 +277,13 @@ class SaveManager:
     def load_game(cls, data: GameData, slot: int | str = 1, filepath: str | None = None) -> bool:
         if isinstance(slot, str) and ("/" in slot or "\\" in slot or slot.endswith(".dat")):
             path = slot
-            slot_num = 1
+            _ = 1
         elif filepath is not None:
             path = filepath
-            slot_num = slot if isinstance(slot, int) else 1
+            _ = slot if isinstance(slot, int) else 1
         else:
             path = cls.get_slot_filepath(slot)
-            slot_num = slot if isinstance(slot, int) else 1
+            _ = slot if isinstance(slot, int) else 1
 
         if not os.path.exists(path):
             print(f"Kein Speicherstand unter {path} gefunden!")
@@ -280,7 +296,7 @@ class SaveManager:
             iv = file_bytes[:16]
             ciphertext = file_bytes[16:]
             key = cls.get_key()
-            cipher = AES.new(key, AES.MODE_CFB, iv=iv)
+            cipher: Any = AES.new(key, AES.MODE_CFB, iv=iv)  # type: ignore
             decrypted_text = cipher.decrypt(ciphertext).decode("utf-8")
 
             payload = json.loads(decrypted_text)
@@ -328,10 +344,18 @@ class SaveManager:
             data.player.drone_parts = getattr(schema, "player_drone_parts", 5)
 
             persistent_unlocks = cls.load_unlocks()
-            saved_unlocks = getattr(schema, "unlocked_ships", ["Kestrel"])
-            combined_unlocks = list(dict.fromkeys(persistent_unlocks + saved_unlocks))
-            data.player.unlocked_ships = combined_unlocks
-            cls.save_unlocks(combined_unlocks)
+            saved_disqualified = getattr(schema, "disqualified_from_unlocks", False)
+
+            # Qualifiziert nur, wenn das Schiff im aktuellen Profil freigeschaltet ist und das Savegame nicht disqualifiziert war
+            ship_is_unlocked = (schema.ship_name in persistent_unlocks)
+            is_disqualified = saved_disqualified or (not ship_is_unlocked)
+
+            data.player.unlocked_ships = persistent_unlocks
+            data.player.disqualified_from_unlocks = is_disqualified
+
+            if is_disqualified:
+                data.combat.msg = "⚠️ HINWEIS: UNLOCKS & ERRUNGENSCHAFTEN DEAKTIVIERT!"
+                data.combat.msg_timer = 5.0
 
             # 3. Raumschiff & Räume wiederherstellen
             import copy
@@ -402,9 +426,9 @@ class SaveManager:
             data.combat.target_weapon_idx = None
             data.paused = False
 
-            data.active_save_slot = slot
             target_state = schema.current_state if schema.current_state not in (STATE_MAIN_MENU, STATE_GAME_OVER, STATE_VICTORY) else STATE_MAP
             data.current_state = target_state
+            data.show_slot_modal = False
 
             print(f"Spielstand erfolgreich geladen aus {path} (Slot {slot})!")
             return True
