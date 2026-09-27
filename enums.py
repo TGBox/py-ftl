@@ -32,13 +32,6 @@ class CrewSpecies(str, Enum):
     ZOLTAN = "Zoltan"
 
 
-class CrewTrait(str, Enum):
-    ALLROUNDER = "Allrounder"
-    REPARATUR_GENIE = "Reparatur-Genie"
-    NAHKAMPF_EXPERTE = "Nahkampf-Experte"
-    PANZERUNG = "Panzerung"
-    ENERGIEGEBER = "Energiegeber"
-
 
 class DroneType(str, Enum):
     COMBAT_MK1 = "COMBAT_MK1"

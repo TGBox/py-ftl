@@ -10,14 +10,9 @@ class ShieldSystem:
     self.hit_delay: float = hit_delay
     self.lock_timer: float = 0.0
     
-  def __str__(self) -> str:
-    """Methode um einen von Menschen gut lesbaren String zu generieren, der dieses Schild Objekt repräsentiert.
+  def __repr__(self) -> str:
+    return f"<ShieldSystem {self.current_layers}/{self.max_layers}>"
 
-    Returns:
-        str: Der Repräsentationsstring.
-    """
-    s_str = f"SchildSystem mit {self.current_layers} / {self.max_layers}, Aufladetimer: {self.recharge_timer}, Aufladezeit: {self.recharge_time}, Trefferverzögerung: {self.hit_delay}, Blocktimer: {self.lock_timer}"
-    return s_str
 
   def update(self, dt: float, powered_layers: int) -> None:
     self.max_layers = powered_layers

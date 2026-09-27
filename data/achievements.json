@@ -4,24 +4,24 @@
     "title": "Erster Sieg",
     "desc": "Besiege ein feindliches Raumschiff im Gefecht.",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "27.09.2026, 14:25 Uhr"
   },
   "boss_slayer": {
     "id": "boss_slayer",
     "title": "Rebellen-Schreck",
     "desc": "Besiege einen Sektor Mini-Boss.",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "27.09.2026, 14:25 Uhr"
   },
   "flagship_down": {
     "id": "flagship_down",
     "title": "Galaktischer Retter",
     "desc": "Zerstöre das Endboss-Flaggschiff der Rebellen!",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "27.09.2026, 14:57 Uhr"
   },
   "beam_master": {
     "id": "beam_master",
@@ -44,8 +44,8 @@
     "title": "Bio-Extinktion",
     "desc": "Eliminiere die gesamte gegnerische Crew ohne das Schiff zu zerstören.",
     "category": "KAMPF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "27.09.2026, 14:37 Uhr"
   },
   "bare_hull": {
     "id": "bare_hull",
@@ -92,8 +92,8 @@
     "title": "Volles Haus",
     "desc": "Rekrutiere eine vollwertige Besatzung von 6 Crewmitgliedern.",
     "category": "CREW",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "27.09.2026, 14:46 Uhr"
   },
   "alien_coalition": {
     "id": "alien_coalition",
@@ -108,8 +108,8 @@
     "title": "Schiffs-Sammler",
     "desc": "Schalte mindestens 4 verschiedene Raumschiffe frei.",
     "category": "SCHIFF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "27.09.2026, 14:47 Uhr"
   },
   "armada": {
     "id": "armada",
@@ -140,16 +140,16 @@
     "title": "Waffenschmied",
     "desc": "Führe eine erfolgreiche Waffen-Fusion im Shop durch.",
     "category": "SCHIFF",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "27.09.2026, 14:31 Uhr"
   },
   "survivor": {
     "id": "survivor",
     "title": "Überlebenskünstler",
     "desc": "Triggere ein Event mit 0 Treibstoff und überlebe.",
     "category": "ERKUNDUNG",
-    "unlocked": false,
-    "unlock_time": null
+    "unlocked": true,
+    "unlock_time": "27.09.2026, 14:26 Uhr"
   },
   "event_explorer": {
     "id": "event_explorer",

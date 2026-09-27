@@ -15,17 +15,9 @@ class StarMap:
     self.sector_type: str = "Zivil"
     self.generate_map()
     
-  def __str__(self) -> str:
-    """Methode um aus der Sternenkarte eine von Menschen gut lesbare String Repräsentation zu generieren.
+  def __repr__(self) -> str:
+    return f"<StarMap sector={self.sector} ({self.sector_type}) nodes={len(self.nodes)} fleet_x={self.rebel_fleet_x:.1f}>"
 
-    Returns:
-        str: Die String Repräsentation des StarMap Objekts.
-    """
-    s_str = (f"Karte - Sektor {self.sector} - Typ: {self.sector_type} - Position X-Achse Rebellenflotte: {self.rebel_fleet_x} -\n"
-      f"Aktive Node: {self.current_node} von insgesamt {len(self.nodes)} Knoten - Knotenpunkte:\n")
-    for i, n in enumerate(self.nodes):
-      s_str += f"{i}: {n.__str__()}\n"
-    return s_str
 
   def advance_fleet(self) -> None:
     self.rebel_fleet_x += REBEL_FLEET_SPEED

@@ -16,7 +16,6 @@ from managers.shop_manager import ShopManager
 from managers.sound_manager import SoundManager
 from managers.state_manager import StateManager
 from managers.training_manager import TrainingManager
-from managers.weapon_manager import WeaponManager
 from settings import *
 
 logger = logging.getLogger(__name__)
@@ -72,7 +71,6 @@ class Game:
         self.data.console_manager = self.console_manager
         self.state_manager = StateManager(self.data)
         self.training_manager = TrainingManager(self.data)
-        self.weapon_manager = WeaponManager(self.data)
 
         # Give managers access to sound
         self.input_manager.sound = self.sound_manager
@@ -83,20 +81,21 @@ class Game:
             self.achievement_manager.sound = self.sound_manager
 
         # Give managers access to the Game for display changes and state reading
-        self.input_manager.game = self
-        self.render_manager.game = self
-        self.sound_manager.game = self
-        self.achievement_manager.game = self
-        self.particle_manager.game = self
-        self.shop_manager.game = self
-        self.training_manager.game = self
-        self.map_manager.game = self
-        self.state_manager.game = self
-        self.weapon_manager.game = self
-        self.console_manager.game = self
-        self.input_manager.game = self
-        self.combat_manager.game = self
-        self.render_manager.game = self
+        for mgr in (
+            self.input_manager,
+            self.combat_manager,
+            self.render_manager,
+            self.sound_manager,
+            self.achievement_manager,
+            self.particle_manager,
+            self.shop_manager,
+            self.training_manager,
+            self.map_manager,
+            self.state_manager,
+            self.console_manager,
+        ):
+            mgr.game = self
+
 
     # ------------------------------------------------------------------
     # Display helpers

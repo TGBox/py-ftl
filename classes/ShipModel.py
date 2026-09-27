@@ -39,16 +39,9 @@ class ShipModel:
         if not self.weapon_slots:
             self.generate_default_weapon_slots()
             
-    def __str__(self) -> str:
-        """Methode um aus dem ShipModel Objekt einen wohlgeformten und von Menschen gut lesbaren String zu generieren.
+    def __repr__(self) -> str:
+        return f"<ShipModel {self.name} hp={self.hp}/{self.max_hp} rooms={len(self.rooms)}>"
 
-        Returns:
-            str: Die String Repräsentation des ShipModels.
-        """
-        s_str = (f"{"Gegnerisches " if self.is_enemy else "Spieler "}Schiff: \"{self.name}\" | "
-                 f"Gesundheit: {self.hp} / {self.max_hp} | {len(self.rooms)} Räume | Maximale Crew: "
-                 f"{self.max_crew} Mitglieder | Maximale Anzahl Waffen: {len(self.weapon_slots)} | {len(self.doors)} Türen")
-        return s_str
 
     def generate_default_weapon_slots(self) -> None:
         self.weapon_slots = []
@@ -101,23 +94,11 @@ class ShipModel:
         # 1. Die Waffen in der Inventarliste tauschen
         weapons_list[idx1], weapons_list[idx2] = weapons_list[idx2], weapons_list[idx1]
 
-        # 2. Slot-Eigenschaften (z.B. allowed_types) tauschen, während pos und slot_id fest bleiben
-        slot1 = self.weapon_slots[idx1]
-        slot2 = self.weapon_slots[idx2]
-        keys_to_swap = [k for k in set(slot1.keys()).union(slot2.keys()) if k not in ("pos", "slot_id")]
-        for k in keys_to_swap:
-            v1 = slot1.get(k)
-            v2 = slot2.get(k)
-            if v2 is not None:
-                slot1[k] = v2
-            elif k in slot1:
-                del slot1[k]
-
-            if v1 is not None:
-                slot2[k] = v1
-            elif k in slot2:
-                del slot2[k]
-
+        # 2. Slot-Eigenschaften (allowed_types) tauschen, während pos und slot_id fest bleiben
+        self.weapon_slots[idx1]["allowed_types"], self.weapon_slots[idx2]["allowed_types"] = (
+            self.weapon_slots[idx2].get("allowed_types"),
+            self.weapon_slots[idx1].get("allowed_types"),
+        )
         return True
 
     def generate_doors(self) -> None:

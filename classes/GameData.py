@@ -51,19 +51,8 @@ class PlayerData:
         self.disqualified_from_unlocks: bool = False
         self.debug_logging_enabled: bool = DEBUG_LOG_ENABLED
 
-    def __str__(self) -> str:
-        w_count = len(self.weapons) if self.weapons else 0
-        p_str = (f"PlayerData - Schrott: {self.scrap}, Treibstoff: {self.fuel}, "
-            f"Raketen: {self.missiles}, Drohnenteile: {self.drone_parts} | "
-            f"Crew: {len(self.crew)} | Waffen: {w_count} |\nGodmode: {self.godmode}"
-            f"Augmentierungen: {", ".join(self.augments)} | Freigeschaltete Schiffe: {", ".join(self.unlocked_ships)} | "
-            f"Reaktor: {self.reactor.__str__()} |\nSchild: {self.shield.__str__()}\nWaffen:\n")
-        for w in self.weapons:
-            p_str += f"{w.__str__()}\n"
-        p_str += "Crewmitglieder:\n"
-        for c in self.crew:
-            p_str += f"{c.__str__()}\n"
-        return p_str
+    def __repr__(self) -> str:
+        return f"<PlayerData scrap={self.scrap} fuel={self.fuel} missiles={self.missiles} crew={len(self.crew)} weapons={len(self.weapons)}>"
 
     @property
     def drones(self) -> int:
@@ -81,9 +70,9 @@ class EnemyData:
         self.shield: ShieldSystem = ShieldSystem()
         self.weapon: Weapon = Weapon("Laser", charge_time=4.5, w_type="LASER")
 
-    def __str__(self) -> str:
-        return (f"EnemyData - Schiff: {self.ship.__str__()} | Reaktor: {self.reactor.__str__()} | "
-                f"Waffe: {self.weapon.__str__()} |\nSchild: {self.shield.__str__()}")
+    def __repr__(self) -> str:
+        return f"<EnemyData ship={self.ship.name} hp={self.ship.hp}/{self.ship.max_hp}>"
+
 
 class CombatData:
 
@@ -122,34 +111,8 @@ class CombatData:
         self.ftl_ready: bool = False
         self.combat_won: bool = False
 
-    def __str__(self) -> str:
-        """Methode um einen (halbwegs) gut lesbaren String aus den Werten dieses Objekts zu generieren.
-
-        Returns:
-            str: Das Objekt als String.
-        """
-        c_str = (f"CombatData - Kampf gewonnen: {self.combat_won} | Zielt gerade: {self.is_targeting} | Autofire: {self.autofire_enabled} | "
-            f"FTL bereit: {self.ftl_ready} | Boss Phase: {self.boss_phase} | Ziel Waffe: {"Keine" if None else self.target_weapon_idx} | "
-            f"Start: x={self.start_pos[0]}, y={self.start_pos[1]} | Nachricht: \"{self.msg}\" | Nachrichtentimer: {self.msg_timer} | "
-            f"Waffenziele: {len(self.weapon_targets.items())} Stück | Teleporter Cooldown: {self.teleport_cooldown} | "
-            f"Zielt Teleporter gerade: {self.is_teleport_targeting} | Aktiver Tarntimer: {self.cloak_active_timer} | "
-            f"Tarnung Cooldown: {self.cloak_cooldown} | Sonneneruptionstimer: {self.solar_flare_timer} | "
-            f"Sonneneruptionsblitz: {self.solar_flare_flash} | Asteroidentimer: {self.asteroid_timer} | "
-            f"Kampfdrohne aktiv: {self.combat_drone_active} | Reparaturdrohne aktiv: {self.repair_drone_active} | "
-            f"Verteidigungsdrohne aktiv: {self.defense_drone_active} | Schildauflader aktiv: {self.shield_charger_active} | "
-            f"Anti-PersonenSystem aktiv: {self.anti_personnel_active} | Winkel Drohnenorbit: {self.drone_orbit_angle} | "
-            f"Drohnenfeuertimer: {self.drone_fire_timer} | Pulsar Timer: {self.pulsar_timer} | "
-            f"Reparaturdrohne Position: x={self.repair_drone_pos[0]}, y={self.repair_drone_pos[1]} | "
-            f"Anti-PersonenSystem Position: x={self.anti_personnel_pos[0]}, y={self.anti_personnel_pos[1]} | ")
-        if self.defense_laser_beam is None:
-            c_str += "Verteidigungslaser - Inaktiv | "
-        else:
-            c_str += (f"Verteidigungslaser - Start: x={self.defense_laser_beam[0][0]}, y={self.defense_laser_beam[0][1]} - "
-                f"Ziel: x={self.defense_laser_beam[1][0]}, y={self.defense_laser_beam[1][1]} - Timer: {self.defense_laser_beam[2]}")
-        c_str += (f"Überschild Gesundheit: {self.overshield_hp} | Zoltan Schild Gesundheit: {self.zoltan_shield_hp} | "
-            f"Drohnen Ladezeit: {self.drone_surge_timer} | Boss Teleport Timer: {self.boss_teleport_timer} | "
-            f"FTL Ladetimer: {self.ftl_charge_timer}")
-        return c_str
+    def __repr__(self) -> str:
+        return f"<CombatData won={self.combat_won} targeting={self.is_targeting} autofire={self.autofire_enabled}>"
 
 
 class WorldData:
@@ -159,8 +122,9 @@ class WorldData:
         from classes.EventManager import EventManager
         self.event_manager: EventManager = EventManager()
 
-    def __str__(self) -> str:
-        return f"WorldData - Sternenkarte:\n{self.star_map.__str__()}, EventManager: {self.event_manager.__str__()}"
+    def __repr__(self) -> str:
+        return f"<WorldData sector={self.star_map.sector}>"
+
 
 class GameData:
 
@@ -184,14 +148,5 @@ class GameData:
         self.combat: CombatData = CombatData()
         self.world: WorldData = WorldData()
 
-    def __str__(self) -> str:
-        return (f"GameData - Spiel läuft: {self.running} | Status: {self.current_state} | "
-            f"Pausiert: {self.paused} | Save Slot: {self.active_save_slot} | PauseMenü aktiv: {self.show_pause_menu} |\n"
-            f"Hilfebildschirm aktiv: {self.show_help_overlay} | Autospeichern aktiv: {self.auto_save_enabled} | "
-            f"Speicherstandfenster aktiv: {self.show_slot_modal} | Speichertoast Nachricht: {self.save_toast_text} |\n"
-            f"Speichertoast Timer: {self.save_toast_timer} | Errungenschaftsfilter: {self.achievement_category_filter} | "
-            f"Errungenschaftsseite: {self.achievement_page} | Speicherstandfenster Modus: {self.slot_modal_mode} |"
-            f"\n  -> {self.player}\n"
-            f"  -> {self.enemy}\n"
-            f"  -> {self.combat}\n"
-            f"  -> {self.world}")
+    def __repr__(self) -> str:
+        return f"<GameData state={self.current_state} slot={self.active_save_slot} paused={self.paused}>"

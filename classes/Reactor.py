@@ -57,11 +57,5 @@ class Reactor:
         pygame.draw.rect(surface, COLOR_POWER_OFF, (bx, by, 13, 13))
         pygame.draw.rect(surface, (70, 95, 125), (bx, by, 13, 13), 1)
       
-  def __str__(self) -> str:
-    """Methode um eine gut lesbare String Repräsentation dieses Objektes zu erstellen.
-
-    Returns:
-        str: Die String Darstellung des Reaktor Objekts.
-    """
-    r_str = f"Reaktor - Verfügbare Power: {self.available_power} / Totale Power: {self.total_power}"
-    return r_str
+  def __repr__(self) -> str:
+    return f"<Reactor {self.available_power}/{self.total_power}>"

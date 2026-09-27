@@ -12,16 +12,5 @@ class Node:
     self.visited: bool = False
     self.hazard_type: HazardType | str = HazardType.NONE
 
-  def __str__(self) -> str:
-    """Methode um aus einem Node Objekt einen wohlgeformten String zu generieren, der von Menschen einfach gelesen werden kann.
-
-    Returns:
-        str: Der String der die Node repräsentiert.
-    """
-    n_str = f"Node #{self.id} an Position x={self.x}, y={self.y}. Eventtyp: {self.event_type}, Gefahrentyp: {self.hazard_type}, Bereits besucht: {self.visited}"
-    n_str += f"Node hat {len(self.connections)} Verbindungen zu folgenden anderen Nodes: "
-    for i, n in enumerate(self.connections):
-      n_str += f"{n.id}"
-      if i != len(self.connections) - 1:
-        n_str += ", "
-    return n_str
+  def __repr__(self) -> str:
+    return f"<Node #{self.id} pos=({self.x},{self.y}) type={self.event_type} visited={self.visited}>"
